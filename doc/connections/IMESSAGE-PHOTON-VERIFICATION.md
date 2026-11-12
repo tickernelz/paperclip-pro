@@ -150,7 +150,7 @@ plus the shared-DM changes in this PR:
   reply with an actionable reason request. A correlated rejection with a reason
   resolved the canonical interaction and resumed the native agent, which returned
   the exact reason and confirmed that no further action ran.
-- At 13:49–13:50 UTC, a synthetic HEIC was sent through Apple Messages. Paperclip
+- At 13:49–13:50 UTC, a synthetic HEIC was sent through Apple Messages. Wardmote
   retained the 676-byte original and created a 633-byte JPEG derivative. The agent
   correctly described the solid blue 16×16 image and returned the original HEIC
   through Photon; the file appeared in Messages. This tests the real transport and

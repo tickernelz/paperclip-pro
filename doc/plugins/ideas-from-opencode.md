@@ -608,7 +608,7 @@ Recommended approach:
 - **UI surface versioned with worker**: Both worker and UI surfaces are in the same package, so they version together. Breaking changes to shared UI components require a major version bump just like worker API changes.
 - **Published compatibility matrix**: The host publishes a matrix of supported API versions and SDK ranges, queryable via API.
 
-## A Concrete SDK Shape For Paperclip
+## A Concrete SDK Shape For Wardmote
 
 An intentionally narrow first pass could look like this:
 
@@ -1723,7 +1723,7 @@ Wardmote should implement "a plugin platform with multiple trust tiers":
 
 That gets the upside of `opencode`'s extensibility without importing the wrong threat model.
 
-## Concrete Next Steps I Would Take In Paperclip
+## Concrete Next Steps I Would Take In Wardmote
 
 1. Write a short extension architecture RFC that formalizes the distinction between `platform modules` and `plugins`.
 2. Introduce a small plugin manifest type in `packages/shared` and a `plugins` install/config section in the instance config.

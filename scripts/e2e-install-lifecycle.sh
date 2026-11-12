@@ -22,7 +22,7 @@ E2E_REPO="${E2E_REPO:-paperclipai/paperclip}"
 E2E_REF="${E2E_REF:-master}"
 E2E_SERVICE_TIMEOUT_SECS="${E2E_SERVICE_TIMEOUT_SECS:-300}"
 
-# A clean environment: no inherited Paperclip or build-mode state.
+# A clean environment: no inherited Wardmote or build-mode state.
 for var in $(env | grep -o '^WARDMOTE_[A-Z_]*' || true); do unset "$var"; done
 unset NODE_ENV npm_config_prefix 2>/dev/null || true
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0

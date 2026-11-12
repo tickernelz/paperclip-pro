@@ -92,9 +92,9 @@ An identical automatic final response is suppressed after an explicit send, or
 held while that send's delivery remains unresolved. Distinct summaries, progress,
 questions and blockers continue through existing routing.
 
-## Continuing a Slack task from Paperclip
+## Continuing a Slack task from Wardmote
 
-Human replies entered on a Slack-linked task are attributed to their Paperclip
+Human replies entered on a Slack-linked task are attributed to their Wardmote
 author in the original Slack thread. The author must have an active linked Slack
 account for this connection. Delivery rechecks workspace and channel access;
 revoked or changed identities cannot deliver queued messages or agent replies.

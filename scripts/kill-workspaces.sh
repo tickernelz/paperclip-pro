@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# Kill all local Paperclip workspace runtime service processes.
+# Kill all local Wardmote workspace runtime service processes.
 #
 # This targets managed workspace services such as preview/dev commands started
-# from project or execution workspaces. Use scripts/kill-dev.sh for Paperclip
+# from project or execution workspaces. Use scripts/kill-dev.sh for Wardmote
 # server processes.
 #
 # Usage:

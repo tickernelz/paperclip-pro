@@ -79,7 +79,7 @@ Storybook: **Agents / Personas**. Run with
 palettes plus muted gray, nine poses, eleven logical sizes, both densities).
 The build uses the same bounded Node worker pool, SVG renderer, and Sharp pipeline
 as the API. Storybook-only URL resolution points to relative PNG paths under the
-published build, including branch-prefixed deployments. Production Paperclip
+published build, including branch-prefixed deployments. Production Wardmote
 continues to use its on-demand API; no image generation runs during agent creation.
 The generated files are build output, never committed. A manifest records image
 hashes and pixel dimensions; deployment verification fetches every image and checks

@@ -87,7 +87,7 @@ same content tag.
 `WARDMOTE_RUNNER_SOURCE_REVISION` remains the full Git SHA that built the first
 published copy and is retained as provenance rather than cache identity.
 
-## Use in Paperclip
+## Use in Wardmote
 
 Publish the image to a registry Daytona can pull, or use the environment
 editor's **Configure image** flow to produce a Daytona snapshot. Set the

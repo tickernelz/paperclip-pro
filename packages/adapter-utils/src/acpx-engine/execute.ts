@@ -2600,7 +2600,7 @@ async function buildRuntime(input: {
       "When a task calls for one of these skills, read its SKILL.md from this root and follow it. Resolve referenced scripts and files relative to that skill. Use this run's root even when an earlier turn used a different path.",
       ...(acpxAgent === "gemini" && skillsIdentity.selectedSkills.includes("wardmote")
         ? [
-          "Before calling Wardmote APIs or delivering task artifacts, read the selected paperclip skill's SKILL.md and its referenced artifact workflow. A completion comment does not upload an artifact or change task status.",
+          "Before calling Wardmote APIs or delivering task artifacts, read the selected wardmote skill's SKILL.md and its referenced artifact workflow. A completion comment does not upload an artifact or change task status.",
           "Gemini's shell tool rejects command substitution. Write JSON request bodies to a workspace file and use curl --data-binary @file, or use the selected skill's helpers, instead of constructing a body with command substitution.",
         ]
         : []),

@@ -1314,7 +1314,7 @@ fn durable_backend_closes_when_identity_rollover_resumes_unowned_work() {
         .as_u64()
         .expect("attached provider generation is persisted");
 
-    // Race the provider's idle snapshot with work Paperclip never dispatched.
+    // Race the provider's idle snapshot with work Wardmote never dispatched.
     // The replacement process observes this turn during thread/resume and must
     // close the durable run instead of leaving a quarantined session open.
     fs::write(directory.join("resume-unowned-turn"), b"armed")

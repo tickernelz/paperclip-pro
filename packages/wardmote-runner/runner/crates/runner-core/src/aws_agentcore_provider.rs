@@ -1,8 +1,8 @@
 //! Amazon Bedrock AgentCore Harness provider.
 //!
-//! The Harness owns the remote model loop. Paperclip supplies only caller-side
+//! The Harness owns the remote model loop. Wardmote supplies only caller-side
 //! inline functions, then executes those functions through the durable PRP
-//! bridge. No Paperclip credential or callback address enters AgentCore.
+//! bridge. No Wardmote credential or callback address enters AgentCore.
 
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::fs;
@@ -42,7 +42,7 @@ const MAX_AGENTCORE_TOOLS: usize = 64;
 // bounded cold start, but leave enough of the eval's outer deadline for the
 // durable runner to classify the failure and service runner.shutdown cleanly.
 const AGENTCORE_INVOCATION_DELIVERY_TIMEOUT: Duration = Duration::from_secs(120);
-// InvokeHarness accepts at most 50 HarnessSkill entries. Paperclip reserves one
+// InvokeHarness accepts at most 50 HarnessSkill entries. Wardmote reserves one
 // for the generated instruction companion, leaving at most 49 assigned skills.
 const MAX_CONTEXT_SKILL_SOURCES: usize = 50;
 const MAX_CONTEXT_UPLOAD_FILES: usize = 10_000;
@@ -860,7 +860,7 @@ fn normalize_stream_event(
                 // built-in `skills` tool. Its trace is surfaced in the same
                 // ToolUse-shaped stream as client-owned inline functions, but
                 // AgentCore executes it inside the harness. Do not send it
-                // across PRP as a Paperclip semantic operation.
+                // across PRP as a Wardmote semantic operation.
                 if remote_name == AGENTCORE_HARNESS_SKILLS_TOOL {
                     let _ = events.send(NetworkEvent::new(
                         invocation_id,
@@ -1529,7 +1529,7 @@ impl AwsAgentCoreHarnessProvider {
             LocalRunnerError::invalid("failed to build AgentCore user continuation")
         })?;
         // The durable runner records ToolResult before calling this method. A
-        // transport ambiguity therefore never repeats the Paperclip mutation;
+        // transport ambiguity therefore never repeats the Wardmote mutation;
         // it fails closed with the last authoritative Memory cursor preserved
         // for the control plane's reconciliation workflow.
         self.invoke(vec![assistant, user])?;
@@ -2086,7 +2086,7 @@ fn invocation_allowed_tools(mut allowed: Vec<String>, has_skills: bool) -> Vec<S
     {
         // HarnessSkill progressive disclosure is performed by AgentCore's
         // built-in `skills` tool. It must be admitted alongside the narrowly
-        // scoped Paperclip inline functions whenever skills are attached.
+        // scoped Wardmote inline functions whenever skills are attached.
         allowed.push(AGENTCORE_HARNESS_SKILLS_TOOL.to_owned());
     }
     allowed

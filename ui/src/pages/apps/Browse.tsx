@@ -840,7 +840,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
   }
   const showAssistantConnection = (source === "paperclip" || source === "all" ||
     (source === "installed" && (!assistantConnections.isSuccess || assistantConnections.rows.some(row => !row.revokedAt)))) &&
-    (!trimmed || "assistant connection (mcp) paperclip codex claude opencode".includes(trimmed));
+    (!trimmed || "assistant connection (mcp) wardmote codex claude opencode".includes(trimmed));
   const showCustomConnector =
     (source === "paperclip" || source === "all") && (!trimmed || "connect your own tool custom mcp server".includes(trimmed));
 

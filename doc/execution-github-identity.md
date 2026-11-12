@@ -39,7 +39,7 @@ need to unset them per command. A captured managed identity still takes
 precedence over repository configuration.
 
 Remote launchers prepend their directory to the execution target's effective
-`PATH`. An explicit remote `PATH` override is preserved; otherwise Paperclip
+`PATH`. An explicit remote `PATH` override is preserved; otherwise Wardmote
 reads the provider's environment before staging the launcher shell files.
 This keeps legacy NVM and user-local agent installations available alongside
 newer images with system-wide CLIs. The generated shell files retain that
@@ -57,7 +57,7 @@ Scripts that previously read a persistent `GH_TOKEN` must use managed `git`, `gh
 
 When no managed GitHub connection is installed for an agent, standard-trust
 local and SSH executions retain that execution host's existing Git and GitHub
-CLI credentials, configuration, credential helpers, and SSH agent. Paperclip
+CLI credentials, configuration, credential helpers, and SSH agent. Wardmote
 does not import controller credentials into an SSH target. Sandbox, plugin,
 and low-trust executions do not receive this compatibility fallback. Once a
 managed connection is configured, unavailable or revoked access never falls

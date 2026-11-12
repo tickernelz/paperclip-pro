@@ -812,7 +812,7 @@ Preview/install options:
   explicit value stay disabled).
 - `--request-approval-on-forbidden` turns a 403 install denial into a linked
   board approval request instead of a raw failed command; use
-  `--approval-issue-id <id>` to attach it to a specific issue. During Paperclip
+  `--approval-issue-id <id>` to attach it to a specific issue. During Wardmote
   task runs with `WARDMOTE_TASK_ID` set, this fallback is automatic so
   agent-run walkthroughs leave a pending approval path instead of a raw 403.
 - `--target-manager-agent-id <id>` or `--target-manager-slug <slug>` reparents

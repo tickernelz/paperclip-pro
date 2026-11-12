@@ -109,10 +109,10 @@ Wardmote plays two roles in the MCP graph, and confusing them is the most common
 
 
               Wardmote as MCP gateway / proxy
-              (agents call upstream MCP through Paperclip)
+              (agents call upstream MCP through Wardmote)
 
    ┌─────┐       ┌────────────┐       ┌──────────────┐
-   │Agent│──────▶│ Paperclip  │──────▶│ Upstream MCP │
+   │Agent│──────▶│ Wardmote  │──────▶│ Upstream MCP │
    │ run │       │  gateway   │       │ (GitHub etc.)│
    └─────┘       │  + policy  │       └──────────────┘
                  │  + audit   │
@@ -121,7 +121,7 @@ Wardmote plays two roles in the MCP graph, and confusing them is the most common
 
 **Endpoint mode** — Wardmote exposes its own MCP surface so external clients (Claude Code, IDEs, scripts) can manipulate Wardmote tasks and agents. This is what `doc/TASKS-mcp.md` covers. Access control here is the standard Wardmote auth model ([DEPLOYMENT-MODES.md](./DEPLOYMENT-MODES.md)): bearer keys, sessions, board API key.
 
-**Gateway mode** — Paperclip proxies tool calls from a Paperclip agent to an upstream MCP server (GitHub, Linear, a local stdio fixture, etc.). Every call goes through profile selection, policy evaluation, optional human approval, rate limiting, redaction, and audit. This is what the rest of this document covers.
+**Gateway mode** — Wardmote proxies tool calls from a Wardmote agent to an upstream MCP server (GitHub, Linear, a local stdio fixture, etc.). Every call goes through profile selection, policy evaluation, optional human approval, rate limiting, redaction, and audit. This is what the rest of this document covers.
 
 Operators usually mean *gateway* when they say "MCP access governance". For Wardmote-managed local adapter runs, Wardmote writes adapter MCP config that points at named gateway endpoints with short-lived scoped bearer tokens. Policies, approvals, and the audit log only exist for calls that enter gateway mode.
 
@@ -140,7 +140,7 @@ A connection is an enabled, governed link to one MCP server. Two transports are 
 
 | Transport | When to use | Trust posture |
 | --- | --- | --- |
-| `remote_http` | Hosted SaaS MCP servers (GitHub, Linear, custom remote MCP). Default for cloud. | Paperclip authenticates with stored credential refs and proxies calls. Process supervision is upstream's problem. |
+| `remote_http` | Hosted SaaS MCP servers (GitHub, Linear, custom remote MCP). Default for cloud. | Wardmote authenticates with stored credential refs and proxies calls. Process supervision is upstream's problem. |
 | `local_stdio` | Local fixtures or approved stdio templates that must run as a child process. | Only allowed when the host is explicitly trusted; see [Local trusted deployment](#local-trusted-deployment). Cloud public deployments fail closed unless a trusted runtime host is configured. |
 
 Operators do not paste arbitrary `command` / `args` for stdio. Allowed stdio entries are limited to the approved template catalog (e.g. `paperclip.echo-calculator-time`, `paperclip.synthetic-todo-kv`). To add a new template, ship a code change.

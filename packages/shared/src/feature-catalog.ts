@@ -176,7 +176,7 @@ export const INSTANCE_FEATURE_CATALOG: Record<InstanceFeatureKey, FeatureCatalog
   },
   enableBetaSkills: {
     title: "Beta skills",
-    description: "Allow agents to pin beta releases of the core paperclip skill.",
+    description: "Allow agents to pin beta releases of the core wardmote skill.",
     selfHostedDefault: false,
   },
   enableSummaries: {

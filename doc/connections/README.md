@@ -18,7 +18,7 @@ Provider notes: [Google Workspace](./GOOGLE-WORKSPACE.md),
 [OpenWA WhatsApp](./OPENWA.md). Optional credential custody:
 [Vercel Connect](./VERCEL-CONNECT.md).
 
-Post-read action: classify a new integration request, pick the right Paperclip
+Post-read action: classify a new integration request, pick the right Wardmote
 layer to change, and avoid creating a parallel connection framework.
 
 ## Decision Record

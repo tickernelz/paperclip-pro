@@ -535,7 +535,7 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         label: "Wardmote MCP tools",
         type: "toggle",
         default: true,
-        hint: "Mount the Wardmote API as MCP tools (paperclip* tool names) for the run, instead of making the agent use curl.",
+        hint: "Mount the Wardmote API as MCP tools (wardmote* tool names) for the run, instead of making the agent use curl.",
         group: "Capabilities",
       },
       {

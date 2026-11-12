@@ -1528,7 +1528,7 @@ impl CodexProvider {
         replacement.durable_tool_call_replays = durable_tool_call_replays;
         if replacement.active_provider_turn_id.is_some() {
             // A terminal can race the provider's own durable idle-state write.
-            // This process has work Paperclip never dispatched in the new
+            // This process has work Wardmote never dispatched in the new
             // epoch, so revoke its request authority and reap it. Retain the
             // exact ledger for diagnostics, but never expose the unexpected
             // turn as ordinary active work or admit a replacement.
@@ -2047,7 +2047,7 @@ impl CodexProvider {
         method: &str,
     ) -> Result<Option<CodexProviderEvent>, LocalRunnerError> {
         // A recognized helper is part of the provider conversation, but has no
-        // Paperclip task binding. Reject its RPC without borrowing root authority
+        // Wardmote task binding. Reject its RPC without borrowing root authority
         // or quarantining the root run. Unknown foreign threads still fail closed.
         let message = "Wardmote tools are authorized only for the parent task. Return your findings to the parent agent; it must perform Wardmote coordination and ask the user questions.";
         let response = if method == "item/tool/call" {

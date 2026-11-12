@@ -193,7 +193,7 @@ add capabilities which must not be confused with wrapper support:
 | Priority | Native Pi 1 capability | Runner status and reason |
 | --- | --- | --- |
 | P1 | Codemode, nested calls (`parentToolCallId`, `nestedCalls`), deferred tool search, exposure/annotations/output schema | Available upstream; built-in extensions remain disabled until nested provenance, permission checks, and output projection are qualified. Assigned semantic MCP tools retain direct exposure. |
-| P1 | Native MCP OAuth, provider-auth HTTP MCP, OAuth issuer/scope hardening | Available upstream; arbitrary MCP/auth discovery is outside the closed assigned bridge. Paperclip owns credential and company scope. |
+| P1 | Native MCP OAuth, provider-auth HTTP MCP, OAuth issuer/scope hardening | Available upstream; arbitrary MCP/auth discovery is outside the closed assigned bridge. Wardmote owns credential and company scope. |
 | P1 | Image generation and classifier calls through `ModelRuntime`/codemode | Available upstream; not exposed because separate model calls need budget attribution and artifact admission. Text/image tool-result transport remains supported. |
 | P1 | `clear_queue`, per-input queued/handled disposition | Disposition is checked now. Queue clearing still needs a durable Runner cancellation contract; Stop continues to abort the owned active process/turn. |
 | P2 | Append-only context edits, actionable `turn_end`/`agent_before_settle`, `context_with_system` | Available upstream; only existing observation hooks are installed. Host-directed edits need durable recovery semantics before exposure. |

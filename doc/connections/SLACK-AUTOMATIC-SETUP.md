@@ -49,7 +49,7 @@ Slack's settings-page Request URL verification remains distinct from Wardmote's
 connection check. Automatic setup accepts an authenticated message/app-mention
 event only after the runtime accepts the request, with the current signing secret,
 expected app/workspace/bot binding, current callback URL, and active connection.
-Manual setup retains the signed-challenge requirement. Paperclip
+Manual setup retains the signed-challenge requirement. Wardmote
 can answer a signed challenge as soon as creation has saved the signing secret,
 even before OAuth installation finishes. This path performs no Slack API calls
 and does not initialize the bot runtime or wait for the creation operation's lease.

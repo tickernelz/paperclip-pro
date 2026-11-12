@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Kill all local Paperclip dev server processes (across all worktrees).
+# Kill all local Wardmote dev server processes (across all worktrees).
 #
 # Usage:
 #   scripts/kill-dev.sh        # kill all paperclip dev processes

@@ -163,7 +163,7 @@ export function wardmoteMcpGuidance(toolsets: string, toolCount: number | null =
 export function wardmoteRestGuidance(options: { shellHint?: string } = {}): string {
   const shell = options.shellHint?.trim();
   return [
-    "This runtime has no paperclip* tools. Reach Wardmote over its REST API instead.",
+    "This runtime has no wardmote* tools. Reach Wardmote over its REST API instead.",
     shell
       ? `Use ${shell} with curl; normalize the base URL first: WARDMOTE_API_BASE="\${WARDMOTE_API_URL%/}"; WARDMOTE_API_BASE="\${WARDMOTE_API_BASE%/api}".`
       : 'Use a terminal with curl; normalize the base URL first: WARDMOTE_API_BASE="${WARDMOTE_API_URL%/}"; WARDMOTE_API_BASE="${WARDMOTE_API_BASE%/api}".',

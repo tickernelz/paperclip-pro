@@ -26,7 +26,7 @@ callback.
 ```mermaid
 sequenceDiagram
     actor A as Administrator
-    participant P as Paperclip
+    participant P as Wardmote
     participant T as mcp.telem.ai
 
     A->>P: Paste a Telem API key and optional settings

@@ -30,7 +30,7 @@ BASE_REF="${E2E_UPDATE_BASE_REF:?E2E_UPDATE_BASE_REF is required}"
 NEXT_REF="${E2E_UPDATE_NEXT_REF:?E2E_UPDATE_NEXT_REF is required}"
 E2E_SERVICE_TIMEOUT_SECS="${E2E_SERVICE_TIMEOUT_SECS:-300}"
 
-# Clean environment, then isolate ALL Paperclip state (managed store, config,
+# Clean environment, then isolate ALL Wardmote state (managed store, config,
 # embedded Postgres, backups) under a dedicated home for this test.
 for var in $(env | grep -o '^WARDMOTE_[A-Z_]*' || true); do unset "$var"; done
 unset NODE_ENV npm_config_prefix 2>/dev/null || true

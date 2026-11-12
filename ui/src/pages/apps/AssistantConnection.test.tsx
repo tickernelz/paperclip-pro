@@ -54,8 +54,8 @@ describe("assistant setup from Connections", () => {
   it("uses the canonical URL and explains how OpenCode opens consent without granting access", async () => {
     await render();
     const config = Array.from(container.querySelectorAll("pre")).map(p => p.textContent!).find(p => p.startsWith("{"))!;
-    expect(JSON.parse(config).mcp.paperclip).toEqual({ type: "remote", url: "https://canonical.example/mcp/wardmote", enabled: true, oauth: { scope: "wardmote:read wardmote:write wardmote:configure offline_access" } });
-    expect(container.textContent).toContain("opencode mcp auth paperclip");
+    expect(JSON.parse(config).mcp.wardmote).toEqual({ type: "remote", url: "https://canonical.example/mcp/wardmote", enabled: true, oauth: { scope: "wardmote:read wardmote:write wardmote:configure offline_access" } });
+    expect(container.textContent).toContain("opencode mcp auth wardmote");
     expect(container.textContent).toContain("No assistants connected to Butter yet");
     expect(container.querySelector('[role="combobox"]')).toBeNull();
     expect(mocks.revoke).not.toHaveBeenCalled();
@@ -161,6 +161,6 @@ describe("assistant setup from Connections", () => {
     mocks.setup.mockResolvedValue({ enabled: true, serverUrl: "https://canonical.example/mcp/wardmote" });
     await act(async () => Array.from(container.querySelectorAll('button')).find(b => b.textContent === "Try again")!.click());
     await flush();
-    expect(container.textContent).toContain("opencode mcp auth paperclip");
+    expect(container.textContent).toContain("opencode mcp auth wardmote");
   });
 });

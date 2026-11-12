@@ -340,7 +340,7 @@ export async function prepareAcpxRuntimeSandbox(input: {
   binding: AcpxRecoveryBinding;
   agent: QualifiedAcpxAgent;
   environment?: NodeJS.ProcessEnv;
-  /** Public operations on the runner-owned Paperclip MCP bridge only. */
+  /** Public operations on the runner-owned Wardmote MCP bridge only. */
   tools?: readonly Readonly<Record<string, unknown>>[];
   providerPolicy?: AcpxProviderRuntimePolicy;
 }): Promise<AcpxRuntimeSandbox> {
@@ -469,7 +469,7 @@ export async function prepareAcpxRuntimeSandbox(input: {
             "WARDMOTE_AGENT_KEY_ID", "WARDMOTE_AGENT_PUBLIC_KEY", "WARDMOTE_AGENT_PRIVATE_KEY",
             ...taskEnvironmentKeys,
             // Unselected provider/config secrets keep Codex's default shell exclusions;
-            // only Paperclip's scoped API token is required by Bash/curl skills.
+            // only Wardmote's scoped API token is required by Bash/curl skills.
             ...Object.keys(input.environment ?? {}).filter(key => key === "WARDMOTE_API_KEY" || !/key|secret|token/i.test(key)),
           ])])}`,
         ] : []),

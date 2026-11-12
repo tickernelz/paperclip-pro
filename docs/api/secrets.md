@@ -459,7 +459,7 @@ The import response is row-level:
       "key": "stripe-production-key",
       "status": "imported",
       "reason": null,
-      "secretId": "<paperclip-secret-id>",
+      "secretId": "<wardmote-secret-id>",
       "conflicts": []
     }
   ]

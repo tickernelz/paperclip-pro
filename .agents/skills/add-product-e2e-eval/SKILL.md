@@ -68,7 +68,7 @@ cannot override the independent oracle.
 
 Classify a completed wrong workflow as product or model/provider behavior as
 the assertions warrant. Startup, transport, and timeout symptoms require
-evidence-based attribution: they may indicate a Paperclip/Runner product bug,
+evidence-based attribution: they may indicate a Wardmote/Runner product bug,
 provider behavior, or infrastructure. Preserve the observed failure and cause
 separately, keep the existing machine grade/classifier unchanged, and retain
 partial attempts, retries, source SHA, catalog/definition digest, model/profile,

@@ -9,7 +9,7 @@
 
 Wardmote is a control plane. It owns companies, agents, issues, budgets,
 approvals, and durable workflow state. Agent providers remain execution
-services. Existing adapters invoke those services directly from the Paperclip
+services. Existing adapters invoke those services directly from the Wardmote
 server.
 
 Wardmote Runner introduces a separate execution process for provider sessions.
@@ -97,7 +97,7 @@ JSON Schema and fixtures
 Wardmote server ----implements----> runner public ports
 ```
 
-The dependency points from an implementation to a contract. The Paperclip
+The dependency points from an implementation to a contract. The Wardmote
 server may implement a public runner port. The runner package must not import
 the server implementation.
 

@@ -39,7 +39,7 @@ The PRP identity binds company, issue, agent, run, environment lease, runner ins
 Daytona always selects provider ingress for `wardmote_runner`; it does not fall
 back to direct outbound WSS or a legacy callback bridge. Same-host native runs
 keep loopback `ws://`, and other remote providers may use direct outbound
-`wss://` only when an operator explicitly configures a reachable Paperclip
+`wss://` only when an operator explicitly configures a reachable Wardmote
 runner URL. Legacy adapters retain their existing transport paths.
 
 ## Runner image compatibility

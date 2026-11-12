@@ -2083,7 +2083,7 @@ impl CodexCommandExecutor {
                 if recovered_turn_ended {
                     state.push_terminal_event(reconciled)?;
                     if recovered_turn_ended_with_result {
-                        // The durable correlated tool receipt proves Paperclip
+                        // The durable correlated tool receipt proves Wardmote
                         // accepted this exact turn's semantic result before the
                         // runner stopped observing provider output. Resume
                         // finalization without inventing another provider turn.
@@ -2729,7 +2729,7 @@ impl CodexCommandExecutor {
             .map(CodexProvider::process_generation);
         // The provider has already been terminated. Drop its quarantined
         // handle before persisting the closure so recovery can never resume
-        // work that Codex accepted without Paperclip accepting its identity.
+        // work that Codex accepted without Wardmote accepting its identity.
         self.provider = None;
         let state = self
             .state

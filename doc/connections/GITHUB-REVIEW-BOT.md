@@ -165,7 +165,7 @@ The execution records the configuration revision and event context used.
 ## Assessments, checks, and formal reviews
 
 The agent reads through task-bound bot tools, explicitly begins an assessment,
-and submits the reviewed commit, findings, rationale, and coverage. Paperclip
+and submits the reviewed commit, findings, rationale, and coverage. Wardmote
 validates the result and computes the **Wardmote Review** check. The default
 threshold is 5/5; choose 1–5 or report-only as needed.
 

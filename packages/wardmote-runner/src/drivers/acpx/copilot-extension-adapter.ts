@@ -65,7 +65,7 @@ function summary(event: CopilotSessionEvent): string {
     case "pending_messages.modified": return "Copilot changed its pending messages; the notification does not include queue contents.";
     case "session.background_tasks_changed": return "Copilot background tasks changed; the notification does not include task contents.";
     case "session.context_changed": return "Copilot reported context changes; the admitted workspace remains fixed.";
-    case "session.permissions_changed": return "Copilot reported permission state; Paperclip policy remains authoritative.";
+    case "session.permissions_changed": return "Copilot reported permission state; Wardmote policy remains authoritative.";
     case "session.mode_changed": return "Copilot reported a mode change.";
     case "session.idle": return "Copilot reported idle activity; the ACP prompt response determines turn settlement.";
     case "session.completion_receipt": return "Copilot reported a completion receipt; it does not independently settle the turn.";

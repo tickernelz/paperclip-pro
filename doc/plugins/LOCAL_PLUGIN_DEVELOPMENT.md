@@ -38,7 +38,7 @@ wardmote plugin inspect acme.hello-plugin
 
 That's the loop. The rest of this page explains what each step does and what to expect when you edit code.
 
-### 1. Start Paperclip
+### 1. Start Wardmote
 
 ```bash
 pnpm wardmote run

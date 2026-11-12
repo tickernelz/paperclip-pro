@@ -30,7 +30,7 @@ server tests against; install that exact version. Our Dependabot cannot bump
 these versions: its npm parser reads only `dependencies`, `devDependencies`,
 and `optionalDependencies`, never `peerDependencies`. A peer version here is a
 compatibility claim, not an installed version, so raising it is a human
-decision. `@opentelemetry/api` is the one OpenTelemetry package Paperclip
+decision. `@opentelemetry/api` is the one OpenTelemetry package Wardmote
 maintains as a dependency; once you install the packages below, they become
 normal dependencies of **your own** project, and your own Dependabot updates
 them.
@@ -997,7 +997,7 @@ absent, never a misleading `0`.
 | `restore.asset.<key>`                 | One outbound asset restore task at teardown. It reads one asset back to its host store. The `<key>` segment is the asset key.                              | `sandbox.syncBack`              |
 | `sandbox.agentSession.sendInput`      | One outbound ACP message to the agent — the socket handler's one `writeTextFile` exec.                                                                     | the active run span             |
 | `sandbox.agentSession.pollOutput`     | One 100 ms poll tick — `list`, then `read`+`remove` per file found (`1 + 2n` execs).                                                                       | the active run span             |
-| `sandbox.callbackBridge.relayRequest` | One Paperclip-API callback request — read the request, write the response, remove it.                                                                      | the active run span             |
+| `sandbox.callbackBridge.relayRequest` | One Wardmote-API callback request — read the request, write the response, remove it.                                                                      | the active run span             |
 | `sandbox.agentProcess`                | The persistent streamed agent process the process-session bridge launches; open until the process settles or the bridge tears down, whichever comes first. | the active run span             |
 | `sandbox.exec`                        | One host-to-sandbox execution.                                                                                                                             | the active step or wrapper span |
 

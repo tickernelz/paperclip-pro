@@ -86,7 +86,7 @@ export async function configure(opts: {
   section?: string;
 }): Promise<void> {
   printWardmoteCliBanner();
-  p.intro(pc.bgCyan(pc.black(" paperclip configure ")));
+  p.intro(pc.bgCyan(pc.black(" wardmote configure ")));
   const configPath = resolveConfigPath(opts.config);
 
   if (!configExists(opts.config)) {

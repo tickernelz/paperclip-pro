@@ -981,7 +981,7 @@ impl AcpxProviderSession {
     /// Reaps an active provider generation at a controller-owned suspension
     /// boundary without waiting for the provider's graceful close protocol.
     ///
-    /// A governed Paperclip result can settle the run while the model is still
+    /// A governed Wardmote result can settle the run while the model is still
     /// waiting for its semantic-tool callback to unwind. In that state the
     /// ordinary sidecar close path may wait for the callback longer than the
     /// server process that owns this runner. Process-group termination closes
