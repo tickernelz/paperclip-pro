@@ -52,7 +52,8 @@ export function assessDiskPressure(
   const percent = freePercentOf(reading);
   if (percent < config.emergencyFreePercent) return "emergency";
   if (percent < config.actionFreePercent) return "action";
-  if (percent < config.warnFreePercent || reading.freeBytes < config.warnFreeGb * GB) return "warning";
+  const warnFreeBytes = Math.min(config.warnFreeGb * GB, reading.totalBytes / 2);
+  if (percent < config.warnFreePercent || reading.freeBytes < warnFreeBytes) return "warning";
   return "ok";
 }
 

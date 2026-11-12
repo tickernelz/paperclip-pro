@@ -349,7 +349,7 @@ embedded-Postgres and OMP-session volumes and acts on the fullest one
 enabled: true
 intervalMinutes: 5
 warnFreePercent: 20      # warning below 20% free or below warnFreeGb
-warnFreeGb: 100
+warnFreeGb: 100          # capped at half the disk, so a 58 GB disk warns below 29 GB free
 actionFreePercent: 10
 emergencyFreePercent: 5
 ompSessionMaxIdleDays: 7 # 5 at the lowest
