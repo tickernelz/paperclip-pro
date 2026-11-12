@@ -197,18 +197,18 @@ function useMonitorCollapsed(issueId: string | undefined, defaultCollapsed: bool
     () => (issueId ? readStoredCollapse(issueId) : null),
     () => null,
   );
-  const [local, setLocal] = useState<boolean | null>(null);
-  const collapsed = (issueId ? stored : local) ?? defaultCollapsed;
+  const [local, setLocal] = useState<{ issueId: string | undefined; collapsed: boolean } | null>(null);
+  const collapsed = (local && local.issueId === issueId ? local.collapsed : null) ?? stored ?? defaultCollapsed;
   const toggle = useCallback(() => {
     const next = !collapsed;
     if (!issueId) {
-      setLocal(next);
+      setLocal({ issueId, collapsed: next });
       return;
     }
     try {
       window.localStorage.setItem(collapseStorageKey(issueId), next ? "1" : "0");
     } catch {
-      setLocal(next);
+      setLocal({ issueId, collapsed: next });
     }
     window.dispatchEvent(new Event(COLLAPSE_EVENT));
   }, [collapsed, issueId]);

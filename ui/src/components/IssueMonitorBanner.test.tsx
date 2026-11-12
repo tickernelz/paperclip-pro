@@ -224,6 +224,22 @@ describe("IssueMonitorBanner / IssueMonitorComposerStrip rendering", () => {
     flushSync(() => root.unmount());
   });
 
+  it("still toggles when the browser refuses to store the choice", () => {
+    const issue = { ...issueWithMonitor(new Date(NOW.getTime() + 60 * 60_000).toISOString()), id: "issue-d" } as Issue;
+    const setItem = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("quota", "QuotaExceededError");
+    });
+    const root = createRoot(container);
+    flushSync(() => root.render(<IssueMonitorBanner issue={issue} />));
+    const banner = () => container.querySelector('[data-testid="issue-monitor-banner"]')!;
+    flushSync(() => (banner().querySelector("button[aria-expanded]") as HTMLButtonElement).click());
+    expect(banner().hasAttribute("data-collapsed")).toBe(true);
+    flushSync(() => (banner().querySelector("button[aria-expanded]") as HTMLButtonElement).click());
+    expect(banner().hasAttribute("data-collapsed")).toBe(false);
+    setItem.mockRestore();
+    flushSync(() => root.unmount());
+  });
+
   it("does not offer monitor cancellation for automatic retries", () => {
     const issue = { scheduledRetry: { status: "scheduled_retry", scheduledRetryAt: NOW.toISOString() } } as Issue;
     const root = createRoot(container);
