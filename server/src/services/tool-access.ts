@@ -954,10 +954,6 @@ export function googleSheetsRobotEmailFromEnv(
 }
 
 function connectionMethodFor(app: AppDefinition, methodKey?: string | null) {
-  const normalizedMethodKey =
-    app.slug === "gmail" && methodKey === "paperclip-id-oauth"
-      ? "paperclip-draft"
-      : methodKey;
   // Stored managed connections must remain recognizable for callback, refresh,
   // and revoke even though static definitions omit instance availability. New
   // setup passes a definition filtered by signed profiles before reaching here;
@@ -968,8 +964,8 @@ function connectionMethodFor(app: AppDefinition, methodKey?: string | null) {
       candidate.purpose !== "channel" && candidate.transport !== "chat_sdk"
       && availableMethods.has(candidate),
   );
-  const method = normalizedMethodKey
-    ? (toolMethods.find((candidate) => candidate.key === normalizedMethodKey) ??
+  const method = methodKey
+    ? (toolMethods.find((candidate) => candidate.key === methodKey) ??
       null)
     : getAvailableConnectionMethod({ ...app, methods: toolMethods }, null);
   if (!method)
@@ -8719,7 +8715,7 @@ export function toolAccessService(
       return {
         clientIdEnv: "SMOKE_LAB_FIXED_CLIENT_ID",
         clientSecretEnv: "SMOKE_LAB_FIXED_CLIENT_SECRET",
-        clientId: "paperclip-smoke-lab",
+        clientId: "wardmote-smoke-lab",
         clientSecret: null,
       };
     }

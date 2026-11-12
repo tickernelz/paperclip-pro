@@ -14292,7 +14292,7 @@ describeEmbeddedPostgres("tool access service", () => {
       `http://wardmote.test/api/companies/${company.id}/smoke-lab/oauth/authorize`,
     );
     expect(authorizationUrl.searchParams.get("client_id")).toBe(
-      "paperclip-smoke-lab",
+      "wardmote-smoke-lab",
     );
     expect(authorizationUrl.searchParams.get("scope")).toBe(
       "smoke:openid smoke:profile smoke:email",
