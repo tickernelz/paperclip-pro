@@ -30,7 +30,7 @@ import { appendSemanticToolReceipt } from "../../../packages/wardmote-runner/src
 function receiptNotice(version: 1 | 2 = 1): Record<string, any> {
   return {
     schema: "wardmote.provider.notice.v1", noticeId: `copilot-evidence-${"a".repeat(24)}-1`,
-    severity: "info", category: `wardmote_semantic_tool_receipt_v${version}`, scope: "turn",
+    severity: "info", category: `paperclip_semantic_tool_receipt_v${version}`, scope: "turn",
     recoverable: true, userActionable: false, summary: "Wardmote returned a semantic tool result.",
     provenance: { method: "paperclip/semantic_tool_result", eventType: "semantic_result", sessionId: "session", turnId: "turn" },
     details: Object.entries({ stage: "semantic_result", schema: `paperclip.semantic_tool_receipt.v${version}`,
