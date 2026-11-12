@@ -1,6 +1,8 @@
 import type {
   OmpCustomProviderInput,
   OmpCustomProviderList,
+  OmpCustomProviderModelsFetchInput,
+  OmpCustomProviderModelsFetchResult,
   OmpCustomProviderProbeInput,
   OmpCustomProviderProbeResult,
   OnboardingOmpBrowseResult,
@@ -33,6 +35,8 @@ export const onboardingOmpApi = {
     api.put<OmpCustomProviderList>(`/onboarding/omp/custom-providers/${encodeURIComponent(name)}`, input),
   removeCustomProvider: (name: string) =>
     api.delete<OmpCustomProviderList>(`/onboarding/omp/custom-providers/${encodeURIComponent(name)}`),
+  fetchCustomProviderModels: (input: OmpCustomProviderModelsFetchInput) =>
+    api.post<OmpCustomProviderModelsFetchResult>("/onboarding/omp/custom-providers/models", input),
   probeCustomProvider: (input: OmpCustomProviderProbeInput) =>
     api.post<OmpCustomProviderProbeResult>("/onboarding/omp/custom-providers/probe", input),
   remote: (address: string) => api.post<OnboardingRemoteOmpStatus>("/onboarding/omp/remote", { address }),
