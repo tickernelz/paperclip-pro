@@ -10,7 +10,7 @@ import {
 } from "./test-embedded-postgres.js";
 
 const MIGRATION_FILE = "0369_wardmote_chat_state_key.sql";
-const OLD_KEY = [["paper", "clip"].join(""), "github-webhook-recovery", "v1"].join(":");
+const OLD_KEY = "paperclip:github-webhook-recovery:v1";
 const NEW_KEY = "wardmote:github-webhook-recovery:v1";
 const cleanups: Array<() => Promise<void>> = [];
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();

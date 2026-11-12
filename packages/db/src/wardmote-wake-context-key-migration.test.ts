@@ -10,7 +10,7 @@ import {
 } from "./test-embedded-postgres.js";
 
 const MIGRATION_FILE = "0370_wardmote_wake_context_key.sql";
-const OLD_KEY = ["_", ["paper", "clip"].join(""), "WakeContext"].join("");
+const OLD_KEY = "_paperclipWakeContext";
 const NEW_KEY = "_wardmoteWakeContext";
 const cleanups: Array<() => Promise<void>> = [];
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
