@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 import { buildNextManifest, writeManagedShim, flipCurrentAtomic, initializeInstallStore, payloadPathFor, readInstallManifest, resolveInstallStorePaths, writeInstallManifestAtomic, type InstallManifest, type InstallRecord } from "../install-store.js";
 import { LEGACY_HOME_DIRNAME } from "@tickernelz/wardmote-shared/home-paths";
 import type { CommandRunner } from "../commands/install.js";
-import { compareVersions, detectInstallMode, resolveUpdateRequest, rollbackManagedInstall, updateCommand } from "../commands/update.js";
+import { detectInstallMode, resolveUpdateRequest, rollbackManagedInstall, updateCommand } from "../commands/update.js";
 
 let root: string;
 let previousHome: string | undefined;
@@ -88,12 +88,6 @@ describe("update command", () => {
     } finally {
       Object.defineProperty(process.versions, "node", nodeVersion);
     }
-  });
-
-  it("orders SemVer prerelease identifiers numerically", () => {
-    expect(compareVersions("1.0.0-canary.10", "1.0.0-canary.2")).toBeGreaterThan(0);
-    expect(compareVersions("1.0.0-1", "1.0.0-alpha")).toBeLessThan(0);
-    expect(compareVersions("1.0.0-alpha", "1.0.0-alpha.1")).toBeLessThan(0);
   });
 
   it("detects managed, global npm, npx, and source modes", () => {
@@ -312,10 +306,26 @@ describe("update command", () => {
       return { stdout: "2.0.0\n", stderr: "" };
     });
     const restartActiveService = vi.fn(async (version: string) => { if (version === "2.0.0") throw new Error("health timeout"); return true; });
-    await expect(updateCommand({}, { paths, executablePath: executable, runCommand, backup: async () => undefined, restartActiveService })).rejects.toThrow("rolled back to 1.0.0");
+    const resultFile = path.join(root, "update-result.json");
+    await expect(updateCommand({ resultFile }, { paths, executablePath: executable, runCommand, backup: async () => undefined, restartActiveService })).rejects.toThrow("rolled back to 1.0.0");
     expect(readInstallManifest(paths)?.version).toBe("1.0.0");
     expect(fs.realpathSync(paths.currentPath)).toBe(fs.realpathSync(oldPayload));
     expect(restartActiveService).toHaveBeenLastCalledWith("1.0.0");
+    expect(JSON.parse(fs.readFileSync(resultFile, "utf8"))).toMatchObject({ ok: false, version: "1.0.0", rolledBackTo: "1.0.0", error: expect.stringContaining("rolled back to 1.0.0") });
+  });
+
+  it("records a successful update in the result file", async () => {
+    const paths = resolveInstallStorePaths(); initializeInstallStore(paths);
+    const oldPayload = payloadPathFor(paths, "npm", "1.0.0"); const executable = createPayload(oldPayload, "1.0.0"); flipCurrentAtomic(oldPayload, paths);
+    writeInstallManifestAtomic({ schemaVersion: 1, ...record(oldPayload, "1.0.0"), previous: [] }, paths);
+    const runCommand = vi.fn(async (file: string, args: string[]) => {
+      if (args[0] === "view") return { stdout: '"2.0.0"\n', stderr: "" };
+      if (file === "npm" && args[0] === "install") { createPayload(args[args.indexOf("--prefix") + 1], "2.0.0"); return { stdout: "", stderr: "" }; }
+      return { stdout: "2.0.0\n", stderr: "" };
+    });
+    const resultFile = path.join(root, "update-result.json");
+    await updateCommand({ resultFile, version: "2.0.0" }, { paths, executablePath: executable, runCommand, backup: async () => undefined, restartActiveService: async () => true });
+    expect(JSON.parse(fs.readFileSync(resultFile, "utf8"))).toMatchObject({ ok: true, version: "2.0.0", rolledBackTo: null, error: null });
   });
 
   it("surfaces a failure to restart the rolled-back payload", async () => {

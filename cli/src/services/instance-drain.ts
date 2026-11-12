@@ -1,29 +1,8 @@
+import { describeLiveRuns, type InstanceRunControl, type LiveRunSummary, type LiveRunsSnapshot } from "@tickernelz/wardmote-shared/instance-drain";
 import { getStoredBoardCredential } from "../client/board-auth.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
 import { readRuntimeInfo, type WardmoteRuntimeInfo } from "../runtime-info.js";
 import { buildLocalAppUrl } from "../utils/health-url.js";
-
-export interface LiveRunSummary {
-  id: string;
-  companyId: string | null;
-  agentId: string | null;
-  status: string | null;
-  startedAt: string | null;
-  issueId: string | null;
-}
-
-export interface LiveRunsSnapshot {
-  draining: boolean;
-  pendingWakes: number;
-  count: number;
-  runs: LiveRunSummary[];
-}
-
-export interface InstanceRunControl {
-  liveRuns(): Promise<LiveRunsSnapshot>;
-  startDrain(ttlMs: number | null): Promise<void>;
-  stopDrain(): Promise<void>;
-}
 
 export class LiveRunsBlockedError extends Error {
   readonly snapshot: LiveRunsSnapshot;
@@ -31,16 +10,6 @@ export class LiveRunsBlockedError extends Error {
   constructor(message: string, snapshot: LiveRunsSnapshot) {
     super(message);
     this.name = "LiveRunsBlockedError";
-    this.snapshot = snapshot;
-  }
-}
-
-export class DrainTimeoutError extends Error {
-  readonly snapshot: LiveRunsSnapshot;
-
-  constructor(message: string, snapshot: LiveRunsSnapshot) {
-    super(message);
-    this.name = "DrainTimeoutError";
     this.snapshot = snapshot;
   }
 }
@@ -175,13 +144,6 @@ export function createInstanceRunControl(
   };
 }
 
-export function describeLiveRuns(snapshot: LiveRunsSnapshot): string {
-  if (snapshot.runs.length === 0) return "";
-  return snapshot.runs
-    .map((run) => `  - run ${run.id}${run.issueId ? ` (issue ${run.issueId})` : " (no issue context)"}`)
-    .join("\n");
-}
-
 export function formatLiveRunsBlocker(verb: string, snapshot: LiveRunsSnapshot): string {
   const issueIds = [...new Set(snapshot.runs.map((run) => run.issueId).filter((id): id is string => !!id))];
   const issueLabel = issueIds.length > 0 ? ` on issue${issueIds.length === 1 ? "" : "s"} ${issueIds.join(", ")}` : "";
@@ -201,51 +163,6 @@ export async function assertNoLiveRuns(input: {
     throw new LiveRunsBlockedError(formatLiveRunsBlocker(input.verb, snapshot), snapshot);
   }
   return snapshot;
-}
-
-export async function waitForInstanceQuiescent(input: {
-  control: InstanceRunControl;
-  timeoutMs: number;
-  pollMs?: number;
-  now?: () => number;
-  sleep?: (ms: number) => Promise<void>;
-  onPoll?: (snapshot: LiveRunsSnapshot) => void;
-}): Promise<LiveRunsSnapshot> {
-  const pollMs = input.pollMs ?? 1_000;
-  const now = input.now ?? (() => Date.now());
-  const sleep = input.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
-  const deadline = now() + input.timeoutMs;
-  let snapshot = await input.control.liveRuns();
-  input.onPoll?.(snapshot);
-  while (snapshot.count > 0 || snapshot.pendingWakes > 0) {
-    if (now() >= deadline) {
-      throw new DrainTimeoutError(
-        `Wardmote still has ${snapshot.count} live agent run(s) after waiting ${Math.round(input.timeoutMs / 1000)}s; the service was not restarted.${describeLiveRuns(snapshot) ? `\n${describeLiveRuns(snapshot)}` : ""}`,
-        snapshot,
-      );
-    }
-    await sleep(pollMs);
-    snapshot = await input.control.liveRuns();
-    input.onPoll?.(snapshot);
-  }
-  return snapshot;
-}
-
-export async function drainInstanceForRestart(input: {
-  control: InstanceRunControl;
-  timeoutMs: number;
-  pollMs?: number;
-  now?: () => number;
-  sleep?: (ms: number) => Promise<void>;
-  onPoll?: (snapshot: LiveRunsSnapshot) => void;
-}): Promise<LiveRunsSnapshot> {
-  await input.control.startDrain(input.timeoutMs + 60_000);
-  try {
-    return await waitForInstanceQuiescent(input);
-  } catch (error) {
-    await input.control.stopDrain().catch(() => undefined);
-    throw error;
-  }
 }
 
 export async function assertAdmissionRestored(control: InstanceRunControl): Promise<LiveRunsSnapshot> {

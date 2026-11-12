@@ -113,6 +113,15 @@ describe("InstanceGeneralSettings sign-out", () => {
     expect(mockNavigateTopLevel).not.toHaveBeenCalled();
   });
 
+  it("shows automatic updates off by default and turns them on with one click", async () => {
+    await renderPage(SELF_HOSTED_HEALTH);
+    const toggle = container.querySelector<HTMLButtonElement>('[aria-label="Toggle automatic updates"]');
+    expect(container.textContent).toContain("Install updates automatically");
+    expect(toggle?.getAttribute("aria-checked")).toBe("false");
+    flushSync(() => toggle?.click());
+    await vi.waitFor(() => expect(mockInstanceSettingsApi.updateGeneral.mock.calls[0]?.[0]).toEqual({ autoInstallUpdates: true }));
+  });
+
   it("shows a current sign-out failure instead of a stale settings error", async () => {
     mockInstanceSettingsApi.updateGeneral.mockRejectedValue(new Error("Settings update failed"));
     mockAuthApi.signOut.mockRejectedValue(new Error("Sign-out request failed"));

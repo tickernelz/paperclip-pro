@@ -13,10 +13,22 @@ import { resolveConfigPath } from "../config/store.js";
 import { detectServiceManager } from "../services/service-manager.js";
 import { restartManagedService } from "./service.js";
 import { packageVersion } from "../version.js";
+import { compareVersions } from "@tickernelz/wardmote-shared";
 
 const execFileAsync = promisify(execFile);
 export type InstallMode = "managed" | "global-npm" | "npx" | "source" | "unknown";
-export type UpdateOptions = { canary?: boolean; latest?: boolean; version?: string; rollback?: boolean; check?: boolean; dryRun?: boolean; json?: boolean; yes?: boolean; backup?: boolean };
+export type UpdateOptions = { canary?: boolean; latest?: boolean; version?: string; rollback?: boolean; check?: boolean; dryRun?: boolean; json?: boolean; yes?: boolean; backup?: boolean; resultFile?: string };
+export type UpdateResult = { ok: boolean; version: string | null; rolledBackTo: string | null; error: string | null; finishedAt: string };
+
+export class UpdateRolledBackError extends Error {
+  readonly rolledBackTo: string;
+
+  constructor(message: string, rolledBackTo: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = "UpdateRolledBackError";
+    this.rolledBackTo = rolledBackTo;
+  }
+}
 type Dependencies = { executablePath: string; runCommand: CommandRunner; backup: () => Promise<void>; confirm: (message: string) => Promise<boolean>; now: () => Date; paths: InstallStorePaths; restartActiveService: (expectedVersion: string) => Promise<boolean>; hasInstanceData: () => boolean };
 
 const DATABASE_UNREACHABLE_CODES = new Set(["ECONNREFUSED", "EHOSTUNREACH", "ENETUNREACH", "ETIMEDOUT"]);
@@ -90,30 +102,6 @@ export function detectInstallMode(executablePath = process.argv[1] ?? "", paths 
   return "unknown";
 }
 
-export function compareVersions(left: string, right: string): number {
-  const parse = (value: string) => { const [core, prerelease = ""] = value.replace(/^v/, "").split("-", 2); return { numbers: core.split(".").map((part) => Number(part) || 0), prerelease }; };
-  const a = parse(left); const b = parse(right);
-  for (let index = 0; index < Math.max(a.numbers.length, b.numbers.length); index += 1) { const delta = (a.numbers[index] ?? 0) - (b.numbers[index] ?? 0); if (delta !== 0) return Math.sign(delta); }
-  if (a.prerelease === b.prerelease) return 0;
-  if (!a.prerelease) return 1;
-  if (!b.prerelease) return -1;
-  const aParts = a.prerelease.split(".");
-  const bParts = b.prerelease.split(".");
-  for (let index = 0; index < Math.max(aParts.length, bParts.length); index += 1) {
-    const leftPart = aParts[index];
-    const rightPart = bParts[index];
-    if (leftPart === undefined) return -1;
-    if (rightPart === undefined) return 1;
-    if (leftPart === rightPart) continue;
-    const leftNumeric = /^\d+$/.test(leftPart);
-    const rightNumeric = /^\d+$/.test(rightPart);
-    if (leftNumeric && rightNumeric) return Math.sign(Number(leftPart) - Number(rightPart));
-    if (leftNumeric !== rightNumeric) return leftNumeric ? -1 : 1;
-    return leftPart < rightPart ? -1 : 1;
-  }
-  return 0;
-}
-
 export function resolveUpdateRequest(manifest: InstallManifest | null, options: Pick<UpdateOptions, "canary" | "latest" | "version">): { spec: string; channel: InstallChannel; explicit: boolean } {
   const selected = Number(Boolean(options.canary)) + Number(Boolean(options.latest)) + Number(Boolean(options.version));
   if (selected > 1) throw new Error("Choose only one of --latest, --canary, or --version.");
@@ -159,15 +147,41 @@ async function rollbackAfterServiceValidationFailure(
   try {
     await restartActiveService(rolledBack.version);
   } catch (restartError) {
-    throw new Error(
+    throw new UpdateRolledBackError(
       `${payloadLabel} failed service validation and was rolled back to ${rolledBack.version}, but the rolled-back service also failed to restart.`,
+      rolledBack.version,
       { cause: new AggregateError([validationError, restartError]) },
     );
   }
-  throw new Error(`${payloadLabel} failed service validation and was rolled back to ${rolledBack.version}.`, { cause: validationError });
+  throw new UpdateRolledBackError(`${payloadLabel} failed service validation and was rolled back to ${rolledBack.version}.`, rolledBack.version, { cause: validationError });
+}
+
+function writeUpdateResult(filePath: string, result: UpdateResult): void {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true, mode: 0o700 });
+  const tempPath = `${filePath}.${process.pid}.tmp`;
+  fs.writeFileSync(tempPath, JSON.stringify(result, null, 2) + "\n", { mode: 0o600 });
+  fs.renameSync(tempPath, filePath);
 }
 
 export async function updateCommand(options: UpdateOptions, overrides: Partial<Dependencies> = {}): Promise<void> {
+  if (!options.resultFile) return runUpdateCommand(options, overrides);
+  const paths = overrides.paths ?? resolveInstallStorePaths();
+  try {
+    await runUpdateCommand(options, overrides);
+    writeUpdateResult(options.resultFile, { ok: true, version: readInstallManifest(paths)?.version ?? null, rolledBackTo: null, error: null, finishedAt: new Date().toISOString() });
+  } catch (error) {
+    writeUpdateResult(options.resultFile, {
+      ok: false,
+      version: readInstallManifest(paths)?.version ?? null,
+      rolledBackTo: error instanceof UpdateRolledBackError ? error.rolledBackTo : null,
+      error: error instanceof Error ? error.message : String(error),
+      finishedAt: new Date().toISOString(),
+    });
+    throw error;
+  }
+}
+
+async function runUpdateCommand(options: UpdateOptions, overrides: Partial<Dependencies>): Promise<void> {
   const paths = overrides.paths ?? resolveInstallStorePaths();
   const executablePath = overrides.executablePath ?? process.argv[1] ?? "";
   const runCommand = overrides.runCommand ?? execFileAsync;
