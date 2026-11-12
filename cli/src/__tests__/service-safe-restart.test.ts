@@ -2,14 +2,16 @@ import { describe, expect, it, vi } from "vitest";
 import {
   assertAdmissionRestored,
   assertNoLiveRuns,
-  DrainTimeoutError,
-  drainInstanceForRestart,
   formatLiveRunsBlocker,
   LiveRunsBlockedError,
+} from "../services/instance-drain.js";
+import {
+  DrainTimeoutError,
+  drainInstanceForRestart,
   waitForInstanceQuiescent,
   type InstanceRunControl,
   type LiveRunsSnapshot,
-} from "../services/instance-drain.js";
+} from "@tickernelz/wardmote-shared/instance-drain";
 import { guardServiceStop, safeRestartManagedService } from "../commands/service.js";
 
 function snapshot(partial: Partial<LiveRunsSnapshot> = {}): LiveRunsSnapshot {

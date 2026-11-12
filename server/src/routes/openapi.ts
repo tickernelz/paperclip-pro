@@ -1854,6 +1854,10 @@ const INSTANCE_ADMIN_OPERATIONS = new Set([
   "POST /api/plugins/install",
   "POST /api/instance/database-backups",
   "GET /api/instance/updates",
+  "GET /api/instance/updates/install",
+  "POST /api/instance/updates/install",
+  "POST /api/instance/updates/install/force",
+  "DELETE /api/instance/updates/install",
   "GET /api/instance/attachment-retention",
   "POST /api/instance/attachment-retention/preview",
   "POST /api/instance/attachment-retention/run",
@@ -1923,6 +1927,7 @@ const CREATED_OPERATIONS = new Set([
 ]);
 
 const ACCEPTED_OPERATIONS = new Set([
+  "POST /api/instance/updates/install",
   "POST /api/companies/{companyId}/email/send",
   "POST /api/companies/import",
   "POST /api/health/dev-server/restart",
@@ -10760,6 +10765,39 @@ registerCurrentRoute({
   tags: ["instance"],
   summary: "Get the installed and newest published Wardmote version for the update notice",
   responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
+registerCurrentRoute({
+  method: "get",
+  path: "/api/instance/updates/install",
+  tags: ["instance"],
+  summary: "Get the current or last update installed from the web UI",
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
+registerCurrentRoute({
+  method: "post",
+  path: "/api/instance/updates/install",
+  tags: ["instance"],
+  summary: "Install the newest Wardmote version, stopping live runs (force) or waiting for them (wait)",
+  body: z.object({ version: z.string(), mode: z.enum(["force", "wait"]) }),
+  responses: { 202: r.ok(), 401: r.unauthorized, 403: r.forbidden, 409: r.conflict, 422: r.unprocessable },
+});
+
+registerCurrentRoute({
+  method: "post",
+  path: "/api/instance/updates/install/force",
+  tags: ["instance"],
+  summary: "Stop waiting for live runs and install the pending update now",
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 409: r.conflict },
+});
+
+registerCurrentRoute({
+  method: "delete",
+  path: "/api/instance/updates/install",
+  tags: ["instance"],
+  summary: "Cancel an update that is still waiting for live runs",
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 409: r.conflict },
 });
 
 registerCurrentRoute({
