@@ -14,7 +14,7 @@ export interface AgentAvatarRequest {
 }
 export function avatarCacheKey(request: AgentAvatarRequest) {
   const { appearance, size, scale, pose, muted, background } = request;
-  return `generated-agent-avatars/${appearance.characterVersion}/${muted ? "muted-dream" : appearance.paletteId}/${pose}-${size}-${scale}${background === "paperclip-dark" ? "-paperclip-dark-v1" : ""}.png`;
+  return `generated-agent-avatars/${appearance.characterVersion}/${muted ? "muted-dream" : appearance.paletteId}/${pose}-${size}-${scale}${background === "wardmote-dark" ? "-wardmote-dark-v1" : ""}.png`;
 }
 export class AvatarAdmissionError extends Error {
   constructor(public readonly retryAfterSeconds: number) { super("Too many cold avatar requests"); }

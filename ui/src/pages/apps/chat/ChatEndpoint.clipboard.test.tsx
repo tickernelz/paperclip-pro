@@ -508,7 +508,7 @@ describe("chat setup and identity-link clipboard actions", () => {
     mocks.listAgents.mockResolvedValue([]);
     mocks.getAgent.mockResolvedValue({ id: "agent-a", name: "Maya", status: "terminated", appearance: { schemaVersion: 1, characterVersion: "cap-v1", paletteId: "orchid-peach" } });
     await render("slack", true);
-    expect(container.querySelector('a[download]')?.getAttribute("href")).toBe("/api/agent-avatars/cap-v1/orchid-peach/rest.png?size=512&scale=1&background=paperclip-dark");
+    expect(container.querySelector('a[download]')?.getAttribute("href")).toBe("/api/agent-avatars/cap-v1/orchid-peach/rest.png?size=512&scale=1&background=wardmote-dark");
     expect(mocks.getAgent).toHaveBeenCalledWith("agent-a", "company-a");
   });
 

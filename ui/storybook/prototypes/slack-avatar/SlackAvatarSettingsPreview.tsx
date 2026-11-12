@@ -6,7 +6,7 @@ import { SlackAvatarSettings } from "@/pages/apps/chat/SlackAvatarStep";
 import { appearanceForPalette } from "@tickernelz/wardmote-shared";
 import { agentAvatarUrl } from "@/lib/agent-avatar-url";
 
-const avatar = agentAvatarUrl(appearanceForPalette("flamingo-jade"), 512, 1, "rest", false, "paperclip-dark");
+const avatar = agentAvatarUrl(appearanceForPalette("flamingo-jade"), 512, 1, "rest", false, "wardmote-dark");
 
 export function SlackAvatarSettingsPreview({ initialInstructions = "", failFirstSave = false }: { initialInstructions?: string; failFirstSave?: boolean }) {
   const [instructions, setInstructions] = useState(initialInstructions);

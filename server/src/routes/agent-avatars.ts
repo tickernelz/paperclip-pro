@@ -13,7 +13,7 @@ const requestSchema = z.object({
   pose: z.enum(CHARACTER_STATES),
   size: z.string().regex(/^\d+$/).default("512").transform(Number).refine(n => (AGENT_AVATAR_SIZES as readonly number[]).includes(n)),
   scale: z.enum(["1", "2"]).default("1"),
-  background: z.enum(["transparent", "paperclip-dark"]).default("transparent"),
+  background: z.enum(["transparent", "wardmote-dark"]).default("transparent"),
 }).strict();
 
 /**

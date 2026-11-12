@@ -8,7 +8,7 @@ parentPort!.on("message", async (request: AgentAvatarRequest) => {
   try {
     const svg = renderAgentSvg(request.appearance, request.size, request.scale, request.pose, request.muted);
     const image = sharp(Buffer.from(svg));
-    if (request.background === "paperclip-dark") image.flatten({ background: WARDMOTE_DARK_AVATAR_BACKGROUND });
+    if (request.background === "wardmote-dark") image.flatten({ background: WARDMOTE_DARK_AVATAR_BACKGROUND });
     const png = await image.png().toBuffer();
     parentPort!.postMessage({ png });
   } catch (error) {

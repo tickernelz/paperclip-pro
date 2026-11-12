@@ -5611,7 +5611,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const [, init] = f.provider.mock.calls.find(([url]) => String(url).endsWith("apps.icon.set"))!;
       expect(init).toMatchObject({ method: "POST", redirect: "error", headers: { authorization: `Bearer ${configToken}` } });
       expect(f.renderAvatar).toHaveBeenCalledWith({ appearance: { schemaVersion: 1, characterVersion: "cap-v1", paletteId: "cherry-pop" },
-        size: 512, scale: 1, pose: "rest", muted: false, background: "paperclip-dark" });
+        size: 512, scale: 1, pose: "rest", muted: false, background: "wardmote-dark" });
       expect(init!.body).toBeInstanceOf(FormData);
       const fields = init!.body as FormData;
       expect(fields.get("app_id")).toBe(f.appId);
