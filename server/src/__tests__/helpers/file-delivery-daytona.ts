@@ -13,7 +13,7 @@ export async function startFileDeliveryDaytona() {
     delete(): Promise<void>;
   } = await new Daytona({ apiKey: process.env.DAYTONA_API_KEY }).create({
     language: "typescript", autoStopInterval: 10,
-    labels: { "paperclip-test": "gus-file-delivery" },
+    labels: { "wardmote-test": "gus-file-delivery" },
   });
   const workspace = "/home/daytona/gus-file-delivery";
   // Capture stdout/stderr separately: SDK result text otherwise combines them.

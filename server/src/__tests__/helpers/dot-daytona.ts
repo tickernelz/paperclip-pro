@@ -14,7 +14,7 @@ export async function startDotDaytona(localRoot: string) {
   const { Daytona } = require("@daytonaio/sdk");
   const sandbox = await new Daytona({ apiKey: process.env.DAYTONA_API_KEY }).create({
     image, public: false, autoStopInterval: 10, ttlMinutes: 20,
-    labels: { "paperclip-test": "dot-managed-runner" },
+    labels: { "wardmote-test": "dot-managed-runner" },
   }, { timeout: 180 });
   const workspace = "/home/daytona/dot-managed-test";
   const executeSource = `

@@ -447,7 +447,7 @@ describe("SearchableSelect", () => {
     const onValueChange = vi.fn();
     const groups = buildWorkspaceSelectGroups([
       workspace({
-        id: "workspace-paperclip",
+        id: "workspace-wardmote",
         name: "Wardmote app",
         cwd: "/srv/paperclip/home/paperclipai/paperclip/.wardmote/worktrees/PAP-11722-new-existing-workspace-selector",
         branchName: "feature/reusable-workspaces",
@@ -503,14 +503,14 @@ describe("SearchableSelect", () => {
       container.querySelector("[cmdk-item][aria-selected='true'] [data-option-key]")?.getAttribute("data-option-key")
     );
 
-    expect(selectedOptionKey()).toBe("recent:workspace-paperclip");
+    expect(selectedOptionKey()).toBe("recent:workspace-wardmote");
     keyDown(input!, "ArrowDown");
     await flush();
-    expect(selectedOptionKey()).toBe("all:workspace-paperclip");
+    expect(selectedOptionKey()).toBe("all:workspace-wardmote");
 
     keyDown(input!, "ArrowUp");
     await flush();
-    expect(selectedOptionKey()).toBe("recent:workspace-paperclip");
+    expect(selectedOptionKey()).toBe("recent:workspace-wardmote");
 
     keyDown(input!, "ArrowDown");
     await flush();
@@ -518,11 +518,11 @@ describe("SearchableSelect", () => {
     await flush();
 
     expect(onValueChange).toHaveBeenCalledWith(
-      "workspace-paperclip",
+      "workspace-wardmote",
       expect.objectContaining({
-        key: "all:workspace-paperclip",
-        value: "workspace-paperclip",
-        workspaceId: "workspace-paperclip",
+        key: "all:workspace-wardmote",
+        value: "workspace-wardmote",
+        workspaceId: "workspace-wardmote",
       }),
     );
     expect(container.querySelector("input[placeholder='Search workspaces...']")).toBeNull();
