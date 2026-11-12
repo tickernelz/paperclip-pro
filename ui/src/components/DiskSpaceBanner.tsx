@@ -21,9 +21,11 @@ export function DiskSpaceBanner({ diskSpace, warnings }: { diskSpace?: DiskSpace
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
           <span>{critical ? "Disk space critical" : "Disk space low"}</span>
         </div>
-        {shown.map((warning) => (
-          <p key={warning.code} className="mt-1 text-sm">{warning.message}</p>
-        ))}
+        <div aria-live={critical ? "assertive" : "polite"} aria-atomic="true">
+          {shown.map((warning) => (
+            <p key={warning.code} className="mt-1 text-sm">{warning.message}</p>
+          ))}
+        </div>
       </div>
     </section>
   );
