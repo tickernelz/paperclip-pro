@@ -429,6 +429,16 @@ describe("OMP custom providers", () => {
     ]);
     expect(JSON.stringify([listed.body, refused.body])).not.toContain("sk-live-keep-me-secret");
 
+    const { api: _api, ...probeBody } = body;
+    for (const [route, sent] of [["models", body], ["probe", probeBody]] as const) {
+      const elsewhere = await request(app).post(`/api/onboarding/omp/custom-providers/${route}`).send({ ...sent, baseUrl: "https://attacker.example/v1" });
+      expect(elsewhere.status).toBe(422);
+      expect(elsewhere.body.error).toContain("only go to the saved base URL http://localhost:1/v1");
+    }
+    const slash = await request(app).post("/api/onboarding/omp/custom-providers/models").send({ ...body, baseUrl: "http://localhost:1/v1/" });
+    expect(slash.status).toBe(200);
+    calls.splice(2);
+
     const member = await appWith({ probe: async () => probeOf("ready", "18.18.8"), agentDir: async () => agentDir, fetchProviderModels }, MEMBER);
     expect((await request(member.app).post("/api/onboarding/omp/custom-providers/models").send(body)).status).toBe(403);
     expect(calls).toHaveLength(2);

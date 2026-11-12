@@ -157,6 +157,11 @@ const REMOTE_SCRIPT = [
   "if [ -n \"$p\" ]; then printf 'VERSION=%s\\n' \"$(\"$p\" --version 2>&1 | head -n 1)\"; printf 'MODELS=%s\\n' \"$(\"$p\" models --json 2>/dev/null | tr -d '\\n')\"; fi",
 ].join("; ");
 
+function sameBaseUrl(saved: string | null, requested: string): boolean {
+  const trim = (url: string) => url.trim().replace(/\/+$/, "");
+  return saved !== null && trim(saved) === trim(requested);
+}
+
 function readMarker(stdout: string, key: string): string | null {
   const line = stdout.split(/\r?\n/).find((entry) => entry.startsWith(`${key}=`));
   const value = line?.slice(key.length + 1).trim();
@@ -354,7 +359,7 @@ export function onboardingOmpRoutes(overrides: Partial<OnboardingOmpDeps> = {}) 
     res.json(listCustomProviders(await readModelsYaml(file), file, env));
   });
 
-  async function providerCredentials(input: Pick<OmpCustomProviderProbeInput, "name" | "apiKey" | "headers">) {
+  async function providerCredentials(input: Pick<OmpCustomProviderProbeInput, "name" | "baseUrl" | "apiKey" | "headers">) {
     const command = await readyCommand();
     const env = deps.ompEnv();
     let existing: Record<string, unknown> | null = null;
@@ -364,6 +369,10 @@ export function onboardingOmpRoutes(overrides: Partial<OnboardingOmpDeps> = {}) 
         existing = existingProvider(text, input.name);
       } catch (error) {
         throw unprocessable((error as Error).message);
+      }
+      const savedBaseUrl = typeof existing?.baseUrl === "string" ? existing.baseUrl : null;
+      if (existing && !sameBaseUrl(savedBaseUrl, input.baseUrl)) {
+        throw unprocessable(`The saved key and header values only go to the saved base URL ${savedBaseUrl}. Save the new base URL first, or enter the key and header values again.`);
       }
     }
     const key = resolveProviderKey(input.apiKey, existing, env);
