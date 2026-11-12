@@ -213,6 +213,17 @@ describePostgres("heartbeat run state database wiring", () => {
     expect(decision.handoffMarkdown).toContain("Previous session: sized");
   });
 
+  it("keeps resuming a large omp_local session that has no configured threshold", async () => {
+    const { companyId, agent, issue, state } = await fixture();
+    await db.insert(heartbeatRuns).values({
+      companyId, agentId: agent.id, invocationSource: "assignment", sessionIdAfter: "large",
+      usageJson: { sessionBytes: 64 * 1024 * 1024 },
+    }).returning();
+    const decision = await state.evaluateSessionCompaction({ agent, sessionId: "large", issueId: issue.id });
+    expect(decision.rotate).toBe(false);
+    expect(decision.reason).toBeNull();
+  });
+
   it("keeps resuming a session below the size threshold", async () => {
     const { companyId, agent, issue, state } = await fixture();
     await db.insert(heartbeatRuns).values({

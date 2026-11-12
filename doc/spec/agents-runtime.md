@@ -95,7 +95,12 @@ Rotation thresholds are adapter defaults that an agent can override under
 
 - `maxSessionRuns`, `maxRawInputTokens`, `maxSessionAgeHours`
 - `maxSessionBytes`: size of the persisted session file, when the adapter can
-  measure it. `omp_local` rotates at 16 MiB by default.
+  measure it.
+
+`omp_local` sets no threshold by default: OMP compacts its own context when it
+nears the model window, so the session keeps resuming through those
+compactions. The session file is a poor proxy for context, because most of its
+bytes are tool render audits the model never reads.
 
 A rotation is not a plain reset. The handoff note names the previous session so
 the agent can still resume it when it needs the raw history.
