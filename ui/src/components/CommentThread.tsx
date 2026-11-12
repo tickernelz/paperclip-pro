@@ -12,7 +12,8 @@ import type {
 } from "@tickernelz/wardmote-shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Check, Copy, Paperclip } from "lucide-react";
+import { ArrowRight, Check, Copy } from "lucide-react";
+import { AttachmentIcon } from "@/components/icons/attachment-icon";
 import { OFFLINE_ACTION_REASON, useOffline } from "../lib/online-status";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Identity } from "./Identity";
@@ -1032,7 +1033,7 @@ export function CommentThread({
                   disabled={attaching}
                   title="Attach image"
                 >
-                  <Paperclip className="h-4 w-4" />
+                  <AttachmentIcon className="h-4 w-4" />
                 </Button>
               </div>
             )}

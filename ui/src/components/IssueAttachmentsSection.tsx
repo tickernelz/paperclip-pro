@@ -3,7 +3,8 @@ import { isTextAttachment } from "@/lib/issue-attachments";
 import { useContext, useMemo, useState, type DragEvent, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { IssueAttachment } from "@tickernelz/wardmote-shared";
-import { Download, ExternalLink, FileText, Maximize2, Paperclip, Trash2 } from "lucide-react";
+import { Download, ExternalLink, FileText, Maximize2, Trash2 } from "lucide-react";
+import { AttachmentIcon } from "@/components/icons/attachment-icon";
 import { Button } from "@/components/ui/button";
 import { FoldCurtain } from "./FoldCurtain";
 import { MarkdownBody } from "./MarkdownBody";
@@ -316,7 +317,7 @@ export function IssueAttachmentsSection({
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Paperclip className="h-3.5 w-3.5 text-ink-3" aria-hidden="true" />
+          <AttachmentIcon className="h-3.5 w-3.5 text-ink-3" aria-hidden="true" />
           <h3 className="text-sm font-medium text-ink-3">Attachments</h3>
           <span className="text-xs text-ink-3">{attachments.length}</span>
         </div>

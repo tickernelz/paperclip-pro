@@ -5,12 +5,12 @@ import {
   ClipboardList,
   Lock,
   MessageCircleQuestion,
-  Paperclip,
   Plus,
   Target,
   X,
   type LucideIcon,
 } from "lucide-react";
+import { AttachmentIcon } from "@/components/icons/attachment-icon";
 import { cn } from "@/lib/utils";
 import { useMobileEntityPickerViewportStyle } from "@/hooks/useMobileEntityPickerViewportStyle";
 import { workModeMetaFor } from "@/lib/work-mode-meta";
@@ -70,7 +70,7 @@ export function ComposerAddMenu({
           {
             id: "composer-add-file",
             label: "Files and images",
-            Icon: Paperclip,
+            Icon: AttachmentIcon,
             select: onAttachFile,
             disabled: attachDisabled,
           },
