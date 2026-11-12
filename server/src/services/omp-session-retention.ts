@@ -2,13 +2,17 @@ import { createReadStream, promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { createInterface } from "node:readline";
+import type { Readable } from "node:stream";
+import { createGunzip } from "node:zlib";
 import { sql } from "drizzle-orm";
 import type { Db } from "@tickernelz/wardmote-db";
 import { logger } from "../middleware/logger.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const BLOB_REFERENCE = /blob:sha256:([0-9a-f]{64})/g;
+const BLOB_REFERENCE = /\bblob:sha256:([a-f0-9]{64})\b/gi;
+const BLOB_FILE = /^([a-f0-9]{64})(?:\.[A-Za-z0-9][A-Za-z0-9._-]{0,31})?$/;
 const SESSION_FILE = /_([^_]+)\.jsonl$/;
+const SESSION_TRANSCRIPT = /\.jsonl(?:\.gz|\.[^/]*\.bak)?$/;
 
 export interface OmpSessionSweepReport {
   maxIdleDays: number;
@@ -19,7 +23,8 @@ export interface OmpSessionSweepReport {
   scannedBlobs: number;
   deletedBlobs: number;
   deletedBlobBytes: number;
-  blobScan: "done" | "skipped" | "aborted";
+  blobScan: "done" | "skipped" | "aborted" | "gc_locked";
+  referencedBlobs: number;
   errors: number;
 }
 
@@ -27,12 +32,41 @@ export function defaultOmpSessionRoot() {
   return path.join(os.homedir(), ".omp", "paperclip", "sessions");
 }
 
-export function defaultOmpBlobDir() {
-  return path.join(os.homedir(), ".omp", "agent", "blobs");
+export function defaultOmpAgentDir() {
+  return path.join(os.homedir(), ".omp", "agent");
 }
 
-export function defaultOmpBlobScanRoots(sessionRoot: string) {
-  return [sessionRoot, path.join(os.homedir(), ".omp", "agent", "sessions")];
+/** Every place OMP keeps transcripts that may reference blobs, mirroring `omp gc`. */
+export async function collectOmpTranscriptSources(input: { agentDir: string; extraRoots: string[] }) {
+  const roots = [
+    ...input.extraRoots,
+    path.join(input.agentDir, "sessions"),
+    path.join(input.agentDir, "archive", "sessions"),
+  ];
+  const exactFiles = new Set<string>();
+  for (const entry of await readdirIfPresent(path.join(input.agentDir, "custom-session-files"))) {
+    const recorded = (await readTextIfPresent(path.join(input.agentDir, "custom-session-files", entry))).trim();
+    if (recorded) exactFiles.add(path.resolve(recorded));
+  }
+  for (const entry of await readdirIfPresent(path.join(input.agentDir, "terminal-sessions"))) {
+    const [cwd, file] = (await readTextIfPresent(path.join(input.agentDir, "terminal-sessions", entry))).split("\n").map((line) => line.trim());
+    if (cwd && file) exactFiles.add(path.resolve(cwd, file));
+  }
+  return { roots: [...new Set(roots.map((root) => path.resolve(root)))], exactFiles: [...exactFiles] };
+}
+
+async function readdirIfPresent(dir: string): Promise<string[]> {
+  return fs.readdir(dir).catch((err: NodeJS.ErrnoException) => {
+    if (err.code === "ENOENT" || err.code === "ENOTDIR") return [] as string[];
+    throw err;
+  });
+}
+
+async function readTextIfPresent(file: string): Promise<string> {
+  return fs.readFile(file, "utf8").catch((err: NodeJS.ErrnoException) => {
+    if (err.code === "ENOENT" || err.code === "EISDIR") return "";
+    throw err;
+  });
 }
 
 async function allocatedBytes(target: string): Promise<number> {
@@ -46,33 +80,60 @@ async function allocatedBytes(target: string): Promise<number> {
   return total;
 }
 
-async function listJsonlFiles(root: string): Promise<string[]> {
+async function listTranscriptFiles(root: string): Promise<string[]> {
   const entries = await fs.readdir(root, { recursive: true }).catch((err: NodeJS.ErrnoException) => {
     if (err.code === "ENOENT") return [] as string[];
     throw err;
   });
-  return entries.filter((entry) => entry.endsWith(".jsonl")).map((entry) => path.join(root, entry));
+  return entries.filter((entry) => SESSION_TRANSCRIPT.test(entry)).map((entry) => path.join(root, entry));
 }
 
-async function collectBlobReferences(roots: string[]): Promise<Set<string>> {
-  const references = new Set<string>();
-  for (const root of roots) {
-    for (const file of await listJsonlFiles(root)) {
-      const lines = createInterface({ input: createReadStream(file), crlfDelay: Infinity });
-      for await (const line of lines) {
-        if (!line.includes("blob:sha256:")) continue;
-        for (const match of line.matchAll(BLOB_REFERENCE)) references.add(match[1]!);
-      }
-    }
+async function scanTranscript(file: string, references: Set<string>) {
+  let input: Readable = createReadStream(file);
+  try {
+    await new Promise<void>((resolveOpen, rejectOpen) => {
+      input.once("open", () => resolveOpen());
+      input.once("error", rejectOpen);
+    });
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return;
+    throw err;
   }
+  let failure: unknown = null;
+  input.on("error", (err) => {
+    failure ??= err;
+  });
+  if (file.endsWith(".gz")) {
+    const gunzip = createGunzip();
+    gunzip.on("error", (err) => {
+      failure ??= err;
+    });
+    input.once("error", (err) => gunzip.destroy(err));
+    input = input.pipe(gunzip);
+  }
+  for await (const line of createInterface({ input, crlfDelay: Infinity })) {
+    if (!line.includes("blob:sha256:")) continue;
+    for (const match of line.matchAll(BLOB_REFERENCE)) references.add(match[1]!.toLowerCase());
+  }
+  if (failure) throw failure;
+}
+
+async function collectBlobReferences(sources: { roots: string[]; exactFiles: string[] }): Promise<Set<string>> {
+  const files = new Set(sources.exactFiles);
+  for (const root of sources.roots) {
+    for (const file of await listTranscriptFiles(root)) files.add(file);
+  }
+  const references = new Set<string>();
+  for (const file of files) await scanTranscript(file, references);
   return references;
 }
 
 /** Deletes OMP session files idle past `maxIdleDays` unless a queued or running run uses them, then unreferenced idle blobs. */
 export async function sweepOmpSessions(input: {
-  sessionRoot: string;
+  sessionRoot: string | null;
   blobDir: string | null;
-  blobScanRoots: string[];
+  agentDir: string;
+  extraTranscriptRoots: string[];
   maxIdleDays: number;
   protectedSessionIds: ReadonlySet<string>;
   now: Date;
@@ -88,16 +149,19 @@ export async function sweepOmpSessions(input: {
     deletedBlobs: 0,
     deletedBlobBytes: 0,
     blobScan: "skipped",
+    referencedBlobs: 0,
     errors: 0,
   };
+  if (!input.sessionRoot) return report;
+  const sessionRoot = input.sessionRoot;
   const idleBefore = input.now.getTime() - input.maxIdleDays * DAY_MS;
-  const agentDirs = await fs.readdir(input.sessionRoot, { withFileTypes: true }).catch((err: NodeJS.ErrnoException) => {
+  const agentDirs = await fs.readdir(sessionRoot, { withFileTypes: true }).catch((err: NodeJS.ErrnoException) => {
     if (err.code === "ENOENT") return [];
     throw err;
   });
   for (const agentDir of agentDirs) {
     if (!agentDir.isDirectory()) continue;
-    const dir = path.join(input.sessionRoot, agentDir.name);
+    const dir = path.join(sessionRoot, agentDir.name);
     const entries = await fs.readdir(dir, { withFileTypes: true }).catch(() => []);
     const sessionBasenames = new Set(entries.filter((entry) => entry.isFile() && entry.name.endsWith(".jsonl")).map((entry) => entry.name.slice(0, -".jsonl".length)));
     for (const entry of entries) {
@@ -133,9 +197,17 @@ export async function sweepOmpSessions(input: {
   }
 
   if (!input.scanBlobs || !input.blobDir) return report;
+  const gcLock = await fs.stat(path.join(input.agentDir, "gc.lock")).catch(() => null);
+  if (gcLock) {
+    report.blobScan = "gc_locked";
+    return report;
+  }
   let references: Set<string>;
   try {
-    references = await collectBlobReferences(input.blobScanRoots);
+    references = await collectBlobReferences(
+      await collectOmpTranscriptSources({ agentDir: input.agentDir, extraRoots: [sessionRoot, ...input.extraTranscriptRoots] }),
+    );
+    report.referencedBlobs = references.size;
   } catch (err) {
     report.blobScan = "aborted";
     report.errors += 1;
@@ -145,8 +217,9 @@ export async function sweepOmpSessions(input: {
   const blobs = await fs.readdir(input.blobDir, { withFileTypes: true }).catch(() => []);
   for (const blob of blobs) {
     if (!blob.isFile()) continue;
+    const hash = BLOB_FILE.exec(blob.name)?.[1];
+    if (!hash) continue;
     report.scannedBlobs += 1;
-    const hash = blob.name.split(".")[0]!;
     if (references.has(hash)) continue;
     const target = path.join(input.blobDir, blob.name);
     try {
@@ -162,6 +235,25 @@ export async function sweepOmpSessions(input: {
   }
   report.blobScan = "done";
   return report;
+}
+
+/** Session directories configured per agent or recorded per task that may sit outside the default root. */
+export async function loadOmpSessionDirs(db: Db): Promise<string[]> {
+  const rows = await db.execute(sql`
+    select distinct session_params_json ->> 'sessionDir' as dir
+    from agent_task_sessions
+    where adapter_type = 'omp_local' and session_params_json ->> 'sessionDir' is not null
+    union
+    select distinct adapter_config ->> 'sessionDir' as dir
+    from agents
+    where adapter_type = 'omp_local' and adapter_config ->> 'sessionDir' is not null
+  `);
+  const dirs = new Set<string>();
+  for (const row of rows as unknown as Array<{ dir: string | null }>) {
+    const dir = row.dir?.trim();
+    if (dir && path.isAbsolute(dir)) dirs.add(path.resolve(dir));
+  }
+  return [...dirs];
 }
 
 /** Session ids a queued or running run may resume or is writing. */

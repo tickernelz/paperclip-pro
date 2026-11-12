@@ -14,6 +14,7 @@ vi.mock("./run-log-retention.js", async (importOriginal) => ({
 vi.mock("./omp-session-retention.js", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./omp-session-retention.js")>()),
   loadProtectedOmpSessionIds: async () => new Set<string>(),
+  loadOmpSessionDirs: async () => [],
 }));
 vi.mock("./activity-log.js", () => ({
   logActivity: async (_db: unknown, input: { action: string; details: Record<string, unknown> }) => {
@@ -63,7 +64,7 @@ function guard(root: string, freePercent: () => number) {
     runLogSettings,
     ompSessionRoot: path.join(root, "sessions"),
     ompBlobDir: null,
-    ompBlobScanRoots: [],
+    ompAgentDir: path.join(root, "agent"),
     listCompanyIds: async () => ["company-1"],
     statfs: (target) => ({ path: target, totalBytes: 1000 * GB, freeBytes: (freePercent() / 100) * 1000 * GB }),
   });

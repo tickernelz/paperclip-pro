@@ -5,7 +5,7 @@ import { logger } from "../middleware/logger.js";
 import { logActivity } from "./activity-log.js";
 import { setDiskEmergencyHold } from "./disk-emergency-hold.js";
 import { deleteFinishedRunLogs, loadLiveRunLogRefs, sweepRunLogs } from "./run-log-retention.js";
-import { loadProtectedOmpSessionIds, sweepOmpSessions } from "./omp-session-retention.js";
+import { loadOmpSessionDirs, loadProtectedOmpSessionIds, sweepOmpSessions } from "./omp-session-retention.js";
 
 const GB = 1024 ** 3;
 const HOUR_MS = 60 * 60 * 1000;
@@ -97,9 +97,9 @@ export type DiskGuardOptions = {
   paths: string[];
   runLogBasePath: string;
   runLogSettings: RunLogRetentionConfig;
-  ompSessionRoot: string;
+  ompSessionRoot: string | null;
   ompBlobDir: string | null;
-  ompBlobScanRoots: string[];
+  ompAgentDir: string;
   listCompanyIds: () => Promise<string[]>;
   statfs?: (path: string) => DiskSpaceReading;
   now?: () => Date;
@@ -192,7 +192,8 @@ export function diskGuardService(db: Db, options: DiskGuardOptions) {
       const sessions = await sweepOmpSessions({
         sessionRoot: options.ompSessionRoot,
         blobDir: options.ompBlobDir,
-        blobScanRoots: options.ompBlobScanRoots,
+        agentDir: options.ompAgentDir,
+        extraTranscriptRoots: scanBlobs ? await loadOmpSessionDirs(db) : [],
         maxIdleDays: ompSessionIdleDaysFor(level, config.ompSessionMaxIdleDays),
         protectedSessionIds: await loadProtectedOmpSessionIds(db),
         now: at,

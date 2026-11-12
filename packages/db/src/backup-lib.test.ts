@@ -830,6 +830,24 @@ describeEmbeddedPostgres("runDatabaseBackup rotation and disk guard", () => {
     expect(gunzipSync(fs.readFileSync(result.backupFile)).toString()).toBe("SELECT 1;\n");
   }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
 
+  it("keeps a backup it cannot read instead of treating it as corrupt", async () => {
+    if (process.getuid?.() === 0) return;
+    const connectionString = await createTempDatabase();
+    const backupDir = createTempDir("rotation-unreadable-");
+    const unreadable = seed(backupDir, "wardmote-20260101-020000.sql.gz", gzipSync("SELECT 'unreadable';"), 1);
+    fs.chmodSync(unreadable, 0o000);
+    cleanups.push(() => fs.chmodSync(unreadable, 0o600));
+    seed(backupDir, "wardmote-20260101-010000.sql.gz", gzipSync("SELECT 'valid';"), 2);
+    seed(backupDir, "wardmote-20260101-000000.sql.gz", gzipSync("SELECT 'oldest';"), 3);
+
+    const result = await withFixturePgDump(backupDir, () =>
+      runDatabaseBackup({ connectionString, backupDir, retention }));
+
+    expect(rotated(backupDir)).toEqual(
+      ["wardmote-20260101-010000.sql.gz", "wardmote-20260101-020000.sql.gz", path.basename(result.backupFile)].sort(),
+    );
+  }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
+
   it("skips the backup and keeps the last valid backup when space is short", async () => {
     const connectionString = await createTempDatabase();
     const backupDir = createTempDir("rotation-low-disk-");

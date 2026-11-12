@@ -99,7 +99,7 @@ import { questionResponseDeliveryService } from "./services/question-response-de
 import { attachmentRetentionService, ATTACHMENT_RETENTION_TICK_MS } from "./services/attachment-retention.js";
 import { runLogRetentionService } from "./services/run-log-retention.js";
 import { diskGuardService } from "./services/disk-guard.js";
-import { defaultOmpBlobDir, defaultOmpBlobScanRoots, defaultOmpSessionRoot } from "./services/omp-session-retention.js";
+import { defaultOmpAgentDir, defaultOmpSessionRoot } from "./services/omp-session-retention.js";
 import { openwaAuditPurgeScheduler } from "./services/openwa/audit.js";
 import { deliverNativeQuestionResponse } from "./services/native-runtime/native-question-bridge.js";
 import { queueIssueAssignmentWakeup } from "./services/issue-assignment-wakeup.js";
@@ -111,7 +111,8 @@ import {
   createProductionLoginSessionReaperRuntime,
 } from "./services/device-login-reaper.js";
 import { createProductionSetupTokenReaper } from "./services/setup-token-reaper.js";
-import { resolveWorktreeRunExecutionActivationState } from "./services/instance-settings.js";
+import { isTruthyRuntimeEnvValue, resolveWorktreeRunExecutionActivationState } from "./services/instance-settings.js";
+import { resolveWardmoteInstanceId } from "./home-paths.js";
 import {
   parseAdapterRegistryEnv,
   reconcileAdapterAvailability,
@@ -828,15 +829,19 @@ async function startServerWithDatabaseTeardown(
     resolve(config.databaseBackupDir, "..", "db-backup-to-s3.failure"),
   ];
   const ompSessionRoot = config.diskGuard.ompSessionDir ?? defaultOmpSessionRoot();
+  const ompAgentDir = config.diskGuard.ompAgentDir ?? defaultOmpAgentDir();
+  const ompSweepEnabled = config.diskGuard.ompSessionSweep ??
+    (Boolean(config.diskGuard.ompSessionDir) ||
+      (!isTruthyRuntimeEnvValue(process.env.WARDMOTE_IN_WORKTREE) && resolveWardmoteInstanceId() === "default"));
   const diskGuard = diskGuardService(db as any, {
     config: config.diskGuard,
     paths: [config.databaseBackupDir, resolveRunLogBasePath(), config.embeddedPostgresDataDir, ompSessionRoot]
       .filter((path) => existsSync(path)),
     runLogBasePath: resolveRunLogBasePath(),
     runLogSettings: config.runLogRetention,
-    ompSessionRoot,
-    ompBlobDir: config.diskGuard.ompBlobDir ?? defaultOmpBlobDir(),
-    ompBlobScanRoots: defaultOmpBlobScanRoots(ompSessionRoot),
+    ompSessionRoot: ompSweepEnabled ? ompSessionRoot : null,
+    ompBlobDir: ompSweepEnabled ? config.diskGuard.ompBlobDir ?? resolve(ompAgentDir, "blobs") : null,
+    ompAgentDir,
     listCompanyIds: () => backupSettingsSvc.listCompanyIds(),
   });
   let databaseBackupInFlight = false;

@@ -185,18 +185,25 @@ export async function verifyGzipBackup(file: string): Promise<void> {
   );
 }
 
-async function isValidBackup(file: string): Promise<boolean> {
+type BackupCheck = "valid" | "invalid" | "unreadable";
+
+function isArchiveCorruption(error: unknown): boolean {
+  const code = (error as NodeJS.ErrnoException | null)?.code;
+  return typeof code === "string" && code.startsWith("Z_");
+}
+
+async function checkBackup(file: string): Promise<BackupCheck> {
   const stats = statSync(file, { throwIfNoEntry: false });
-  if (!stats || stats.size === 0) return false;
-  if (!file.endsWith(".gz")) return true;
-  if (verifiedBackups.get(file) === `${stats.size}:${stats.mtimeMs}`) return true;
+  if (!stats || stats.size === 0) return "invalid";
+  if (!file.endsWith(".gz")) return "valid";
+  if (verifiedBackups.get(file) === `${stats.size}:${stats.mtimeMs}`) return "valid";
   try {
     await verifyGzipBackup(file);
-  } catch {
-    return false;
+  } catch (error) {
+    return isArchiveCorruption(error) ? "invalid" : "unreadable";
   }
   verifiedBackups.set(file, backupIdentity(file));
-  return true;
+  return "valid";
 }
 
 type RotationBackup = { fullPath: string; sizeBytes: number; mtimeMs: number };
@@ -224,7 +231,9 @@ async function pruneToMaxFiles(backupDir: string, filenamePrefix: string, maxFil
   let removed = 0;
   for (const entry of listRotationBackups(backupDir, filenamePrefix)) {
     if (entry.fullPath === newestFile) continue;
-    if (kept < maxFiles && (await isValidBackup(entry.fullPath))) {
+    const check = await checkBackup(entry.fullPath);
+    if (check === "unreadable") continue;
+    if (kept < maxFiles && check === "valid") {
       kept += 1;
       continue;
     }
@@ -275,8 +284,9 @@ async function ensureBackupSpace(input: {
     const invalid: RotationBackup[] = [];
     const valid: RotationBackup[] = [];
     for (const entry of existing) {
-      if (await isValidBackup(entry.fullPath)) valid.push(entry);
-      else invalid.push(entry);
+      const check = await checkBackup(entry.fullPath);
+      if (check === "valid") valid.push(entry);
+      else if (check === "invalid") invalid.push(entry);
     }
     const chosen: RotationBackup[] = [];
     let reclaimed = 0;

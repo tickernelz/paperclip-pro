@@ -369,8 +369,18 @@ and images under `~/.omp/agent/blobs`. Hourly, the disk guard deletes session
 files (and their sidecar folders) idle longer than `ompSessionMaxIdleDays`,
 whatever the issue status, except sessions a queued or running run uses. Once a
 day (hourly under pressure) it deletes blobs idle that long that no remaining
-session references as `blob:sha256:<hash>` (it scans the Wardmote session root
-and `~/.omp/agent/sessions`; a read error skips blob deletion entirely).
+transcript references as `blob:sha256:<hash>`. It reads the same transcripts
+`omp gc` reads: `*.jsonl`, `*.jsonl.gz` and `*.jsonl.*.bak` under the Wardmote
+session root, every per-agent `sessionDir`, `~/.omp/agent/sessions` and
+`~/.omp/agent/archive/sessions`, plus the files listed in
+`~/.omp/agent/custom-session-files` and `~/.omp/agent/terminal-sessions`. Any
+read or decompression error, or a held `~/.omp/agent/gc.lock`, skips blob
+deletion for that sweep. Only names `omp gc` treats as blobs are deleted.
+
+The sweep runs only on the primary instance: instance id `default` outside a
+worktree (`WARDMOTE_IN_WORKTREE`), or any instance that sets
+`diskGuard.ompSessionDir` explicitly. `diskGuard.ompSessionSweep` forces it on
+or off.
 
 A task whose session file is gone starts a fresh OMP session: the adapter tries
 `--resume`, OMP answers `Session "<id>" not found.`, and the run retries once

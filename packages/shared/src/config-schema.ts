@@ -131,6 +131,8 @@ export const diskGuardConfigSchema = z.object({
   ompSessionMaxIdleDays: z.number().int().min(5).max(3650).default(7),
   ompSessionDir: z.string().optional(),
   ompBlobDir: z.string().optional(),
+  ompAgentDir: z.string().optional(),
+  ompSessionSweep: z.boolean().optional(),
 }).passthrough().prefault({});
 
 export const runLogsConfigSchema = z.object({

@@ -158,6 +158,7 @@ export function loadConfig(): Config {
   }
   if (diskGuard.ompSessionDir) diskGuard.ompSessionDir = resolveHomeAwarePath(diskGuard.ompSessionDir);
   if (diskGuard.ompBlobDir) diskGuard.ompBlobDir = resolveHomeAwarePath(diskGuard.ompBlobDir);
+  if (diskGuard.ompAgentDir) diskGuard.ompAgentDir = resolveHomeAwarePath(diskGuard.ompAgentDir);
   const databaseBackupReservePercent = fileDatabaseBackup?.reservePercent ?? 5;
   const databaseBackupReserveBytes = Math.round((fileDatabaseBackup?.reserveGb ?? 10) * 1024 ** 3);
   const databaseBackupPinnedMaxAgeDays = fileDatabaseBackup?.pinnedMaxAgeDays ?? 30;
