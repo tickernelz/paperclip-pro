@@ -182,23 +182,71 @@ export async function sweepRunLogs(input: {
   return report;
 }
 
+export async function loadLiveRunLogRefs(db: Db) {
+  const rows = await db
+    .select({ logRef: heartbeatRuns.logRef })
+    .from(heartbeatRuns)
+    .where(and(inArray(heartbeatRuns.status, LIVE_RUN_STATUSES), isNotNull(heartbeatRuns.logRef)));
+  return new Set(rows.flatMap((row) => (row.logRef ? [row.logRef] : [])));
+}
+
+export interface RunLogDeletionReport {
+  deleted: number;
+  freedBytes: number;
+}
+
+/** Deletes finished, idle run logs whose tail is already minimal, oldest first, until `needBytes` are freed. */
+export async function deleteFinishedRunLogs(input: {
+  basePath: string;
+  liveLogRefs: ReadonlySet<string>;
+  minIdleMinutes: number;
+  minimalTailBytes: number;
+  needBytes: number;
+  now: Date;
+}): Promise<RunLogDeletionReport> {
+  const report: RunLogDeletionReport = { deleted: 0, freedBytes: 0 };
+  if (input.needBytes <= 0) return report;
+  let entries: string[];
+  try {
+    entries = await fs.readdir(input.basePath, { recursive: true });
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException | null)?.code === "ENOENT") return report;
+    throw err;
+  }
+  const idleBefore = input.now.getTime() - input.minIdleMinutes * 60 * 1000;
+  const candidates: Array<{ logRef: string; absPath: string; mtimeMs: number; allocated: number }> = [];
+  for (const logRef of entries) {
+    if (!logRef.endsWith(".ndjson") || input.liveLogRefs.has(logRef)) continue;
+    const absPath = path.join(input.basePath, logRef);
+    const stat = await fs.stat(absPath).catch(() => null);
+    if (!stat?.isFile() || stat.mtimeMs >= idleBefore) continue;
+    if (stat.size > input.minimalTailBytes && !(await tailAlreadyWithin(absPath, stat.size, input.minimalTailBytes))) continue;
+    candidates.push({ logRef, absPath, mtimeMs: stat.mtimeMs, allocated: stat.blocks * 512 });
+  }
+  candidates.sort((a, b) => a.mtimeMs - b.mtimeMs);
+  for (const candidate of candidates) {
+    if (report.freedBytes >= input.needBytes) break;
+    try {
+      await fs.rm(candidate.absPath, { force: true });
+      await fs.rm(`${candidate.absPath}${RUN_LOG_RETAINED_SUFFIX}`, { force: true });
+      report.deleted += 1;
+      report.freedBytes += candidate.allocated;
+    } catch (err) {
+      logger.warn({ err, logRef: candidate.logRef }, "disk guard could not delete a finished run log");
+    }
+  }
+  return report;
+}
+
 /** Schedules run-log retention sweeps for the instance's local run-log directory. */
 export function runLogRetentionService(db: Db, options: { basePath: string; settings: RunLogRetentionConfig }) {
   let active: Promise<RunLogRetentionReport | null> | null = null;
-
-  async function liveLogRefs() {
-    const rows = await db
-      .select({ logRef: heartbeatRuns.logRef })
-      .from(heartbeatRuns)
-      .where(and(inArray(heartbeatRuns.status, LIVE_RUN_STATUSES), isNotNull(heartbeatRuns.logRef)));
-    return new Set(rows.flatMap((row) => (row.logRef ? [row.logRef] : [])));
-  }
 
   async function sweep() {
     const report = await sweepRunLogs({
       basePath: options.basePath,
       settings: options.settings,
-      liveLogRefs: await liveLogRefs(),
+      liveLogRefs: await loadLiveRunLogRefs(db),
       now: new Date(),
     });
     logger.info({ runLogRetention: report }, report.dryRun ? "run log retention dry run" : "run log retention sweep");

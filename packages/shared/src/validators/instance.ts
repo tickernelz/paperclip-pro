@@ -4,6 +4,8 @@ import {
   DAILY_RETENTION_PRESETS,
   WEEKLY_RETENTION_PRESETS,
   MONTHLY_RETENTION_PRESETS,
+  BACKUP_MAX_FILES_MIN,
+  BACKUP_MAX_FILES_MAX,
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_MESSAGE_DELIVERY,
   SPEECH_TO_TEXT_DEFAULTS,
@@ -47,6 +49,7 @@ export const backupRetentionPolicySchema = z.object({
   dailyDays: presetSchema(DAILY_RETENTION_PRESETS, "dailyDays").default(DEFAULT_BACKUP_RETENTION.dailyDays),
   weeklyWeeks: presetSchema(WEEKLY_RETENTION_PRESETS, "weeklyWeeks").default(DEFAULT_BACKUP_RETENTION.weeklyWeeks),
   monthlyMonths: presetSchema(MONTHLY_RETENTION_PRESETS, "monthlyMonths").default(DEFAULT_BACKUP_RETENTION.monthlyMonths),
+  maxFiles: z.number().int().min(BACKUP_MAX_FILES_MIN).max(BACKUP_MAX_FILES_MAX).nullable().default(DEFAULT_BACKUP_RETENTION.maxFiles),
 });
 
 function isSpeechToTextBaseUrl(value: string): boolean {

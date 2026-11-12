@@ -630,6 +630,7 @@ import { resolveAndRetainRunTrustPreset } from "./run-trust-preset.js";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 
 import { computeTaskDrain, applyTaskDrain, startTaskDrain, stopTaskDrain, readTaskDrain } from "./task-admission.js";
+import { readDiskEmergencyHold } from "./disk-emergency-hold.js";
 
 const MAX_LIVE_LOG_CHUNK_BYTES = 8 * 1024;
 
@@ -1003,7 +1004,7 @@ export function resolveHeartbeatSchedulingSuppression(
 ): {
   suppressed: boolean;
   reason:
-    "worktree_instance" | "database_restore_in_progress" | "task_drain" | "server_shutdown" | null;
+    "worktree_instance" | "database_restore_in_progress" | "task_drain" | "disk_emergency" | "server_shutdown" | null;
 } {
   if (
     isTruthyRuntimeEnvValue(env.WARDMOTE_IN_WORKTREE) &&
@@ -1022,6 +1023,9 @@ export function resolveHeartbeatSchedulingSuppression(
   }
   if (readTaskDrain(new Date()) !== null) {
     return { suppressed: true, reason: "task_drain" };
+  }
+  if (readDiskEmergencyHold() !== null) {
+    return { suppressed: true, reason: "disk_emergency" };
   }
   return { suppressed: false, reason: null };
 }

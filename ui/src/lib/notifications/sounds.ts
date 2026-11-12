@@ -29,6 +29,7 @@ export const DEFAULT_KIND_SOUNDS: Record<NotificationKind, string> = {
   review: "glass",
   run_failed: "error",
   join_request: "bong",
+  disk_space: "drop",
 };
 
 export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
@@ -39,6 +40,7 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   review: "Ready for review",
   run_failed: "Failed runs",
   join_request: "Join requests",
+  disk_space: "Low disk space",
 };
 
 const LIBRARY_IDS = new Set(NOTIFICATION_SOUNDS.map((sound) => sound.id));

@@ -21,6 +21,7 @@ import {
   type InspectDatabaseBackupHealthOptions,
 } from "../services/database-backup-health.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
+import { describeDiskSpace, type DiskSpaceStatus } from "../services/disk-guard.js";
 import { isManagedWorkspaceInstance, resolveWorkspaceReadiness } from "../services/workspace-readiness.js";
 import {
   resolveWorkspaceReadinessLocalToken,
@@ -76,6 +77,7 @@ function redactedDatabaseBackupWarning(warning: DatabaseBackupHealthWarning): Da
     database_backup_check_failed: "Database backup health check failed.",
     database_backup_last_failure: "Database backup failure marker is present.",
     database_backup_missing: "No recent database backup was found.",
+    database_backup_skipped_low_disk: "Database backup was skipped because disk space is low.",
     database_backup_stale: "Latest database backup is stale.",
   };
   return {
@@ -101,6 +103,7 @@ export function healthRoutes(
     companyDeletionEnabled: boolean;
     serverInfo?: ServerInfoSnapshot;
     databaseBackupHealth?: InspectDatabaseBackupHealthOptions;
+    diskSpaceStatus?: () => DiskSpaceStatus | null;
     runtimeEnv?: Record<string, string | undefined>;
   } = {
     deploymentMode: "local_trusted",
@@ -346,7 +349,12 @@ export function healthRoutes(
     const databaseBackup = opts.databaseBackupHealth
       ? inspectDatabaseBackupHealth(opts.databaseBackupHealth)
       : undefined;
-    const warnings = databaseBackup?.warnings.length ? databaseBackup.warnings : undefined;
+    const diskSpace = opts.diskSpaceStatus?.() ?? null;
+    const diskWarning = diskSpace && diskSpace.level !== "ok"
+      ? { code: "disk_space_low" as const, message: describeDiskSpace(diskSpace) }
+      : null;
+    const allWarnings = [...(databaseBackup?.warnings ?? []), ...(diskWarning ? [diskWarning] : [])];
+    const warnings = allWarnings.length ? allWarnings : undefined;
     const nativeRecovery = exposeFullDetails
       ? await nativeRestartRecoverySummary(db).catch((error) => {
           logger.warn({ err: error }, "native recovery health summary failed");
@@ -356,7 +364,11 @@ export function healthRoutes(
 
     if (!exposeFullDetails) {
       const redactedDatabaseBackup = databaseBackup ? redactedDatabaseBackupHealth(databaseBackup) : undefined;
-      const redactedWarnings = redactedDatabaseBackup?.warnings.length ? redactedDatabaseBackup.warnings : undefined;
+      const redactedAllWarnings = [
+        ...(redactedDatabaseBackup?.warnings ?? []),
+        ...(diskWarning ? [{ code: diskWarning.code, message: "Disk space is low on the server." }] : []),
+      ];
+      const redactedWarnings = redactedAllWarnings.length ? redactedAllWarnings : undefined;
       res.json({
         status: healthStatus,
         version: serverVersion,
@@ -368,6 +380,7 @@ export function healthRoutes(
         bootstrapInviteActive,
         ...(redactedDatabaseBackup ? { databaseBackup: redactedDatabaseBackup } : {}),
         ...(redactedWarnings ? { warnings: redactedWarnings } : {}),
+        ...(diskSpace ? { diskSpace: { level: diskSpace.level, holdingRuns: diskSpace.holdingRuns } } : {}),
         ...(devServer ? { devServer } : {}),
         // Token-authorized probe on an otherwise redacted response: the control
         // plane needs readiness without a board session, and nothing else about
@@ -395,6 +408,7 @@ export function healthRoutes(
       startupRecovery,
       nativeRecovery,
       ...(databaseBackup ? { databaseBackup } : {}),
+      ...(diskSpace ? { diskSpace } : {}),
       ...(warnings ? { warnings } : {}),
       ...(devServer ? { devServer } : {}),
       ...(workspaceReadiness ? { workspace: workspaceReadiness } : {}),

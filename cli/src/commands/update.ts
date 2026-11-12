@@ -195,7 +195,7 @@ export async function updateCommand(options: UpdateOptions, overrides: Partial<D
       const confirmed = await (overrides.confirm ?? defaultConfirm)(`Update from ${manifest.repo}@${manifest.ref} and execute build scripts from commit ${targetSha.slice(0, 12)}?`);
       if (!confirmed) throw new Error("Git update cancelled. Re-run with --yes to confirm executing build scripts from the updated commit.");
     }
-    if (options.backup !== false) await runPreUpdateBackup(options, overrides.backup ?? (() => dbBackupCommand({})), overrides.hasInstanceData);
+    if (options.backup !== false) await runPreUpdateBackup(options, overrides.backup ?? (() => dbBackupCommand({ pin: true })), overrides.hasInstanceData);
     const installed = await withInstallStoreLock(async () => {
       assertManagedShimWritable(paths);
       const payload = await installGitPayload(manifest.repo!, targetSha, runCommand, paths);
@@ -252,7 +252,7 @@ export async function updateCommand(options: UpdateOptions, overrides: Partial<D
   if (comparison < 0 && options.yes !== true) { const confirmed = await (overrides.confirm ?? defaultConfirm)(`Downgrade wardmote from ${currentVersion} to ${targetVersion}?`); if (!confirmed) throw new Error("Downgrade cancelled. Re-run with --yes to confirm explicitly."); }
   if (options.dryRun) { emit(options, { mode, currentVersion, targetVersion, action: comparison < 0 ? "downgrade" : "update", backup: options.backup !== false, dryRun: true }, `Would ${comparison < 0 ? "downgrade" : "update"} wardmote ${currentVersion} → ${targetVersion}${options.backup === false ? " without a backup" : " after a database backup"}.`); return; }
   await assertReleaseSetPublished(targetVersion, runCommand);
-  if (options.backup !== false) await runPreUpdateBackup(options, overrides.backup ?? (() => dbBackupCommand({})), overrides.hasInstanceData);
+  if (options.backup !== false) await runPreUpdateBackup(options, overrides.backup ?? (() => dbBackupCommand({ pin: true })), overrides.hasInstanceData);
   const installed = await withInstallStoreLock(async () => {
     assertManagedShimWritable(paths);
     const payload = await installNpmPayload(targetVersion, runCommand, paths);

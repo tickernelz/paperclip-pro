@@ -25,6 +25,10 @@ export const databaseBackupConfigSchema = z.object({
   intervalMinutes: z.number().int().min(1).max(7 * 24 * 60).default(60),
   retentionDays: z.number().int().min(1).max(3650).default(7),
   dir: z.string().default("~/.wardmote/instances/default/data/backups"),
+  maxFiles: z.number().int().min(1).max(48).optional(),
+  reservePercent: z.number().min(0).max(50).optional(),
+  reserveGb: z.number().min(0).optional(),
+  pinnedMaxAgeDays: z.number().int().min(0).max(3650).optional(),
 }).passthrough();
 
 export const databaseConfigSchema = z.object({
@@ -117,6 +121,18 @@ export const runLogRetentionConfigSchema = z.object({
   oldTailBytes: z.number().int().min(0).default(256 * 1024),
 }).passthrough().prefault({});
 
+export const diskGuardConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  intervalMinutes: z.number().int().min(1).max(24 * 60).default(5),
+  warnFreePercent: z.number().min(0).max(100).default(20),
+  warnFreeGb: z.number().min(0).default(100),
+  actionFreePercent: z.number().min(0).max(100).default(10),
+  emergencyFreePercent: z.number().min(0).max(100).default(5),
+  ompSessionMaxIdleDays: z.number().int().min(5).max(3650).default(7),
+  ompSessionDir: z.string().optional(),
+  ompBlobDir: z.string().optional(),
+}).passthrough().prefault({});
+
 export const runLogsConfigSchema = z.object({
   retention: runLogRetentionConfigSchema,
 }).passthrough().prefault({});
@@ -154,6 +170,7 @@ export const wardmoteConfigSchema = z
       },
     }),
     runLogs: runLogsConfigSchema.optional(),
+    diskGuard: diskGuardConfigSchema.optional(),
   })
   .passthrough()
   .superRefine((value, ctx) => {
@@ -220,6 +237,7 @@ export type UpdatesConfig = z.infer<typeof updatesConfigSchema>;
 export type ConfigMeta = z.infer<typeof configMetaSchema>;
 export type DatabaseBackupConfig = z.infer<typeof databaseBackupConfigSchema>;
 export type RunLogRetentionConfig = z.infer<typeof runLogRetentionConfigSchema>;
+export type DiskGuardConfig = z.infer<typeof diskGuardConfigSchema>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

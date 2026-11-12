@@ -6,6 +6,7 @@ export const NOTIFICATION_KINDS = [
   "review",
   "run_failed",
   "join_request",
+  "disk_space",
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
