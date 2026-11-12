@@ -33,7 +33,7 @@ const MAX_REMOTE_TOOLS: usize = 128;
 const MAX_HISTORY_EVENTS: usize = 10_000;
 const MAX_HISTORY_PAGES: usize = 100;
 // Managed Agents supports at most 500 deduplicated skills in a session.
-// Paperclip's generated instruction companion consumes one of those slots.
+// Wardmote's generated instruction companion consumes one of those slots.
 const MAX_MANAGED_SKILL_ATTACHMENTS: usize = 500;
 const MAX_SKILL_UPLOAD_FILES: usize = 10_000;
 const MAX_SKILL_UPLOAD_BYTES: usize = 32 * 1024 * 1024;

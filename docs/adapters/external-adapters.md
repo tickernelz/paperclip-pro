@@ -9,7 +9,7 @@ Wardmote supports external adapter plugins that can be installed from npm packag
 
 | | Built-in | External |
 |---|---|---|
-| Source location | Inside `paperclip-fork/packages/adapters/` | Separate npm package or local directory |
+| Source location | Inside `wardmote/packages/adapters/` | Separate npm package or local directory |
 | Registration | Hardcoded in three registries | Loaded at startup via plugin system |
 | UI parser | Static import at build time | Dynamically loaded from API (see [UI Parser](/adapters/adapter-ui-parser)) |
 | Distribution | Ships with Wardmote | Published to npm or linked via `file:` |
@@ -38,7 +38,7 @@ my-adapter/
 
 ```json
 {
-  "name": "my-paperclip-adapter",
+  "name": "my-wardmote-adapter",
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
@@ -262,13 +262,13 @@ Check levels:
 
 ```sh
 # Via the Wardmote UI
-# Settings → Adapters → Install from npm → "my-paperclip-adapter"
+# Settings → Adapters → Install from npm → "my-wardmote-adapter"
 
 # Or via API
 curl -X POST http://localhost:3102/api/adapters \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
-  -d '{"packageName": "my-paperclip-adapter"}'
+  -d '{"packageName": "my-wardmote-adapter"}'
 ```
 
 ### From local directory
@@ -289,7 +289,7 @@ For development, you can also edit `~/.wardmote/adapter-plugins.json` directly:
 ```json
 [
   {
-    "packageName": "my-paperclip-adapter",
+    "packageName": "my-wardmote-adapter",
     "localPath": "/home/user/my-adapter",
     "type": "my_adapter",
     "installedAt": "2026-03-30T12:00:00.000Z"

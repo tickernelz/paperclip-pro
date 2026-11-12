@@ -19,7 +19,7 @@ export function withAcpxTurnCancellation(
   void retired.catch(() => undefined);
   const cancel = (input?: { reason?: string }): Promise<void> => {
     if (!cancellation) {
-      const reason = input?.reason ?? "Paperclip cancellation";
+      const reason = input?.reason ?? "Wardmote cancellation";
       // Install the gate before invoking provider code, including synchronous
       // callback cancellation and a terminal racing the acknowledgement.
       cancellation = Promise.resolve().then(async () => {

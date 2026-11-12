@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
-# Paperclip Agent Evals - Phase 0: Promptfoo Bootstrap
+# Wardmote Agent Evals - Phase 0: Promptfoo Bootstrap
 #
 # Tests narrow heartbeat behaviors across models with deterministic assertions.
 # Test cases are organized by category in tests/*.yaml files.

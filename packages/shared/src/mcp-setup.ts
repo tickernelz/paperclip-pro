@@ -17,18 +17,18 @@ export function mcpSetupSteps(serverUrl: string, assistant: AssistantClient) {
   const scopes = PUBLIC_MCP_SCOPES.join(" ");
   switch (assistant) {
     case "codex": return [
-      { text: "Check for an existing paperclip server first. Reuse it only if its URL matches this instance. Add the remote server with the Codex CLI.", code: `codex mcp add paperclip --url ${quoted}` },
+      { text: "Check for an existing wardmote server first. Reuse it only if its URL matches this instance. Add the remote server with the Codex CLI.", code: `codex mcp add wardmote --url ${quoted}` },
       { text: "Start browser authorization and give the user the approval link.", code: "codex mcp login wardmote --scopes wardmote:read,wardmote:write,wardmote:configure,offline_access" },
       { text: "If the current conversation does not reload its MCP tools, start a new conversation or restart the client. Verify the connection with wardmote_connection before claiming success." },
     ];
     case "claude": return [
-      { text: "Check existing servers and reuse a matching instance. Add the remote server using Claude Code.", code: `claude mcp add --transport http paperclip ${quoted}` },
-      { text: "In Claude Code, run /mcp, select paperclip, and choose Authenticate. Versions that offer `claude mcp login --help` can also start authorization with `claude mcp login paperclip`. Give the user the approval link." },
+      { text: "Check existing servers and reuse a matching instance. Add the remote server using Claude Code.", code: `claude mcp add --transport http wardmote ${quoted}` },
+      { text: "In Claude Code, run /mcp, select wardmote, and choose Authenticate. Versions that offer `claude mcp login --help` can also start authorization with `claude mcp login wardmote`. Give the user the approval link." },
       { text: "Reconnect through /mcp, or start a new session if needed. Verify the account and organization with wardmote_connection." },
     ];
     case "opencode": return [
-      { text: "Check `opencode --version` and existing configuration. For OpenCode 1.x, merge this entry into opencode.json without replacing other settings. OpenCode 2.x uses mcp.servers; use that version's documented format instead.", code: JSON.stringify({ mcp: { paperclip: { type: "remote", url: serverUrl, enabled: true, oauth: { scope: scopes } } } }, null, 2) },
-      { text: "Run from the same project directory. OpenCode opens Wardmote's sign-in and consent page; give the user the approval link.", code: "opencode mcp auth paperclip" },
+      { text: "Check `opencode --version` and existing configuration. For OpenCode 1.x, merge this entry into opencode.json without replacing other settings. OpenCode 2.x uses mcp.servers; use that version's documented format instead.", code: JSON.stringify({ mcp: { wardmote: { type: "remote", url: serverUrl, enabled: true, oauth: { scope: scopes } } } }, null, 2) },
+      { text: "Run from the same project directory. OpenCode opens Wardmote's sign-in and consent page; give the user the approval link.", code: "opencode mcp auth wardmote" },
       { text: "If OpenCode was already running, restart it to load the connection. For the browser app, use this command. Verify the tools with wardmote_connection.", code: "opencode web" },
     ];
     case "browser": return [
@@ -53,7 +53,7 @@ export function mcpSetupMarkdown(serverUrl: string, companyId?: string) {
   return ["# Connect your assistant to Wardmote", "",
     "These are setup instructions, not an access credential. Ask the human to approve the identified client in Wardmote. Never approve on their behalf or reuse browser cookies as MCP credentials.", "",
     `MCP server: ${serverUrl}`, ...(companyId ? [`Requested organization ID: ${companyId} (a hint, not authority).`] : []), "",
-    "Keep existing client settings. If the name paperclip already points elsewhere, use a distinct server name and the same name in the login command. Stop and explain if the host cannot configure MCP. A restart or new conversation may be required; do not claim tools are available until a real call succeeds.", "",
+    "Keep existing client settings. If the name wardmote already points elsewhere, use a distinct server name and the same name in the login command. Stop and explain if the host cannot configure MCP. A restart or new conversation may be required; do not claim tools are available until a real call succeeds.", "",
     mcpAuthorizationHandoffInstructions, "",
     ...Object.entries(assistantClientNames).flatMap(([client, name]) => [`## ${name}`, "", ...mcpSetupSteps(serverUrl, client as AssistantClient).flatMap((step) => [step.text, ...(step.code ? ["", "```", step.code, "```"] : []), ""])]),
     "## After approval", "",

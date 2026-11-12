@@ -99,7 +99,7 @@ export function isSelectionDebugEnabled(): boolean {
 export function initializeSelectionDebug(): SelectionDebugState {
   if (!window.__wardmoteSelectionDebug) {
     window.__wardmoteSelectionDebug = createState();
-    console.info(`[paperclip selection debug] enabled; set localStorage.${SELECTION_DEBUG_STORAGE_KEY} = "0" and reload to disable`);
+    console.info(`[wardmote selection debug] enabled; set localStorage.${SELECTION_DEBUG_STORAGE_KEY} = "0" and reload to disable`);
   }
   return window.__wardmoteSelectionDebug;
 }
@@ -109,7 +109,7 @@ function record(type: string, details: SelectionDebugEvent["details"]): void {
   const event = { at: now(), type, details };
   state.events.push(event);
   if (state.events.length > MAX_DEBUG_EVENTS) state.events.shift();
-  console.debug("[paperclip selection debug]", event);
+  console.debug("[wardmote selection debug]", event);
 }
 
 export function recordSelectionChange(active: boolean): void {

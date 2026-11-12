@@ -8,7 +8,7 @@ export class AcpxApprovalRequiredError extends Error {
   readonly code = "approval_required";
   constructor() {
     super(
-      "Approval required. This operation is not an automatically allowed Paperclip action, " +
+      "Approval required. This operation is not an automatically allowed Wardmote action, " +
       "and this runner has no interactive approval handler. Review the operation and " +
       "update the agent's permission setting before retrying.",
     );

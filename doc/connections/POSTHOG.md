@@ -26,7 +26,7 @@ through browser sign-in — with no Wardmote-specific code involved. See
 
 ## Service involvement
 
-PostHog hosts both the MCP resource and OAuth authorization service. Paperclip
+PostHog hosts both the MCP resource and OAuth authorization service. Wardmote
 discovers the OAuth endpoints, dynamically registers the client when needed,
 stores returned credentials as secret references, and handles the callback at
 `/api/tools/oauth/callback`. No vendor relay is involved.
@@ -34,7 +34,7 @@ stores returned credentials as secret references, and handles the callback at
 ```mermaid
 sequenceDiagram
     actor A as Administrator
-    participant P as Paperclip
+    participant P as Wardmote
     participant M as mcp.posthog.com
     participant O as oauth.posthog.com
 

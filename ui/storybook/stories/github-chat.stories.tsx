@@ -27,7 +27,7 @@ export const StandardTrustWarning: Story = {
   name: "01 · Agent without low-trust review",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.selectOptions(canvas.getByRole("combobox", { name: /Paperclip agent/ }), "Atlas");
+    await userEvent.selectOptions(canvas.getByRole("combobox", { name: /Wardmote agent/ }), "Atlas");
     await expect(canvas.getByRole("alert")).toHaveTextContent("Atlas is not configured for low-trust review");
     await expect(canvas.getByRole("link", { name: /Learn about low-trust agents/ })).toHaveAttribute("href", "https://github.com/tickernelz/wardmote/blob/main/doc/LOW-TRUST-PRESETS.md");
   },

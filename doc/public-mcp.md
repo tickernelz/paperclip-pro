@@ -214,7 +214,7 @@ Expired credentials remain expired.
 Replaying a consumed refresh token still revokes its entire grant. Tokens and codes
 are hashed at rest. `wardmote:read` is required; `wardmote:write` adds only task
 work and attachment mutations on direct connections. The `wardmote:configure`
-scope covers allowed configuration operations. One **Write all of your Paperclip
+scope covers allowed configuration operations. One **Write all of your Wardmote
 data** consent checkbox approves both requested mutation scopes. Scope expansion
 requires a new consent flow; the directory broker retains its original operations.
 

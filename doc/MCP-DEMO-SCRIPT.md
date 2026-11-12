@@ -24,7 +24,7 @@ All API requests use `Authorization: Bearer $BOARD_API_KEY` for board calls. Gat
 
 Spoken intro:
 
-> "Paperclip ships an MCP gateway that sits between every agent and every upstream tool. Three things happen on every call: we pick the tool against a profile, we evaluate policies, and we record an audit event. I'm going to connect a tiny key/value MCP server I'm running on this laptop, then run a read, a write that needs approval, and a destructive call that gets denied. The KV server has a web UI on the same port that shows its values — so when the agent's write lands, you'll see it appear in the browser. The data lives in the server; the policy decisions and the audit log live in Paperclip."
+> "Wardmote ships an MCP gateway that sits between every agent and every upstream tool. Three things happen on every call: we pick the tool against a profile, we evaluate policies, and we record an audit event. I'm going to connect a tiny key/value MCP server I'm running on this laptop, then run a read, a write that needs approval, and a destructive call that gets denied. The KV server has a web UI on the same port that shows its values — so when the agent's write lands, you'll see it appear in the browser. The data lives in the server; the policy decisions and the audit log live in Wardmote."
 
 Show the Tools & Access overview tab. Point at:
 
@@ -374,7 +374,7 @@ Audit history is retained; the connection and application stay archived for the 
 
 ## What lives where
 
-The demo is also the clearest way to show the data boundary between Paperclip and the upstream MCP server.
+The demo is also the clearest way to show the data boundary between Wardmote and the upstream MCP server.
 
 | Concern | Stored in the KV demo server | Stored in Wardmote |
 | --- | --- | --- |

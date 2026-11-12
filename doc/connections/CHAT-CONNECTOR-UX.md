@@ -6,7 +6,7 @@ ongoing configuration. These conventions apply to Slack, Discord, Telegram,
 AgentMail, and other providers according to their supported capabilities.
 
 Make connecting an agent feel like a short, understandable sequence of actions.
-At every point, the person should know what to do, where to do it, what Paperclip
+At every point, the person should know what to do, where to do it, what Wardmote
 has observed, and what happens next. These are Wardmote product conventions
 extracted from a live Slack setup iteration, not a requirement to reproduce
 Slack's screens or six steps for every provider.
@@ -255,7 +255,7 @@ do not grant permissions, tools, or exemptions from approval rules.
 Keep the provider-guidance registry separate from transport and agent identity.
 Slack is the first enabled profile; qualify each additional provider before
 enabling guidance or exposing the field. Questions, approvals, task creation,
-assignment, delegation, and origin-thread completion use normal Paperclip
+assignment, delegation, and origin-thread completion use normal Wardmote
 workflows. Identify missing workflow capabilities separately rather than adding
 a connector-specific task lifecycle.
 

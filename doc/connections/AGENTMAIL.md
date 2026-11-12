@@ -147,7 +147,7 @@ mailbox import and no assumption of WebSocket replay.
 
 Incoming mail wakes the selected agent through its normal task execution path,
 including its configured permissions and budget controls. The external sender
-is recorded in the email envelope; an email address never grants Paperclip
+is recorded in the email envelope; an email address never grants Wardmote
 membership or board authority.
 
 ## Explicit email actions

@@ -251,9 +251,9 @@ These axes produce combinations such as:
 - Remote MCP + API key in an HTTP header: Mem0 and PagerDuty.
 - Remote MCP + secret-bearing provider-generated URL: Zapier.
 - Remote MCP + no auth + required tenant field: Shopify.
-- Remote MCP + Paperclip-managed OAuth client + per-user grant: Google
+- Remote MCP + Wardmote-managed OAuth client + per-user grant: Google
   Workspace MCP previews.
-- Remote MCP + Paperclip-managed OAuth client + personal or dedicated-agent
+- Remote MCP + Wardmote-managed OAuth client + personal or dedicated-agent
   grant: GitHub. See [GitHub managed connection](./GITHUB.md).
 - Local stdio MCP + approved command template: the Google Sheets robot flow and
   development fixtures.
@@ -1477,7 +1477,7 @@ mode, exact token scopes, and the header placement. This is an allowlist, not a
 copy of Vercel's connector form. Only authenticated `mcp_remote` methods qualify.
 Do not infer Wardmote ownership from Vercel's “Managed” label. A Vercel-backed
 connection remains `customer`/`dcr` according to the existing Wardmote model.
-The resulting connection has an external connector ref and zero Paperclip
+The resulting connection has an external connector ref and zero Wardmote
 credential secret refs; its grants likewise use external metadata or secret
 refs, never both.
 
@@ -2126,7 +2126,7 @@ Auth endpoints (exact paths, from the live discovery chain):
 | Authorize | `https://mcp.notion.com/authorize` |
 | Token (exchange + refresh) | `https://mcp.notion.com/token` |
 | Registration (RFC 7591 DCR) | `https://mcp.notion.com/register` |
-| Paperclip connect (wizard) | `POST /api/companies/:companyId/tools/apps/connect` |
+| Wardmote connect (wizard) | `POST /api/companies/:companyId/tools/apps/connect` |
 | Wardmote OAuth start | `POST /api/tools/oauth/:connectionId/start` |
 | Wardmote callback | `GET /api/tools/oauth/callback` |
 
@@ -2550,6 +2550,6 @@ Arcade discovery paginates its [admin account list](https://github.com/ArcadeAI/
 
 Executor reads its [MCP integration inventory](https://github.com/UsefulSoftwareCo/executor/blob/main/packages/hosts/mcp/src/tool-server.ts) or uses fixed, read-only `connections.list` and `integrations.list` calls in code mode. Its pure `connections.createHandoff` URL builder can supply the upstream console destination. No arbitrary generated code or provider REST endpoint is used. Unknown integrations remain separate, without guessed branding. Last-health `healthy` is connected, `expired` needs sign-in, and unverified or degraded health never earns a green check. Missing inventory support is visible as discovery unavailable. Managers can set a trusted HTTPS console URL for gateways that do not expose a destination, preserving workspace and self-hosted paths.
 
-Apps groups native and imported accounts under canonical app cards, preserving all upstream account identities. Native onboarding wins over aggregator connect offers. Imported account menus only open their upstream provider; deletion and per-app authorization stay upstream. Parent gateway menus own refresh and optional discovery setup. Paperclip policies continue to govern invocation through the gateway.
+Apps groups native and imported accounts under canonical app cards, preserving all upstream account identities. Native onboarding wins over aggregator connect offers. Imported account menus only open their upstream provider; deletion and per-app authorization stay upstream. Parent gateway menus own refresh and optional discovery setup. Wardmote policies continue to govern invocation through the gateway.
 
 Acceptance fixtures: `server/src/__tests__/aggregator-app-discovery.test.ts`, `server/src/__tests__/aggregator-app-sync.test.ts`, `ui/src/pages/apps/Browse.test.tsx`, and the production-page/full-stack test drive at `tests/aggregator-accounts/test-drive.ts`. The expected stories and evidence are recorded in `doc/plans/2026-10-05-managed-aggregator-account-user-stories.md`. Fixture runs do not replace live provider proof when working credentials are available.

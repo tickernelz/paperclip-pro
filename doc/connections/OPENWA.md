@@ -22,7 +22,7 @@ OpenWA drives a normal WhatsApp account through an unofficial engine
 not the WhatsApp Business Platform. WhatsApp can restrict or ban a number that
 sends too much, too fast, or to people who did not expect it.
 
-- Keep the gateway's send pacing on (`SEND_PACING_ENABLED=true`). Paperclip
+- Keep the gateway's send pacing on (`SEND_PACING_ENABLED=true`). Wardmote
   cannot read that flag through the API, so setup asks the operator to attest
   it, and the health card shows **Observed** once the gateway first answers a
   send with `429 SEND_PACING_LIMITED`.
@@ -608,7 +608,7 @@ Operations that need an unscoped admin key stay unavailable
 (`unavailable_without_admin_key`) until one is saved under **Admin API key**; saving
 re-verifies the session and returns the channel to its test step. Non-owner
 runs need `gateway_admin` approval. Stopping, logging out, deleting or force-killing
-the endpoint's own session needs an owner run plus a confirmation in Paperclip
+the endpoint's own session needs an owner run plus a confirmation in Wardmote
 from a current endpoint owner (`self_session_requires_confirmation`; other board
 members get 403); other runs get `owner_only`.
 
@@ -680,7 +680,7 @@ Routes, all under `/api/chat-endpoints/:endpointId/openwa` and board-only:
 
 Table: `chat_openwa_linked_sessions` (migration 0289).
 
-## Gateway management from Paperclip
+## Gateway management from Wardmote
 
 With the channel's OpenWA admin key connected, a board user with
 connection-management access (`tools:manage_connections`, instance admin, or

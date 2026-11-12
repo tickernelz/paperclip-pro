@@ -52,7 +52,7 @@ export const NavigationCheck: Story = { play: async ({ canvasElement }) => {
   await userEvent.click(await c.findByRole("link", { name: "Set up an assistant connection" }));
   await expect(await c.findByRole("button", { name: "Copy invitation" })).toBeVisible();
   await userEvent.click(c.getByText("Set up manually"));
-  await expect(c.getByText("opencode mcp auth paperclip")).toBeVisible();
+  await expect(c.getByText("opencode mcp auth wardmote")).toBeVisible();
   await expect(c.getByText(/No assistants connected/)).toBeVisible();
 } };
 

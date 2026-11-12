@@ -1,4 +1,4 @@
-# Paperclip
+# Wardmote
 
 **Wardmote is the backbone of the autonomous economy.** We are building the infrastructure that autonomous AI companies run on. Our goal is for Wardmote-powered companies to collectively generate economic output that rivals the GDP of the world's largest countries. Every decision we make should serve that: make autonomous companies more capable, more governable, more scalable, and more real.
 

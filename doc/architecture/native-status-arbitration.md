@@ -55,7 +55,7 @@ The server also owns facts the runner cannot choose:
 
 ## Evidence classification
 
-`classifyNativeEvidence()` compares model claims with durable Paperclip
+`classifyNativeEvidence()` compares model claims with durable Wardmote
 records. It recognizes these evidence families:
 
 - run events with an authoritative control-plane evidence verdict;

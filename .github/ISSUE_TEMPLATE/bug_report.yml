@@ -55,7 +55,7 @@ body:
       required: true
 
   - type: input
-    id: paperclip-version
+    id: wardmote-version
     attributes:
       label: Wardmote version or commit
       description: Output of `wardmote --version` or the commit SHA you are running.
@@ -152,7 +152,7 @@ body:
       description: |
         If the bug is config-related, paste the relevant snippet.
 
-        **⚠️ PII warning:** Paperclip config may contain API keys, encrypted-secrets paths, company names, or tokens. **Remove all secrets before pasting.**
+        **⚠️ PII warning:** Wardmote config may contain API keys, encrypted-secrets paths, company names, or tokens. **Remove all secrets before pasting.**
       render: json
 
   - type: textarea

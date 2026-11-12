@@ -966,7 +966,7 @@ export function builtinGrokLauncherPath(moduleUrl: string = import.meta.url): st
     const candidate = fileURLToPath(new URL(relativePath, moduleUrl));
     if (existsSync(candidate)) return candidate;
   }
-  throw new Error("Grok builtin launcher is missing from the Paperclip installation");
+  throw new Error("Grok builtin launcher is missing from the Wardmote installation");
 }
 
 export const GROK_PREREQUISITE_PATH = "/opt/paperclip/providers/grok/1.0.13/grok";

@@ -171,7 +171,7 @@ factory or by creating a heartbeat row from an MCP request. Production needs:
    this prototype's runner registry does not. After restart it refuses recovery.
 3. Server-owned runtime tool projection/dispatch with ordinary audit receipts.
    The lab tool is not the production runner tool authority.
-4. A stop policy that can handle remote autonomy honestly. Revoking Paperclip
+4. A stop policy that can handle remote autonomy honestly. Revoking Wardmote
    access cannot prove that Dot or its child tasks stopped. Active close reports
    `provider stop is unconfirmed`; interruption, steering and resume are not
    advertised. `dot-bridge:<session>` identifies this bridge, not an OpenAI task.

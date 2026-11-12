@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Backup the configured Paperclip database to the configured backup directory
+# Backup the configured Wardmote database to the configured backup directory
 #
 # Usage:
 #   ./scripts/backup-db.sh

@@ -112,7 +112,7 @@ Wardmote should make plain search the minimum contract and richer outputs option
 
 Wardmote needs both direct request/response operations and background maintenance hooks.
 
-## Paperclip-Specific Takeaways
+## Wardmote-Specific Takeaways
 
 ### Wardmote should own these concerns
 

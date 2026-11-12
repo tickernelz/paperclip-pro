@@ -187,7 +187,7 @@ All tools default to **Allowed**, including writes and destructive actions.
 The temporary Mem0 **Ask first** test override was removed after the approval
 test. Effective agent access was checked again: Mem0 11/11, Cognee 3/3,
 Supermemory 16/16, Zep 12/12, and Honcho 40/40 allowed, with zero ask-first or
-off actions. Provider OAuth consent remains a separate boundary from Paperclip
+off actions. Provider OAuth consent remains a separate boundary from Wardmote
 tool permissions.
 
 ### Daytona sandbox verification (September 24, 2026)
