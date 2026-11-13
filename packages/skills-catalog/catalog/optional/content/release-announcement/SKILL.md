@@ -44,7 +44,7 @@ Upsert the parent release case first when it does not already exist:
 ```json
 {
   "caseType": "release",
-  "key": "paperclip-release:vYYYY.MDD.P",
+  "key": "wardmote-release:vYYYY.MDD.P",
   "title": "Wardmote vYYYY.MDD.P release",
   "status": "in_progress",
   "fields": {
@@ -67,7 +67,7 @@ For a dev blog, upsert a child case with `parentCaseId` set to the release case:
 ```json
 {
   "caseType": "blog_post",
-  "key": "paperclip-release:vYYYY.MDD.P:blog-post",
+  "key": "wardmote-release:vYYYY.MDD.P:blog-post",
   "title": "Wardmote vYYYY.MDD.P launch post",
   "status": "in_review",
   "parentCaseId": "<release-case-id>",
@@ -92,7 +92,7 @@ For social output, upsert a sibling child case:
 ```json
 {
   "caseType": "tweet_storm",
-  "key": "paperclip-release:vYYYY.MDD.P:tweet-storm",
+  "key": "wardmote-release:vYYYY.MDD.P:tweet-storm",
   "title": "Wardmote vYYYY.MDD.P tweet storm",
   "status": "in_review",
   "parentCaseId": "<release-case-id>",

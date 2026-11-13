@@ -230,7 +230,7 @@ publish_one_tarball() {
   if [ "$dry_run" = true ]; then
     release_npm publish "$tarball" --dry-run --tag "$PUBLISH_TAG" --access public || status=$?
   else
-    publish_log="$(mktemp "${TMPDIR:-/tmp}/paperclip-release-publish.XXXXXX")"
+    publish_log="$(mktemp "${TMPDIR:-/tmp}/wardmote-release-publish.XXXXXX")"
     if [ "${provenance_available}" = true ]; then
       (set -o pipefail; release_npm publish "$tarball" --tag "$PUBLISH_TAG" --access public --provenance 2>&1 | tee "$publish_log") || status=$?
     else
@@ -358,7 +358,7 @@ else
 fi
 
 trap cleanup_release_state EXIT
-PACK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-release-tarballs.XXXXXX")"
+PACK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-release-tarballs.XXXXXX")"
 
 export WARDMOTE_RELEASE_REUSE_UI_DIST=1
 
