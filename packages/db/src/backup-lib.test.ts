@@ -15,6 +15,7 @@ import {
   runDatabaseRestore,
 } from "./backup-lib.js";
 import { ensurePostgresDatabase } from "./client.js";
+import { RETIRED_STATEMENT_BREAKPOINT } from "./retired-backup-names.js";
 import {
   EMBEDDED_POSTGRES_TEST_TIMEOUT_MS,
   getEmbeddedPostgresTestSupport,
@@ -753,22 +754,29 @@ describeEmbeddedPostgres("runDatabaseBackup", () => {
             "-- Created: 2026-04-06T00:00:00.000Z",
             "",
             "BEGIN;",
-            "-- paperclip statement breakpoint 69f6f3f1-42fd-46a6-bf17-d1d85f8f3900",
+            RETIRED_STATEMENT_BREAKPOINT,
             "CREATE TABLE public.restore_stream_test (id integer primary key, payload text not null);",
-            "-- paperclip statement breakpoint 69f6f3f1-42fd-46a6-bf17-d1d85f8f3900",
+            RETIRED_STATEMENT_BREAKPOINT,
             "INSERT INTO public.restore_stream_test (id, payload)",
             "VALUES (1, 'hello');",
-            "-- paperclip statement breakpoint 69f6f3f1-42fd-46a6-bf17-d1d85f8f3900",
+            RETIRED_STATEMENT_BREAKPOINT,
             "COMMIT;",
-            "-- paperclip statement breakpoint 69f6f3f1-42fd-46a6-bf17-d1d85f8f3900",
+            RETIRED_STATEMENT_BREAKPOINT,
           ].join("\n"),
           "utf8",
         );
 
-        await runDatabaseRestore({
-          connectionString: restoreConnectionString,
-          backupFile,
-        });
+        const previousPsql = process.env.WARDMOTE_PSQL_PATH;
+        process.env.WARDMOTE_PSQL_PATH = path.join(backupDir, "missing-psql");
+        try {
+          await runDatabaseRestore({
+            connectionString: restoreConnectionString,
+            backupFile,
+          });
+        } finally {
+          if (previousPsql === undefined) delete process.env.WARDMOTE_PSQL_PATH;
+          else process.env.WARDMOTE_PSQL_PATH = previousPsql;
+        }
 
         const rows = await restoreSql.unsafe<{ payload: string }[]>(`
           SELECT payload

@@ -151,9 +151,27 @@ export async function resolvePublishedVersion(spec: string, runCommand: CommandR
   return parseResolvedVersion(result.stdout);
 }
 
+export async function resolveReleasePackageNames(version: string, runCommand: CommandRunner): Promise<readonly string[]> {
+  try {
+    const result = await runCommand(
+      "npm",
+      ["view", `@tickernelz/wardmote@${version}`, "wardmoteReleasePackages", "--json", `--registry=${PUBLIC_NPM_REGISTRY}`],
+      { maxBuffer: 1024 * 1024 },
+    );
+    const declared: unknown = JSON.parse(result.stdout.trim() || "null");
+    if (Array.isArray(declared) && declared.length > 0 && declared.every((name) => typeof name === "string" && name.startsWith("@tickernelz/"))) {
+      return declared;
+    }
+  } catch {
+    return RELEASE_PACKAGE_NAMES;
+  }
+  return RELEASE_PACKAGE_NAMES;
+}
+
 export async function assertReleaseSetPublished(version: string, runCommand: CommandRunner): Promise<void> {
+  const names = await resolveReleasePackageNames(version, runCommand);
   const missing: string[] = [];
-  const queue = [...RELEASE_PACKAGE_NAMES];
+  const queue = [...names];
   const probe = async (): Promise<void> => {
     for (let name = queue.pop(); name !== undefined; name = queue.pop()) {
       try {
@@ -168,10 +186,10 @@ export async function assertReleaseSetPublished(version: string, runCommand: Com
       }
     }
   };
-  await Promise.all(Array.from({ length: Math.min(8, RELEASE_PACKAGE_NAMES.length) }, probe));
+  await Promise.all(Array.from({ length: Math.min(8, names.length) }, probe));
   if (missing.length > 0) {
     throw new Error(
-      `Release ${version} is incomplete on ${PUBLIC_NPM_REGISTRY}: ${missing.length} of ${RELEASE_PACKAGE_NAMES.length} packages are not published at that version (${missing.sort().join(", ")}). Installing it would mix versions across packages. Wait for the release to finish publishing, or pass --version with a complete release.`,
+      `Release ${version} is incomplete on ${PUBLIC_NPM_REGISTRY}: ${missing.length} of ${names.length} packages are not published at that version (${missing.sort().join(", ")}). Installing it would mix versions across packages. Wait for the release to finish publishing, or pass --version with a complete release.`,
     );
   }
 }
@@ -463,7 +481,7 @@ export async function installCommand(
   const request = resolveNpmInstallRequest(options);
   console.log(`Resolving @tickernelz/wardmote@${request.spec} from ${PUBLIC_NPM_REGISTRY}...`);
   const version = await resolvePublishedVersion(request.spec, runCommand);
-  console.log(`Verifying all ${RELEASE_PACKAGE_NAMES.length} packages of release ${version}...`);
+  console.log(`Verifying the packages of release ${version}...`);
   await assertReleaseSetPublished(version, runCommand);
   console.log(`Installing @tickernelz/wardmote@${version}...`);
 

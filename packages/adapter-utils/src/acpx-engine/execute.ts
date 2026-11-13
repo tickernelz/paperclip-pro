@@ -548,7 +548,7 @@ export function buildSessionFingerprint(identity: SessionFingerprintIdentity): s
 }
 
 export function buildSessionKey(identity: SessionKeyIdentity, fingerprint: string): string {
-  return `paperclip:${identity.companyId}:${identity.agentId}:${identity.taskKey}:${fingerprint}`;
+  return `wardmote:${identity.companyId}:${identity.agentId}:${identity.taskKey}:${fingerprint}`;
 }
 
 const ACPX_INHERITED_HOST_ENV_KEYS = new Set([

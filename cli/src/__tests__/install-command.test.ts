@@ -138,6 +138,20 @@ describe("managed install commands", () => {
     ) as { name: string; publishFromCi?: boolean }[];
     const published = manifest.filter((entry) => entry.publishFromCi).map(({ name }) => name).sort();
     expect([...RELEASE_PACKAGE_NAMES].sort()).toEqual(published);
+    const cliManifest = JSON.parse(fs.readFileSync(path.join(repoRoot, "cli", "package.json"), "utf8")) as { wardmoteReleasePackages?: string[] };
+    expect(cliManifest.wardmoteReleasePackages).toEqual([...RELEASE_PACKAGE_NAMES]);
+  });
+
+  it("verifies the package set the target release declares, not the installed CLI's own list", async () => {
+    const declared = ["@tickernelz/wardmote", "@tickernelz/wardmote-renamed-later"];
+    const runCommand = vi.fn(async (_file: string, args: string[]) => {
+      if (args[2] === "wardmoteReleasePackages") return { stdout: JSON.stringify(declared), stderr: "" };
+      return { stdout: JSON.stringify("2026.1201.0"), stderr: "" };
+    });
+
+    await expect(assertReleaseSetPublished("2026.1201.0", runCommand)).resolves.toBeUndefined();
+    const probed = runCommand.mock.calls.filter(([, args]) => args[2] === "version").map(([, args]) => args[1]);
+    expect(probed.sort()).toEqual(["@tickernelz/wardmote-renamed-later@2026.1201.0", "@tickernelz/wardmote@2026.1201.0"]);
   });
 
   it("refuses a half-published release and names the packages that are missing", async () => {
@@ -155,7 +169,7 @@ describe("managed install commands", () => {
     await expect(assertReleaseSetPublished("2026.926.0", runCommand)).rejects.toThrow(
       /2 of 20 packages are not published.*wardmote-server.*wardmote-ui/s,
     );
-    expect(runCommand).toHaveBeenCalledTimes(RELEASE_PACKAGE_NAMES.length);
+    expect(runCommand).toHaveBeenCalledTimes(RELEASE_PACKAGE_NAMES.length + 1);
   });
 
   it("accepts a release whose whole package set is published at the resolved version", async () => {
