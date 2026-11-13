@@ -2767,7 +2767,7 @@ export class CapabilityLiveSession {
 
   async #handleNotification(notification: CodexRpcNotification): Promise<void> {
     const params = notification.params;
-    if (notification.method === "paperclip/canonicalProviderEvent"
+    if (notification.method === "wardmote/canonicalProviderEvent"
       && params.eventType === "provider.notice.recorded") {
       const notice = normalizeProviderNotice(params, {
         provider: this.#config.provider, agent: this.#config.acpxAgent,
