@@ -35,7 +35,12 @@ use crate::managed_provider::{
     AwsAgentCoreProviderConfig, Provider, ProviderEvent, ProviderKind, ProviderRuntimeIdentity,
 };
 use crate::provider_bridge::{AuthorizedTool, ToolResult};
+use crate::retired_agentcore_names::{
+    RETIRED_AGENTCORE_COST_SOURCE, RETIRED_AGENTCORE_DIGEST_METADATA,
+};
 
+const AGENTCORE_COST_SOURCE: &str = "wardmote_estimate";
+const AGENTCORE_DIGEST_METADATA: &str = "wardmote-sha256";
 const MAX_AGENTCORE_TOOLS: usize = 64;
 // Harness invocations can spend substantial time starting a new runtime before
 // response headers (and therefore the event stream) are available. Allow a
@@ -82,7 +87,7 @@ fn restored_usage_snapshot(snapshot: Option<&Value>) -> Result<Value, LocalRunne
             "cacheWriteInputTokens": 0,
             "requestCount": 0,
             "estimatedCostUsd": 0.0,
-            "costSource": "paperclip_estimate"
+            "costSource": AGENTCORE_COST_SOURCE
         }));
     };
     let object = snapshot.as_object().ok_or_else(|| {
@@ -110,7 +115,10 @@ fn restored_usage_snapshot(snapshot: Option<&Value>) -> Result<Value, LocalRunne
                 "AgentCore durable usage snapshot has invalid estimatedCostUsd",
             )
         })?;
-    if object.get("costSource").and_then(Value::as_str) != Some("paperclip_estimate") {
+    if !matches!(
+        object.get("costSource").and_then(Value::as_str),
+        Some(AGENTCORE_COST_SOURCE | RETIRED_AGENTCORE_COST_SOURCE)
+    ) {
         return Err(LocalRunnerError::invalid(
             "AgentCore durable usage snapshot has invalid costSource",
         ));
@@ -253,7 +261,7 @@ impl NetworkWorker {
         let (event_tx, event_rx) = mpsc::sync_channel(256);
         let (ready_tx, ready_rx) = mpsc::channel();
         let join = thread::Builder::new()
-            .name("paperclip-aws-agentcore-network".to_owned())
+            .name("wardmote-aws-agentcore-network".to_owned())
             .spawn(move || {
                 network_loop(config, session_id, actor_id, command_rx, event_tx, ready_tx)
             })
@@ -450,7 +458,11 @@ async fn upload_context_directory(
         {
             let metadata_digest = existing
                 .metadata()
-                .and_then(|metadata| metadata.get("paperclip-sha256"))
+                .and_then(|metadata| {
+                    metadata
+                        .get(AGENTCORE_DIGEST_METADATA)
+                        .or_else(|| metadata.get(RETIRED_AGENTCORE_DIGEST_METADATA))
+                })
                 .map(String::as_str);
             if existing.content_length() != Some(bytes.len() as i64)
                 || metadata_digest != Some(content_digest.as_str())
@@ -471,7 +483,7 @@ async fn upload_context_directory(
             .key(&key)
             .server_side_encryption(aws_sdk_s3::types::ServerSideEncryption::AwsKms)
             .ssekms_key_id(&config.context_kms_key_arn)
-            .metadata("paperclip-sha256", content_digest)
+            .metadata(AGENTCORE_DIGEST_METADATA, content_digest)
             .body(ByteStream::from(bytes))
             .send()
             .await
@@ -543,7 +555,7 @@ fn prepare_agentcore_runtime_context_assets(
         .map(|(path, bytes)| (PathBuf::from("instructions").join(path), bytes))
         .collect();
     let instruction_companion = format!(
-        "---\nname: paperclip-instructions-{}\ndescription: Wardmote agent instruction sibling bundle\n---\nRead `instructions/{entry_path}` and its sibling files as read-only context.\n",
+        "---\nname: wardmote-instructions-{}\ndescription: Wardmote agent instruction sibling bundle\n---\nRead `instructions/{entry_path}` and its sibling files as read-only context.\n",
         &instruction_digest[..12]
     );
     let instruction_asset_digest = sha_hex(
@@ -643,7 +655,7 @@ fn network_loop(
             .await;
         let assumed = AssumeRoleProvider::builder(config.invocation_role_arn.clone())
             .session_name(format!(
-                "paperclip-{}",
+                "wardmote-{}",
                 &session_id[session_id.len().saturating_sub(24)..]
             ))
             .configure(&base)
@@ -1141,7 +1153,7 @@ impl AwsAgentCoreHarnessProvider {
         let session_id = resume_session_id
             .map(str::to_owned)
             .unwrap_or_else(new_runtime_session_id);
-        let actor_id = format!("paperclip-{}", sha_hex(&session_id, 32));
+        let actor_id = format!("wardmote-{}", sha_hex(&session_id, 32));
         let worker = NetworkWorker::start(config.clone(), session_id.clone(), actor_id.clone())?;
         let (encoded, allowed, reverse, schemas) = encode_tools(&tools)?;
         Ok(Self {
@@ -1275,7 +1287,7 @@ impl AwsAgentCoreHarnessProvider {
             "latencyMs": latency_ms,
             "estimatedCostUsd": estimate,
             "estimateScope": "bedrock_model_tokens_only",
-            "costSource": "paperclip_estimate",
+            "costSource": AGENTCORE_COST_SOURCE,
             "estimatedCeilingUsd": self.max_estimated_cost_usd,
         });
         if let Some(floor) = conservative_floor {
@@ -1289,7 +1301,7 @@ impl AwsAgentCoreHarnessProvider {
             self.invocation_budget_reached = true;
             self.queue.push_back(ProviderEvent::Notification {
                 method: "provider/budgetReached".to_owned(),
-                params: json!({ "turnId": self.current_turn_id, "status": "limit_reached", "stopReason": "estimated_session_cost", "estimatedCostUsd": estimate, "costSource": "paperclip_estimate" }),
+                params: json!({ "turnId": self.current_turn_id, "status": "limit_reached", "stopReason": "estimated_session_cost", "estimatedCostUsd": estimate, "costSource": AGENTCORE_COST_SOURCE }),
             });
         }
         ProviderEvent::Notification {
@@ -1640,14 +1652,12 @@ impl Provider for AwsAgentCoreHarnessProvider {
             ));
         }
         self.max_estimated_cost_usd = value;
-        Ok(json!({ "maxEstimatedSessionCostUsd": value, "costSource": "paperclip_estimate" }))
+        Ok(json!({ "maxEstimatedSessionCostUsd": value, "costSource": AGENTCORE_COST_SOURCE }))
     }
 
     fn destroy_session(&mut self) -> Result<(), LocalRunnerError> {
-        self.worker.stop_runtime(format!(
-            "paperclip-delete-{}",
-            sha_hex(&self.session_id, 32)
-        ))?;
+        self.worker
+            .stop_runtime(format!("wardmote-delete-{}", sha_hex(&self.session_id, 32)))?;
         self.worker.delete_memory()?;
         self.worker.shutdown();
         Ok(())
@@ -1688,7 +1698,7 @@ impl Provider for AwsAgentCoreHarnessProvider {
             ));
         }
         self.worker.stop_runtime(format!(
-            "paperclip-interrupt-{}",
+            "wardmote-interrupt-{}",
             sha_hex(&(self.session_id.clone() + turn_id), 32)
         ))?;
         let interrupted_invocation_id = self.active_invocation_id.clone();
@@ -1873,7 +1883,7 @@ impl Provider for AwsAgentCoreHarnessProvider {
                     | "timeout_exceeded"
                     | "model_context_window_exceeded" => Ok(Some(ProviderEvent::Notification {
                         method: "provider/budgetReached".to_owned(),
-                        params: json!({ "turnId": self.current_turn_id, "status": "limit_reached", "stopReason": reason, "costSource": "paperclip_estimate" }),
+                        params: json!({ "turnId": self.current_turn_id, "status": "limit_reached", "stopReason": reason, "costSource": AGENTCORE_COST_SOURCE }),
                     })),
                     "content_filtered" => Err(LocalRunnerError::invalid(
                         "AgentCore model output was filtered",
@@ -1947,7 +1957,7 @@ impl Provider for AwsAgentCoreHarnessProvider {
 
     fn shutdown(&mut self) -> Result<(), LocalRunnerError> {
         self.worker.stop_runtime(format!(
-            "paperclip-suspend-{}",
+            "wardmote-suspend-{}",
             sha_hex(&self.session_id, 32)
         ))?;
         self.worker.shutdown();
@@ -2108,14 +2118,14 @@ fn remote_tool_name(operation_id: &str) -> String {
     }
     slug = slug.trim_matches('_').to_owned();
     if slug.is_empty() {
-        slug = "paperclip_tool".to_owned();
+        slug = "wardmote_tool".to_owned();
     }
     slug.truncate(48);
     format!("pc_{}_{}", slug, sha_hex(operation_id, 12))
 }
 
 fn new_runtime_session_id() -> String {
-    format!("paperclip-{}-{}", Uuid::new_v4(), Uuid::new_v4())
+    format!("wardmote-{}-{}", Uuid::new_v4(), Uuid::new_v4())
 }
 
 fn estimate_model_token_cost_usd(
@@ -2294,8 +2304,8 @@ mod tests {
                 .to_owned(),
             memory_arn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:memory/test".to_owned(),
             memory_id: "memory-test".to_owned(),
-            invocation_role_arn: "arn:aws:iam::123456789012:role/paperclip-agentcore".to_owned(),
-            context_bucket: "paperclip-context-test".to_owned(),
+            invocation_role_arn: "arn:aws:iam::123456789012:role/wardmote-agentcore".to_owned(),
+            context_bucket: "wardmote-context-test".to_owned(),
             context_prefix: "companies/company-test/profiles/profile-test".to_owned(),
             context_kms_key_arn: "arn:aws:kms:us-east-1:123456789012:key/test".to_owned(),
             qualification_revision: "aws-agentcore-harness-context-v2".to_owned(),
@@ -2408,8 +2418,8 @@ mod tests {
     fn provider_with_worker(worker: NetworkWorker, usage: Value) -> AwsAgentCoreHarnessProvider {
         AwsAgentCoreHarnessProvider {
             config: config(),
-            session_id: "paperclip-test-session".to_owned(),
-            actor_id: "paperclip-test-actor".to_owned(),
+            session_id: "wardmote-test-session".to_owned(),
+            actor_id: "wardmote-test-actor".to_owned(),
             worker,
             tools: Vec::new(),
             allowed_tools: Vec::new(),
@@ -2448,7 +2458,7 @@ mod tests {
             "cacheWriteInputTokens": 8,
             "requestCount": 4,
             "estimatedCostUsd": 0.73,
-            "costSource": "paperclip_estimate",
+            "costSource": "wardmote_estimate",
             "estimateScope": "bedrock_model_tokens_only"
         });
         assert_eq!(restored_usage_snapshot(Some(&usage)).unwrap(), usage);
@@ -2463,6 +2473,23 @@ mod tests {
     }
 
     #[test]
+    fn durable_usage_restore_accepts_the_cost_source_written_before_the_rename() {
+        let usage = json!({
+            "inputTokens": 1,
+            "outputTokens": 2,
+            "cacheReadInputTokens": 0,
+            "cacheWriteInputTokens": 0,
+            "requestCount": 1,
+            "estimatedCostUsd": 0.01,
+            "costSource": RETIRED_AGENTCORE_COST_SOURCE
+        });
+        assert_eq!(restored_usage_snapshot(Some(&usage)).unwrap(), usage);
+        let mut foreign = usage.clone();
+        foreign["costSource"] = json!("provider_reported");
+        assert!(restored_usage_snapshot(Some(&foreign)).is_err());
+    }
+
+    #[test]
     fn durable_usage_restore_rejects_missing_or_untrusted_spend_state() {
         assert!(restored_usage_snapshot(Some(&json!({
             "inputTokens": 123,
@@ -2471,7 +2498,7 @@ mod tests {
             "cacheWriteInputTokens": 8,
             "requestCount": 4,
             "estimatedCostUsd": -1.0,
-            "costSource": "paperclip_estimate"
+            "costSource": "wardmote_estimate"
         })))
         .is_err());
         assert!(restored_usage_snapshot(Some(&json!({
@@ -2481,7 +2508,7 @@ mod tests {
             "cacheWriteInputTokens": 8,
             "requestCount": 4,
             "estimatedCostUsd": 0.73,
-            "costSource": "paperclip_estimate",
+            "costSource": "wardmote_estimate",
             "pendingEstimatedCeilingUsd": 1.0
         })))
         .is_err());
@@ -2492,7 +2519,7 @@ mod tests {
             "cacheWriteInputTokens": 8,
             "requestCount": 4,
             "estimatedCostUsd": 0.73,
-            "costSource": "paperclip_estimate",
+            "costSource": "wardmote_estimate",
             "usageReconciliation": AGENTCORE_USAGE_RECONCILIATION_CONSERVATIVE,
             "conservativeCostFloorUsd": 0.74
         })))
@@ -2514,7 +2541,7 @@ mod tests {
             "cacheWriteInputTokens": 8,
             "requestCount": 4,
             "estimatedCostUsd": 0.73,
-            "costSource": "paperclip_estimate",
+            "costSource": "wardmote_estimate",
             "usageReconciliation": "unexpected_state",
             "pendingInvocationId": "invocation-1"
         })))
@@ -3087,7 +3114,7 @@ mod tests {
             "cacheWriteInputTokens": 0,
             "requestCount": 2,
             "estimatedCostUsd": 1.0,
-            "costSource": "paperclip_estimate"
+            "costSource": "wardmote_estimate"
         });
         let mut provider = provider_with_events(Vec::new(), usage);
         assert!(provider.invoke(Vec::new()).is_err());
@@ -3146,9 +3173,9 @@ mod tests {
     #[test]
     fn agentcore_system_replaces_the_local_instruction_path_with_the_harness_skill() {
         let mut config = config();
-        let local_root = "/paperclip/runtime/instructions";
+        let local_root = "/wardmote/runtime/instructions";
         config.instructions = format!(
-            "paperclip prompt\n\nAGENTS entry\n\nRead-only instruction sibling root: {local_root}"
+            "wardmote prompt\n\nAGENTS entry\n\nRead-only instruction sibling root: {local_root}"
         );
         config.runtime_context = Some(json!({
             "instructions": {
@@ -3159,7 +3186,7 @@ mod tests {
         }));
 
         let instructions = agentcore_system_instructions(&config).unwrap();
-        assert!(instructions.starts_with("paperclip prompt\n\nAGENTS entry\n\n"));
+        assert!(instructions.starts_with("wardmote prompt\n\nAGENTS entry\n\n"));
         assert!(instructions.ends_with("attached Wardmote HarnessSkill under `instructions/`."));
         assert!(!instructions.contains(local_root));
     }
@@ -3167,7 +3194,7 @@ mod tests {
     #[test]
     fn agentcore_upload_plan_contains_instruction_siblings_and_complete_assigned_skill_trees() {
         let root = std::env::temp_dir().join(format!(
-            "paperclip-agentcore-context-{}",
+            "wardmote-agentcore-context-{}",
             uuid::Uuid::new_v4()
         ));
         let instruction_root = root.join("instructions");
@@ -3276,7 +3303,7 @@ mod tests {
     #[test]
     fn agentcore_rejects_too_many_assigned_skills_before_reading_any_skill_root() {
         let root = std::env::temp_dir().join(format!(
-            "paperclip-agentcore-context-count-{}",
+            "wardmote-agentcore-context-count-{}",
             uuid::Uuid::new_v4()
         ));
         fs::create_dir_all(&root).unwrap();
@@ -3339,7 +3366,7 @@ mod tests {
     }
 
     #[test]
-    fn tool_allowlist_is_confined_to_the_paperclip_inline_namespace() {
+    fn tool_allowlist_is_confined_to_the_wardmote_inline_namespace() {
         let tool = AuthorizedTool {
             operation_id: "get_task_context".to_owned(),
             version: 1,
