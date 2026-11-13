@@ -23,6 +23,10 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { stageManagedCodexCredential } from "./codex-credentials.js";
+import {
+  RETIRED_CREDENTIAL_CLEANUP_INTENT,
+  RETIRED_CREDENTIAL_STAGING_FILE,
+} from "./retired-codex-credential-names.js";
 
 const temporaryDirectories: string[] = [];
 
@@ -33,11 +37,11 @@ afterEach(async () => {
   vi.resetModules();
   (
     globalThis as typeof globalThis & {
-      __paperclipDirectorySyncHelperRegistryV1?: {
+      __wardmoteDirectorySyncHelperRegistryV1?: {
         activeParentOperations: Set<symbol>;
       };
     }
-  ).__paperclipDirectorySyncHelperRegistryV1?.activeParentOperations.clear();
+  ).__wardmoteDirectorySyncHelperRegistryV1?.activeParentOperations.clear();
   await Promise.all(
     temporaryDirectories
       .splice(0)
@@ -106,13 +110,13 @@ describe("managed Codex credentials", () => {
     );
     const cleanupIntent = join(
       fixture.home,
-      ".paperclip-auth-cleanup-required",
+      ".wardmote-auth-cleanup-required",
     );
     await expect(readFile(lease.path, "utf8")).resolves.toContain(
       "inline-canary",
     );
     await expect(readFile(cleanupIntent, "utf8")).resolves.toBe(
-      "paperclip-managed-codex-cleanup-v1\n",
+      "wardmote-managed-codex-cleanup-v1\n",
     );
     if (process.platform !== "win32") {
       expect((await stat(lease.path)).mode & 0o777).toBe(0o600);
@@ -198,11 +202,11 @@ describe("managed Codex credentials", () => {
         const lease = await stageManagedCodexCredential({
           agentHomeDirectory: fixture.home,
           environment: {
-            WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"paperclip"}',
+            WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"wardmote"}',
           },
         });
         await expect(readFile(lease.path, "utf8")).resolves.toBe(
-          '{"owner":"paperclip"}',
+          '{"owner":"wardmote"}',
         );
         await lease.close();
       } finally {
@@ -515,10 +519,10 @@ describe("managed Codex credentials", () => {
     const destination = join(fixture.home, "auth.json");
     const cleanupIntent = join(
       fixture.home,
-      ".paperclip-auth-cleanup-required",
+      ".wardmote-auth-cleanup-required",
     );
     await writeFile(destination, '{"crash_stale":true}', { mode: 0o600 });
-    await writeFile(cleanupIntent, "paperclip-managed-codex-cleanup-v1\n", {
+    await writeFile(cleanupIntent, "wardmote-managed-codex-cleanup-v1\n", {
       mode: 0o600,
     });
 
@@ -530,7 +534,7 @@ describe("managed Codex credentials", () => {
       code: "ENOENT",
     });
     await expect(readFile(cleanupIntent, "utf8")).resolves.toBe(
-      "paperclip-managed-codex-cleanup-v1\n",
+      "wardmote-managed-codex-cleanup-v1\n",
     );
     await lease.close();
     await expect(readFile(cleanupIntent)).rejects.toMatchObject({
@@ -538,17 +542,36 @@ describe("managed Codex credentials", () => {
     });
   });
 
+  it("recovers cleanup intent and staging left under the retired names", async () => {
+    const fixture = await credentialFixture();
+    const destination = join(fixture.home, "auth.json");
+    const retiredIntent = join(fixture.home, RETIRED_CREDENTIAL_CLEANUP_INTENT);
+    const retiredStaging = join(fixture.home, RETIRED_CREDENTIAL_STAGING_FILE);
+    await writeFile(destination, '{"crash_stale":true}', { mode: 0o600 });
+    await writeFile(retiredStaging, '{"crash_staged":true}', { mode: 0o600 });
+    await writeFile(retiredIntent, "retired-cleanup\n", { mode: 0o600 });
+
+    const lease = await stageManagedCodexCredential({
+      agentHomeDirectory: fixture.home,
+      environment: { OPENAI_API_KEY: "launch-only-key" },
+    });
+    for (const path of [destination, retiredStaging, retiredIntent]) {
+      await expect(readFile(path)).rejects.toMatchObject({ code: "ENOENT" });
+    }
+    await lease.close();
+  });
+
   it("scrubs a crash-left credential staging file before admission", async () => {
     const fixture = await credentialFixture();
-    const stagingPath = join(fixture.home, ".paperclip-auth-staging-v1");
+    const stagingPath = join(fixture.home, ".wardmote-auth-staging-v1");
     const cleanupIntent = join(
       fixture.home,
-      ".paperclip-auth-cleanup-required",
+      ".wardmote-auth-cleanup-required",
     );
     await writeFile(stagingPath, '{"crash_secret":"must-not-survive"}', {
       mode: 0o600,
     });
-    await writeFile(cleanupIntent, "paperclip-managed-codex-cleanup-v1\n", {
+    await writeFile(cleanupIntent, "wardmote-managed-codex-cleanup-v1\n", {
       mode: 0o600,
     });
 
@@ -574,7 +597,7 @@ describe("managed Codex credentials", () => {
     async () => {
       const fixture = await credentialFixture();
       const target = join(fixture.root, "external-secret.json");
-      const stagingPath = join(fixture.home, ".paperclip-auth-staging-v1");
+      const stagingPath = join(fixture.home, ".wardmote-auth-staging-v1");
       await writeFile(target, '{"external":"unchanged"}', { mode: 0o600 });
       await symlink(target, stagingPath);
 
@@ -594,7 +617,7 @@ describe("managed Codex credentials", () => {
 
   it("fails closed instead of recursively removing a staging directory", async () => {
     const fixture = await credentialFixture();
-    const stagingPath = join(fixture.home, ".paperclip-auth-staging-v1");
+    const stagingPath = join(fixture.home, ".wardmote-auth-staging-v1");
     await mkdir(stagingPath, { mode: 0o700 });
 
     await expect(
@@ -892,11 +915,11 @@ describe("managed Codex credentials", () => {
         leases = await firstStaging;
         const registry = (
           globalThis as typeof globalThis & {
-            __paperclipDirectorySyncHelperRegistryV1?: {
+            __wardmoteDirectorySyncHelperRegistryV1?: {
               activeParentOperations: Set<symbol>;
             };
           }
-        ).__paperclipDirectorySyncHelperRegistryV1;
+        ).__wardmoteDirectorySyncHelperRegistryV1;
         expect(registry?.activeParentOperations.size).toBe(4);
 
         vi.resetModules();
@@ -1289,11 +1312,11 @@ describe("managed Codex credentials", () => {
       const fixture = await credentialFixture();
       const registry = (
         globalThis as typeof globalThis & {
-          __paperclipDirectorySyncHelperRegistryV1?: {
+          __wardmoteDirectorySyncHelperRegistryV1?: {
             activeChildren: Set<ChildProcess>;
           };
         }
-      ).__paperclipDirectorySyncHelperRegistryV1;
+      ).__wardmoteDirectorySyncHelperRegistryV1;
       expect(registry).toBeDefined();
       const reservations = Array.from(
         { length: 4 },
@@ -1357,7 +1380,7 @@ describe("managed Codex credentials", () => {
       const fixture = await credentialFixture();
       const registry = (
         globalThis as typeof globalThis & {
-          __paperclipDirectorySyncHelperRegistryV1?: {
+          __wardmoteDirectorySyncHelperRegistryV1?: {
             activeChildren: Set<ChildProcess>;
             childDirectories: Map<ChildProcess, string>;
             activeParentOperations: Set<symbol>;
@@ -1365,7 +1388,7 @@ describe("managed Codex credentials", () => {
             stuckChildren: Map<string, ChildProcess>;
           };
         }
-      ).__paperclipDirectorySyncHelperRegistryV1;
+      ).__wardmoteDirectorySyncHelperRegistryV1;
       expect(registry).toBeDefined();
 
       const parentReservations = Array.from({ length: 4 }, () => Symbol());
@@ -1460,7 +1483,7 @@ describe("managed Codex credentials", () => {
       const destination = join(fixture.home, "auth.json");
       const cleanupIntent = join(
         fixture.home,
-        ".paperclip-auth-cleanup-required",
+        ".wardmote-auth-cleanup-required",
       );
       const probe = await open(fixture.home, "r");
       const prototype = Object.getPrototypeOf(probe) as {
@@ -1755,7 +1778,7 @@ function credentialLeasePortsForScope(
   home: string,
 ): readonly number[] {
   const digest = createHash("sha256")
-    .update("paperclip-managed-codex-lease-v2:")
+    .update("wardmote-managed-codex-lease-v2:")
     .update(userScope)
     .update("\0")
     .update(home)
