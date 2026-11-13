@@ -530,6 +530,11 @@ describe("durable Dot Runner integration", () => {
     await db.insert(nativeRunFinalizations).values({ runId: run.id, companyId, issueId, phase: "observed", controllerGeneration: assignment.controllerGeneration, leaseExpiresAt: new Date(Date.now() + 60_000) });
     await expect(f.broker.read(f.principal, assignment.id)).resolves.toMatchObject({ assignmentId: assignment.id });
     await expect(f.broker.operation(f.principal, assignment.id, randomUUID(), "accept", {})).resolves.toMatchObject({ status: "pending" });
+    const toolRequestId = randomUUID();
+    await createDotRunnerMcpTools(db).callTool(f.principal, "wardmote_dot_accept", { assignmentId: assignment.id, requestId: toolRequestId });
+    const [viaTool] = await db.select().from(dotRunnerOperations)
+      .where(and(eq(dotRunnerOperations.assignmentId, assignment.id), eq(dotRunnerOperations.requestId, toolRequestId)));
+    expect((viaTool?.command as { action?: string } | undefined)?.action).toBe("accept");
     await db.update(issues).set({ executionRunId: null }).where(eq(issues.id, issueId));
     await expect(f.broker.read(f.principal, assignment.id)).rejects.toThrow("execution authority");
     await db.update(issues).set({ executionRunId: run.id }).where(eq(issues.id, issueId));

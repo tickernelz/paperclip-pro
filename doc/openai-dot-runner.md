@@ -366,7 +366,7 @@ server-side authorization.
 | Agent instructions | `read_agent_instructions`, `update_agent_instructions`, `get_agent_instruction_history`, `restore_agent_instructions` |
 | Skills | `create_skill`, `update_skill`, `list_assigned_skills`, `read_assigned_skill` |
 | Projects | `create_project`, `list_projects`, `list_project_repositories` |
-| Apps and control-plane APIs | `connections_search`, `connection_request`, `search_api`, `call_api`, `hire_agent`; assigned gateway tools are discovered from the actual catalog, or via `paperclip_search_assigned_tools` / `paperclip_call_assigned_tool` for large catalogs |
+| Apps and control-plane APIs | `connections_search`, `connection_request`, `search_api`, `call_api`, `hire_agent`; assigned gateway tools are discovered from the actual catalog, or via `wardmote_search_assigned_tools` / `wardmote_call_assigned_tool` for large catalogs |
 | Workspace and output | `workspace_list`, `workspace_read`, `workspace_write`, `workspace_run`, `register_deliverable` |
 | Task attachments | `list_task_attachments`, `read_task_attachment` when **Read task attachments** is enabled |
 | Bound chat inputs | `list_chat_attachments`, `reuse_chat_attachment`; `read_chat_attachment` and `read_current_wake_comments` require verified server bindings |

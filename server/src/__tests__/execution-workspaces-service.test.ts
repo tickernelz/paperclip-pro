@@ -2614,7 +2614,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       fingerprint,
     });
     expect(result.rescueRef).toMatchObject({
-      branchName: expect.stringMatching(/^paperclip\/rescue\/PAP-124\/\d{8}T\d{6}Z$/),
+      branchName: expect.stringMatching(/^wardmote\/rescue\/PAP-124\/\d{8}T\d{6}Z$/),
       fileCount: 2,
     });
     expect(result.restoredSourceIssue).toMatchObject({

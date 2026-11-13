@@ -186,7 +186,7 @@ if (!basename(smokeRoot).startsWith("wardmote-local-provider-smoke-")) {
   throw new Error("Refusing an unrecognized local provider smoke root");
 }
 await Promise.all(
-  ["tmp", "home", "paperclip-home", "codex-home", "claude-home"].map(
+  ["tmp", "home", "wardmote-home", "codex-home", "claude-home"].map(
     (directory) => mkdir(join(smokeRoot, directory), { recursive: true }),
   ),
 );
@@ -213,7 +213,7 @@ for (const name of [
 Object.assign(process.env, {
   TMPDIR: join(smokeRoot, "tmp"),
   HOME: join(smokeRoot, "home"),
-  WARDMOTE_HOME: join(smokeRoot, "paperclip-home"),
+  WARDMOTE_HOME: join(smokeRoot, "wardmote-home"),
   CODEX_HOME: join(smokeRoot, "codex-home"),
   CLAUDE_CONFIG_DIR: join(smokeRoot, "claude-home"),
   NO_BROWSER: "1",

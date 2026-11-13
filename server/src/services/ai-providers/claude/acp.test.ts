@@ -860,7 +860,7 @@ describe("claude_local ACP lane", () => {
       "utf8",
     );
     await fs.writeFile(path.join(sharedClaudeConfig, "CLAUDE.md"), "# shared guidance\n", "utf8");
-    process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+    process.env.WARDMOTE_HOME = path.join(root, "wardmote-home");
     process.env.WARDMOTE_INSTANCE_ID = "test";
     process.env.CLAUDE_CONFIG_DIR = sharedClaudeConfig;
 
@@ -926,7 +926,7 @@ describe("claude_local ACP lane", () => {
       "utf8",
     );
     await fs.writeFile(path.join(sharedClaudeConfig, "CLAUDE.md"), "# shared guidance\n", "utf8");
-    process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+    process.env.WARDMOTE_HOME = path.join(root, "wardmote-home");
     process.env.WARDMOTE_INSTANCE_ID = "test";
     process.env.CLAUDE_CONFIG_DIR = sharedClaudeConfig;
 
@@ -996,7 +996,7 @@ describe("claude_local ACP lane", () => {
     await fs.mkdir(localCwd, { recursive: true });
     await fs.mkdir(remoteCwd, { recursive: true });
     await fs.writeFile(path.join(localCwd, "hello.txt"), "hi", "utf8");
-    process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+    process.env.WARDMOTE_HOME = path.join(root, "wardmote-home");
     process.env.WARDMOTE_INSTANCE_ID = "test";
 
     // The runtime writes a new file into the in-sandbox workspace during the
@@ -1091,7 +1091,7 @@ describe("claude_local ACP lane", () => {
       JSON.stringify({ permissions: { defaultMode: "acceptEdits" } }),
       "utf8",
     );
-    process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+    process.env.WARDMOTE_HOME = path.join(root, "wardmote-home");
     process.env.WARDMOTE_INSTANCE_ID = "test";
 
     const meta: AdapterInvocationMeta[] = [];
@@ -1159,7 +1159,7 @@ describe("claude_local ACP lane", () => {
       "utf8",
     );
     await fs.writeFile(path.join(sharedClaudeConfig, "CLAUDE.md"), "# shared guidance\n", "utf8");
-    process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+    process.env.WARDMOTE_HOME = path.join(root, "wardmote-home");
     process.env.WARDMOTE_INSTANCE_ID = "test";
     process.env.CLAUDE_CONFIG_DIR = sharedClaudeConfig;
 

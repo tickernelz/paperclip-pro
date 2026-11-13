@@ -754,7 +754,7 @@ function sanitizeBranchName(value: string): string {
     .replace(/[^A-Za-z0-9._/-]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^[-/.]+|[-/.]+$/g, "")
-    .slice(0, 120) || "paperclip-work";
+    .slice(0, 120) || "wardmote-work";
 }
 
 function isAbsolutePath(value: string) {
@@ -1176,7 +1176,7 @@ function formatUtcBranchTimestamp(date = new Date()) {
 
 function buildDirtyQuarantineRescueBranch(sourceIssue: ExecutionWorkspaceIssueRef | null) {
   const issueComponent = sanitizeBranchName(sourceIssue?.identifier ?? sourceIssue?.id ?? "issue");
-  return sanitizeBranchName(`paperclip/rescue/${issueComponent}/${formatUtcBranchTimestamp()}`);
+  return sanitizeBranchName(`wardmote/rescue/${issueComponent}/${formatUtcBranchTimestamp()}`);
 }
 
 function formatIssueReference(issueId: string | null | undefined, identifier: string | null | undefined) {
@@ -5294,7 +5294,7 @@ function trustedRuntimeHostnameBoundary(
 ): TrustedRuntimeHostnameBoundary | null {
   if (!urlTemplate?.trim()) return null;
   let markerIndex = 0;
-  const markerPrefix = "paperclip-runtime-template-";
+  const markerPrefix = "wardmote-runtime-template-";
   const safeTemplate = urlTemplate.replace(
     /{{\s*([a-zA-Z0-9_.-]+)\s*}}/g,
     (_match, path: string) => path === "port" ? "443" : `${markerPrefix}${markerIndex++}`,
@@ -5309,7 +5309,7 @@ function trustedRuntimeHostnameBoundary(
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
 
   const hostname = parsed.hostname.trim().toLowerCase().replace(/^\[|\]$/g, "");
-  const markers = [...hostname.matchAll(/paperclip-runtime-template-\d+/g)];
+  const markers = [...hostname.matchAll(/wardmote-runtime-template-\d+/g)];
   const lastMarker = markers.at(-1);
   if (!lastMarker || lastMarker.index === undefined) {
     return hostname ? { exactHostname: hostname } : null;

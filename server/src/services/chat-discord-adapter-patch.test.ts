@@ -1125,7 +1125,7 @@ describe("Wardmote Discord adapter patch", () => {
       files: [
         {
           data: Buffer.from(source, "utf8"),
-          filename: "paperclip-response.md",
+          filename: "wardmote-response.md",
           mimeType: "text/markdown; charset=utf-8",
         },
       ],
@@ -1139,7 +1139,7 @@ describe("Wardmote Discord adapter patch", () => {
     ).toEqual({ content: "Complete response attached." });
     const file = capturedBody!.get("files[0]");
     expect(file).toBeInstanceOf(File);
-    expect((file as File).name).toBe("paperclip-response.md");
+    expect((file as File).name).toBe("wardmote-response.md");
     expect(await (file as File).text()).toBe(source);
   });
 

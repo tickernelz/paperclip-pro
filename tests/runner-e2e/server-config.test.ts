@@ -76,7 +76,7 @@ describe("isolated paid E2E database ports", () => {
     roots.push(temporaryRoot);
     const configPath = path.join(
       temporaryRoot,
-      "paperclip-home",
+      "wardmote-home",
       "instances",
       "fixture",
       "config.json",

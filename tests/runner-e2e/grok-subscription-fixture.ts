@@ -28,7 +28,7 @@ export async function stageGrokSubscriptionFixture(input: {
   }
   const canonicalRoot = await realpath(root);
   const home = env.WARDMOTE_HOME;
-  if (!home || await realpath(home) !== path.join(canonicalRoot, "paperclip-home")) {
+  if (!home || await realpath(home) !== path.join(canonicalRoot, "wardmote-home")) {
     throw new Error("Grok fixture refuses a home outside its isolated test root");
   }
   const companyHome = resolveManagedGrokHomeDir(env, input.companyId);

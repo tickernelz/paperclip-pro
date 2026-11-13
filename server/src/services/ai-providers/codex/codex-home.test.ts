@@ -41,7 +41,7 @@ describe("codex managed home", () => {
   it("treats a concurrently-created expected auth symlink as success", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-home-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const wardmoteHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "wardmote-home");
     const managedCodexHome = path.join(
       wardmoteHome,
       "instances",
@@ -87,7 +87,7 @@ describe("codex managed home", () => {
   it("still throws on EEXIST when a raced-in auth symlink points elsewhere", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-home-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const wardmoteHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "wardmote-home");
     const managedCodexHome = path.join(
       wardmoteHome,
       "instances",
@@ -136,7 +136,7 @@ describe("codex managed home", () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-home-"));
     try {
       const sharedCodexHome = path.join(root, "shared-codex-home");
-      const wardmoteHome = path.join(root, "paperclip-home");
+      const wardmoteHome = path.join(root, "wardmote-home");
       const managedCodexHome = path.join(
         wardmoteHome,
         "instances",
@@ -588,11 +588,11 @@ describe("seedManagedCodexHome", () => {
     try {
       const sharedCodexHome = path.join(root, "shared-codex-home");
       const entryHome = path.join(
-        root, "paperclip-home", "instances", "default", "companies", "company-1", "codex-auth-cache", "acct-bound",
+        root, "wardmote-home", "instances", "default", "companies", "company-1", "codex-auth-cache", "acct-bound",
       );
       const env = {
         CODEX_HOME: sharedCodexHome,
-        WARDMOTE_HOME: path.join(root, "paperclip-home"),
+        WARDMOTE_HOME: path.join(root, "wardmote-home"),
         WARDMOTE_INSTANCE_ID: "default",
       };
       const stored = subscriptionAuth("acct-same", "stored", "2026-07-09T01:00:00Z");
@@ -624,11 +624,11 @@ describe("seedManagedCodexHome", () => {
     try {
       const sharedCodexHome = path.join(root, "shared-codex-home");
       const entryHome = path.join(
-        root, "paperclip-home", "instances", "default", "companies", "company-1", "codex-auth-cache", "acct-bound",
+        root, "wardmote-home", "instances", "default", "companies", "company-1", "codex-auth-cache", "acct-bound",
       );
       const env = {
         CODEX_HOME: sharedCodexHome,
-        WARDMOTE_HOME: path.join(root, "paperclip-home"),
+        WARDMOTE_HOME: path.join(root, "wardmote-home"),
         WARDMOTE_INSTANCE_ID: "default",
       };
       const stored = subscriptionAuth("acct-bound-id", "stored", "2026-07-09T01:00:00Z");
@@ -679,7 +679,7 @@ describe("reconcileManagedCodexHome", () => {
   async function makeFixture() {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-reconcile-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const wardmoteHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "wardmote-home");
     const agentHome = path.join(
       wardmoteHome,
       "instances",
@@ -861,7 +861,7 @@ describe("evaluateCodexCredentialReadiness", () => {
   async function makeFixture() {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-readiness-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const wardmoteHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "wardmote-home");
     const companyRoot = path.join(
       wardmoteHome,
       "instances",

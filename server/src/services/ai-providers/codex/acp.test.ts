@@ -229,7 +229,7 @@ class FakeRuntime {
 async function makeTempRoot(prefix: string) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
   tempRoots.push(root);
-  process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+  process.env.WARDMOTE_HOME = path.join(root, "wardmote-home");
   process.env.WARDMOTE_INSTANCE_ID = "test";
   return root;
 }
@@ -575,7 +575,7 @@ describe("codex_local ACP lane", () => {
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const managedAgentHome = path.join(
       root,
-      "paperclip-home",
+      "wardmote-home",
       "instances",
       "test",
       "companies",
@@ -624,7 +624,7 @@ describe("codex_local ACP lane", () => {
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const managedAgentHome = path.join(
       root,
-      "paperclip-home",
+      "wardmote-home",
       "instances",
       "test",
       "companies",
@@ -667,7 +667,7 @@ describe("codex_local ACP lane", () => {
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const managedAgentHome = path.join(
       root,
-      "paperclip-home",
+      "wardmote-home",
       "instances",
       "test",
       "companies",

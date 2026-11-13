@@ -99,8 +99,8 @@ async function handleMcpGatewayProtocol(
           capabilities: { tools: {}, resources: {}, prompts: {} },
           serverInfo: { name: "Wardmote MCP Gateway", version: "1.0.0" },
           _meta: {
-            "paperclip/mcp-app-ui": "unsupported",
-            "paperclip/mcp-app-ui-detail": "Interactive ui:// iframe hosting is not available in Wardmote Runner.",
+            "wardmote/mcp-app-ui": "unsupported",
+            "wardmote/mcp-app-ui-detail": "Interactive ui:// iframe hosting is not available in Wardmote Runner.",
           },
         },
       });
