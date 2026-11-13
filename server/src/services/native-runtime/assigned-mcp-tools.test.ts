@@ -15,8 +15,8 @@ function fixture(tools: ToolGatewayDescriptor[]) {
 }
 
 describe("assigned MCP runner tools", () => {
-  const searchName = "paperclip_search_assigned_tools";
-  const callName = "paperclip_call_assigned_tool";
+  const searchName = "wardmote_search_assigned_tools";
+  const callName = "wardmote_call_assigned_tool";
 
   it("pages through an oversized catalog and calls every tool through the original gateway", async () => {
     const f = fixture(Array.from({ length: 224 }, (_, i) => descriptor(`app.action_${i}`)));

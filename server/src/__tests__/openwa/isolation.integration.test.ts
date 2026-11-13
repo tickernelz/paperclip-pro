@@ -272,7 +272,7 @@ describe("OpenWA company isolation and invite-link joins (embedded Postgres + fa
       ["openwa_send", { chat: target.chatRef, text: "leak", idempotencyKey: randomUUID() }],
       ["openwa_call", { operation: "ChatController_findAll", args: {} }],
       ["openwa_call", { operation: "MessageController_sendText", args: { chatId: target.chatId, text: "leak" }, idempotencyKey: randomUUID() }],
-      ["openwa_call", { operation: "paperclip.audit.list", args: {} }],
+      ["openwa_call", { operation: "wardmote.audit.list", args: {} }],
     ] as const;
 
   it("AC18: another company's run cannot reach this endpoint's tools, and its board user cannot read approvals, audit, chats or owners", async () => {

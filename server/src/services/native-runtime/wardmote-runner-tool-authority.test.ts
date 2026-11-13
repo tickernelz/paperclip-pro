@@ -693,9 +693,9 @@ describe("WardmoteRunnerToolAuthority", () => {
     expect(tools).toEqual(expect.arrayContaining(baseline));
     expect(tools.filter(tool => String(tool.name).startsWith("app_"))).toEqual([]);
     expect(tools.map(tool => tool.name)).toEqual(expect.arrayContaining([
-      "paperclip_search_assigned_tools", "paperclip_call_assigned_tool", "register_deliverable",
+      "wardmote_search_assigned_tools", "wardmote_call_assigned_tool", "register_deliverable",
     ]));
-    const call = { tool: "paperclip_search_assigned_tools", callId: "discover", arguments: { query: "Action 223" } };
+    const call = { tool: "wardmote_search_assigned_tools", callId: "discover", arguments: { query: "Action 223" } };
     await expect(authority.execute(call)).resolves.toMatchObject({ tools: [expect.objectContaining({ description: "Action 223: Read a fixture" })] });
     listToolsForNamedGateway.mockClear();
     await db.update(heartbeatRuns).set({ status: "succeeded" }).where(eq(heartbeatRuns.id, runId));

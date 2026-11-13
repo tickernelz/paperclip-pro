@@ -589,7 +589,7 @@ Source: `OPENWA_TOOLS`, `packages/shared/src/openwa-tools.ts:42`.
 
 **Catalog.** The pinned manifest has 206 operations for OpenWA 0.30.0: 51
 `read`, 25 `write`, 50 `wa_admin`, 80 `gateway_admin`. The catalog adds one
-`wardmote` entry, `paperclip.audit.list`, for owner runs only. Each entry carries a
+`wardmote` entry, `wardmote.audit.list`, for owner runs only. Each entry carries a
 gate: `none` (reads), `reply_or_cross_chat_send` (writes that name a chat),
 `cross_chat_send`, `wa_admin`, `gateway_admin`, `owner_confirmation` or `owner_only`.
 Operations the active engine lacks are listed as unavailable
@@ -815,7 +815,7 @@ The endpoint's **Audit** tab lists `chat_audit_entries` newest first with filter
 `session_health`, `linked_read`, `run_failed`. `trigger_filtered` reasons: `denylisted`,
 `outside_allowlist`, `chat_inactive`, `duplicate`, `rate_limited`. Endpoint owners, company owners and instance admins see content;
 other board users with endpoint access see metadata only. Owner-class runs can
-read it through `openwa_call` operation `paperclip.audit.list`. Tool arguments are
+read it through `openwa_call` operation `wardmote.audit.list`. Tool arguments are
 redacted and bounded (4 KB arguments, 1 KB result summary).
 
 **Retention**: a daily job clears content older than **Keep content for (days)**

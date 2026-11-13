@@ -378,11 +378,11 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
     const c = await conversation(t, MEMBER);
     const owner = await run(t, c, "owner");
     const all = await catalogAll(owner);
-    const gateway = all.filter((entry) => entry.category !== "paperclip");
+    const gateway = all.filter((entry) => entry.category !== "wardmote");
     expect(gateway).toHaveLength(OPENWA_OPERATIONS.length);
     expect(gateway.every((entry) => typeof entry.available === "boolean" && typeof entry.category === "string")).toBe(true);
     expect(gateway.filter((entry) => entry.reason === "unavailable_on_engine")).toHaveLength(14);
-    expect(all.find((entry) => entry.operation === "paperclip.audit.list")).toMatchObject({ category: "paperclip", gate: "owner_only" });
+    expect(all.find((entry) => entry.operation === "wardmote.audit.list")).toMatchObject({ category: "wardmote", gate: "owner_only" });
     expect(all.find((entry) => entry.operation === "SessionController_findAll")).toMatchObject({ category: "gateway_admin", instanceGlobal: true });
     expect(all.find((entry) => entry.operation === "SessionController_logout")).toMatchObject({ gate: "owner_confirmation" });
     const described = await executeOpenwaTool(db, owner, "openwa_describe", { operation: "MessageController_sendText" });
@@ -394,7 +394,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
     await db.update(chatEndpoints).set({ policy: { gatewayAdminTools: "off" } }).where(eq(chatEndpoints.id, t.endpointId));
     const hidden = await catalogAll(owner);
     expect(hidden.some((entry) => entry.category === "gateway_admin")).toBe(false);
-    expect(hidden.filter((entry) => entry.category !== "paperclip")).toHaveLength(OPENWA_OPERATIONS.length - OPENWA_OPERATIONS.filter((op) => op.category === "gateway_admin").length);
+    expect(hidden.filter((entry) => entry.category !== "wardmote")).toHaveLength(OPENWA_OPERATIONS.length - OPENWA_OPERATIONS.filter((op) => op.category === "gateway_admin").length);
     expect((await rejection(executeOpenwaTool(db, owner, "openwa_describe", { operation: "PluginsController_findAll" }))).code).toBe("gateway_admin_disabled");
     const before = t.gateway.requests.length;
     expect((await rejection(call(owner, { operation: "PluginsController_findAll" }))).code).toBe("gateway_admin_disabled");
@@ -609,17 +609,17 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
     expect(forwarded(t, "POST", logoutRoute)).toBe(1);
   });
 
-  it("serves paperclip.audit.list to owner runs only", async () => {
+  it("serves wardmote.audit.list to owner runs only", async () => {
     const t = await setup();
     const c = await conversation(t, MEMBER);
     const owner = await run(t, c, "owner");
     await call(owner, { operation: "HealthController_check" });
-    const page = await call(owner, { operation: "paperclip.audit.list", args: { kinds: ["tool_called"] } });
+    const page = await call(owner, { operation: "wardmote.audit.list", args: { kinds: ["tool_called"] } });
     expect(page.access).toBe("content");
     expect((page.items as Array<Record<string, unknown>>).length).toBeGreaterThan(0);
     expect((page.items as Array<Record<string, unknown>>)[0]).toMatchObject({ kind: "tool_called", metadata: { tool: "openwa_call" } });
     const other = await run(t, c, "other");
-    expect((await rejection(call(other, { operation: "paperclip.audit.list" }))).code).toBe("owner_only");
+    expect((await rejection(call(other, { operation: "wardmote.audit.list" }))).code).toBe("owner_only");
   });
 
   it("filters session-query operations to the endpoint's session and caps results at 16 KB with cursors", async () => {
