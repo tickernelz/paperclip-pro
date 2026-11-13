@@ -1158,7 +1158,7 @@ describe("agent issue mutation checkout ownership", () => {
       provider: "github",
       title: "PR 42",
       url: "https://github.com/tickernelz/wardmote/pull/42",
-      metadata: { repo: "paperclipai/paperclip", number: 42 },
+      metadata: { repo: "tickernelz/wardmote", number: 42 },
     }).expect(201);
 
     expect(mockWorkProductService.latestRunDiffSummary).toHaveBeenCalledWith(ownerRunId);
@@ -1189,7 +1189,7 @@ describe("agent issue mutation checkout ownership", () => {
       provider: "github",
       title: "Commit 9c12ae7",
       url: "https://github.com/tickernelz/wardmote/commit/9c12ae7b41e5",
-      metadata: { repo: "paperclipai/paperclip", sha: "9c12ae7b41e5" },
+      metadata: { repo: "tickernelz/wardmote", sha: "9c12ae7b41e5" },
     }).expect(201);
 
     expect(mockWorkProductService.resolveCommitDiffSummary).toHaveBeenCalledWith(

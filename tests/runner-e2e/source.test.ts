@@ -16,7 +16,7 @@ describe("runner E2E source provenance", () => {
           GITHUB_SHA: "workflow-sha",
           GITHUB_REF: "refs/heads/master",
           GITHUB_SERVER_URL: "https://github.com",
-          GITHUB_REPOSITORY: "paperclipai/paperclip",
+          GITHUB_REPOSITORY: "tickernelz/wardmote",
           GITHUB_RUN_ID: "123",
         },
       ),
@@ -24,7 +24,7 @@ describe("runner E2E source provenance", () => {
       sha: "target-sha",
       ref: "refs/heads/target",
       workflowRunUrl:
-        "https://github.com/paperclipai/paperclip/actions/runs/123",
+        "https://github.com/tickernelz/wardmote/actions/runs/123",
     });
   });
 
@@ -40,7 +40,7 @@ describe("runner E2E source provenance", () => {
           GITHUB_SHA: "workflow-sha",
           GITHUB_REF: "refs/heads/master",
           GITHUB_SERVER_URL: "https://github.com",
-          GITHUB_REPOSITORY: "paperclipai/paperclip",
+          GITHUB_REPOSITORY: "tickernelz/wardmote",
           GITHUB_RUN_ID: "456",
         },
       ),
@@ -48,7 +48,7 @@ describe("runner E2E source provenance", () => {
       sha: "result-sha",
       ref: "refs/heads/master",
       workflowRunUrl:
-        "https://github.com/paperclipai/paperclip/actions/runs/456",
+        "https://github.com/tickernelz/wardmote/actions/runs/456",
     });
     expect(resolveRunnerE2ESource(null, {})).toEqual({
       sha: null,

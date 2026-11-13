@@ -19,7 +19,7 @@ describe("GitHub grant metadata", () => {
       if (url.pathname === "/user/installations") {
         return json({ installations: secondPage
           ? [{ id: 102, repository_selection: "all", account: { login: "octocat" } }]
-          : [{ id: 101, repository_selection: "selected", html_url: "https://github.com/settings/installations/101", account: { login: "paperclipai" } }],
+          : [{ id: 101, repository_selection: "selected", html_url: "https://github.com/settings/installations/101", account: { login: "tickernelz" } }],
         }, !secondPage);
       }
       if (url.pathname === "/user/installations/101/repositories") {
@@ -42,7 +42,7 @@ describe("GitHub grant metadata", () => {
       repositoryCount: 3,
       repositorySelection: "mixed",
       installationIds: ["101", "102"],
-      installationOwnerLogins: ["paperclipai", "octocat"],
+      installationOwnerLogins: ["tickernelz", "octocat"],
       repositories: [
         { id: "3", fullName: "octocat/c", installationId: "102", ownerType: "personal" },
         { id: "1", fullName: "tickernelz/a", installationId: "101", ownerType: "organization", private: false },

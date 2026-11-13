@@ -89,7 +89,7 @@ describe("parseFrontmatterMarkdown", () => {
       "metadata:",
       "  sources:",
       "    - kind: github-dir",
-      "      repo: paperclipai/paperclip",
+      "      repo: tickernelz/wardmote",
       "      path: skills/wardmote",
       "---",
       "",
@@ -101,7 +101,7 @@ describe("parseFrontmatterMarkdown", () => {
         sources: [
           {
             kind: "github-dir",
-            repo: "paperclipai/paperclip",
+            repo: "tickernelz/wardmote",
             path: "skills/wardmote",
           },
         ],
@@ -169,7 +169,7 @@ describe("stringifyFrontmatter", () => {
         metadata: {
           source: {
             kind: "github-dir",
-            repo: "paperclipai/paperclip",
+            repo: "tickernelz/wardmote",
             path: "skills/wardmote",
           },
         },

@@ -293,7 +293,7 @@ function dedicatedGitHubGrant(
         repositoryCount: 1,
         repositorySelection: "selected",
         installationIds: ["456"],
-        installationOwnerLogins: ["paperclipai"],
+        installationOwnerLogins: ["tickernelz"],
         repositories: [{ id: "789", fullName: "tickernelz/test-repo", installationId: "456" }],
         installationUrl: "https://github.com/apps/wardmote-test/installations/new",
         managementUrl: "https://github.com/settings/installations/456",
@@ -1761,7 +1761,7 @@ describe("AppDetail", () => {
       connection: { id: "conn-1", uid: "conn-1" },
       grants: [dedicatedGitHubGrant({ kind: "user", subjectAgentId: null, subjectUserId: "user-1" }, {
         repositoryCount: empty ? 0 : 3,
-        installationOwnerLogins: ["paperclipai", "dottabot", "empty-org"],
+        installationOwnerLogins: ["tickernelz", "dottabot", "empty-org"],
         repositories: empty ? [] : [
           { id: "1", fullName: "tickernelz/first", installationId: "456" },
           { id: "2", fullName: "tickernelz/second", installationId: "456" },
