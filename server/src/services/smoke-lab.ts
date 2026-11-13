@@ -88,12 +88,12 @@ async function allocateFetchAllowedLoopbackPort() {
   throw new Error("Unable to allocate a Fetch-allowed Smoke Lab fixture port");
 }
 
-const HTTP_APP_KEY = "paperclip.smoke-lab.http-fixture";
-const STDIO_APP_KEY = "paperclip.smoke-lab.stdio-fixture";
+const HTTP_APP_KEY = "wardmote.smoke-lab.http-fixture";
+const STDIO_APP_KEY = "wardmote.smoke-lab.stdio-fixture";
 const HTTP_CONNECTION_NAME = "Smoke Lab HTTP MCP fixture";
 const STDIO_CONNECTION_NAME = "Smoke Lab stdio MCP fixture";
-const STDIO_TEMPLATE_KEY = "paperclip.smoke-lab.stdio-fixture";
-const PROFILE_KEY = "paperclip.smoke-lab.profile";
+const STDIO_TEMPLATE_KEY = "wardmote.smoke-lab.stdio-fixture";
+const PROFILE_KEY = "wardmote.smoke-lab.profile";
 const HTTP_SERVICE_ID = "http-mcp-fixture" as const;
 const OAUTH_SERVICE_ID = "fake-oauth" as const;
 
