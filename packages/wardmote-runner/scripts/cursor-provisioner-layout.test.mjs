@@ -16,6 +16,6 @@ test("global and local npm installations provision the same account-owned pinned
   const distribution = { platform: "linux", architecture: "x64", closureSha256: "a".repeat(64) };
   for (const prefix of ["/usr/local/lib/node_modules", "/home/operator/project/node_modules"]) {
     assert.equal(cursorProvisionerDestination(`file://${prefix}/@tickernelz/wardmote-server/dist/vendor/wardmote-runner/cli/provision-cursor.cjs`, distribution, "/home/operator"),
-      `/home/operator/.paperclip/runtimes/cursor/linux-x64/${distribution.closureSha256}`);
+      `/home/operator/.wardmote/runtimes/cursor/linux-x64/${distribution.closureSha256}`);
   }
 });

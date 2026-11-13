@@ -157,7 +157,7 @@ See [the rich ACP capability report](../../doc/architecture/runner-rich-acp-capa
 Install Cursor explicitly with `wardmote runtime setup cursor`; npm installation
 does not download it. Run setup as the OS user that runs Wardmote (the service
 account for a managed service). Setup writes to that account's
-`~/.paperclip-pro/runtimes/cursor/<platform>-<arch>/<closure-sha256>`, so a system-wide
+`~/.wardmote/runtimes/cursor/<platform>-<arch>/<closure-sha256>`, so a system-wide
 npm installation can remain read-only. Isolated provider HOME/XDG settings do not
 redirect this cache. Container images continue to use their packaged assets.
 Configure a company secret binding for `CURSOR_API_KEY` or
