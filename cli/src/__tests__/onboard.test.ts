@@ -70,7 +70,7 @@ function createExistingConfigFixture() {
         baseDir: path.join(runtimeRoot, "storage"),
       },
       s3: {
-        bucket: "paperclip",
+        bucket: "wardmote",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,

@@ -647,7 +647,7 @@ The endpoint keeps its own agent number unchanged.
   other chat fail 403 `linked_chat_not_allowed` before the gateway is called.
 - **Key.** **Link a number** creates a dedicated OpenWA API key with the
   endpoint's admin key: role `viewer`, `allowedSessions` set to the linked
-  session, named `paperclip-linked-<short id>`. Wardmote stores it as a
+  session, named `wardmote-linked-<short id>`. Wardmote stores it as a
   Wardmote-managed company secret and never returns it to a client or an agent.
   OpenWA refuses every send and write route for a viewer key. Without an admin
   key, linking fails 422 `openwa_admin_key_required`; add one under **Admin API
@@ -656,7 +656,7 @@ The endpoint keeps its own agent number unchanged.
 - **Unlink** always removes the link and deletes the secret; later reads fail
   `linked_session_unavailable`. Revoking the gateway key is best-effort: when the
   admin key is missing or rejected or the gateway is unreachable, the response is
-  `revoked: false` with a warning naming the key (`paperclip-linked-<short id>`)
+  `revoked: false` with a warning naming the key (`wardmote-linked-<short id>`)
   to revoke in the OpenWA dashboard, and the board shows that warning. Removing
   the channel unlinks every linked number the same way before the admin key is
   cleared. When the gateway stops accepting a key, the number shows

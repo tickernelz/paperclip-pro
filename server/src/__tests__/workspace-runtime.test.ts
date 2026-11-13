@@ -2045,7 +2045,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
               baseDir: path.join(sharedConfigDir, "storage"),
             },
             s3: {
-              bucket: "paperclip",
+              bucket: "wardmote",
               region: "us-east-1",
               prefix: "",
               forcePathStyle: false,

@@ -19,7 +19,7 @@ import {
 import { runnerPrpCoordinator } from "./runner-prp-coordinator.js";
 
 const moduleDirectory = dirname(fileURLToPath(import.meta.url));
-const RUNNER_VERSION = "paperclip-runner-v1";
+const RUNNER_VERSION = "wardmote-runner-v1";
 
 interface NativeGoalControl {
   sessionId: string;

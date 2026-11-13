@@ -71,7 +71,7 @@ export const storageLocalDiskConfigSchema = z.object({
 }).passthrough();
 
 export const storageS3ConfigSchema = z.object({
-  bucket: z.string().min(1).default("paperclip"),
+  bucket: z.string().min(1).default("wardmote"),
   region: z.string().min(1).default("us-east-1"),
   endpoint: z.string().optional(),
   prefix: z.string().default(""),
@@ -84,7 +84,7 @@ export const storageConfigSchema = z.object({
     baseDir: "~/.wardmote/instances/default/data/storage",
   }),
   s3: storageS3ConfigSchema.default({
-    bucket: "paperclip",
+    bucket: "wardmote",
     region: "us-east-1",
     prefix: "",
     forcePathStyle: false,
@@ -158,7 +158,7 @@ export const wardmoteConfigSchema = z
         baseDir: "~/.wardmote/instances/default/data/storage",
       },
       s3: {
-        bucket: "paperclip",
+        bucket: "wardmote",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,

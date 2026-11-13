@@ -13,7 +13,7 @@ export function defaultStorageConfig(): StorageConfig {
       baseDir: defaultStorageBaseDir(),
     },
     s3: {
-      bucket: "paperclip",
+      bucket: "wardmote",
       region: "us-east-1",
       endpoint: undefined,
       prefix: "",
@@ -74,7 +74,7 @@ export async function promptStorage(current?: StorageConfig): Promise<StorageCon
     };
   }
 
-  const bucketDefault = base.s3.bucket || "paperclip";
+  const bucketDefault = base.s3.bucket || "wardmote";
   const regionDefault = base.s3.region || "us-east-1";
   const bucket = await p.text({
     message: "S3 bucket",

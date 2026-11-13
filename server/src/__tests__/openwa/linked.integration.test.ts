@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { RETIRED_LINKED_KEY_PREFIX } from "../../services/openwa/retired-linked-key-name.js";
 import { mkdtemp, readFile, realpath, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -289,7 +290,7 @@ describe("OpenWA linked read-only numbers (embedded Postgres + fake gateway)", (
 
     const keys = scopedKeys(t);
     expect(keys).toHaveLength(1);
-    expect(keys[0]).toMatchObject({ role: "viewer", allowedSessions: [LINKED_SESSION_ID], name: "paperclip-linked-" + linked.body.id.slice(0, 8), active: true });
+    expect(keys[0]).toMatchObject({ role: "viewer", allowedSessions: [LINKED_SESSION_ID], name: "wardmote-linked-" + linked.body.id.slice(0, 8), active: true });
     expect(t.gateway.requests.find((entry) => entry.method === "POST" && entry.path === "/api/auth/api-keys")?.key).toBe("admin");
 
     const [row] = await db.select().from(chatOpenwaLinkedSessions).where(eq(chatOpenwaLinkedSessions.id, linked.body.id));
@@ -554,9 +555,10 @@ describe("OpenWA linked read-only numbers (embedded Postgres + fake gateway)", (
     const warn = vi.spyOn(logger, "warn");
     const response = await request(app).delete(base + "/" + linkedId);
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ revoked: false, warning: expect.stringContaining('"paperclip-linked-' + linkedId.slice(0, 8) + '"') });
+    expect(response.body).toEqual({ revoked: false, warning: expect.stringContaining('"wardmote-linked-' + linkedId.slice(0, 8) + '"') });
+    expect(response.body.warning).toContain('"' + RETIRED_LINKED_KEY_PREFIX + linkedId.slice(0, 8) + '"');
     expect(response.body.warning).toMatch(/OpenWA dashboard/);
-    expect(warn).toHaveBeenCalledWith(expect.objectContaining({ linkedSessionId: linkedId, gatewayKeyName: "paperclip-linked-" + linkedId.slice(0, 8) }), expect.stringContaining("OpenWA dashboard"));
+    expect(warn).toHaveBeenCalledWith(expect.objectContaining({ linkedSessionId: linkedId, gatewayKeyName: "wardmote-linked-" + linkedId.slice(0, 8) }), expect.stringContaining("OpenWA dashboard"));
     warn.mockRestore();
     expect(await db.select().from(chatOpenwaLinkedSessions).where(eq(chatOpenwaLinkedSessions.id, linkedId))).toHaveLength(0);
     expect(await db.select().from(companySecrets).where(eq(companySecrets.id, row!.secretId))).toHaveLength(0);
