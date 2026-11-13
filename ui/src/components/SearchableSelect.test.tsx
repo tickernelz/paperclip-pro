@@ -196,13 +196,13 @@ describe("SearchableSelect", () => {
             key: "all:path-only",
             value: "path-only",
             label: "Wardmote app",
-            searchText: "/srv/paperclip/mobile-checkout",
+            searchText: "/srv/wardmote/mobile-checkout",
           },
           {
             key: "all:mobile",
             value: "mobile",
             label: "Mobile agent chat",
-            searchText: "/srv/paperclip/agent-chat",
+            searchText: "/srv/wardmote/agent-chat",
           },
         ],
       },
@@ -449,7 +449,7 @@ describe("SearchableSelect", () => {
       workspace({
         id: "workspace-wardmote",
         name: "Wardmote app",
-        cwd: "/srv/paperclip/home/paperclipai/paperclip/.wardmote/worktrees/PAP-11722-new-existing-workspace-selector",
+        cwd: "/srv/wardmote/home/acmeai/wardmote/.wardmote/worktrees/PAP-11722-new-existing-workspace-selector",
         branchName: "feature/reusable-workspaces",
         status: "running",
         lastUsedAt: "2026-06-24T10:00:00.000Z",
@@ -457,7 +457,7 @@ describe("SearchableSelect", () => {
       workspace({
         id: "workspace-marketing",
         name: "Marketing site",
-        cwd: "/srv/paperclip/home/marketing-site",
+        cwd: "/srv/wardmote/home/marketing-site",
         branchName: "landing-refresh",
         status: "idle",
         lastUsedAt: "2026-06-20T10:00:00.000Z",
@@ -493,7 +493,7 @@ describe("SearchableSelect", () => {
     expect(container.textContent).toContain("Recent");
     expect(container.textContent).toContain("All workspaces");
 
-    setInputValue(input!, "pclip reusable");
+    setInputValue(input!, "wmote reusable");
     await flush();
 
     expect(container.textContent).toContain("Wardmote app");

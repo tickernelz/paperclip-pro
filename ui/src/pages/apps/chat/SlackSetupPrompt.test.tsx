@@ -69,11 +69,11 @@ describe("Slack setup prompt", () => {
   });
 
   it("uses the preview's configured instance instead of its Storybook host", async () => {
-    await act(async () => root.render(<SlackSetupPrompt instanceUrl="https://my-company.paperclip.app" />));
+    await act(async () => root.render(<SlackSetupPrompt instanceUrl="https://my-company.wardmote.app" />));
     vi.mocked(copyTextToClipboard).mockResolvedValue(undefined);
     const dialog = await openPrompt();
     expect(copyTextToClipboard).toHaveBeenCalledTimes(1);
-    expect(copyTextToClipboard).toHaveBeenCalledWith(buildSlackSetupPrompt("https://my-company.paperclip.app"));
+    expect(copyTextToClipboard).toHaveBeenCalledWith(buildSlackSetupPrompt("https://my-company.wardmote.app"));
   });
 
   it("ignores stale copy results when the prompt changes", async () => {
@@ -84,10 +84,10 @@ describe("Slack setup prompt", () => {
     await copyPrompt(dialog);
     expect(copyTextToClipboard).toHaveBeenCalledTimes(1);
     expect(dialog.querySelector(".agent-setup-copy")?.textContent).toBe("Copying…");
-    await act(async () => root.render(<SlackSetupPrompt instanceUrl="https://another.paperclip.app" />));
+    await act(async () => root.render(<SlackSetupPrompt instanceUrl="https://another.wardmote.app" />));
     await act(async () => finishCopy());
     expect(dialog.querySelector(".agent-setup-copy")?.textContent).toBe("Copy prompt");
-    expect(dialog.querySelector("pre")?.textContent).toContain("https://another.paperclip.app");
+    expect(dialog.querySelector("pre")?.textContent).toContain("https://another.wardmote.app");
   });
 
   it("copies again on every opening", async () => {
@@ -112,8 +112,8 @@ describe("Slack setup prompt", () => {
   });
 
   it("includes only the instance origin, without URL credentials or callback state", () => {
-    const prompt = buildSlackSetupPrompt("https://user:private-password@my-company.paperclip.app/GIT/apps/chat/connect?code=private-code#private-state");
-    expect(prompt).toContain("Wardmote instance URL: https://my-company.paperclip.app\n");
+    const prompt = buildSlackSetupPrompt("https://user:private-password@my-company.wardmote.app/GIT/apps/chat/connect?code=private-code#private-state");
+    expect(prompt).toContain("Wardmote instance URL: https://my-company.wardmote.app\n");
     expect(prompt).not.toMatch(/private-password|private-code|private-state/);
     expect(prompt).toContain(slackSetupPrompt);
   });

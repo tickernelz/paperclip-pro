@@ -62,16 +62,16 @@ describe("GitHub setup prompt", () => {
   });
 
   it("uses the preview's configured instance instead of its Storybook host", async () => {
-    await act(async () => root.render(<GitHubSetupPrompt instanceUrl="https://my-company.paperclip.app" />));
+    await act(async () => root.render(<GitHubSetupPrompt instanceUrl="https://my-company.wardmote.app" />));
     vi.mocked(copyTextToClipboard).mockResolvedValue(undefined);
     const dialog = await openPrompt();
     expect(copyTextToClipboard).toHaveBeenCalledTimes(1);
-    expect(copyTextToClipboard).toHaveBeenCalledWith(buildGitHubSetupPrompt("https://my-company.paperclip.app"));
+    expect(copyTextToClipboard).toHaveBeenCalledWith(buildGitHubSetupPrompt("https://my-company.wardmote.app"));
   });
 
   it("includes only the instance origin, without URL credentials or callback state", () => {
-    const prompt = buildGitHubSetupPrompt("https://user:private-password@my-company.paperclip.app/GIT/apps/chat/connect?code=private-code#private-state");
-    expect(prompt).toContain("Wardmote instance URL: https://my-company.paperclip.app\n");
+    const prompt = buildGitHubSetupPrompt("https://user:private-password@my-company.wardmote.app/GIT/apps/chat/connect?code=private-code#private-state");
+    expect(prompt).toContain("Wardmote instance URL: https://my-company.wardmote.app\n");
     expect(prompt).not.toMatch(/private-password|private-code|private-state/);
     expect(prompt).toContain(githubSetupPrompt);
   });
