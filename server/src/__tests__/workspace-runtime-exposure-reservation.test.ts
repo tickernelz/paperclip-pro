@@ -57,7 +57,7 @@ let NEXT_HMR_PORT: number;
 
 const REAL_WARDMOTE_HOME = process.env.WARDMOTE_TEST_HOST_HOME?.trim()
   || process.env.WARDMOTE_HOME?.trim()
-  || path.join(os.homedir(), ".paperclip-pro");
+  || path.join(os.homedir(), ".wardmote");
 
 async function readLocallyLeasedPorts(): Promise<Set<number>> {
   const leased = new Set<number>();

@@ -44,7 +44,7 @@ utilities; they do not claim that a provider was contacted.
 
 ## Result boundary
 
-Future fixture executors may emit `paperclip.runner-acceptance.result/v1`
+Future fixture executors may emit `wardmote.runner-acceptance.result/v1`
 objects and pass them to `buildRunnerAcceptanceReport`. Results must name a
 catalog cell, report every expected assertion, carry successful redaction, and
 contain no sensitive-looking structured values. The aggregator produces only

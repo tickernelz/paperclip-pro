@@ -28,7 +28,7 @@ const runnerBinariesAvailable =
   existsSync(defaultCapabilityRunnerdBinary()) && existsSync(fakeCodexAppServer);
 const runnerBinaryIt = runnerBinariesAvailable ? it : it.skip;
 
-describe("paperclip-runner real server vertical slice", () => {
+describe("wardmote-runner real server vertical slice", () => {
   let temporary: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   const companyId = "00000000-0000-4000-8000-000000000701";
   const agentId = "00000000-0000-4000-8000-000000000702";

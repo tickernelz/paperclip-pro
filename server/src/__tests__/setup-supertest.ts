@@ -22,7 +22,7 @@ type SupertestTestConstructor = {
 };
 
 // Keep the original home available only for read-only host port-lease checks.
-process.env.WARDMOTE_TEST_HOST_HOME ??= process.env.WARDMOTE_HOME?.trim() || path.join(os.homedir(), ".paperclip-pro");
+process.env.WARDMOTE_TEST_HOST_HOME ??= process.env.WARDMOTE_HOME?.trim() || path.join(os.homedir(), ".wardmote");
 
 // Receipt-spool recovery must never scan a developer's instance during tests.
 const wardmoteTestHome = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-vitest-home-"));

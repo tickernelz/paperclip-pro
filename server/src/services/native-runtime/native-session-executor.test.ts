@@ -1549,7 +1549,7 @@ describe("verified native harness backups", () => {
       cwd: "/workspace",
       repoUrl: "https://example.test/repo.git",
       repoRef: "main",
-      branchName: "paperclip/test",
+      branchName: "wardmote/test",
     },
     session: {
       normalizedSessionId: "native-session",
@@ -12338,7 +12338,7 @@ describe("runnerd provider runtime wiring", () => {
         },
         workspace: {
           cwd: "/tmp/native-session-scope",
-          repoUrl: "https://example.test/paperclip.git",
+          repoUrl: "https://example.test/wardmote.git",
           repoRef: "refs/heads/main",
           branchName: "main",
         },

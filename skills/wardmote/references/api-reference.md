@@ -787,7 +787,7 @@ below remain available when local workspace configuration is needed.
     "workspace": {
       "name": "wardmote-mobile",
       "cwd": "/Users/me/wardmote-mobile",
-      "repoUrl": "https://github.com/acme/paperclip-mobile",
+      "repoUrl": "https://github.com/acme/acme-mobile",
       "repoRef": "main",
       "isPrimary": true
     }
@@ -813,7 +813,7 @@ Then `wardmoteCreateProjectWorkspace`, extended: available when the operator ena
 {
   "projectId": "{projectId}",
   "cwd": "/Users/me/wardmote-mobile",
-  "repoUrl": "https://github.com/acme/paperclip-mobile",
+  "repoUrl": "https://github.com/acme/acme-mobile",
   "repoRef": "main",
   "isPrimary": true
 }

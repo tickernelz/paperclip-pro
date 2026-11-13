@@ -86,7 +86,7 @@ function buildWorkspaceCommandDefinition(input: {
     disabledReason: readNonEmptyString(input.entry.disabledReason),
     rawConfig: { ...input.entry },
     source: {
-      type: "paperclip",
+      type: "wardmote",
       key: input.sourceKey,
       index: input.sourceIndex,
     },

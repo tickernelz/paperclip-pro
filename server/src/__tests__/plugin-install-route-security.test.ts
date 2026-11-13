@@ -62,7 +62,7 @@ type FixturePlugin = {
 async function createBuiltPluginFixture(parentDir: string, nameSuffix: string): Promise<FixturePlugin> {
   const slug = `plugin-install-guard-${nameSuffix}-${randomUUID().slice(0, 8)}`;
   const packageName = `@tickernelz/wardmote-${slug}`;
-  const pluginKey = `paperclip.${slug.replace(/^plugin-/, "").replace(/-/g, "_")}`;
+  const pluginKey = `wardmote.${slug.replace(/^plugin-/, "").replace(/-/g, "_")}`;
   const packageRoot = path.join(parentDir, slug);
   const distDir = path.join(packageRoot, "dist");
 

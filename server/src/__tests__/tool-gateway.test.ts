@@ -1664,7 +1664,7 @@ describeEmbeddedPostgres("tool gateway acceptance", () => {
 
   it("passes only approved env values to local stdio MCP processes", async () => {
     const previousDatabaseUrl = process.env.DATABASE_URL;
-    process.env.DATABASE_URL = "postgres://server-secret.example/paperclip";
+    process.env.DATABASE_URL = "postgres://server-secret.example/wardmote";
     try {
       const company = await createCompany(db);
       const agent = await createAgent(db, company.id);
