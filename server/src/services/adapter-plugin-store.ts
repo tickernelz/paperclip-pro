@@ -64,7 +64,7 @@ function ensureDirs(): string {
   const pkgJsonPath = path.join(adapterPluginsDir, "package.json");
   if (!fs.existsSync(pkgJsonPath)) {
     fs.writeFileSync(pkgJsonPath, JSON.stringify({
-      name: "paperclip-adapter-plugins",
+      name: "wardmote-adapter-plugins",
       version: "0.0.0",
       private: true,
       description: "Managed directory for Wardmote external adapter plugins. Do not edit manually.",

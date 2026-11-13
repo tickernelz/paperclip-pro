@@ -77,7 +77,7 @@ export function runtimeConnectionIntentRoutes(db: Db) {
         result: {
           protocolVersion: "2025-03-26",
           capabilities: { tools: { listChanged: false } },
-          serverInfo: { name: "paperclip-runtime-tools", version: "1" },
+          serverInfo: { name: "wardmote-runtime-tools", version: "1" },
         },
       });
       return;

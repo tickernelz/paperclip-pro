@@ -6424,7 +6424,7 @@ describeEmbeddedPostgres("workspace dirty quarantine branch repair", () => {
     const warning = restored?.warnings.find((entry) => entry.includes("dirty worktree state was quarantined"));
     expect(warning).toBeTruthy();
     const rescueBranch = warning?.match(/"([^"]+)"/)?.[1] ?? "";
-    expect(rescueBranch).toMatch(/^paperclip\/rescue\/PAP-455\/\d{8}T\d{6}Z$/);
+    expect(rescueBranch).toMatch(/^wardmote\/rescue\/PAP-455\/\d{8}T\d{6}Z$/);
     const rescueCommitSha = await readGit(repoRoot, ["rev-parse", rescueBranch]);
     await expect(readGit(worktreePath, ["branch", "--show-current"])).resolves.toBe(expectedBranch);
     await expect(readGit(worktreePath, ["status", "--porcelain", "--untracked-files=all"])).resolves.toBe("");
@@ -6520,7 +6520,7 @@ describeEmbeddedPostgres("workspace dirty quarantine branch repair", () => {
     const warning = restored?.warnings.find((entry) => entry.includes("dirty worktree state was quarantined"));
     expect(warning).toContain("An interrupted git rebase was also cleared");
     const rescueBranch = warning?.match(/"([^"]+)"/)?.[1] ?? "";
-    expect(rescueBranch).toMatch(/^paperclip\/rescue\/PAP-456\/\d{8}T\d{6}Z$/);
+    expect(rescueBranch).toMatch(/^wardmote\/rescue\/PAP-456\/\d{8}T\d{6}Z$/);
 
     await expect(readGit(worktreePath, ["branch", "--show-current"])).resolves.toBe(expectedBranch);
     await expect(readGit(worktreePath, ["status", "--porcelain", "--untracked-files=all"])).resolves.toBe("");

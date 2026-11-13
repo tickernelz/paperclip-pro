@@ -763,12 +763,12 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
           name: "Wardmote connections",
           url: runtimeTools.mcpEndpoint,
           token: runtimeTools.bearerToken,
-          connectionId: "paperclip-runtime-tools",
+          connectionId: "wardmote-runtime-tools",
         });
       }
       if (authToken && configuredWardmoteApiBaseUrl() && issueRef) {
         runtimeMcpServers.unshift({ name: "Wardmote projects", url: `${wardmoteApiBaseUrl()}/api/mcp/project-tools`,
-          token: authToken, connectionId: "paperclip-project-tools" });
+          token: authToken, connectionId: "wardmote-project-tools" });
       }
       const runtimeMcp = createAdapterRuntimeMcpAccess(runtimeMcpServers);
       if (runtimeTools && runtimeToolDelivery === "invocation_context") {

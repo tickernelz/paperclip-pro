@@ -3,6 +3,7 @@ import type { SlashCommandEvent } from "chat";
 import { z } from "zod";
 import type { ChatSdkCallbackEvent } from "./chat-sdk-runtime.js";
 import {
+  DISCORD_COMMAND_NAME,
   parseDiscordCommandRegistration,
   type DiscordCommandRegistrationScope,
 } from "./chat-discord-command-registration.js";
@@ -41,7 +42,7 @@ const rawCommand = z
       .object({
         id: snowflake,
         type: z.literal(1),
-        name: z.literal("paperclip"),
+        name: z.literal(DISCORD_COMMAND_NAME),
         options: z.tuple([
           z
             .object({
@@ -105,7 +106,7 @@ export function parseDiscordNativeCommand(
     callback.event.user.userId !== raw.user.id ||
     callback.event.user.isBot ||
     callback.event.user.isMe ||
-    callback.event.command !== `/paperclip ${command}` ||
+    callback.event.command !== `/${DISCORD_COMMAND_NAME} ${command}` ||
     callback.event.text !== "" ||
     raw.channel_id !== raw.channel.id
   )
