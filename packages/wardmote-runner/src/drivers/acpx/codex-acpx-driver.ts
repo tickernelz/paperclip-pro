@@ -2149,7 +2149,7 @@ function validateRecoverySnapshot(snapshot: PersistedHarnessSession): void {
     !/^sha256:[a-f0-9]{64}$/.test(identity.profileDigest) ||
     !/^sha256:[a-f0-9]{64}$/.test(identity.workspaceDigest) ||
     (identity.permissionMode !== undefined &&
-      !["approve-all", "approve-paperclip", "approve-reads", "deny-all"].includes(
+      !["approve-all", "approve-wardmote", "approve-reads", "deny-all"].includes(
         identity.permissionMode,
       )) ||
     (identity.mode !== undefined && !isProviderMode(identity.mode)) ||

@@ -88,7 +88,7 @@ export interface NativeAwsAgentCoreProfileSnapshot {
 export type NativeAcpxAgent = "pi" | "claude" | "codex" | "grok" | "cursor" | "copilot";
 export type NativeCodexApprovalPolicy = "never" | "on-request" | "untrusted";
 export type NativeOpenCodePermissionMode = "allow" | "ask" | "deny";
-export type NativeAcpxPermissionMode = "approve-all" | "approve-paperclip" | "approve-reads" | "deny-all";
+export type NativeAcpxPermissionMode = "approve-all" | "approve-wardmote" | "approve-reads" | "deny-all";
 export type NativeCursorMode = "agent" | "plan" | "ask";
 
 export interface NativeAcpxProfileSnapshot {
@@ -631,8 +631,8 @@ export function parseNativeExecutionInput(value: unknown): NativeExecutionInput 
       throw new NativeExecutionInputError("input.provider.agent must be pi, claude, codex, grok, cursor, or copilot");
     }
     if (isV4) {
-      if (provider.permissionMode !== "approve-all" && provider.permissionMode !== "approve-paperclip" && provider.permissionMode !== "approve-reads" && provider.permissionMode !== "deny-all") {
-        throw new NativeExecutionInputError("input.provider.permissionMode must be approve-all, approve-paperclip, approve-reads, or deny-all");
+      if (provider.permissionMode !== "approve-all" && provider.permissionMode !== "approve-wardmote" && provider.permissionMode !== "approve-reads" && provider.permissionMode !== "deny-all") {
+        throw new NativeExecutionInputError("input.provider.permissionMode must be approve-all, approve-wardmote, approve-reads, or deny-all");
       }
     } else if (provider.permissionPolicy !== "interactive") {
       throw new NativeExecutionInputError("input.provider.permissionPolicy must be interactive");

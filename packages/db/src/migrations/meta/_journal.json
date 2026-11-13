@@ -2689,6 +2689,13 @@
       "when": 1795036797710,
       "tag": "0385_wardmote_package_metadata",
       "breakpoints": true
+    },
+    {
+      "idx": 386,
+      "version": "7",
+      "when": 1795036857710,
+      "tag": "0386_wardmote_acpx_permission_mode",
+      "breakpoints": true
     }
   ]
 }

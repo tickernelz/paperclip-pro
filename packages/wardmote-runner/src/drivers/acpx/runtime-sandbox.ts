@@ -403,7 +403,7 @@ export async function prepareAcpxRuntimeSandbox(input: {
       `${JSON.stringify({
         model: input.binding.requestedModel,
         availableModels: [input.binding.requestedModel],
-        ...((input.binding.permissionMode === "approve-reads" || input.binding.permissionMode === "approve-paperclip")
+        ...((input.binding.permissionMode === "approve-reads" || input.binding.permissionMode === "approve-wardmote")
           ? { permissions: { allow: claudeWardmotePermissionRules(input.tools ?? [], input.binding.permissionMode) } }
           : {}),
       })}\n`,

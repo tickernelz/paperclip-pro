@@ -127,7 +127,7 @@ export type WardmoteRunnerNativeProviderInput =
       provider: "acpx";
       model: string;
       acpxAgent: AdmittedWardmoteRunnerAcpxAgent;
-      acpxPermissionMode: "approve-all" | "approve-paperclip" | "approve-reads" | "deny-all";
+      acpxPermissionMode: "approve-all" | "approve-wardmote" | "approve-reads" | "deny-all";
       acpxSessionMode?: "agent" | "plan" | "ask";
       piThinkingLevel?: "off" | "low" | "high" | "max";
     };
@@ -574,7 +574,7 @@ export function resolveWardmoteRunnerNativeProviderInput(input: {
       acpxPermissionMode: resolveWardmoteRunnerPermissionMode(
         "acpx",
         config.acpxPermissionMode,
-      ) as "approve-all" | "approve-paperclip" | "approve-reads" | "deny-all",
+      ) as "approve-all" | "approve-wardmote" | "approve-reads" | "deny-all",
     };
   }
   if (profile.provider === "claude_managed") {

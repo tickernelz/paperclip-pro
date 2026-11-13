@@ -30,7 +30,7 @@ describe("Wardmote Runner native provider configuration", () => {
     expect(resolveWardmoteRunnerNativeProviderInput({ backend: "codex_app_server",
       adapterConfig: { provider: "codex", model }, codexCliVersion })).toMatchObject({ model });
   });
-  it.each([undefined, "approve-all", "approve-paperclip", "approve-reads", "deny-all"])(
+  it.each([undefined, "approve-all", "approve-wardmote", "approve-reads", "deny-all"])(
     "passes Grok's full-auto default or explicit %s policy to the native runner",
     (acpxPermissionMode) => {
       expect(resolveWardmoteRunnerNativeProviderInput({

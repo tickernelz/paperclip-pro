@@ -505,7 +505,7 @@ const child = await ctx.issues.create({
   status: "todo",
   assigneeAgentId: workerAgentId,
   billingCode: "mission:alpha",
-  originKind: "plugin:paperclip.missions:feature",
+  originKind: "plugin:wardmote.missions:feature",
   originId: "mission-alpha:feature-1",
   blockedByIssueIds: [planningIssueId],
 });

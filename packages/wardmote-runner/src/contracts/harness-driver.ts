@@ -453,7 +453,7 @@ export interface AcpxSessionIdentity {
   requestedModel: string;
   effectiveModel: string;
   /** Missing on legacy snapshots; those used the historical approve-reads behavior. */
-  permissionMode?: "approve-all" | "approve-paperclip" | "approve-reads" | "deny-all";
+  permissionMode?: "approve-all" | "approve-wardmote" | "approve-reads" | "deny-all";
   /** Effective provider mode identifier, bound to the session identity. */
   mode?: string;
   piThinkingLevel?: "off" | "low" | "high" | "max";

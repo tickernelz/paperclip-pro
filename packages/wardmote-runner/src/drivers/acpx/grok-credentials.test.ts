@@ -88,7 +88,7 @@ describe("Grok isolated credentials", () => {
   it("keeps untrusted read hints and Wardmote-looking tools behind the selected approval policy", () => {
     const request = { inferredKind: "read", raw: { toolCall: { title: "mcp__wardmote__finish_task" } } };
     expect(decideAcpxPermission("grok", "approve-reads", request)).toBe("delegate");
-    expect(decideAcpxPermission("grok", "approve-paperclip", request)).toBe("delegate");
+    expect(decideAcpxPermission("grok", "approve-wardmote", request)).toBe("delegate");
     expect(decideAcpxPermission("grok", "deny-all", request)).toBe("reject_once");
     expect(decideAcpxPermission("grok", "approve-all", request)).toBe("allow_once");
   });

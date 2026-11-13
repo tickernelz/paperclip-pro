@@ -294,7 +294,7 @@ Rules:
 
 - `SKILL.md` should follow the Agent Skills spec
 - Wardmote must not require extra top-level fields for skill validity
-- Wardmote-specific extensions must live under `metadata.paperclip` or `metadata.sources`
+- Wardmote-specific extensions must live under `metadata.wardmote` or `metadata.sources`
 - a skill directory may include `scripts/`, `references/`, and `assets/` exactly as the Agent Skills ecosystem expects
 - tools implementing this spec should treat `skills.sh` compatibility as a first-class goal rather than inventing a parallel skill format
 
@@ -545,7 +545,7 @@ Wardmote can map this spec to its runtime model like this:
 
 Inline Wardmote-only metadata that must live inside a shared markdown file should use:
 
-- `metadata.paperclip`
+- `metadata.wardmote`
 
 That keeps the base format broader than Wardmote.
 
