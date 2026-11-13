@@ -2238,7 +2238,7 @@ async function startRuntime(input: {
   if (instructionRoot) externalDirectories[`${instructionRoot}/**`] = "allow";
   const [modelProvider, ...modelIdParts] = input.options.model.split("/");
   const providerModelId = modelIdParts.join("/");
-  const providerProxy = modelProvider === "paperclip" && input.options.environment?.WARDMOTE_AI_PROVIDER_URL
+  const providerProxy = modelProvider === "wardmote" && input.options.environment?.WARDMOTE_AI_PROVIDER_URL
     ? await startOpenCodeProviderProxy(input.options.environment.WARDMOTE_AI_PROVIDER_URL, input.options.environment.WARDMOTE_AI_PROVIDER_KEY ?? "", providerModelId, input.options.environment).catch(async error => {
         await bridge.close().catch(() => {});
         await rm(isolatedHome, { recursive: true, force: true }).catch(() => {});
