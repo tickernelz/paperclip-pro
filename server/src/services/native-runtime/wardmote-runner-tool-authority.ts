@@ -1160,7 +1160,7 @@ export class WardmoteRunnerToolAuthority {
       ? input.blockedByTaskIds.map(requiredString)
       : [];
     const durableIdempotencyKey =
-      `paperclip-runner:create-task:${this.binding.issueId}:${idempotencyKey}`;
+      `wardmote-runner:create-task:${this.binding.issueId}:${idempotencyKey}`;
     const inputFingerprint = createHash("sha256")
       .update(canonicalJson(input))
       .digest("hex");

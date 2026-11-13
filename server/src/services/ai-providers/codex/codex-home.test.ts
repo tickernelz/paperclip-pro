@@ -15,6 +15,7 @@ import {
   stageCodexHomeForSync,
   writeManagedCodexMcpConfig,
 } from "./codex-home.js";
+import { RETIRED_CODEX_MANAGED_MCP_BLOCK } from "../../retired-marker-names.js";
 
 describe("mergeManagedCodexMcpGateways", () => {
   it("keeps runtime gateways and appends non-overlapping context gateways", () => {
@@ -41,7 +42,7 @@ describe("codex managed home", () => {
   it("treats a concurrently-created expected auth symlink as success", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-home-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const wardmoteHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "wardmote-home");
     const managedCodexHome = path.join(
       wardmoteHome,
       "instances",
@@ -87,7 +88,7 @@ describe("codex managed home", () => {
   it("still throws on EEXIST when a raced-in auth symlink points elsewhere", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-home-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const wardmoteHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "wardmote-home");
     const managedCodexHome = path.join(
       wardmoteHome,
       "instances",
@@ -136,7 +137,7 @@ describe("codex managed home", () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-home-"));
     try {
       const sharedCodexHome = path.join(root, "shared-codex-home");
-      const wardmoteHome = path.join(root, "paperclip-home");
+      const wardmoteHome = path.join(root, "wardmote-home");
       const managedCodexHome = path.join(
         wardmoteHome,
         "instances",
@@ -588,11 +589,11 @@ describe("seedManagedCodexHome", () => {
     try {
       const sharedCodexHome = path.join(root, "shared-codex-home");
       const entryHome = path.join(
-        root, "paperclip-home", "instances", "default", "companies", "company-1", "codex-auth-cache", "acct-bound",
+        root, "wardmote-home", "instances", "default", "companies", "company-1", "codex-auth-cache", "acct-bound",
       );
       const env = {
         CODEX_HOME: sharedCodexHome,
-        WARDMOTE_HOME: path.join(root, "paperclip-home"),
+        WARDMOTE_HOME: path.join(root, "wardmote-home"),
         WARDMOTE_INSTANCE_ID: "default",
       };
       const stored = subscriptionAuth("acct-same", "stored", "2026-07-09T01:00:00Z");
@@ -624,11 +625,11 @@ describe("seedManagedCodexHome", () => {
     try {
       const sharedCodexHome = path.join(root, "shared-codex-home");
       const entryHome = path.join(
-        root, "paperclip-home", "instances", "default", "companies", "company-1", "codex-auth-cache", "acct-bound",
+        root, "wardmote-home", "instances", "default", "companies", "company-1", "codex-auth-cache", "acct-bound",
       );
       const env = {
         CODEX_HOME: sharedCodexHome,
-        WARDMOTE_HOME: path.join(root, "paperclip-home"),
+        WARDMOTE_HOME: path.join(root, "wardmote-home"),
         WARDMOTE_INSTANCE_ID: "default",
       };
       const stored = subscriptionAuth("acct-bound-id", "stored", "2026-07-09T01:00:00Z");
@@ -679,7 +680,7 @@ describe("reconcileManagedCodexHome", () => {
   async function makeFixture() {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-reconcile-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const wardmoteHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "wardmote-home");
     const agentHome = path.join(
       wardmoteHome,
       "instances",
@@ -861,7 +862,7 @@ describe("evaluateCodexCredentialReadiness", () => {
   async function makeFixture() {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-readiness-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const wardmoteHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "wardmote-home");
     const companyRoot = path.join(
       wardmoteHome,
       "instances",
@@ -1023,6 +1024,38 @@ describe("evaluateCodexCredentialReadiness", () => {
     }
   });
 
+  it("replaces a managed MCP block written before the rename instead of keeping both", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-mcp-config-"));
+    try {
+      const configPath = path.join(root, "config.toml");
+      await fs.writeFile(configPath, [
+        'model = "gpt-5"',
+        "",
+        RETIRED_CODEX_MANAGED_MCP_BLOCK.start,
+        '[mcp_servers."alpha"]',
+        'url = "https://wardmote.example/old"',
+        'http_headers = { Authorization = "Bearer old-token" }',
+        RETIRED_CODEX_MANAGED_MCP_BLOCK.end,
+        "",
+      ].join("\n"));
+
+      await writeManagedCodexMcpConfig({
+        codexHome: root,
+        apiBaseUrl: "https://wardmote.example",
+        gateways: [{ name: "alpha", endpointPath: "/api/tool-gateway/gateways/alpha/mcp", bearerToken: "new-token" }],
+      });
+
+      const config = await fs.readFile(configPath, "utf8");
+      expect(config).not.toContain(RETIRED_CODEX_MANAGED_MCP_BLOCK.start);
+      expect(config).not.toContain("old-token");
+      expect(config.match(/\[mcp_servers\."alpha"\]/g)).toHaveLength(1);
+      expect(config).toContain('model = "gpt-5"');
+      expect(config).toContain("new-token");
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("restricts permissions on an existing managed MCP config", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-mcp-config-"));
     try {
@@ -1065,7 +1098,7 @@ describe("stageCodexHomeForSync", () => {
     await fs.mkdir(home, { recursive: true });
     // auth.json is a symlink into the shared source (single-use rotating tokens).
     await fs.symlink(authSource, path.join(home, "auth.json"));
-    await fs.writeFile(path.join(home, "config.toml"), "model_provider = \"paperclip\"\n", "utf8");
+    await fs.writeFile(path.join(home, "config.toml"), "model_provider = \"wardmote\"\n", "utf8");
     await fs.writeFile(path.join(home, "config.json"), "{}\n", "utf8");
     await fs.writeFile(path.join(home, "instructions.md"), "hi\n", "utf8");
     // skills/ is a directory of symlinks.
@@ -1145,7 +1178,7 @@ describe("stageCodexHomeForSync", () => {
       // and is persisted 0600 on disk.
       await fs.writeFile(
         path.join(home, "config.toml"),
-        "[mcp_servers.paperclip]\nheaders = { Authorization = \"Bearer secret-token\" }\n",
+        "[mcp_servers.wardmote]\nheaders = { Authorization = \"Bearer secret-token\" }\n",
         { mode: 0o600 },
       );
       staged = await stageCodexHomeForSync(home, { runId: "run-toml-mode" });

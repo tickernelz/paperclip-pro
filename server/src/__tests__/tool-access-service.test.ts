@@ -14250,7 +14250,7 @@ describeEmbeddedPostgres("tool access service", () => {
       .insert(toolApplications)
       .values({
         companyId: company.id,
-        applicationKey: "paperclip.smoke-lab.http-fixture",
+        applicationKey: "wardmote.smoke-lab.http-fixture",
         name: "Smoke Lab HTTP MCP fixture",
         type: "mcp_http",
         status: "active",
