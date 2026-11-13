@@ -88,7 +88,7 @@ export function workspaceLoginHandoffPlugin(deps: {
   resolveExpectedIdentity: () => WorkspaceHandoffExpectedIdentity;
 }) {
   return {
-    id: "paperclip-workspace-login-handoff",
+    id: "wardmote-workspace-login-handoff",
     endpoints: {
       exchangeWorkspaceLoginHandoff: createAuthEndpoint(
         WORKSPACE_HANDOFF_EXCHANGE_PATH,

@@ -623,7 +623,7 @@ export function fastResponseService(
           publications,
           {
             actorType: request.responsibleUserId ? "user" : "system",
-            actorId: request.responsibleUserId ?? "paperclip-fast-response",
+            actorId: request.responsibleUserId ?? "wardmote-fast-response",
           },
         );
         const finishedAt = new Date();
@@ -781,7 +781,7 @@ export function fastResponseService(
         {
           responsibleUserId: request.responsibleUserId,
           actorType: request.responsibleUserId ? "user" : "system",
-          actorId: request.responsibleUserId ?? "paperclip-fast-response",
+          actorId: request.responsibleUserId ?? "wardmote-fast-response",
           issueId: request.issueId,
         },
       );
@@ -1057,7 +1057,7 @@ export function fastResponseService(
             {
               companyId: request.companyId,
               actorType: "system",
-              actorId: "paperclip-fast-response",
+              actorId: "wardmote-fast-response",
               action: "issue.comment_added",
               entityType: "issue",
               entityId: request.issueId!,

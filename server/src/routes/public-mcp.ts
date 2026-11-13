@@ -175,7 +175,7 @@ export function publicMcpIngressRoutes(oauth: PublicMcpOAuth, execute: ReturnTyp
             result = await events.unsubscribe(principal!, params); break;
           default: fail(-32601, "Method not found."); return;
         }
-        res.json({ jsonrpc: "2.0", id: envelope.data.id, result: { ...result, resultType: "complete", _meta: { "io.modelcontextprotocol/serverInfo": { name: "paperclip", version: "0.1.0" } } } });
+        res.json({ jsonrpc: "2.0", id: envelope.data.id, result: { ...result, resultType: "complete", _meta: { "io.modelcontextprotocol/serverInfo": { name: "wardmote", version: "0.1.0" } } } });
       } catch (error) {
         if (error instanceof McpEventError) fail(error.code, error.message, error.reason ? { reason: error.reason } : undefined);
         else if (error instanceof z.ZodError || error instanceof McpApiError || error instanceof McpOAuthError) fail(-32602, "Invalid arguments or unavailable authority.");

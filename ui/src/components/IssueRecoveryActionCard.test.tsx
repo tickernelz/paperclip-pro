@@ -740,7 +740,7 @@ describe("IssueRecoveryActionCard repair workspace (quarantine_restore)", () => 
     // rescue branch preview mirrors the server naming (prefix + timestamp marker)
     expect(
       document.body.querySelector("[data-testid='recovery-repair-rescue-branch']")?.textContent,
-    ).toContain("paperclip/rescue/PAP-1405/");
+    ).toContain("wardmote/rescue/PAP-1405/");
     // recorded branch to be restored
     expect(text).toContain("PAP-522-recorded");
 
