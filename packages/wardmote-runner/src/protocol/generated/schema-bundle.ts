@@ -1531,7 +1531,7 @@ export const providerEventSchema = {
     },
     "plan": {
       "type": "object",
-      "description": "A complete provider-authored within-turn checklist snapshot. Consumers replace the prior snapshot with the same planId in PRP sourceSeq order; this is not Paperclip's durable Plan document.",
+      "description": "A complete provider-authored within-turn checklist snapshot. Consumers replace the prior snapshot with the same planId in PRP sourceSeq order; this is not Wardmote's durable Plan document.",
       "required": [
         "schema",
         "planId",
@@ -2459,7 +2459,7 @@ export const providerEventSchema = {
 export const workspaceDiffSchema = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://wardmote.dev/schemas/prp/v1/workspace-diff.schema.json",
-  "title": "Paperclip workspace diff",
+  "title": "Wardmote workspace diff",
   "type": "object",
   "required": [
     "schema",
@@ -2607,7 +2607,7 @@ export const workspaceDiffSchema = {
 export const workspaceFileReferenceSchema = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://wardmote.dev/schemas/prp/v1/workspace-file-reference.schema.json",
-  "title": "Paperclip workspace file reference",
+  "title": "Wardmote workspace file reference",
   "type": "object",
   "required": [
     "schema",
@@ -3241,7 +3241,7 @@ export const terminalSchema = {
 export const questionSetSchema = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://wardmote.dev/schemas/prp/v1/question-set.schema.json",
-  "title": "Paperclip question set",
+  "title": "Wardmote question set",
   "type": "object",
   "required": [
     "schema",
@@ -3476,7 +3476,7 @@ export const questionSetSchema = {
 export const questionResponseSchema = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://wardmote.dev/schemas/prp/v1/question-response.schema.json",
-  "title": "Paperclip question response",
+  "title": "Wardmote question response",
   "type": "object",
   "required": [
     "schema",

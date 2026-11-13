@@ -2174,7 +2174,7 @@ async function startRuntime(input: {
 }): Promise<OpenCodeRuntime> {
   const port = await reservePort();
   const password = randomBytes(32).toString("base64url");
-  const username = "paperclip";
+  const username = "wardmote";
   const authHeader = `Basic ${Buffer.from(`${username}:${password}`).toString("base64")}`;
   const configHome = join(input.root, "config");
   const dataHome = join(input.root, "data");

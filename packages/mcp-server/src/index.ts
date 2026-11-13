@@ -33,7 +33,7 @@ export function createWardmoteMcpServer(
 ) {
   const server = new McpServer(
     {
-      name: "paperclip",
+      name: "wardmote",
       version: "0.1.0",
     },
     {

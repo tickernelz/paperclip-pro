@@ -625,7 +625,7 @@ fn terminal_events(
     let Some(contract) = state.completion_contract.as_ref() else {
         return Vec::new();
     };
-    // Once the correlated semantic-tool result has been accepted, Paperclip's
+    // Once the correlated semantic-tool result has been accepted, Wardmote's
     // bounded controller finalizer may interrupt the provider after the result
     // proposal. That provider terminal closes the exact turn; it does not
     // revoke the already-authoritative semantic outcome.

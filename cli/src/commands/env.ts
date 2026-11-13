@@ -166,7 +166,7 @@ function collectDeploymentEnvRows(config: WardmoteConfig | null, configPath: str
   const storageS3Bucket =
     process.env.WARDMOTE_STORAGE_S3_BUCKET ??
     config?.storage?.s3?.bucket ??
-    "paperclip";
+    "wardmote";
   const storageS3Region =
     process.env.WARDMOTE_STORAGE_S3_REGION ??
     config?.storage?.s3?.region ??
