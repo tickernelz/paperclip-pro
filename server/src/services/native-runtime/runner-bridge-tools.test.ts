@@ -1,4 +1,5 @@
-import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, rm, stat, symlink, writeFile } from "node:fs/promises";
+import { RETIRED_DOT_HOME } from "./retired-dot-home.js";
 import { createHash, randomUUID } from "node:crypto";
 import { materializeAsset } from "./runtime-context.js";
 import { dirname, join } from "node:path";
@@ -84,6 +85,16 @@ describe("Runner workspace bridge", () => {
     const ordinary = await executeWorkspaceTool(directory, "workspace_run", { program: "/bin/sh", args: ["-c", "printf hello > result.txt"] }, authorize) as any;
     expect(ordinary.exitCode).toBe(0);
     expect(await readFile(join(directory, "result.txt"), "utf8")).toBe("hello");
+  });
+
+  it.skipIf(!workspaceCommandSandboxAvailable())("replaces the command home left by an earlier release", async () => {
+    const directory = await root();
+    await mkdir(join(directory, RETIRED_DOT_HOME), { recursive: true });
+    await writeFile(join(directory, RETIRED_DOT_HOME, ".bash_history"), "earlier command history");
+    const result = await executeWorkspaceTool(directory, "workspace_run", { program: "/bin/sh", args: ["-c", 'printf "%s" "$HOME"'] }, authorize) as any;
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain(".wardmote-dot-home");
+    await expect(stat(join(directory, RETIRED_DOT_HOME))).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it.skipIf(process.platform === "linux")("does not expose or execute commands without descendant containment", async () => {

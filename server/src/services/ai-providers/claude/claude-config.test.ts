@@ -39,7 +39,7 @@ describe("prepareClaudeConfigSeed", () => {
   function createEnv(root: string, sourceDir: string): NodeJS.ProcessEnv {
     return {
       HOME: root,
-      WARDMOTE_HOME: path.join(root, "paperclip-home"),
+      WARDMOTE_HOME: path.join(root, "wardmote-home"),
       WARDMOTE_INSTANCE_ID: "test-instance",
       CLAUDE_CONFIG_DIR: sourceDir,
     };
@@ -183,7 +183,7 @@ describe("prepareSandboxClaudeProbeRuntime managed-config diagnostics", () => {
       savedEnv[key] = process.env[key];
     }
     process.env.CLAUDE_CONFIG_DIR = sourceDir;
-    process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+    process.env.WARDMOTE_HOME = path.join(root, "wardmote-home");
     process.env.WARDMOTE_INSTANCE_ID = "test-instance";
 
     prepareAdapterExecutionTargetRuntime.mockRejectedValueOnce(

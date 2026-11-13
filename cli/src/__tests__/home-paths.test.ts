@@ -28,10 +28,10 @@ describe("home path resolution", () => {
   });
 
   it("supports WARDMOTE_HOME and explicit instance ids", () => {
-    process.env.WARDMOTE_HOME = "~/paperclip-home";
+    process.env.WARDMOTE_HOME = "~/wardmote-home";
 
     const home = resolveWardmoteHomeDir();
-    expect(home).toBe(path.resolve(os.homedir(), "paperclip-home"));
+    expect(home).toBe(path.resolve(os.homedir(), "wardmote-home"));
     expect(resolveWardmoteInstanceId("dev_1")).toBe("dev_1");
   });
 

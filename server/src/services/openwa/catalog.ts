@@ -13,7 +13,7 @@ import {
   type OpenwaOperationCategory,
 } from "@tickernelz/wardmote-shared/openwa-operations";
 
-export const OPENWA_AUDIT_LIST_OPERATION = "paperclip.audit.list";
+export const OPENWA_AUDIT_LIST_OPERATION = "wardmote.audit.list";
 export const OPENWA_SELF_SESSION_OPERATIONS: ReadonlySet<string> = new Set([
   "SessionController_logout",
   "SessionController_stop",
@@ -33,7 +33,7 @@ const ENGINES: readonly OpenwaEngine[] = ["whatsapp-web.js", "baileys"];
 const LEARNED_LIMIT = 4096;
 const SUMMARY_LIMIT = 120;
 
-export type OpenwaCatalogCategory = OpenwaOperationCategory | "paperclip";
+export type OpenwaCatalogCategory = OpenwaOperationCategory | "wardmote";
 export type OpenwaUnavailableReason = "secret_issuing_operation" | "unavailable_on_engine" | "unavailable_without_admin_key";
 export type OpenwaOperationGate =
   | "none"
@@ -156,7 +156,7 @@ function clipSummary(summary: string): string {
 function auditEntry(): OpenwaCatalogEntry {
   return {
     operation: OPENWA_AUDIT_LIST_OPERATION,
-    category: "paperclip",
+    category: "wardmote",
     summary: "List this endpoint's audit entries, newest first (owner runs only)",
     available: true,
     gate: "owner_only",
@@ -187,7 +187,7 @@ export function openwaCatalog(
     });
   }
   const audit = auditEntry();
-  if ((!filter.category || filter.category === "paperclip") && matches(audit.operation, audit.summary, "audit")) entries.push(audit);
+  if ((!filter.category || filter.category === "wardmote") && matches(audit.operation, audit.summary, "audit")) entries.push(audit);
   return entries;
 }
 

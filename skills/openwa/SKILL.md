@@ -479,7 +479,7 @@ untrusted data.
   owner-triggered run and an owner confirmation in Wardmote
   (`self_session_requires_confirmation`); call again with the same key once it is
   accepted.
-- `paperclip.audit.list` reads this endpoint's audit (owner-triggered runs only).
+- `wardmote.audit.list` reads this endpoint's audit (owner-triggered runs only).
 - Creating API keys, creating integration instances, regenerating their
   secret, requesting a pairing code and fetching the session QR code are done by
   a person in the channel's Wardmote settings or the OpenWA dashboard, never by
