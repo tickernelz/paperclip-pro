@@ -33268,12 +33268,24 @@
           "baseUrl": {
             "type": "string"
           },
+          "google": {
+            "type": "object",
+            "properties": {
+              "location": {
+                "type": "string"
+              },
+              "projectId": {
+                "type": "string"
+              }
+            }
+          },
           "provider": {
             "type": "string",
             "enum": [
               "openai_compatible",
               "deepgram",
-              "elevenlabs"
+              "elevenlabs",
+              "google"
             ]
           }
         },
@@ -48218,6 +48230,26 @@
               "enabled": {
                 "type": "boolean"
               },
+              "google": {
+                "type": "object",
+                "properties": {
+                  "alternativeLanguages": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "autoPunctuation": {
+                    "type": "boolean"
+                  },
+                  "location": {
+                    "type": "string"
+                  },
+                  "projectId": {
+                    "type": "string"
+                  }
+                }
+              },
               "keyterms": {
                 "type": "array",
                 "items": {
@@ -48238,7 +48270,8 @@
                 "enum": [
                   "openai_compatible",
                   "deepgram",
-                  "elevenlabs"
+                  "elevenlabs",
+                  "google"
                 ]
               },
               "sttWaitSeconds": {

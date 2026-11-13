@@ -3,6 +3,8 @@ import { useMutation } from "@tanstack/react-query";
 import {
   SPEECH_TO_TEXT_CURATED_MODELS,
   SPEECH_TO_TEXT_DEFAULT_BASE_URLS,
+  SPEECH_TO_TEXT_GOOGLE_MAX_LANGUAGES,
+  SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS,
   SPEECH_TO_TEXT_KEYTERMS_MAX,
   SPEECH_TO_TEXT_MAX_SPEAKERS,
   type SpeechToTextModelOption,
@@ -20,13 +22,26 @@ const PROVIDER_LABELS: Record<SpeechToTextProvider, string> = {
   openai_compatible: "OpenAI-compatible",
   deepgram: "Deepgram",
   elevenlabs: "ElevenLabs",
+  google: "Google Cloud Speech-to-Text",
 };
 
 const KEY_PLACEHOLDERS: Record<SpeechToTextProvider, string> = {
   openai_compatible: "OPENAI_API_KEY",
   deepgram: "DEEPGRAM_API_KEY",
   elevenlabs: "ELEVENLABS_API_KEY",
+  google: "GOOGLE_APPLICATION_CREDENTIALS",
 };
+
+function googleOriginFor(location: string): string {
+  return location === "global" ? "https://speech.googleapis.com" : "https://" + (location || "us") + "-speech.googleapis.com";
+}
+
+function parseLanguageList(raw: string): string[] {
+  return raw
+    .split(/[\s,]+/)
+    .map((code) => code.trim())
+    .filter(Boolean);
+}
 
 function parseKeyterms(raw: string): string[] {
   return raw
@@ -90,6 +105,7 @@ export function SpeechToTextSection({
   const modelListId = useId();
   const [draft, setDraft] = useState<SpeechToTextSettings>(value);
   const [keytermText, setKeytermText] = useState(value.keyterms.join("\n"));
+  const [alternativeLanguageText, setAlternativeLanguageText] = useState(value.google.alternativeLanguages.join(", "));
   const [fetchedModels, setFetchedModels] = useState<{ provider: SpeechToTextProvider; models: SpeechToTextModelOption[]; source: string } | null>(null);
   const [testFile, setTestFile] = useState<File | null>(null);
   const complete = isComplete(draft);
@@ -100,14 +116,19 @@ export function SpeechToTextSection({
     return Number.isFinite(parsed) ? parsed : fallback;
   };
   const provider = draft.provider;
-  const models =
+  const models: SpeechToTextModelOption[] =
     fetchedModels?.provider === provider
       ? fetchedModels.models
       : SPEECH_TO_TEXT_CURATED_MODELS[provider].map((id) => ({ id }));
 
   const fetchModels = useMutation({
     mutationFn: () =>
-      instanceSettingsApi.listSpeechToTextModels({ provider, baseUrl: draft.baseUrl.trim(), apiKeyEnvVar: draft.apiKeyEnvVar.trim() }),
+      instanceSettingsApi.listSpeechToTextModels({
+        provider,
+        baseUrl: draft.baseUrl.trim(),
+        apiKeyEnvVar: draft.apiKeyEnvVar.trim(),
+        ...(provider === "google" ? { google: { location: draft.google.location, projectId: draft.google.projectId } } : {}),
+      }),
     onSuccess: (list) => setFetchedModels({ provider, models: list.models, source: list.source }),
   });
   const testMutation = useMutation({
@@ -163,13 +184,17 @@ export function SpeechToTextSection({
             </span>
             <Input
               value={draft.baseUrl}
-              placeholder={SPEECH_TO_TEXT_DEFAULT_BASE_URLS[provider] || "https://api.openai.com/v1"}
+              placeholder={
+                provider === "google" ? googleOriginFor(draft.google.location) : SPEECH_TO_TEXT_DEFAULT_BASE_URLS[provider] || "https://api.openai.com/v1"
+              }
               disabled={disabled}
               onChange={(event) => update({ baseUrl: event.target.value })}
             />
           </label>
           <label className="space-y-1.5">
-            <span className="text-xs font-medium text-ink-3">API key environment variable</span>
+            <span className="text-xs font-medium text-ink-3">
+              {provider === "google" ? "Service account key environment variable (JSON or file path)" : "API key environment variable"}
+            </span>
             <Input
               value={draft.apiKeyEnvVar}
               placeholder={KEY_PLACEHOLDERS[provider]}
@@ -224,7 +249,9 @@ export function SpeechToTextSection({
               onChange={(event) => update({ language: event.target.value.trim() })}
             />
             <span className="block text-xs text-ink-3">
-              Empty detects the language. Otherwise a code such as en, id or pt-BR{provider === "deepgram" ? "; multi for Nova-3 multilingual" : ""}.
+              {provider === "google"
+                ? "Empty lets Chirp detect the language; other Google models need a code such as id-ID or en-US."
+                : "Empty detects the language. Otherwise a code such as en, id or pt-BR" + (provider === "deepgram" ? "; multi for Nova-3 multilingual." : ".")}
             </span>
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -252,11 +279,61 @@ export function SpeechToTextSection({
             </label>
           </div>
         </div>
+        {provider === "google" ? (
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="space-y-1.5">
+              <span className="text-xs font-medium text-ink-3">Location</span>
+              <Input
+                aria-label="Google location"
+                value={draft.google.location}
+                placeholder="us"
+                disabled={disabled}
+                onChange={(event) => update({ google: { ...draft.google, location: event.target.value.trim() } })}
+              />
+              <span className="block text-xs text-ink-3">
+                Chirp 3 runs in us and eu. Synchronous recognition takes audio up to {SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS} seconds.
+              </span>
+            </label>
+            <label className="space-y-1.5">
+              <span className="text-xs font-medium text-ink-3">Project id (optional)</span>
+              <Input
+                aria-label="Google project id"
+                value={draft.google.projectId}
+                placeholder="From the service account key"
+                disabled={disabled}
+                onChange={(event) => update({ google: { ...draft.google, projectId: event.target.value.trim() } })}
+              />
+            </label>
+            <label className="space-y-1.5">
+              <span className="text-xs font-medium text-ink-3">
+                Alternative languages (up to {SPEECH_TO_TEXT_GOOGLE_MAX_LANGUAGES - 1})
+              </span>
+              <Input
+                aria-label="Google alternative languages"
+                value={alternativeLanguageText}
+                placeholder="en-US, ms-MY"
+                disabled={disabled}
+                onChange={(event) => {
+                  setAlternativeLanguageText(event.target.value);
+                  update({ google: { ...draft.google, alternativeLanguages: parseLanguageList(event.target.value) } });
+                }}
+              />
+              <span className="block text-xs text-ink-3">Long, short and telephony models only, next to a chosen language.</span>
+            </label>
+          </div>
+        ) : null}
         {provider !== "openai_compatible" ? (
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-3">
               <ToggleRow label="Speaker diarization" checked={draft.diarize} disabled={disabled} onChange={(diarize) => update({ diarize })} />
-              {provider === "deepgram" ? (
+              {provider === "google" ? (
+                <ToggleRow
+                  label="Automatic punctuation"
+                  checked={draft.google.autoPunctuation}
+                  disabled={disabled}
+                  onChange={(autoPunctuation) => update({ google: { ...draft.google, autoPunctuation } })}
+                />
+              ) : provider === "deepgram" ? (
                 <ToggleRow
                   label="Smart formatting"
                   checked={draft.deepgram.smartFormat}
@@ -308,7 +385,9 @@ export function SpeechToTextSection({
               <span className="block text-xs text-ink-3">
                 {provider === "deepgram"
                   ? "Sent as keyterm for Nova-3 models and keywords for older models."
-                  : "ElevenLabs bills keyterm prompting as a surcharge."}
+                  : provider === "google"
+                    ? "Sent as an inline phrase set (speech adaptation)."
+                    : "ElevenLabs bills keyterm prompting as a surcharge."}
               </span>
             </label>
           </div>
@@ -359,6 +438,7 @@ export function SpeechToTextSection({
             onClick={() => {
               setDraft(value);
               setKeytermText(value.keyterms.join("\n"));
+              setAlternativeLanguageText(value.google.alternativeLanguages.join(", "));
             }}
           >
             Reset

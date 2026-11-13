@@ -82,6 +82,37 @@ describe("SpeechToTextSection", () => {
     expect(byLabel<HTMLInputElement>("Speech-to-text model").value).toBe("whisper-1");
   });
 
+  it("shows Google options and sends location and project with Fetch and Save", async () => {
+    mockInstanceSettingsApi.listSpeechToTextModels.mockResolvedValue({ models: [{ id: "chirp_3" }], source: "provider" });
+    render(SPEECH_TO_TEXT_DEFAULTS);
+    act(() => setValue(byLabel<HTMLSelectElement>("Speech-to-text provider"), "google"));
+    expect(byLabel<HTMLInputElement>("Speech-to-text model").value).toBe("chirp_3");
+    expect(container.textContent).toContain("Service account key environment variable (JSON or file path)");
+    expect(container.textContent).toContain("Automatic punctuation");
+    expect(container.textContent).not.toContain("Smart formatting");
+    act(() => setValue(byLabel<HTMLInputElement>("Google location"), "eu"));
+    act(() => setValue(byLabel<HTMLInputElement>("Google project id"), "proj-zha6055"));
+    act(() => setValue(byLabel<HTMLInputElement>("Google alternative languages"), "en-US, ms-MY"));
+    act(() => setValue(container.querySelector<HTMLInputElement>('input[placeholder="GOOGLE_APPLICATION_CREDENTIALS"]')!, "GOOGLE_STT_KEY"));
+    expect(container.querySelector<HTMLInputElement>('input[placeholder="https://eu-speech.googleapis.com"]')).not.toBeNull();
+    await act(async () => button("Fetch").click());
+    await vi.waitFor(() => expect(container.textContent).toContain("1 models from the provider"));
+    expect(mockInstanceSettingsApi.listSpeechToTextModels).toHaveBeenCalledWith({
+      provider: "google",
+      baseUrl: "",
+      apiKeyEnvVar: "GOOGLE_STT_KEY",
+      google: { location: "eu", projectId: "proj-zha6055" },
+    });
+    act(() => button("Save speech-to-text").click());
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: "google",
+        model: "chirp_3",
+        google: { location: "eu", projectId: "proj-zha6055", autoPunctuation: true, alternativeLanguages: ["en-US", "ms-MY"] },
+      }),
+    );
+  });
+
   it("fetches provider models into the model suggestions", async () => {
     mockInstanceSettingsApi.listSpeechToTextModels.mockResolvedValue({ models: [{ id: "nova-3" }, { id: "nova-3-general" }], source: "provider" });
     render({ ...SPEECH_TO_TEXT_DEFAULTS, provider: "deepgram", model: "nova-3", apiKeyEnvVar: "DG_KEY" });

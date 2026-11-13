@@ -35,7 +35,12 @@ export const instanceSettingsApi = {
     api.get<AttachmentRetentionStatus>("/instance/attachment-retention", { cache: "no-store" }),
   previewAttachmentRetention: (settings?: AttachmentRetentionSettings) =>
     api.post<AttachmentRetentionReport>("/instance/attachment-retention/preview", settings ? { settings } : {}),
-  listSpeechToTextModels: (request: { provider: SpeechToTextProvider; baseUrl: string; apiKeyEnvVar: string }) =>
+  listSpeechToTextModels: (request: {
+    provider: SpeechToTextProvider;
+    baseUrl: string;
+    apiKeyEnvVar: string;
+    google?: { location: string; projectId: string };
+  }) =>
     api.post<SpeechToTextModelList>("/instance/settings/general/speech-to-text/models", request),
   testSpeechToText: (settings: SpeechToTextSettings, file: File) => {
     const form = new FormData();

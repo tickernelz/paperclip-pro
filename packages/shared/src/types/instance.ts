@@ -21,20 +21,25 @@ export const DEFAULT_BACKUP_RETENTION: BackupRetentionPolicy = {
   maxFiles: 2,
 };
 
-export const SPEECH_TO_TEXT_PROVIDERS = ["openai_compatible", "deepgram", "elevenlabs"] as const;
+export const SPEECH_TO_TEXT_PROVIDERS = ["openai_compatible", "deepgram", "elevenlabs", "google"] as const;
 export type SpeechToTextProvider = (typeof SPEECH_TO_TEXT_PROVIDERS)[number];
 
 export const SPEECH_TO_TEXT_DEFAULT_BASE_URLS: Record<SpeechToTextProvider, string> = {
   openai_compatible: "",
   deepgram: "https://api.deepgram.com",
   elevenlabs: "https://api.elevenlabs.io",
+  google: "",
 };
 
 export const SPEECH_TO_TEXT_CURATED_MODELS: Record<SpeechToTextProvider, readonly string[]> = {
   openai_compatible: ["whisper-1", "gpt-4o-transcribe", "gpt-4o-mini-transcribe"],
   deepgram: ["nova-3", "nova-3-medical", "nova-2", "nova-2-general", "nova-2-meeting", "nova-2-phonecall", "nova-2-voicemail", "nova-2-finance", "nova-2-medical", "enhanced", "base"],
   elevenlabs: ["scribe_v3", "scribe_v2", "scribe_v2_medical"],
+  google: ["chirp_3", "chirp_2", "long", "short", "telephony"],
 };
+
+export const SPEECH_TO_TEXT_GOOGLE_MAX_LANGUAGES = 3;
+export const SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS = 60;
 
 export const SPEECH_TO_TEXT_KEYTERMS_MAX = 100;
 export const SPEECH_TO_TEXT_KEYTERM_MAX_LENGTH = 50;
@@ -52,6 +57,7 @@ export interface SpeechToTextSettings {
   keyterms: string[];
   deepgram: { smartFormat: boolean };
   elevenlabs: { tagAudioEvents: boolean; numSpeakers: number | null };
+  google: { location: string; projectId: string; autoPunctuation: boolean; alternativeLanguages: string[] };
   maxAudioSeconds: number;
   sttWaitSeconds: number;
 }
@@ -67,6 +73,7 @@ export const SPEECH_TO_TEXT_DEFAULTS: SpeechToTextSettings = {
   keyterms: [],
   deepgram: { smartFormat: true },
   elevenlabs: { tagAudioEvents: false, numSpeakers: null },
+  google: { location: "us", projectId: "", autoPunctuation: true, alternativeLanguages: [] },
   maxAudioSeconds: 600,
   sttWaitSeconds: 15,
 };

@@ -9382,7 +9382,7 @@ registry.registerPath({
   tags: ["assets"],
   summary: "Transcribe an audio or video attachment",
   description:
-    "Transcribes the attachment with the instance speech-to-text provider (Settings > General > Speech-to-text) and returns `{ attachmentId, text, language?, segments? }`; segments carry speaker turns when diarization is on. Needs read access to the attachment's task. Each call is billed by the provider; the transcript is not stored. Errors carry an stt_* code: 409 stt_disabled, 413 stt_too_long or stt_too_large, 422 stt_not_audio or stt_empty, 502 stt_rejected, stt_network or stt_invalid_response, 503 stt_missing_key or stt_unavailable, 504 stt_timeout.",
+    "Transcribes the attachment with the instance speech-to-text provider (Settings > General > Speech-to-text) and returns `{ attachmentId, text, language?, segments? }`; segments carry speaker turns when diarization is on. Needs read access to the attachment's task. Each call is billed by the provider; the transcript is not stored. Errors carry an stt_* code: 409 stt_disabled, 413 stt_too_long or stt_too_large, 422 stt_not_audio or stt_empty, 502 stt_rejected, stt_network or stt_invalid_response, 503 stt_missing_key, stt_invalid_credentials or stt_unavailable, 504 stt_timeout.",
   request: { params: z.object({ attachmentId: z.string() }) },
   responses: {
     200: r.ok(),

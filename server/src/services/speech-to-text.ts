@@ -2,6 +2,7 @@ import type { Readable } from "node:stream";
 import {
   SPEECH_TO_TEXT_CURATED_MODELS,
   SPEECH_TO_TEXT_DEFAULT_BASE_URLS,
+  SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS,
   type SpeechToTextModelList,
   type SpeechToTextProvider,
   type SpeechToTextSegment,
@@ -9,10 +10,17 @@ import {
   type SpeechToTextTranscript,
 } from "@tickernelz/wardmote-shared";
 import { getMaxAttachmentBytes } from "../attachment-types.js";
+import {
+  googleAccessToken,
+  GoogleCredentialsError,
+  GoogleTokenError,
+  loadGoogleServiceAccount,
+} from "./speech-to-text-google-auth.js";
 
 export type SpeechToTextErrorCode =
   | "stt_disabled"
   | "stt_missing_key"
+  | "stt_invalid_credentials"
   | "stt_too_long"
   | "stt_too_large"
   | "stt_empty"
@@ -57,6 +65,7 @@ export interface SpeechToTextModelListRequest {
   provider: SpeechToTextProvider;
   baseUrl: string;
   apiKeyEnvVar: string;
+  google?: { location: string; projectId: string };
 }
 
 export interface SpeechToTextModelListOptions {
@@ -69,10 +78,12 @@ export const SPEECH_TO_TEXT_REQUEST_TIMEOUT_MS = 120_000;
 export const SPEECH_TO_TEXT_MODEL_LIST_TIMEOUT_MS = 15_000;
 const RESPONSE_BYTE_LIMIT = 4 * 1024 * 1024;
 const OPUS_GRANULE_RATE = 48_000;
+export const GOOGLE_SYNC_MAX_AUDIO_BYTES = 7_500_000;
 
 const ERROR_HTTP_STATUS: Record<SpeechToTextErrorCode, number> = {
   stt_disabled: 409,
   stt_missing_key: 503,
+  stt_invalid_credentials: 503,
   stt_too_long: 413,
   stt_too_large: 413,
   stt_empty: 422,
@@ -224,9 +235,53 @@ function transcript(text: string, language: unknown, segments: SpeechToTextSegme
   return result;
 }
 
+type ProviderRequest = { url: string; headers: Record<string, string>; body: BodyInit };
+
 interface ProviderAdapter {
-  request(settings: SpeechToTextSettings, apiKey: string, body: Buffer, input: SpeechToTextInput): { url: string; headers: Record<string, string>; body: BodyInit };
+  request(settings: SpeechToTextSettings, apiKey: string, body: Buffer, input: SpeechToTextInput, context: RequestContext): ProviderRequest | Promise<ProviderRequest>;
   parse(record: Record<string, unknown>, settings: SpeechToTextSettings, status: number): SpeechToTextResult;
+}
+
+interface RequestContext {
+  fetchImpl: typeof fetch;
+  signal: AbortSignal;
+}
+
+function googleSpeakerLabel(raw: unknown): string | null {
+  if (typeof raw !== "string" || !raw) return null;
+  return /^\d+$/.test(raw) ? "Speaker " + raw : raw;
+}
+
+function googleOrigin(baseUrl: string, location: string): string {
+  if (baseUrl) return baseUrl.replace(/\/+$/, "").replace(/\/v[12]$/, "");
+  return location === "global" ? "https://speech.googleapis.com" : "https://" + location + "-speech.googleapis.com";
+}
+
+async function googleAuthorization(
+  credentials: string,
+  projectIdSetting: string,
+  context: RequestContext,
+): Promise<{ token: string; projectId: string }> {
+  let account;
+  try {
+    account = await loadGoogleServiceAccount(credentials);
+  } catch (error) {
+    if (error instanceof GoogleCredentialsError) throw new SpeechToTextError("stt_invalid_credentials", error.message);
+    throw error;
+  }
+  const projectId = projectIdSetting || account.projectId;
+  if (!projectId) throw new SpeechToTextError("stt_invalid_credentials", "No Google Cloud project id is set and the service account key has none");
+  try {
+    return { token: await googleAccessToken(account, context.fetchImpl, context.signal), projectId };
+  } catch (error) {
+    if (error instanceof GoogleTokenError) {
+      const code = error.status === null ? "stt_invalid_response" : error.status >= 500 || error.status === 429 ? "stt_unavailable" : "stt_rejected";
+      throw new SpeechToTextError(code, error.message, error.status);
+    }
+    if (error instanceof GoogleCredentialsError) throw new SpeechToTextError("stt_invalid_credentials", error.message);
+    if (isAbort(error)) throw new SpeechToTextError("stt_timeout", "Google token request timed out");
+    throw new SpeechToTextError("stt_network", "Google token endpoint could not be reached");
+  }
 }
 
 const openAiCompatible: ProviderAdapter = {
@@ -319,10 +374,61 @@ const elevenlabs: ProviderAdapter = {
   },
 };
 
+const google: ProviderAdapter = {
+  async request(settings, credentials, body, _input, context) {
+    const { token, projectId } = await googleAuthorization(credentials, settings.google.projectId, context);
+    const location = settings.google.location;
+    const languageCodes = settings.language ? [settings.language, ...settings.google.alternativeLanguages] : ["auto"];
+    const config: Record<string, unknown> = {
+      autoDecodingConfig: {},
+      model: settings.model,
+      languageCodes,
+      features: {
+        enableAutomaticPunctuation: settings.google.autoPunctuation,
+        ...(settings.diarize ? { diarizationConfig: {} } : {}),
+      },
+    };
+    if (settings.keyterms.length > 0)
+      config.adaptation = { phraseSets: [{ inlinePhraseSet: { phrases: settings.keyterms.map((value) => ({ value })) } }] };
+    return {
+      url:
+        googleOrigin(settings.baseUrl, location) +
+        "/v2/projects/" + encodeURIComponent(projectId) +
+        "/locations/" + encodeURIComponent(location) +
+        "/recognizers/_:recognize",
+      headers: { Authorization: "Bearer " + token, Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ config, content: body.toString("base64") }),
+    };
+  },
+  parse(record, settings, status) {
+    if (record.results !== undefined && !Array.isArray(record.results))
+      throw new SpeechToTextError("stt_invalid_response", "Speech-to-text response results are not a list", status);
+    const results = ((record.results as unknown[] | undefined) ?? []).map(asRecord);
+    const texts: string[] = [];
+    const pieces: Array<{ speaker: string | null; text: string }> = [];
+    let language: unknown;
+    for (const result of results) {
+      const alternative = result && Array.isArray(result.alternatives) ? asRecord(result.alternatives[0]) : null;
+      if (!alternative) continue;
+      if (typeof alternative.transcript === "string" && alternative.transcript.trim()) texts.push(alternative.transcript.trim());
+      language ??= result?.languageCode;
+      if (settings.diarize && Array.isArray(alternative.words)) {
+        for (const entry of alternative.words) {
+          const word = asRecord(entry);
+          if (typeof word?.word === "string")
+            pieces.push({ speaker: googleSpeakerLabel(word.speakerLabel), text: " " + word.word });
+        }
+      }
+    }
+    return transcript(texts.join(" "), language, settings.diarize ? groupSegments(pieces) : undefined);
+  },
+};
+
 const ADAPTERS: Record<SpeechToTextProvider, ProviderAdapter> = {
   openai_compatible: openAiCompatible,
   deepgram,
   elevenlabs,
+  google,
 };
 
 export function formatSpeechToTextTranscript(result: SpeechToTextTranscript): string {
@@ -337,9 +443,14 @@ export async function transcribeAudio(input: SpeechToTextInput, options: SpeechT
   if (!settings.enabled || !settings.model || !settings.apiKeyEnvVar || (provider === "openai_compatible" && !settings.baseUrl))
     throw new SpeechToTextError("stt_disabled", "Speech-to-text is not enabled for this instance");
   const apiKey = readApiKey(settings.apiKeyEnvVar, options.env);
-  const limit = Math.min(options.maxBytes ?? getMaxAttachmentBytes(), getMaxAttachmentBytes());
-  if (input.durationHintSeconds != null && input.durationHintSeconds > settings.maxAudioSeconds)
-    throw new SpeechToTextError("stt_too_long", "Audio is longer than " + settings.maxAudioSeconds + " seconds");
+  const maxSeconds = provider === "google" ? Math.min(settings.maxAudioSeconds, SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS) : settings.maxAudioSeconds;
+  const limit = Math.min(
+    options.maxBytes ?? getMaxAttachmentBytes(),
+    getMaxAttachmentBytes(),
+    provider === "google" ? GOOGLE_SYNC_MAX_AUDIO_BYTES : Number.POSITIVE_INFINITY,
+  );
+  if (input.durationHintSeconds != null && input.durationHintSeconds > maxSeconds)
+    throw new SpeechToTextError("stt_too_long", "Audio is longer than " + maxSeconds + " seconds");
   let body: Buffer;
   if (input.buffer) body = input.buffer;
   else if (input.stream) body = await collect(input.stream, limit);
@@ -348,15 +459,16 @@ export async function transcribeAudio(input: SpeechToTextInput, options: SpeechT
   if (body.length > limit) throw new SpeechToTextError("stt_too_large", "Audio exceeds the " + limit + " byte speech-to-text limit");
   if (input.durationHintSeconds == null) {
     const measured = oggOpusDurationSeconds(body);
-    if (measured !== null && measured > settings.maxAudioSeconds)
-      throw new SpeechToTextError("stt_too_long", "Audio is longer than " + settings.maxAudioSeconds + " seconds");
+    if (measured !== null && measured > maxSeconds)
+      throw new SpeechToTextError("stt_too_long", "Audio is longer than " + maxSeconds + " seconds");
   }
   const adapter = ADAPTERS[provider];
-  const request = adapter.request(settings, apiKey, body, input);
   const timeout = AbortSignal.timeout(options.timeoutMs ?? SPEECH_TO_TEXT_REQUEST_TIMEOUT_MS);
   const signal = input.signal ? AbortSignal.any([timeout, input.signal]) : timeout;
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const request = await adapter.request(settings, apiKey, body, input, { fetchImpl, signal });
   const { record, status } = await requestJson(
-    options.fetchImpl ?? fetch,
+    fetchImpl,
     request.url,
     { method: "POST", headers: request.headers, body: request.body },
     signal,
@@ -383,7 +495,19 @@ export async function listSpeechToTextModels(
   const signal = AbortSignal.timeout(options.timeoutMs ?? SPEECH_TO_TEXT_MODEL_LIST_TIMEOUT_MS);
   const fetchImpl = options.fetchImpl ?? fetch;
   let ids: string[];
-  if (request.provider === "deepgram") {
+  if (request.provider === "google") {
+    const location = request.google?.location || "us";
+    const { token, projectId } = await googleAuthorization(apiKey, request.google?.projectId ?? "", { fetchImpl, signal });
+    const { record, status } = await requestJson(
+      fetchImpl,
+      googleOrigin(request.baseUrl, location) + "/v2/projects/" + encodeURIComponent(projectId) + "/locations/" + encodeURIComponent(location),
+      { method: "GET", headers: { Authorization: "Bearer " + token, Accept: "application/json" } },
+      signal,
+    );
+    const models = asRecord(asRecord(asRecord(record.metadata)?.languages)?.models);
+    if (!models) throw new SpeechToTextError("stt_invalid_response", "Google location metadata lists no models", status);
+    ids = Object.values(models).flatMap((language) => Object.keys(asRecord(asRecord(language)?.modelFeatures) ?? {}));
+  } else if (request.provider === "deepgram") {
     const { record, status } = await requestJson(
       fetchImpl,
       providerOrigin("deepgram", request.baseUrl) + "/v1/models",
