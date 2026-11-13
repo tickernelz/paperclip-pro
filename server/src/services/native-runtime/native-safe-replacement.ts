@@ -131,8 +131,6 @@ export async function reconcileSafeNativeReplacements(
         "connections_search",
         "connection_request",
         "wardmote_get_agent",
-        "paperclip_get_issue",
-        "paperclip_list_issues",
         "wardmote_read_document",
       ]);
       const uncertainProviderActions = events.flatMap((event) => {
