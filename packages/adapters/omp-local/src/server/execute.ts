@@ -437,7 +437,7 @@ const OMP_HEARTBEAT_PROMPT_TEMPLATE =
 
 /** Local root under which each agent gets its default OMP session directory. */
 export function defaultOmpSessionRoot() {
-  return path.join(os.homedir(), ".omp", "paperclip", "sessions");
+  return path.join(os.homedir(), ".omp", "wardmote", "sessions");
 }
 
 async function findOmpSessionFile(sessionDir: string, sessionId: string) {

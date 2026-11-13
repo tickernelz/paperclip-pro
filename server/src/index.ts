@@ -94,7 +94,7 @@ import { questionResponseDeliveryService } from "./services/question-response-de
 import { attachmentRetentionService, ATTACHMENT_RETENTION_TICK_MS } from "./services/attachment-retention.js";
 import { runLogRetentionService } from "./services/run-log-retention.js";
 import { diskGuardService } from "./services/disk-guard.js";
-import { defaultOmpSessionRoot } from "@tickernelz/wardmote-adapter-omp-local/server";
+import { defaultOmpSessionRoot, moveRetiredOmpSessionRoot } from "@tickernelz/wardmote-adapter-omp-local/server";
 import { defaultOmpAgentDir } from "./services/omp-session-retention.js";
 import { openwaAuditPurgeScheduler } from "./services/openwa/audit.js";
 import { deliverNativeQuestionResponse } from "./services/native-runtime/native-question-bridge.js";
@@ -650,6 +650,20 @@ async function startServerWithDatabaseTeardown(
   };
   startupDatabase.close = closeDatabaseClients;
 
+  const ownsOmpSessionRoot = !isTruthyRuntimeEnvValue(process.env.WARDMOTE_IN_WORKTREE) && resolveWardmoteInstanceId() === "default";
+  const ompSessionRootMove = !ownsOmpSessionRoot ? null : await moveRetiredOmpSessionRoot().catch((err: unknown) => {
+    logger.warn({ err }, "could not move the OMP session root written before the Wardmote rename; those agents start fresh OMP sessions");
+    return null;
+  });
+  if (ompSessionRootMove?.status === "moved") {
+    logger.info({ ompSessionRoot: defaultOmpSessionRoot() }, "Moved OMP sessions to the Wardmote session root");
+    if (ompSessionRootMove.conflicts.length > 0) {
+      logger.warn(
+        { ompSessionRoot: defaultOmpSessionRoot(), agentDirectories: ompSessionRootMove.conflicts },
+        "Left retired OMP session directories in place because the Wardmote session root already holds sessions for those agents",
+      );
+    }
+  }
   const retiredNames = await migrateRetiredNames(db);
   if (retiredNames.files.length > 0 || retiredNames.rows.length > 0) {
     logger.info(

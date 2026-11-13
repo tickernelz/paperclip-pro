@@ -5,10 +5,15 @@ import { fileURLToPath } from "node:url";
 import postgres from "postgres";
 import { installDatabaseWorkSignals } from "./work-signals.js";
 import * as schema from "./schema/index.js";
+import { RETIRED_MIGRATION_LOCK_KEY } from "./retired-migration-lock.js";
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("./migrations", import.meta.url));
 const DRIZZLE_MIGRATIONS_TABLE = "__drizzle_migrations";
 const MIGRATIONS_JOURNAL_JSON = fileURLToPath(new URL("./migrations/meta/_journal.json", import.meta.url));
+
+const MIGRATION_LOCK_KEY = "wardmote:migrations";
+const MIGRATION_LOCK_TRY_SQL = `SELECT pg_try_advisory_lock(hashtextextended('${MIGRATION_LOCK_KEY}', 0)) AS current, pg_try_advisory_lock(hashtextextended('${RETIRED_MIGRATION_LOCK_KEY}', 0)) AS retired`;
+const MIGRATION_LOCK_RELEASE_SQL = `SELECT pg_advisory_unlock(hashtextextended('${MIGRATION_LOCK_KEY}', 0)), pg_advisory_unlock(hashtextextended('${RETIRED_MIGRATION_LOCK_KEY}', 0))`;
 
 function createUtilitySql(url: string) {
   return postgres(url, { max: 1, onnotice: () => {} });
@@ -475,8 +480,11 @@ async function applyPendingMigrationsManually(
       // A blocking lock SELECT retains its statement snapshot while waiting.
       // A partial concurrent index build can wait for that snapshot, forming a
       // deadlock with this lock. Each failed try ends its snapshot before sleep.
-      while (!(await sql<{ locked: boolean }[]>`
-        SELECT pg_try_advisory_lock(hashtextextended('paperclip:migrations', 0)) AS locked`)[0]?.locked) {
+      for (;;) {
+        const [held] = await sql.unsafe<{ current: boolean; retired: boolean }[]>(MIGRATION_LOCK_TRY_SQL);
+        if (held?.current && held.retired) break;
+        if (held?.current) await sql.unsafe(`SELECT pg_advisory_unlock(hashtextextended('${MIGRATION_LOCK_KEY}', 0))`);
+        if (held?.retired) await sql.unsafe(`SELECT pg_advisory_unlock(hashtextextended('${RETIRED_MIGRATION_LOCK_KEY}', 0))`);
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
       const { migrationTableSchema, columnNames } = await ensureMigrationJournalTable(sql);
@@ -538,7 +546,7 @@ async function applyPendingMigrationsManually(
       }
     } finally {
       try {
-        await sql`SELECT pg_advisory_unlock(hashtextextended('paperclip:migrations', 0))`;
+        await sql.unsafe(MIGRATION_LOCK_RELEASE_SQL);
       } catch {
         // Preserve the migration error if the session died; PostgreSQL releases
         // its lock on disconnect, and pool.end() closes any remaining connection.
