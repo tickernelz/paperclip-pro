@@ -215,6 +215,14 @@ restart the broker re-reads its root-owned registry and adopts only exact-lease
 matches; a changed `BROKER_NODE_IDENTITY` (host reimage / boot-id change) forces
 quarantine and operator reconciliation rather than silently re-adopting.
 
+A broker installed before the Wardmote rename keeps its socket, registry and
+audit log under the earlier directory names, which this release no longer uses
+as defaults. Before restarting it on the new release, either set
+`BROKER_SOCKET_PATH`, `BROKER_REGISTRY_PATH` and `BROKER_AUDIT_PATH` in the
+broker unit, and `WARDMOTE_TAILSCALE_BROKER_SOCKET` for the Wardmote service,
+to the paths the old install uses, or reinstall the unit with the install steps
+above so it uses the new defaults.
+
 ## Uninstall / rollback / opt-out
 
 Rollback disables new exposure and removes only broker-owned listeners; it never
