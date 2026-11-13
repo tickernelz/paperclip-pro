@@ -149,7 +149,7 @@ describe("eval-session request contract", () => {
       instructionRoot = context.instructions.bundle.rootPath;
       expect(parseNativeRuntimeContext(context)).toEqual(context);
       expect(context.skills).toEqual([]);
-      expect(context.mcp.assignmentSetId).toBe("paperclip-runner-direct-eval-v1");
+      expect(context.mcp.assignmentSetId).toBe("wardmote-runner-direct-eval-v1");
       expect(context.instructions.entryPath).toBe("AGENTS.md");
       expect(await readFile(
         join(context.instructions.bundle.rootPath, "AGENTS.md"),

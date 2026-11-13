@@ -119,7 +119,7 @@ class FakeCapabilityCodexTransport implements CodexAppServerTransport {
     if (method === "thread/start") {
       expect(Array.isArray(params.dynamicTools)).toBe(true);
       expect(params.completionContract).toEqual({
-        revision: "paperclip-capability-live-v1",
+        revision: "wardmote-capability-live-v1",
         criterionIds: ["objective"],
       });
       return {
@@ -934,7 +934,7 @@ describe("Capability live runnerd and Codex session", () => {
     expect(names.filter((name) => name === "wardmote_block")).toHaveLength(1);
     expect(names).not.toContain("create_task");
     expect(opened.params).not.toHaveProperty("baseInstructions");
-    expect(opened.params.developerInstructions).toContain('"revision":"paperclip-capability-live-v1"');
+    expect(opened.params.developerInstructions).toContain('"revision":"wardmote-capability-live-v1"');
     expect(opened.params.developerInstructions).toContain('"criterionIds":["objective"]');
     await first.suspend();
     const restoredService = new CapabilityLiveSessionService({ store, transportFactory: factory });
@@ -957,7 +957,7 @@ describe("Capability live runnerd and Codex session", () => {
     const before = session.mockState();
     const result = {
       schema: "wardmote.run_result.v1", reportedWorkDisposition: "done", summary: "Orientation complete",
-      completionClaim: { contractRevision: "paperclip-capability-live-v1", objectiveSatisfied: true,
+      completionClaim: { contractRevision: "wardmote-capability-live-v1", objectiveSatisfied: true,
         criteria: [{ criterionId: "objective", status: "satisfied", evidenceRefs: [] }], remainingWork: [] },
       evidence: [], verification: [],
     };
@@ -1011,7 +1011,7 @@ describe("Capability live runnerd and Codex session", () => {
       "Native instructions\n\nRead-only instruction sibling root: /runtime/instructions",
     );
     expect(state.transports[0]?.requests.find((request) => request.method === "thread/start")?.params.developerInstructions)
-      .toContain('Native completion report contract: {"revision":"paperclip-capability-live-v1","criterionIds":["objective"]}');
+      .toContain('Native completion report contract: {"revision":"wardmote-capability-live-v1","criterionIds":["objective"]}');
     await service.shutdown(session.id);
   });
 

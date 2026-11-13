@@ -170,7 +170,7 @@ export async function prepareEvalRuntimeContext(
     },
     skills: [],
     mcp: {
-      assignmentSetId: "paperclip-runner-direct-eval-v1",
+      assignmentSetId: "wardmote-runner-direct-eval-v1",
       digest: semanticCatalogDigest,
       bindingId: null,
     },
