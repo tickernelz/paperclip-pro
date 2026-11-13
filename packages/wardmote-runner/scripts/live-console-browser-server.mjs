@@ -122,7 +122,7 @@ export function liveConsoleBrowserServerPlugin(options = {}) {
     });
   }
   return {
-    name: "paperclip-runner-live-console-server",
+    name: "wardmote-runner-live-console-server",
     async configureServer(server) {
       const host = server.config.server.host;
       await mount(server, typeof host === "string" ? host : host === true ? "0.0.0.0" : "127.0.0.1");

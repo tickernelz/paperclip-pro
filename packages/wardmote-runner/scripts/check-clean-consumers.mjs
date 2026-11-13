@@ -47,7 +47,7 @@ try {
   const runnerTarball = await pack(runnerRoot, artifactsRoot, { runner: true });
   const runtimeDependencyTarballs = await packRunnerRuntimeDependencies(artifactsRoot);
   const runnerdArtifact = await stageRunnerdArtifact(artifactsRoot);
-  const conformanceRecord = resolve(artifactsRoot, "paperclip-runner-consumer-conformance.json");
+  const conformanceRecord = resolve(artifactsRoot, "wardmote-runner-consumer-conformance.json");
   const sourceCommit = (
     process.env.WARDMOTE_SOURCE_COMMIT
     ?? capture("git", ["rev-parse", "HEAD"], runnerRoot)

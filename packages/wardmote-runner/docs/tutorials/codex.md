@@ -122,7 +122,7 @@ Confirm:
 Check that no control-plane route or bearer credential appears:
 
 ```sh
-if rg -ni 'authorization: bearer|paperclip_api_key|/api/issues/' "$codex_trace"; then
+if rg -ni 'authorization: bearer|wardmote_api_key|/api/issues/' "$codex_trace"; then
   echo "FAIL: forbidden control-plane context found"
   exit 1
 fi

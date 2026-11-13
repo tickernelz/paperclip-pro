@@ -393,7 +393,7 @@ export function createLocalRunnerBrowserMiddleware(options = {}) {
 export function localRunnerBrowserServerPlugin(options = {}) {
   const middleware = createLocalRunnerBrowserMiddleware(options);
   return {
-    name: "paperclip-runner-local-runner-live-server",
+    name: "wardmote-runner-local-runner-live-server",
     configureServer(server) {
       server.middlewares.use(middleware);
     },

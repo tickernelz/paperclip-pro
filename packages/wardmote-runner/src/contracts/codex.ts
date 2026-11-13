@@ -173,7 +173,7 @@ export function isSkilllessCodexContext(
     ) &&
     context.instructionPolicy.skillInstructions === false &&
     context.instructionPolicy.appInstructions === false &&
-    !serialized.includes("paperclip_api_key") &&
+    !serialized.includes("wardmote_api_key") &&
     !serialized.includes("authorization: bearer") &&
     !serialized.includes("/api/issues/") &&
     !serialized.includes('"type":"skill"')

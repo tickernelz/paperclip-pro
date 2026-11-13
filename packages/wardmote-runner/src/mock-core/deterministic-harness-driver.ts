@@ -77,7 +77,7 @@ export class DeterministicHarnessDriver implements HarnessDriver {
 
   async descriptor(): Promise<HarnessDriverDescriptor> {
     return {
-      kind: "paperclip-deterministic",
+      kind: "wardmote-deterministic",
       displayName: "Wardmote deterministic harness driver",
       version: "1.0.0",
       protocolVersion: "prp.v1",
@@ -111,7 +111,7 @@ export class DeterministicHarnessDriver implements HarnessDriver {
     snapshot: PersistedHarnessSession,
   ): Promise<HarnessSessionRecoveryResult> {
     if (
-      snapshot.driverKind !== "paperclip-deterministic"
+      snapshot.driverKind !== "wardmote-deterministic"
       || snapshot.runId === undefined
       || snapshot.normalizedSessionId === undefined
     ) {
@@ -350,7 +350,7 @@ class DeterministicHarnessSession implements HarnessSession {
 
   async snapshot(): Promise<PersistedHarnessSession> {
     return {
-      driverKind: "paperclip-deterministic",
+      driverKind: "wardmote-deterministic",
       driverSessionId: `driver_${this.#input.normalizedSessionId}`,
       providerSessionId: null,
       runId: this.#input.runId,

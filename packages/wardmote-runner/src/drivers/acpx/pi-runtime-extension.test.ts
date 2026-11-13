@@ -156,7 +156,7 @@ describe("owned Pi runtime extension", () => {
     const request = vi.fn(async (_server, method) => method === "tools/list"
       ? { tools: names.map(name => ({ name, inputSchema: { type: "object", properties: {} } })) }
       : { content: [{ type: "text", text: "recorded" }] });
-    const assigned = { ...config, servers: [{ type: "http" as const, name: "paperclip", url: "http://127.0.0.1:1234", headers: [] }] };
+    const assigned = { ...config, servers: [{ type: "http" as const, name: "wardmote", url: "http://127.0.0.1:1234", headers: [] }] };
     await installPiRuntimeExtension(h.api, assigned, request); h.handlers.get("turn_start")!();
     expect(h.tools.map(tool => tool.name).every(name => /^[A-Za-z0-9_-]{1,64}$/.test(name))).toBe(true);
     expect(new Set(h.tools.map(tool => tool.name)).size).toBe(names.length);
@@ -182,21 +182,21 @@ describe("owned Pi runtime extension", () => {
 
   it("requires explicit assigned configuration, authenticated HTTPS or numeric loopback HTTP", () => {
     expect(() => readPiRuntimeConfiguration({})).toThrow("missing");
-    const value = { invocationNamespace: "00000000-0000-4000-8000-000000000000", workspace: "/work/project", readOnly: false, readRoots: [], protectedRoots: [], instructions: "", servers: [{ type: "http", name: "paperclip", url: "http://127.0.0.1:1234/mcp", headers: [{ name: "Authorization", value: "Bearer 1234567890123456" }] }] };
+    const value = { invocationNamespace: "00000000-0000-4000-8000-000000000000", workspace: "/work/project", readOnly: false, readRoots: [], protectedRoots: [], instructions: "", servers: [{ type: "http", name: "wardmote", url: "http://127.0.0.1:1234/mcp", headers: [{ name: "Authorization", value: "Bearer 1234567890123456" }] }] };
     const parse = () => readPiRuntimeConfiguration({ WARDMOTE_PI_RUNTIME_CONFIGURATION: JSON.stringify(value) });
     expect(parse().servers).toHaveLength(1);
-    for (const url of ["http://127.0.0.1.evil.test/mcp", "http://paperclip.example/mcp", "http://localhost/mcp", "http://user:password@127.0.0.1/mcp", "https://user:password@wardmote.example/mcp", "https://paperclip.example/mcp#unbound", "file:///tmp/mcp"]) {
+    for (const url of ["http://127.0.0.1.evil.test/mcp", "http://acme.example/mcp", "http://localhost/mcp", "http://user:password@127.0.0.1/mcp", "https://user:password@wardmote.example/mcp", "https://wardmote.example/mcp#unbound", "file:///tmp/mcp"]) {
       value.servers[0]!.url = url;
       expect(parse).toThrow("requires HTTPS or numeric loopback HTTP");
     }
-    value.servers[0]!.url = "https://paperclip.example/mcp/gateway";
+    value.servers[0]!.url = "https://wardmote.example/mcp/gateway";
     value.servers[0]!.headers = [];
     expect(parse).toThrow("authentication");
   });
 
   it("initializes and executes only the exact assigned HTTPS gateway with its bound credential", async () => {
     const { config } = await workspace(); const h = harness();
-    const endpoint = "https://paperclip.example/api/mcp/gateway/assigned";
+    const endpoint = "https://wardmote.example/api/mcp/gateway/assigned";
     const authorization = "Bearer 1234567890123456";
     const assigned = readPiRuntimeConfiguration({ WARDMOTE_PI_RUNTIME_CONFIGURATION: JSON.stringify({
       ...config, servers: [{ type: "http", name: "wardmote-assigned", url: endpoint, headers: [{ name: "Authorization", value: authorization }] }],
@@ -350,7 +350,7 @@ describe("owned Pi runtime extension", () => {
 
   it("separates repeated provider call IDs across native iterations and warm prompts, but preserves exact retries", async () => {
     const { config } = await workspace(); const h = harness();
-    config.servers = [{ type: "http", name: "paperclip", url: "http://127.0.0.1:1234", headers: [] }];
+    config.servers = [{ type: "http", name: "wardmote", url: "http://127.0.0.1:1234", headers: [] }];
     const calls = new Map<string, { fingerprint: string; result: Record<string, unknown> }>();
     const request = vi.fn(async (_server, method, params, id) => {
       if (method === "tools/list") return { tools: ["wardmote_finish", "get_task_context"].map(name => ({ name, inputSchema: { type: "object" } })) };
@@ -394,7 +394,7 @@ describe("owned Pi runtime extension", () => {
       return { accepted: tool };
     });
     const bridge = await startRunnerToolBridge({ tools: [{ name: "get_task_context", inputSchema: { type: "object" } }], handler });
-    const server = { type: "http" as const, name: "paperclip", url: bridge.url, headers: [{ name: "Authorization", value: `Bearer ${bridge.secret}` }] };
+    const server = { type: "http" as const, name: "wardmote", url: bridge.url, headers: [{ name: "Authorization", value: `Bearer ${bridge.secret}` }] };
     config.servers = [server];
     const deliveries: Array<{ id: string; params: Record<string, unknown> }> = [];
     try {
@@ -442,7 +442,7 @@ describe("owned Pi runtime extension", () => {
   it("preserves bounded MCP validation errors as failures and removes bound authentication", async () => {
     const { config } = await workspace(); const h = harness();
     const authorization = "Bearer assigned-mcp-token-123456789";
-    config.servers = [{ type: "http", name: "paperclip", url: "http://127.0.0.1:1234", headers: [{ name: "Authorization", value: authorization }] }];
+    config.servers = [{ type: "http", name: "wardmote", url: "http://127.0.0.1:1234", headers: [{ name: "Authorization", value: authorization }] }];
     const request = vi.fn(async (_server, method) => method === "tools/list"
       ? { tools: [{ name: "wardmote_finish", inputSchema: { type: "object" } }] }
       : method === "tools/call" ? { isError: true, content: [{ type: "text", text: `completionClaim.contractRevision must equal 1; verification.items[0].status is invalid; Authorization: ${authorization}; token=other-private-value; \"password\":\"another-secret\"` }], structuredContent: { code: "INVALID_VERIFICATION", field: "verification.items[0].status" } } : {});
@@ -466,7 +466,7 @@ describe("owned Pi runtime extension", () => {
     { isError: "true", content: [{ type: "text", text: "malformed error flag" }] },
   ])("fails closed for oversized or malformed MCP error content %#", async result => {
     const { config } = await workspace(); const h = harness();
-    config.servers = [{ type: "http", name: "paperclip", url: "http://127.0.0.1:1234", headers: [] }];
+    config.servers = [{ type: "http", name: "wardmote", url: "http://127.0.0.1:1234", headers: [] }];
     const request = vi.fn(async (_server, method) => method === "tools/list"
       ? { tools: [{ name: "wardmote_finish", inputSchema: { type: "object" } }] }
       : method === "tools/call" ? result : {});
@@ -479,7 +479,7 @@ describe("owned Pi runtime extension", () => {
 
   it("rejects incomplete catalogs and tool-result errors without exposing auth", async () => {
     const { config } = await workspace(); const h = harness();
-    config.servers = [{ type: "http", name: "paperclip", url: "http://127.0.0.1:1234", headers: [] }];
+    config.servers = [{ type: "http", name: "wardmote", url: "http://127.0.0.1:1234", headers: [] }];
     const request = vi.fn(async (_server, method) => method === "tools/list" ? { tools: [], nextCursor: "more" } : {});
     await expect(installPiRuntimeExtension(h.api, config, request)).rejects.toThrow("incomplete");
   });
@@ -489,12 +489,12 @@ describe("owned Pi runtime extension", () => {
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
     const address = server.address() as { port: number };
     try {
-      await expect(piMcpRequest({ type: "http", name: "paperclip", url: `http://127.0.0.1:${address.port}`, headers: [{ name: "Authorization", value: "Bearer secret" }] }, "tools/list", {}, "1")).rejects.toThrow();
+      await expect(piMcpRequest({ type: "http", name: "wardmote", url: `http://127.0.0.1:${address.port}`, headers: [{ name: "Authorization", value: "Bearer secret" }] }, "tools/list", {}, "1")).rejects.toThrow();
     } finally { server.closeAllConnections(); await new Promise<void>((resolve) => server.close(() => resolve())); }
   });
 
   it("validates response IDs and bounds tool output", async () => {
-    const server = { type: "http" as const, name: "paperclip", url: "http://127.0.0.1:1", headers: [] };
+    const server = { type: "http" as const, name: "wardmote", url: "http://127.0.0.1:1", headers: [] };
     const fetch_ = vi.fn(async () => new Response(JSON.stringify({ jsonrpc: "2.0", id: "other", result: {} })));
     await expect(piMcpRequest(server, "tools/list", {}, "1", undefined, fetch_)).rejects.toThrow("identity");
     fetch_.mockImplementation(async () => new Response("x".repeat(4 * 1024 * 1024 + 1)));
