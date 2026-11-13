@@ -38,18 +38,18 @@ describe("merged pull-request confirmation extraction", () => {
 
   it("extracts and deduplicates full GitHub URLs and owner/repo#N shorthand", () => {
     expect(extractGitHubPullRequestReferences([
-      "Merge https://github.com/AcmeAI/paperclip/pull/39.",
-      "Also acmeai/paperclip#40 and ACMEAI/paperclip#40.",
+      "Merge https://github.com/AcmeAI/wardmote/pull/39.",
+      "Also acmeai/wardmote#40 and ACMEAI/wardmote#40.",
     ])).toEqual([
-      { host: "github.com", owner: "AcmeAI", repo: "paperclip", number: 39 },
-      { host: "github.com", owner: "acmeai", repo: "paperclip", number: 40 },
+      { host: "github.com", owner: "AcmeAI", repo: "wardmote", number: 39 },
+      { host: "github.com", owner: "acmeai", repo: "wardmote", number: 40 },
     ]);
   });
 
   it("requires merge intent and excludes document and tool-action confirmations", () => {
     const base = {
       kind: "request_confirmation",
-      title: "Merge AcmeAI/paperclip#39?",
+      title: "Merge AcmeAI/wardmote#39?",
       summary: null,
       payload: { version: 1, prompt: "Merge the pull request?" },
     } as const;
@@ -76,16 +76,16 @@ describe("merged pull-request confirmation extraction", () => {
       payload: {
         version: 1,
         prompt: "Merge the linked pull request?",
-        detailsMarkdown: "Primary: acmeai/paperclip#39",
+        detailsMarkdown: "Primary: acmeai/wardmote#39",
         target: {
           type: "custom",
           key: "github-pr-40",
-          href: "https://github.com/acmeai/paperclip/pull/40",
+          href: "https://github.com/acmeai/wardmote/pull/40",
         },
       },
     })).toEqual([
-      { host: "github.com", owner: "acmeai", repo: "paperclip", number: 39 },
-      { host: "github.com", owner: "acmeai", repo: "paperclip", number: 40 },
+      { host: "github.com", owner: "acmeai", repo: "wardmote", number: 39 },
+      { host: "github.com", owner: "acmeai", repo: "wardmote", number: 40 },
     ]);
   });
 
@@ -100,7 +100,7 @@ describe("merged pull-request confirmation extraction", () => {
       payload: {
         version: 1,
         prompt: "Merge the linked pull request?",
-        detailsMarkdown: "Deploy to production after acmeai/paperclip#39 merges.",
+        detailsMarkdown: "Deploy to production after acmeai/wardmote#39 merges.",
       },
     })).toEqual([]);
     expect(getMergeConfirmationPullRequestReferences({
@@ -111,7 +111,7 @@ describe("merged pull-request confirmation extraction", () => {
         target: {
           type: "custom",
           label: "Release to production",
-          href: "https://github.com/acmeai/paperclip/pull/39",
+          href: "https://github.com/acmeai/wardmote/pull/39",
         },
       },
     })).toEqual([]);
@@ -124,8 +124,8 @@ describe("merged pull-request confirmation extraction", () => {
       summary: null,
       payload: {
         version: 1,
-        prompt: "Merge acmeai/paperclip#39?",
-        detailsMarkdown: "Erase all customer records after acmeai/paperclip#39 merges.",
+        prompt: "Merge acmeai/wardmote#39?",
+        detailsMarkdown: "Erase all customer records after acmeai/wardmote#39 merges.",
       },
     })).toEqual([]);
   });
@@ -216,13 +216,13 @@ describeEmbeddedPostgres("merged pull-request confirmation sweep", () => {
       {
         ...common,
         id: interactionIds.merged,
-        title: "Merge https://github.com/acmeai/paperclip/pull/39?",
+        title: "Merge https://github.com/acmeai/wardmote/pull/39?",
         payload: { version: 1, prompt: "Merge the PR?" },
       },
       {
         ...common,
         id: interactionIds.boardOrAgents,
-        title: "Merge acmeai/paperclip#39?",
+        title: "Merge acmeai/wardmote#39?",
         requestedResolverPolicy: "board_or_agents",
         effectiveResolverPolicy: "board_or_agents",
         payload: { version: 1, prompt: "Merge the PR?" },
@@ -230,7 +230,7 @@ describeEmbeddedPostgres("merged pull-request confirmation sweep", () => {
       {
         ...common,
         id: interactionIds.someOpen,
-        title: "Ready to merge acmeai/paperclip#39 and acmeai/paperclip#41?",
+        title: "Ready to merge acmeai/wardmote#39 and acmeai/wardmote#41?",
         payload: { version: 1, prompt: "Ready to merge both PRs?" },
       },
       {
@@ -242,7 +242,7 @@ describeEmbeddedPostgres("merged pull-request confirmation sweep", () => {
       {
         ...common,
         id: interactionIds.toolAction,
-        title: "Merge acmeai/paperclip#42?",
+        title: "Merge acmeai/wardmote#42?",
         payload: {
           version: 1,
           prompt: "Merge the PR?",
@@ -255,8 +255,8 @@ describeEmbeddedPostgres("merged pull-request confirmation sweep", () => {
         title: "Merge the linked PR?",
         payload: {
           version: 1,
-          prompt: "Merge acmeai/paperclip#39?",
-          detailsMarkdown: "Erase all customer records after acmeai/paperclip#39 merges.",
+          prompt: "Merge acmeai/wardmote#39?",
+          detailsMarkdown: "Erase all customer records after acmeai/wardmote#39 merges.",
         },
       },
     ]);
@@ -273,7 +273,7 @@ describeEmbeddedPostgres("merged pull-request confirmation sweep", () => {
     await expect(service.sweepMergedPullRequestConfirmations([{
       companyId,
       owner: "acmeai",
-      repo: "paperclip",
+      repo: "wardmote",
       number: 39,
     }])).resolves.toEqual({
       checked: 6,
@@ -318,7 +318,7 @@ describeEmbeddedPostgres("merged pull-request confirmation sweep", () => {
         details: expect.objectContaining({
           interactionId: interactionIds.merged,
           resolutionActorKind: "system",
-          pullRequests: ["acmeai/paperclip#39"],
+          pullRequests: ["acmeai/wardmote#39"],
         }),
       }),
     ]));

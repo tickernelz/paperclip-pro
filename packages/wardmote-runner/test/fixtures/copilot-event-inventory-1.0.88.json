@@ -22,7 +22,7 @@
         "turn"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "activity": "unused_native_passthrough_not_subscribed",
         "apiEndpoint": "unused_native_passthrough_not_subscribed",
@@ -55,7 +55,7 @@
         "totalResponseSizeBytes"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "activity": "unused_native_passthrough_not_subscribed",
         "conversationScope": "unused_native_passthrough_not_subscribed",
@@ -89,7 +89,7 @@
         "verdict"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "content": "unused_native_passthrough_not_subscribed",
         "conversationScope": "unused_native_passthrough_not_subscribed",
@@ -126,7 +126,7 @@
         "usage"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "conversationScope": "unused_native_passthrough_not_subscribed",
         "degradedToPhaseId": "unused_native_passthrough_not_subscribed",
@@ -156,7 +156,7 @@
         "role"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "conversationScope": "unused_native_passthrough_not_subscribed",
         "fusionId": "unused_native_passthrough_not_subscribed",
@@ -175,7 +175,7 @@
         "aborted"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "aborted": "unused_native_passthrough_not_subscribed"
       },
@@ -188,7 +188,7 @@
         "intent"
       ],
       "standardAcp": "agent_thought_chunk",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "intent": "standard_projection_field_retention_not_individually_qualified"
       },
@@ -225,7 +225,7 @@
         "turnId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "apiCallId": "unused_native_passthrough_not_subscribed",
         "chunkCount": "unused_native_passthrough_not_subscribed",
@@ -264,7 +264,7 @@
         "parentToolCallId"
       ],
       "standardAcp": "agent_message_chunk",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "deltaContent": "standard_projection_field_retention_not_individually_qualified",
         "messageId": "standard_projection_field_retention_not_individually_qualified",
@@ -280,7 +280,7 @@
         "phase"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "messageId": "unused_native_passthrough_not_subscribed",
         "phase": "unused_native_passthrough_not_subscribed"
@@ -296,7 +296,7 @@
         "rte"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "content": "unused_native_passthrough_not_subscribed",
         "reasoningId": "unused_native_passthrough_not_subscribed",
@@ -312,7 +312,7 @@
         "reasoningId"
       ],
       "standardAcp": "agent_thought_chunk",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "deltaContent": "standard_projection_field_retention_not_individually_qualified",
         "reasoningId": "standard_projection_field_retention_not_individually_qualified"
@@ -328,7 +328,7 @@
         "status"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "kind": "unused_native_passthrough_not_subscribed",
         "outputIndex": "unused_native_passthrough_not_subscribed",
@@ -343,7 +343,7 @@
         "totalResponseSizeBytes"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "totalResponseSizeBytes": "unused_native_passthrough_not_subscribed"
       },
@@ -359,7 +359,7 @@
         "toolType"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "inputDelta": "unused_native_passthrough_not_subscribed",
         "toolCallId": "unused_native_passthrough_not_subscribed",
@@ -376,7 +376,7 @@
         "turnId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "model": "unused_native_passthrough_not_subscribed",
         "turnId": "unused_native_passthrough_not_subscribed"
@@ -392,7 +392,7 @@
         "turnId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "model": "unused_native_passthrough_not_subscribed",
         "reason": "unused_native_passthrough_not_subscribed",
@@ -409,7 +409,7 @@
         "turnId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "interactionId": "unused_native_passthrough_not_subscribed",
         "model": "unused_native_passthrough_not_subscribed",
@@ -466,7 +466,7 @@
         "transport"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "acceptedPredictionTokens": "projected",
         "apiCallId": "projected",
@@ -522,7 +522,7 @@
         "response"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "requestId": "unused_native_passthrough_not_subscribed",
         "response": "unused_native_passthrough_not_subscribed"
@@ -538,7 +538,7 @@
         "retryAfterSeconds"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "errorCode": "unused_native_passthrough_not_subscribed",
         "requestId": "unused_native_passthrough_not_subscribed",
@@ -553,7 +553,7 @@
         "ui"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "ui": "unused_native_passthrough_not_subscribed"
       },
@@ -566,7 +566,7 @@
         "requestId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "requestId": "unused_native_passthrough_not_subscribed"
       },
@@ -582,7 +582,7 @@
         "requestId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "args": "unused_native_passthrough_not_subscribed",
         "command": "unused_native_passthrough_not_subscribed",
@@ -599,7 +599,7 @@
         "requestId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "command": "unused_native_passthrough_not_subscribed",
         "requestId": "unused_native_passthrough_not_subscribed"
@@ -613,7 +613,7 @@
         "commands"
       ],
       "standardAcp": "available_commands_update",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "commands": "standard_projection_field_retention_not_individually_qualified"
       },
@@ -628,7 +628,7 @@
         "requestId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "action": "unused_native_passthrough_not_subscribed",
         "content": "unused_native_passthrough_not_subscribed",
@@ -649,7 +649,7 @@
         "url"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "elicitationSource": "unused_declared_field",
         "message": "unused_declared_field",
@@ -672,7 +672,7 @@
         "selectedAction"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "approved": "unused_native_passthrough_not_subscribed",
         "autoApproveEdits": "unused_native_passthrough_not_subscribed",
@@ -694,7 +694,7 @@
         "summary"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "actions": "unused_declared_field",
         "model": "unused_declared_field",
@@ -712,7 +712,7 @@
         "requestId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "requestId": "unused_native_passthrough_not_subscribed"
       },
@@ -733,7 +733,7 @@
         "workingDirectory"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "arguments": "unused_native_passthrough_not_subscribed",
         "providerId": "unused_native_passthrough_not_subscribed",
@@ -759,7 +759,7 @@
         "status"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "consumedNanoAiu": "unused_native_passthrough_not_subscribed",
         "consumedSubagents": "unused_native_passthrough_not_subscribed",
@@ -779,7 +779,7 @@
         "runId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "attempt": "unused_native_passthrough_not_subscribed",
         "factoryName": "unused_native_passthrough_not_subscribed",
@@ -795,7 +795,7 @@
         "runId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "revision": "unused_native_passthrough_not_subscribed",
         "runId": "unused_native_passthrough_not_subscribed"
@@ -814,7 +814,7 @@
         "success"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "error": "unused_native_passthrough_not_subscribed",
         "hookInvocationId": "unused_native_passthrough_not_subscribed",
@@ -833,7 +833,7 @@
         "temporary"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "message": "unused_native_passthrough_not_subscribed",
         "temporary": "unused_native_passthrough_not_subscribed"
@@ -850,7 +850,7 @@
         "parentToolCallId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "hookInvocationId": "unused_native_passthrough_not_subscribed",
         "hookType": "unused_native_passthrough_not_subscribed",
@@ -867,7 +867,7 @@
         "requestId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "outcome": "unused_native_passthrough_not_subscribed",
         "requestId": "unused_native_passthrough_not_subscribed"
@@ -884,7 +884,7 @@
         "serverUrl"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "reason": "unused_native_passthrough_not_subscribed",
         "requestId": "unused_native_passthrough_not_subscribed",
@@ -901,7 +901,7 @@
         "requestId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "outcome": "unused_native_passthrough_not_subscribed",
         "requestId": "unused_native_passthrough_not_subscribed"
@@ -922,7 +922,7 @@
         "wwwAuthenticateParams"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "httpResponse": "unused_native_passthrough_not_subscribed",
         "reason": "unused_native_passthrough_not_subscribed",
@@ -942,7 +942,7 @@
         "serverName"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "serverName": "unused_native_passthrough_not_subscribed"
       },
@@ -955,7 +955,7 @@
         "serverName"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "serverName": "unused_native_passthrough_not_subscribed"
       },
@@ -968,7 +968,7 @@
         "serverName"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "serverName": "unused_native_passthrough_not_subscribed"
       },
@@ -988,7 +988,7 @@
         "toolName"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "arguments": "unused_native_passthrough_not_subscribed",
         "durationMs": "unused_native_passthrough_not_subscribed",
@@ -1032,7 +1032,7 @@
         "transport"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "apiCallId": "unused_native_passthrough_not_subscribed",
         "apiEndpoint": "unused_native_passthrough_not_subscribed",
@@ -1074,7 +1074,7 @@
         "turnId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "containsBuiltInFileEditRequest": "unused_native_passthrough_not_subscribed",
         "dispatchDurationMs": "unused_native_passthrough_not_subscribed",
@@ -1095,7 +1095,7 @@
         "turnId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "fusion": "unused_native_passthrough_not_subscribed",
         "model": "unused_native_passthrough_not_subscribed",
@@ -1109,7 +1109,7 @@
       "event": "pending_messages.modified",
       "fields": [],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {},
       "gapReason": "Only bounded typed metadata projected. Private bodies/nested diagnostics or provider-only resources require an explicit safe contract; see capability report.",
       "followUpPriority": "P1"
@@ -1121,7 +1121,7 @@
         "turnIndex"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "requestId": "unused_native_passthrough_not_subscribed",
         "turnIndex": "unused_native_passthrough_not_subscribed"
@@ -1138,7 +1138,7 @@
         "toolCallId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "decisionSource": "unused_native_passthrough_not_subscribed",
         "recordId": "unused_native_passthrough_not_subscribed",
@@ -1159,7 +1159,7 @@
         "toolCallId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "blocker": "unused_native_passthrough_not_subscribed",
         "decisionSource": "unused_native_passthrough_not_subscribed",
@@ -1182,7 +1182,7 @@
         "turnIndex"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "polarity": "unused_native_passthrough_not_subscribed",
         "recordId": "unused_native_passthrough_not_subscribed",
@@ -1208,7 +1208,7 @@
         "world"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "actionClass": "unused_native_passthrough_not_subscribed",
         "polarity": "unused_native_passthrough_not_subscribed",
@@ -1229,7 +1229,7 @@
         "turnIndex"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "turnIndex": "unused_native_passthrough_not_subscribed"
       },
@@ -1243,7 +1243,7 @@
         "turnIndex"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "activatesExtraction": "unused_native_passthrough_not_subscribed",
         "turnIndex": "unused_native_passthrough_not_subscribed"
@@ -1264,7 +1264,7 @@
         "riskAssessment"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "agentMode": "unused_native_passthrough_not_subscribed",
         "permissionMode": "unused_native_passthrough_not_subscribed",
@@ -1284,7 +1284,7 @@
         "requestId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "requestId": "unused_native_passthrough_not_subscribed"
       },
@@ -1299,7 +1299,7 @@
         "serverName"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "mcpRequestId": "unused_native_passthrough_not_subscribed",
         "requestId": "unused_native_passthrough_not_subscribed",
@@ -1312,7 +1312,7 @@
       "event": "sandbox.decision",
       "fields": [],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {},
       "gapReason": "Standard permission callback owns authorization; native notices cannot grant authority. Add sanitized diagnostics.",
       "followUpPriority": "P1"
@@ -1337,7 +1337,7 @@
         "stickyOverride"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "availableModels": "unused_native_passthrough_not_subscribed",
         "candidateModels": "unused_native_passthrough_not_subscribed",
@@ -1364,7 +1364,7 @@
         "recommendedAutoTier"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "recommendedAutoTier": "unused_native_passthrough_not_subscribed"
       },
@@ -1379,7 +1379,7 @@
         "requestedAutoTier"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "effectiveAutoTier": "unused_native_passthrough_not_subscribed",
         "reason": "unused_native_passthrough_not_subscribed",
@@ -1396,7 +1396,7 @@
         "status"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "id": "unused_native_passthrough_not_subscribed",
         "operation": "unused_native_passthrough_not_subscribed",
@@ -1409,7 +1409,7 @@
       "event": "session.background_tasks_changed",
       "fields": [],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {},
       "gapReason": "Only bounded typed metadata projected. Private bodies/nested diagnostics or provider-only resources require an explicit safe contract; see capability report.",
       "followUpPriority": "P1"
@@ -1426,7 +1426,7 @@
         "type"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "assetId": "projected",
         "byteLength": "projected",
@@ -1447,7 +1447,7 @@
         "instanceId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "canvasId": "unused_native_passthrough_not_subscribed",
         "extensionId": "unused_native_passthrough_not_subscribed",
@@ -1470,7 +1470,7 @@
         "url"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "canvasId": "unused_native_passthrough_not_subscribed",
         "extensionId": "unused_native_passthrough_not_subscribed",
@@ -1495,7 +1495,7 @@
         "title"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "canvasId": "unused_native_passthrough_not_subscribed",
         "extensionId": "unused_native_passthrough_not_subscribed",
@@ -1512,7 +1512,7 @@
         "canvases"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "canvases": "unused_native_passthrough_not_subscribed"
       },
@@ -1527,7 +1527,7 @@
         "instanceId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "canvasId": "unused_native_passthrough_not_subscribed",
         "extensionId": "unused_native_passthrough_not_subscribed",
@@ -1544,7 +1544,7 @@
         "instanceId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "canvasId": "unused_native_passthrough_not_subscribed",
         "extensionId": "unused_native_passthrough_not_subscribed",
@@ -1581,7 +1581,7 @@
         "trigger"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "activeFactorySummary": "unused_declared_field",
         "behaviorModelId": "projected",
@@ -1622,7 +1622,7 @@
         "trigger"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "conversationTokens": "projected",
         "currentTokens": "projected",
@@ -1648,7 +1648,7 @@
         "successfulToolCount"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "attempt": "projected",
         "eventRange": "projected",
@@ -1676,7 +1676,7 @@
         "repositoryHost"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "baseCommit": "projected",
         "branch": "projected",
@@ -1698,7 +1698,7 @@
         "messagesCleared"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "initialMessage": "unused_native_passthrough_not_subscribed",
         "messagesCleared": "unused_native_passthrough_not_subscribed"
@@ -1714,7 +1714,7 @@
         "warnings"
       ],
       "standardAcp": "config_option_update",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "agents": "standard_projection_field_retention_not_individually_qualified",
         "errors": "standard_projection_field_retention_not_individually_qualified",
@@ -1733,7 +1733,7 @@
         "version"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "name": "unused_native_passthrough_not_subscribed",
         "payload": "unused_native_passthrough_not_subscribed",
@@ -1759,7 +1759,7 @@
         "url"
       ],
       "standardAcp": "agent_message_chunk",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "eligibleForAutoSwitch": "standard_projection_field_retention_not_individually_qualified",
         "errorCode": "standard_projection_field_retention_not_individually_qualified",
@@ -1781,7 +1781,7 @@
         "attachments"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "attachments": "unused_native_passthrough_not_subscribed"
       },
@@ -1794,7 +1794,7 @@
         "extensions"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "extensions": "unused_native_passthrough_not_subscribed"
       },
@@ -1812,7 +1812,7 @@
         "toolCallId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "commitId": "unused_native_passthrough_not_subscribed",
         "fusionId": "unused_native_passthrough_not_subscribed",
@@ -1847,7 +1847,7 @@
         "turnId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "cacheWriteTokens": "unused_native_passthrough_not_subscribed",
         "cachedTokens": "unused_native_passthrough_not_subscribed",
@@ -1881,7 +1881,7 @@
         "targetPhaseId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "fusionId": "unused_native_passthrough_not_subscribed",
         "message": "unused_native_passthrough_not_subscribed",
@@ -1918,7 +1918,7 @@
         "turnId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "contractVersion": "unused_native_passthrough_not_subscribed",
         "fallbackModel": "unused_native_passthrough_not_subscribed",
@@ -1957,7 +1957,7 @@
         "syntheticModel"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "attemptId": "unused_native_passthrough_not_subscribed",
         "errorMessage": "unused_native_passthrough_not_subscribed",
@@ -1979,7 +1979,7 @@
         "turnKind"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "attemptId": "unused_native_passthrough_not_subscribed",
         "policy": "unused_native_passthrough_not_subscribed",
@@ -2001,7 +2001,7 @@
         "summary"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "context": "unused_native_passthrough_not_subscribed",
         "handoffTime": "unused_native_passthrough_not_subscribed",
@@ -2021,7 +2021,7 @@
         "mode"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "aborted": "projected",
         "mode": "projected"
@@ -2033,7 +2033,7 @@
       "event": "session.indexed_search",
       "fields": [],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {},
       "gapReason": "No admitted typed native control/resource surface, or standard ACP already transports primary output; investigate useful metadata before subscription.",
       "followUpPriority": "P2"
@@ -2047,7 +2047,7 @@
         "url"
       ],
       "standardAcp": "agent_message_chunk",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "infoType": "standard_projection_field_retention_not_individually_qualified",
         "message": "standard_projection_field_retention_not_individually_qualified",
@@ -2067,7 +2067,7 @@
         "setting"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "action": "unused_native_passthrough_not_subscribed",
         "escalation": "unused_native_passthrough_not_subscribed",
@@ -2094,7 +2094,7 @@
         "source"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "bypassPermissionsDisabled": "unused_native_passthrough_not_subscribed",
         "clientManaged": "unused_native_passthrough_not_subscribed",
@@ -2117,7 +2117,7 @@
         "serverName"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "serverName": "unused_native_passthrough_not_subscribed"
       },
@@ -2130,7 +2130,7 @@
         "serverName"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "serverName": "unused_native_passthrough_not_subscribed"
       },
@@ -2145,7 +2145,7 @@
         "status"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "error": "unused_native_passthrough_not_subscribed",
         "serverName": "unused_native_passthrough_not_subscribed",
@@ -2160,7 +2160,7 @@
         "servers"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "servers": "unused_native_passthrough_not_subscribed"
       },
@@ -2171,7 +2171,7 @@
       "event": "session.memory_changed",
       "fields": [],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {},
       "gapReason": "No admitted typed native control/resource surface, or standard ACP already transports primary output; investigate useful metadata before subscription.",
       "followUpPriority": "P2"
@@ -2183,7 +2183,7 @@
         "previousMode"
       ],
       "standardAcp": "current_mode_update",
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "newMode": "projected",
         "previousMode": "projected"
@@ -2198,7 +2198,7 @@
         "mode"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "content": "unused_native_passthrough_not_subscribed",
         "mode": "unused_native_passthrough_not_subscribed"
@@ -2224,7 +2224,7 @@
         "verbosity"
       ],
       "standardAcp": "config_option_update",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "autoTier": "standard_projection_field_retention_not_individually_qualified",
         "cause": "standard_projection_field_retention_not_individually_qualified",
@@ -2250,7 +2250,7 @@
         "reason"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "previousModel": "unused_native_passthrough_not_subscribed",
         "reason": "unused_native_passthrough_not_subscribed"
@@ -2269,7 +2269,7 @@
         "status"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "attempts": "unused_native_passthrough_not_subscribed",
         "episodeId": "unused_native_passthrough_not_subscribed",
@@ -2289,7 +2289,7 @@
         "previousMode"
       ],
       "standardAcp": "config_option_update",
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "assistedApprovalModel": "projected",
         "mode": "projected",
@@ -2304,7 +2304,7 @@
         "operation"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "operation": "projected"
       },
@@ -2317,7 +2317,7 @@
         "remoteSteerable"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "remoteSteerable": "unused_native_passthrough_not_subscribed"
       },
@@ -2344,7 +2344,7 @@
         "verbosity"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "alreadyInUse": "unused_native_passthrough_not_subscribed",
         "autoTier": "unused_native_passthrough_not_subscribed",
@@ -2371,7 +2371,7 @@
         "id"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "id": "unused_native_passthrough_not_subscribed"
       },
@@ -2393,7 +2393,7 @@
         "tz"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "at": "unused_native_passthrough_not_subscribed",
         "cron": "unused_native_passthrough_not_subscribed",
@@ -2416,7 +2416,7 @@
         "nextRunAt"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "id": "unused_native_passthrough_not_subscribed",
         "nextRunAt": "unused_native_passthrough_not_subscribed"
@@ -2430,7 +2430,7 @@
         "sessionLimits"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "sessionLimits": "unused_native_passthrough_not_subscribed"
       },
@@ -2458,7 +2458,7 @@
         "totalPremiumRequests"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "agentMetrics": "unused_native_passthrough_not_subscribed",
         "codeChanges": "unused_native_passthrough_not_subscribed",
@@ -2486,7 +2486,7 @@
         "skills"
       ],
       "standardAcp": "available_commands_update",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "skills": "standard_projection_field_retention_not_individually_qualified"
       },
@@ -2500,7 +2500,7 @@
         "upToEventId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "eventsRemoved": "unused_native_passthrough_not_subscribed",
         "upToEventId": "unused_native_passthrough_not_subscribed"
@@ -2530,7 +2530,7 @@
         "version"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "alreadyInUse": "unused_native_passthrough_not_subscribed",
         "autoTier": "unused_native_passthrough_not_subscribed",
@@ -2564,7 +2564,7 @@
         "summary"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "blocker": "unused_native_passthrough_not_subscribed",
         "objectiveId": "unused_native_passthrough_not_subscribed",
@@ -2582,7 +2582,7 @@
         "title"
       ],
       "standardAcp": "session_info_update",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "title": "standard_projection_field_retention_not_individually_qualified"
       },
@@ -2593,7 +2593,7 @@
       "event": "session.todos_changed",
       "fields": [],
       "standardAcp": "plan",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {},
       "gapReason": "Primary content travels standard ACP. Native extra field retention requires direct field-by-field normalization qualification.",
       "followUpPriority": "P2"
@@ -2604,7 +2604,7 @@
         "model"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "model": "unused_native_passthrough_not_subscribed"
       },
@@ -2624,7 +2624,7 @@
         "tokensRemovedDuringTruncation"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "messagesRemovedDuringTruncation": "unused_native_passthrough_not_subscribed",
         "performedBy": "unused_native_passthrough_not_subscribed",
@@ -2647,7 +2647,7 @@
         "totalPremiumRequests"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "modelCacheState": "unused_declared_field",
         "promptCacheBreakState": "unused_declared_field",
@@ -2669,7 +2669,7 @@
         "toolDefinitionsTokens"
       ],
       "standardAcp": "usage_update",
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "conversationTokens": "projected",
         "currentTokens": "projected",
@@ -2691,7 +2691,7 @@
         "warningType"
       ],
       "standardAcp": "agent_message_chunk",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "message": "standard_projection_field_retention_not_individually_qualified",
         "remediation": "standard_projection_field_retention_not_individually_qualified",
@@ -2708,7 +2708,7 @@
         "path"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "operation": "projected",
         "path": "projected"
@@ -2723,7 +2723,7 @@
         "response"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "requestId": "unused_native_passthrough_not_subscribed",
         "response": "unused_native_passthrough_not_subscribed"
@@ -2739,7 +2739,7 @@
         "usedAiCredits"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "maxAiCredits": "unused_native_passthrough_not_subscribed",
         "requestId": "unused_native_passthrough_not_subscribed",
@@ -2756,7 +2756,7 @@
         "source"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "blocked_by_provider",
+      "wardmoteDisposition": "blocked_by_provider",
       "fieldCoverage": {
         "content": "provider_blocks_passthrough",
         "interactionId": "provider_blocks_passthrough",
@@ -2775,7 +2775,7 @@
         "suffix"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "blocked_by_provider",
+      "wardmoteDisposition": "blocked_by_provider",
       "fieldCoverage": {
         "contentId": "provider_blocks_passthrough",
         "interactionId": "provider_blocks_passthrough",
@@ -2803,7 +2803,7 @@
         "trigger"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "allowedTools": "unused_native_passthrough_not_subscribed",
         "content": "unused_native_passthrough_not_subscribed",
@@ -2839,7 +2839,7 @@
         "trigger"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "allowedTools": "unused_native_passthrough_not_subscribed",
         "contentId": "unused_native_passthrough_not_subscribed",
@@ -2878,7 +2878,7 @@
         "totalToolCalls"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "agentDisplayName": "projected",
         "agentName": "projected",
@@ -2908,7 +2908,7 @@
         "reasoningEffort"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "contextTier": "projected",
         "model": "projected",
@@ -2922,7 +2922,7 @@
       "event": "subagent.deselected",
       "fields": [],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {},
       "gapReason": "No admitted typed native control/resource surface, or standard ACP already transports primary output; investigate useful metadata before subscription.",
       "followUpPriority": "P2"
@@ -2947,7 +2947,7 @@
         "totalToolCalls"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "agentDisplayName": "projected",
         "agentName": "projected",
@@ -2976,7 +2976,7 @@
         "tools"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "agentDisplayName": "unused_native_passthrough_not_subscribed",
         "agentName": "unused_native_passthrough_not_subscribed",
@@ -3002,7 +3002,7 @@
         "toolCallId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "agentDescription": "projected",
         "agentDisplayName": "projected",
@@ -3031,7 +3031,7 @@
         "role"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "content": "unused_native_passthrough_not_subscribed",
         "contentBlocks": "unused_native_passthrough_not_subscribed",
@@ -3051,7 +3051,7 @@
         "responsesReasoning"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "content": "unused_native_passthrough_not_subscribed",
         "kind": "unused_native_passthrough_not_subscribed",
@@ -3081,7 +3081,7 @@
         "turnId"
       ],
       "standardAcp": "tool_call_update",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "error": "standard_projection_field_retention_not_individually_qualified",
         "fusion": "standard_projection_field_retention_not_individually_qualified",
@@ -3110,7 +3110,7 @@
         "toolCallId"
       ],
       "standardAcp": "tool_call_update",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "partialOutput": "standard_projection_field_retention_not_individually_qualified",
         "toolCallId": "standard_projection_field_retention_not_individually_qualified"
@@ -3125,7 +3125,7 @@
         "toolCallId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "progressMessage": "unused_native_passthrough_not_subscribed",
         "toolCallId": "unused_native_passthrough_not_subscribed"
@@ -3155,7 +3155,7 @@
         "turnId"
       ],
       "standardAcp": "tool_call",
-      "paperclipDisposition": "standard_acp_projection",
+      "wardmoteDisposition": "standard_acp_projection",
       "fieldCoverage": {
         "arguments": "standard_projection_field_retention_not_individually_qualified",
         "displayVerbatim": "standard_projection_field_retention_not_individually_qualified",
@@ -3186,7 +3186,7 @@
         "toolName"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "arguments": "unused_native_passthrough_not_subscribed",
         "toolCallId": "unused_native_passthrough_not_subscribed",
@@ -3202,7 +3202,7 @@
         "toolNames"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "strategy": "unused_native_passthrough_not_subscribed",
         "toolNames": "unused_native_passthrough_not_subscribed"
@@ -3220,7 +3220,7 @@
         "requestId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "answer": "unused_native_passthrough_not_subscribed",
         "chunk": "unused_native_passthrough_not_subscribed",
@@ -3250,7 +3250,7 @@
         "turnId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "agentMode": "unused_native_passthrough_not_subscribed",
         "attachments": "unused_native_passthrough_not_subscribed",
@@ -3278,7 +3278,7 @@
         "wasFreeform"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "native_passthrough_not_subscribed",
+      "wardmoteDisposition": "native_passthrough_not_subscribed",
       "fieldCoverage": {
         "answer": "unused_native_passthrough_not_subscribed",
         "requestId": "unused_native_passthrough_not_subscribed",
@@ -3297,7 +3297,7 @@
         "toolCallId"
       ],
       "standardAcp": null,
-      "paperclipDisposition": "subscribed_and_projected",
+      "wardmoteDisposition": "subscribed_and_projected",
       "fieldCoverage": {
         "allowFreeform": "unused_declared_field",
         "choices": "unused_declared_field",
