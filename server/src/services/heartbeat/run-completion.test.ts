@@ -1,9 +1,10 @@
 import type { Db } from "@tickernelz/wardmote-db";
-import { agents, agentWakeupRequests, companies, costEvents, createDb, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS, heartbeatRuns, issues, nativeRunFinalizations } from "@tickernelz/wardmote-db";
-import { eq, sql } from "drizzle-orm";
+import { activityLog, agents, agentWakeupRequests, companies, costEvents, createDb, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS, heartbeatRuns, issueComments, issues, nativeRunFinalizations } from "@tickernelz/wardmote-db";
+import { and, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import * as usageReceipts from "../usage-receipts.js";
+import { issueService } from "../issues.js";
 import { createAgentIdentityRedactor } from "../agent-identity-redaction.js";
 import { UnresolvedWorkspaceBaseRefError } from "../workspace-runtime.js";
 import { createHeartbeatLifecycle, type HeartbeatLifecycleDependencies } from "./run-lifecycle.js";
@@ -237,34 +238,58 @@ describe.skipIf(!support.supported)("heartbeat run completion boundary", () => {
     expect(f.deps.upsertTaskSession).not.toHaveBeenCalled();
   });
 
-  it("blocks the run's issue for the assignee's manager when the provider rejects the request even on a fresh session", async () => {
+  const REJECTION = "400 The request contains image input, but this combo has no confirmed vision-capable target (type=invalid_request_error)";
+  async function rejectedRunFixture(input: { manager?: boolean; issue?: Partial<typeof issues.$inferInsert>; result?: Record<string, unknown> } = {}) {
     const f = await fixture();
     const [manager] = await db.insert(agents).values({ companyId: f.run.companyId, name: "Manager", adapterType: "process" }).returning();
-    await db.update(agents).set({ reportsTo: manager.id }).where(eq(agents.id, f.agent.id));
+    if (input.manager !== false) await db.update(agents).set({ reportsTo: manager.id }).where(eq(agents.id, f.agent.id));
     const [issue] = await db.insert(issues).values({
       companyId: f.run.companyId, title: "Status card refresh", status: "in_progress",
-      assigneeAgentId: f.agent.id, executionRunId: f.run.id, hiddenAt: new Date(),
+      assigneeAgentId: f.agent.id, executionRunId: f.run.id, hiddenAt: new Date(), ...input.issue,
     }).returning();
-    f.deps.issuesSvc.update.mockImplementation(async (id, patch) => {
-      const [row] = await db.update(issues).set({
-        status: "blocked", unblockDescriptor: patch.unblockDescriptor, blockedTransitionAt: new Date(),
-      }).where(eq(issues.id, id)).returning();
-      return row as never;
-    });
+    const real = issueService(db);
+    f.deps.issuesSvc.update.mockImplementation(real.update);
+    f.deps.issuesSvc.addComment.mockImplementation(real.addComment);
     Object.assign(f.input.adapterResult, {
-      exitCode: 1,
-      errorMessage: "400 The request contains image input, but this combo has no confirmed vision-capable target (type=invalid_request_error)",
-      errorCode: "omp_provider_request_rejected",
-      errorFamily: "provider_request_rejected",
+      exitCode: 1, errorMessage: REJECTION,
+      errorCode: "omp_provider_request_rejected", errorFamily: "provider_request_rejected",
+      ...input.result,
     });
     await f.completion.completeRun({ ...f.input, issueId: issue.id });
+    const comments = await db.select().from(issueComments).where(eq(issueComments.issueId, issue.id));
+    const activity = await db.select().from(activityLog).where(and(eq(activityLog.entityId, issue.id), eq(activityLog.actorType, "system")));
+    const current = (await db.select().from(issues).where(eq(issues.id, issue.id)))[0]!;
+    return { f, manager, issue, current, comments, activity };
+  }
+
+  it("blocks the run's issue for the assignee's manager with a system comment and activity when the provider rejects the request", async () => {
+    const { f, manager, current, comments, activity } = await rejectedRunFixture();
     expect((await read(f.run.id)).status).toBe("failed");
-    expect(f.deps.issuesSvc.update).toHaveBeenCalledWith(issue.id, {
+    expect(current).toMatchObject({
       status: "blocked",
       unblockDescriptor: { owner: { agentId: manager.id }, action: expect.stringContaining("vision-capable target") },
+      blockedOwnerNotifiedAt: expect.any(Date),
     });
+    expect(comments).toHaveLength(1);
+    expect(comments[0]).toMatchObject({ authorType: "system", body: expect.stringContaining("vision-capable target") });
+    expect(activity.filter((row) => (row.details as Record<string, unknown> | null)?.source === "heartbeat.provider_request_rejected")).toHaveLength(1);
     expect(f.deps.enqueueWakeup).toHaveBeenCalledWith(manager.id, expect.objectContaining({ reason: "issue_unblock_requested" }));
-    expect((await db.select().from(issues).where(eq(issues.id, issue.id)))[0]).toMatchObject({ status: "blocked", blockedOwnerNotifiedAt: expect.any(Date) });
+  });
+
+  it("still explains the block in the thread when the assignee has no manager", async () => {
+    const { f, current, comments } = await rejectedRunFixture({ manager: false });
+    expect(current).toMatchObject({ status: "blocked", unblockDescriptor: { owner: "board" } });
+    expect(comments).toHaveLength(1);
+    expect(f.deps.enqueueWakeup).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["leaves an issue already done", { issue: { status: "done" } }, "done"],
+    ["leaves another failure family", { result: { errorCode: "omp_exit_1", errorFamily: null, errorMessage: "tool crashed" } }, "in_progress"],
+  ] as const)("%s untouched", async (_label, input, expected) => {
+    const { current, comments } = await rejectedRunFixture(input as never);
+    expect(current.status).toBe(expected);
+    expect(comments).toHaveLength(0);
   });
 
   it("keeps the saved task session when a failed run reports no session", async () => {

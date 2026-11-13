@@ -48,6 +48,12 @@ describe("classifyOmpFailure", () => {
     });
   });
 
+  it("treats a 401 invalid_api_key as a rejected request so the issue blocks after one fresh retry", () => {
+    expect(
+      classify("401 Incorrect API key provided: sk-***. (type=invalid_request_error, code=invalid_api_key)").errorFamily,
+    ).toBe("provider_request_rejected");
+  });
+
   it("keeps a 429 invalid_request_error on the quota path", () => {
     expect(classify("429 Too many requests (type=invalid_request_error)").errorFamily).toBe("provider_quota");
   });

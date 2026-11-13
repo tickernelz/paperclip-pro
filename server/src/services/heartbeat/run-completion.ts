@@ -381,12 +381,10 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
   } = dependencies;
   const runModelFallback = createRunModelFallback({ db, appendRunEvent });
   const providerRejection: ProviderRequestRejectionDependencies = {
-    getIssue: (issueId) => db.select().from(issues).where(eq(issues.id, issueId)).then((rows) => rows[0] ?? null),
+    db,
+    issuesSvc,
     getAgent: (agentId) => getAgent(agentId),
-    blockIssue: (issueId, unblockDescriptor) => issuesSvc.update(issueId, { status: "blocked", unblockDescriptor }),
     wakeup: (agentId, options) => enqueueWakeup(agentId, options),
-    markOwnerNotified: (issueId, notifiedAt) =>
-      db.update(issues).set({ blockedOwnerNotifiedAt: notifiedAt }).where(eq(issues.id, issueId)),
   };
 
   async function completeRun(input: CompleteHeartbeatRunInput) {
