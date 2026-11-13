@@ -336,7 +336,7 @@ it("refreshes authorized tools on resume without replacing the provider thread",
   const snapshot = await original.snapshot();
   await original.close({ reason: "waiting for connection" });
   const githubTool = { name: "github_search", description: "Search authorized repositories", inputSchema: { type: "object" } };
-  const handler = vi.fn(async () => ({ repositories: ["paperclip"] }));
+  const handler = vi.fn(async () => ({ repositories: ["wardmote"] }));
   const resumedDriver = makeDriver([second], { conversationMode: "prepared", dynamicTools: [githubTool], dynamicToolHandler: handler });
   expect((await resumedDriver.descriptor()).capabilities.toolRefreshOnResume).toBe(true);
   const recovery = await resumedDriver.recoverSession(snapshot);
@@ -345,7 +345,7 @@ it("refreshes authorized tools on resume without replacing the provider thread",
   expect(second.calls.some(call => call.method === "thread/start")).toBe(false);
   expect(second.calls.find(call => call.method === "thread/resume")?.params).toMatchObject({ threadId: "thread-1", dynamicTools: expect.arrayContaining([githubTool]) });
   const result = await second.invoke({ id: "rpc-github", method: "item/tool/call", params: {
-    threadId: "thread-1", turnId: "turn-1", callId: "github-call", tool: "github_search", arguments: { query: "paperclip" },
+    threadId: "thread-1", turnId: "turn-1", callId: "github-call", tool: "github_search", arguments: { query: "wardmote" },
   } });
   expect(result).toMatchObject({ success: true });
   expect(handler).toHaveBeenCalledWith(expect.objectContaining({ tool: "github_search", threadId: "thread-1" }));

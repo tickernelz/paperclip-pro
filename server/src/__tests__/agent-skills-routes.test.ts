@@ -1444,7 +1444,7 @@ describe("agent skill routes", () => {
     );
   });
 
-  it("gives a CEO hire the core paperclip skills when none are requested", async () => {
+  it("gives a CEO hire the core wardmote skills when none are requested", async () => {
     const res = await request(await createApp(createDb(true)))
       .post("/api/companies/company-1/agent-hires")
       .send({

@@ -18,7 +18,7 @@ import {
 const NAME_TOKEN = /[A-Z]?[a-z0-9]+|[A-Z]+(?![a-z])/g;
 
 function nameTokens(name: string): string[] {
-  return name.slice("paperclip".length).match(NAME_TOKEN) ?? [];
+  return name.slice("wardmote".length).match(NAME_TOKEN) ?? [];
 }
 
 function parentResourceToken(operationId: string): string | null {

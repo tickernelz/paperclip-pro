@@ -136,7 +136,7 @@ it("identifies the receiving app and registered callback origin before approval"
     expect(page.container.querySelector('img[src^="https://assistant.example.test"]')).toBeNull();
     expect(page.container.textContent).not.toContain("Access for");
     expect(page.container.querySelector('img[src="/brands/claude-color.svg"]')).not.toBeNull();
-    expect(page.container.querySelector('a[href="https://my.paperclip.app/orgs/new"]')).toBeNull();
+    expect(page.container.querySelector('a[href="https://my.wardmote.app/orgs/new"]')).toBeNull();
     expect(page.connect().disabled).toBe(false);
     // Registration metadata is text, never an executable link or verified-app badge.
     expect(page.container.querySelector('a[href="https://assistant.example.test"]')).toBeNull();

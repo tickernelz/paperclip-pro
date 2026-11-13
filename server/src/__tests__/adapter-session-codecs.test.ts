@@ -23,7 +23,7 @@ describe("adapter session codecs", () => {
 
   it("preserves codex ACP session params for ACP lane resumes", () => {
     const parsed = codexSessionCodec.deserialize({
-      sessionKey: "paperclip:company:agent:task:fingerprint",
+      sessionKey: "wardmote:company:agent:task:fingerprint",
       runtimeSessionName: "runtime-session-1",
       acpxRecordId: "record-1",
       acpSessionId: "acp-session-1",

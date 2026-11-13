@@ -652,7 +652,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
       );
       expect(promotedTaskMarkdown).not.toContain("First comment");
 
-      expect(secondPayload.paperclip).toBeUndefined();
+      expect(secondPayload.wardmote).toBeUndefined();
       const secondWake = await readGatewayWakePayload(secondPayload);
       expect(secondWake).toMatchObject({
         commentIds: [comment2.id, comment3.id],
@@ -1149,7 +1149,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
       });
 
       const secondPayload = gateway.getAgentPayloads()[1] ?? {};
-      expect(secondPayload.paperclip).toBeUndefined();
+      expect(secondPayload.wardmote).toBeUndefined();
       const secondWake = await readGatewayWakePayload(secondPayload);
       expect(secondWake).toMatchObject({
         reason: "issue_commented",
@@ -1399,7 +1399,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
       else expect(issueAfterPromotion?.completedAt).not.toBeNull();
 
       const secondPayload = gateway.getAgentPayloads()[1] ?? {};
-      expect(secondPayload.paperclip).toBeUndefined();
+      expect(secondPayload.wardmote).toBeUndefined();
       const secondWake = await readGatewayWakePayload(secondPayload);
       expect(secondWake).toMatchObject({
         reason: wakeReason,
@@ -2515,7 +2515,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
       });
 
       const secondPayload = gateway.getAgentPayloads()[1] ?? {};
-      expect(secondPayload.paperclip).toBeUndefined();
+      expect(secondPayload.wardmote).toBeUndefined();
       const secondWake = await readGatewayWakePayload(secondPayload);
       expect(secondWake).toMatchObject({
         reason: "issue_commented",
@@ -3144,7 +3144,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
       expect(firstRun).not.toBeNull();
       await waitFor(() => gateway.getAgentPayloads().length === 1);
       const firstPayload = gateway.getAgentPayloads()[0] ?? {};
-      expect(firstPayload.paperclip).toBeUndefined();
+      expect(firstPayload.wardmote).toBeUndefined();
       expect(String(firstPayload.message ?? "")).toContain(
         "## Wardmote Wake Payload",
       );

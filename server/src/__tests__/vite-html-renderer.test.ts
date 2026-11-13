@@ -76,7 +76,7 @@ describe("createCachedViteHtmlRenderer", () => {
         '<script type="module" src="/@vite/client"></script>\n<script type="module" src="/src/main.tsx"></script>',
       ),
     );
-    const brandHtml = vi.fn((html: string) => html.replace("<body>", '<body data-brand="paperclip">'));
+    const brandHtml = vi.fn((html: string) => html.replace("<body>", '<body data-brand="wardmote">'));
     const vite: ViteWatcherHost = {
       watcher,
       transformIndexHtml,
@@ -88,7 +88,7 @@ describe("createCachedViteHtmlRenderer", () => {
     const first = await renderer.render("/");
     const second = await renderer.render("/issues");
     expect(first).toBe(second);
-    expect(first).toContain('data-brand="paperclip"');
+    expect(first).toContain('data-brand="wardmote"');
     expect(first.match(/\/@vite\/client/g)?.length).toBe(1);
     expect(brandHtml).toHaveBeenCalledTimes(1);
     expect(transformIndexHtml).toHaveBeenCalledTimes(3);

@@ -47,7 +47,7 @@ function issuePrefix(id: string) {
 
 function manifest(): WardmotePluginManifestV1 {
   return {
-    id: "paperclip.managed-routines-test",
+    id: "wardmote.managed-routines-test",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Managed Routines Test",
@@ -174,7 +174,7 @@ describeEmbeddedPostgres("plugin-managed routines", () => {
       activityGatePolicy: "require_external_activity",
       activityGateScope: "project",
       managedByPlugin: expect.objectContaining({
-        pluginKey: "paperclip.managed-routines-test",
+        pluginKey: "wardmote.managed-routines-test",
         resourceKind: "routine",
         resourceKey: "nightly-lint",
       }),
@@ -249,7 +249,7 @@ describeEmbeddedPostgres("plugin-managed routines", () => {
     expect(run.status).toBe("issue_created");
     const [issue] = await db.select().from(issues).where(eq(issues.id, run.linkedIssueId!));
     expect(issue).toMatchObject({
-      originKind: "plugin:paperclip.managed-routines-test:operation",
+      originKind: "plugin:wardmote.managed-routines-test:operation",
       originId: "operation:nightly-lint",
       billingCode: "plugin-test:nightly-lint",
       projectId: project.projectId,

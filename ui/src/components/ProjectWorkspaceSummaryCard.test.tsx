@@ -343,7 +343,7 @@ describe("ProjectWorkspaceSummaryCard", () => {
     const root = createRoot(container);
     const summary = createSummary({
       branchName: "PAP-1552-workspace-polish",
-      cwd: "/Users/dotta/paperclip/.worktrees/PAP-1552-workspace-polish",
+      cwd: "/Users/dotta/wardmote/.worktrees/PAP-1552-workspace-polish",
     });
 
     await act(async () => {

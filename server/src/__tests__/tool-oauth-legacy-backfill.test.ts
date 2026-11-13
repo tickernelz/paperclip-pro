@@ -216,7 +216,7 @@ describeEmbeddedPostgres("tool OAuth legacy backfill", () => {
     const awsVault = await secrets.createProviderConfig(company.id, {
       provider: "aws_secrets_manager",
       displayName: "AWS OAuth vault",
-      config: { region: "us-east-1", namespace: "oauth-test", secretNamePrefix: "paperclip" },
+      config: { region: "us-east-1", namespace: "oauth-test", secretNamePrefix: "wardmote" },
     });
     const resolveSpy = vi.spyOn(awsSecretsManagerProvider, "resolveVersion").mockImplementation(async (input) => {
       expect(input.material).toMatchObject({

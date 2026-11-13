@@ -48,7 +48,7 @@ function makeBinding(overrides: Partial<LoginPtySessionBinding> = {}): LoginPtyS
     environment: { id: "env-1", driver: "sandbox" } as never,
     lease: {
       id: "lease-1",
-      metadata: { pluginId: "paperclip.daytona", provider: "daytona" },
+      metadata: { pluginId: "wardmote.daytona", provider: "daytona" },
     } as never,
     ...overrides,
   };
@@ -72,7 +72,7 @@ describe("createWorkerBoundLoginPtyOpener", () => {
 
     expect(openLoginPtySession).toHaveBeenCalledTimes(1);
     const [pluginId, input] = openLoginPtySession.mock.calls[0];
-    expect(pluginId).toBe("paperclip.daytona");
+    expect(pluginId).toBe("wardmote.daytona");
     expect(input).toMatchObject({
       driverKey: "daytona",
       companyId: "company-1",

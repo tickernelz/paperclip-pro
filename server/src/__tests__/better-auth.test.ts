@@ -132,7 +132,7 @@ describe("Better Auth cookie scoping", () => {
     expect(shouldDisableSecureAuthCookies({
       deploymentMode: "authenticated",
       authBaseUrlMode: "explicit",
-      authPublicBaseUrl: "http://paperclip-dev:46259",
+      authPublicBaseUrl: "http://wardmote-dev:46259",
     } as Parameters<typeof shouldDisableSecureAuthCookies>[0])).toBe(true);
     expect(shouldDisableSecureAuthCookies({
       deploymentMode: "authenticated",
@@ -148,7 +148,7 @@ describe("Better Auth cookie scoping", () => {
       deploymentMode: "authenticated",
       authBaseUrlMode: "explicit",
       authPublicBaseUrl: "https://wardmote.example.test",
-      publicUrl: "http://paperclip-dev:46259",
+      publicUrl: "http://wardmote-dev:46259",
     } as Parameters<typeof shouldDisableSecureAuthCookies>[0])).toBe(true);
   });
 

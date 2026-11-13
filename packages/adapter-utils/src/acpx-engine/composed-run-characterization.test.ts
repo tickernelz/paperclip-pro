@@ -514,7 +514,7 @@ describe("composed ACPX run: engine-boundary result form per exit path", () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const stop = vi.fn(async () => {});
     vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(async () => {
-      throw new Error("paperclip bridge boom");
+      throw new Error("wardmote bridge boom");
     });
     vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(
       async () => ({ agentCommand: null, stop }) as never,
@@ -531,7 +531,7 @@ describe("composed ACPX run: engine-boundary result form per exit path", () => {
         runId: "boundary-bridge-throw",
         ...remoteArgs(stateDir, localCwd, executionTarget),
       } as never),
-    ).rejects.toThrow("paperclip bridge boom");
+    ).rejects.toThrow("wardmote bridge boom");
     expect(stop).toHaveBeenCalledTimes(1);
   });
 });

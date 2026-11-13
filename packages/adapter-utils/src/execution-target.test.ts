@@ -30,13 +30,13 @@ describe("runAdapterExecutionTargetShellCommand", () => {
       {
         kind: "remote",
         transport: "ssh",
-        remoteCwd: "/srv/paperclip/workspace",
+        remoteCwd: "/srv/wardmote/workspace",
         spec: {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclip/workspace",
-          remoteWorkspacePath: "/srv/paperclip/workspace",
+          remoteCwd: "/srv/wardmote/workspace",
+          remoteWorkspacePath: "/srv/wardmote/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -77,13 +77,13 @@ describe("runAdapterExecutionTargetShellCommand", () => {
       {
         kind: "remote",
         transport: "ssh",
-        remoteCwd: "/srv/paperclip/workspace",
+        remoteCwd: "/srv/wardmote/workspace",
         spec: {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclip/workspace",
-          remoteWorkspacePath: "/srv/paperclip/workspace",
+          remoteCwd: "/srv/wardmote/workspace",
+          remoteWorkspacePath: "/srv/wardmote/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -125,13 +125,13 @@ describe("runAdapterExecutionTargetShellCommand", () => {
       {
         kind: "remote",
         transport: "ssh",
-        remoteCwd: "/srv/paperclip/workspace",
+        remoteCwd: "/srv/wardmote/workspace",
         spec: {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclip/workspace",
-          remoteWorkspacePath: "/srv/paperclip/workspace",
+          remoteCwd: "/srv/wardmote/workspace",
+          remoteWorkspacePath: "/srv/wardmote/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -170,13 +170,13 @@ describe("runAdapterExecutionTargetShellCommand", () => {
       {
         kind: "remote",
         transport: "ssh",
-        remoteCwd: "/srv/paperclip/workspace",
+        remoteCwd: "/srv/wardmote/workspace",
         spec: {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclip/workspace",
-          remoteWorkspacePath: "/srv/paperclip/workspace",
+          remoteCwd: "/srv/wardmote/workspace",
+          remoteWorkspacePath: "/srv/wardmote/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -206,13 +206,13 @@ describe("runAdapterExecutionTargetShellCommand", () => {
     expect(adapterExecutionTargetUsesManagedHome({
       kind: "remote",
       transport: "ssh",
-      remoteCwd: "/srv/paperclip/workspace",
+      remoteCwd: "/srv/wardmote/workspace",
       spec: {
         host: "ssh.example.test",
         port: 22,
         username: "ssh-user",
-        remoteCwd: "/srv/paperclip/workspace",
-        remoteWorkspacePath: "/srv/paperclip/workspace",
+        remoteCwd: "/srv/wardmote/workspace",
+        remoteWorkspacePath: "/srv/wardmote/workspace",
         privateKey: null,
         knownHosts: null,
         strictHostKeyChecking: true,
@@ -246,13 +246,13 @@ describe("runAdapterExecutionTargetProcess", () => {
       {
         kind: "remote",
         transport: "ssh",
-        remoteCwd: "/srv/paperclip/workspace",
+        remoteCwd: "/srv/wardmote/workspace",
         spec: {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclip/workspace",
-          remoteWorkspacePath: "/srv/paperclip/workspace",
+          remoteCwd: "/srv/wardmote/workspace",
+          remoteWorkspacePath: "/srv/wardmote/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -339,13 +339,13 @@ describe("ensureAdapterExecutionTargetRuntimeCommandInstalled", () => {
       target: {
         kind: "remote",
         transport: "ssh",
-        remoteCwd: "/srv/paperclip/workspace",
+        remoteCwd: "/srv/wardmote/workspace",
         spec: {
           host: "ssh.example.test",
           port: 22,
           username: "ssh-user",
-          remoteCwd: "/srv/paperclip/workspace",
-          remoteWorkspacePath: "/srv/paperclip/workspace",
+          remoteCwd: "/srv/wardmote/workspace",
+          remoteWorkspacePath: "/srv/wardmote/workspace",
           privateKey: null,
           knownHosts: null,
           strictHostKeyChecking: true,
@@ -364,13 +364,13 @@ describe("resolveAdapterExecutionTargetCwd", () => {
   const sshTarget = {
     kind: "remote" as const,
     transport: "ssh" as const,
-    remoteCwd: "/srv/paperclip/workspace",
+    remoteCwd: "/srv/wardmote/workspace",
     spec: {
       host: "ssh.example.test",
       port: 22,
       username: "ssh-user",
-      remoteCwd: "/srv/paperclip/workspace",
-      remoteWorkspacePath: "/srv/paperclip/workspace",
+      remoteCwd: "/srv/wardmote/workspace",
+      remoteWorkspacePath: "/srv/wardmote/workspace",
       privateKey: null,
       knownHosts: null,
       strictHostKeyChecking: true,
@@ -379,13 +379,13 @@ describe("resolveAdapterExecutionTargetCwd", () => {
 
   it("falls back to the remote cwd when no adapter cwd is configured", () => {
     expect(resolveAdapterExecutionTargetCwd(sshTarget, "", "/Users/host/repo/server")).toBe(
-      "/srv/paperclip/workspace",
+      "/srv/wardmote/workspace",
     );
     expect(resolveAdapterExecutionTargetCwd(sshTarget, "   ", "/Users/host/repo/server")).toBe(
-      "/srv/paperclip/workspace",
+      "/srv/wardmote/workspace",
     );
     expect(resolveAdapterExecutionTargetCwd(sshTarget, null, "/Users/host/repo/server")).toBe(
-      "/srv/paperclip/workspace",
+      "/srv/wardmote/workspace",
     );
   });
 
@@ -393,10 +393,10 @@ describe("resolveAdapterExecutionTargetCwd", () => {
     expect(
       resolveAdapterExecutionTargetCwd(
         sshTarget,
-        "/srv/paperclip/custom-agent-dir",
+        "/srv/wardmote/custom-agent-dir",
         "/Users/host/repo/server",
       ),
-    ).toBe("/srv/paperclip/custom-agent-dir");
+    ).toBe("/srv/wardmote/custom-agent-dir");
   });
 
   it("keeps the local fallback cwd for local targets", () => {

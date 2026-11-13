@@ -528,7 +528,7 @@ describe("ssh env-lab fixture", () => {
     const localDir = path.join(rootDir, "local-overlay");
 
     await mkdir(localDir, { recursive: true });
-    await writeFile(path.join(localDir, "message.txt"), "hello from paperclip\n", "utf8");
+    await writeFile(path.join(localDir, "message.txt"), "hello from wardmote\n", "utf8");
     await writeFile(path.join(localDir, "._message.txt"), "should never sync\n", "utf8");
 
     const started = await startSshEnvLabFixtureOrSkip(statePath, "SSH env-lab fixture test");
@@ -550,7 +550,7 @@ describe("ssh env-lab fixture", () => {
       `cat ${JSON.stringify(path.posix.join(remoteDir, "message.txt"))} && if [ -e ${JSON.stringify(path.posix.join(remoteDir, "._message.txt"))} ]; then echo appledouble-present; fi`,
     );
 
-    expect(result.stdout).toContain("hello from paperclip");
+    expect(result.stdout).toContain("hello from wardmote");
     expect(result.stdout).not.toContain("appledouble-present");
   }, SSH_FIXTURE_TEST_TIMEOUT_MS);
 

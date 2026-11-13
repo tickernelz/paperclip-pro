@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { capabilityTailnetAdmissionFailure } from "./tailnet-gateway.js";
 
-const expectedHost = "paperclip-dev.example.ts.net:4196";
+const expectedHost = "wardmote-dev.example.ts.net:4196";
 const expectedOrigin = `http://${expectedHost}`;
 
 function mutation(headers: Record<string, string> = {}) {

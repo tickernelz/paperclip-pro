@@ -729,7 +729,7 @@ describeEmbeddedPostgres("reportRunFailure", () => {
     await seedCompanyAndAgent();
     const run = buildRun({
       status: "failed",
-      error: `connect failed: connectionString: "postgres://appuser:s3cr3t-pass@db.internal:5432/paperclip"`,
+      error: `connect failed: connectionString: "postgres://appuser:s3cr3t-pass@db.internal:5432/wardmote"`,
     });
 
     await reportRunFailure(db, run);

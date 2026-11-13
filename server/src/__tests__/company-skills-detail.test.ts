@@ -194,7 +194,7 @@ describeEmbeddedPostgres("companySkillService.detail", () => {
         description: null,
         markdown: `# Large Reference Skill\n\n${"x".repeat(32_000)}`,
         sourceType: "catalog",
-        sourceLocator: "paperclip://catalog/large-reference-skill",
+        sourceLocator: "wardmote://catalog/large-reference-skill",
         trustLevel: "markdown_only",
         compatibility: "compatible",
         fileInventory: [{ path: "SKILL.md", kind: "skill" }],

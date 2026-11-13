@@ -1922,8 +1922,8 @@ async function buildSessionConfigMetadata(
     ],
     runtimeSkills: [
       {
-        key: "paperclip",
-        runtimeName: "paperclip",
+        key: "wardmote",
+        runtimeName: "wardmote",
         source: "/tmp/wardmote/runtime-skills/wardmote",
         versionId: null,
         currentVersionId: "skill-version-1",
@@ -1967,8 +1967,8 @@ describe("effective run session config freshness", () => {
 
   it("reuses a task session when only skill delivery details change", async () => {
     const skill = (overrides: Record<string, unknown> = {}) => ({
-      key: "paperclip",
-      runtimeName: "paperclip",
+      key: "wardmote",
+      runtimeName: "wardmote",
       source: "/tmp/wardmote/runtime-skills/wardmote",
       versionId: null,
       currentVersionId: "skill-version-1",
@@ -2343,8 +2343,8 @@ describe("effective run session config freshness", () => {
       next?: Record<string, unknown>;
     }) {
       const skill = (currentVersionId: string) => ({
-        key: "paperclip",
-        runtimeName: "paperclip",
+        key: "wardmote",
+        runtimeName: "wardmote",
         source: "/tmp/wardmote/runtime-skills/wardmote",
         versionId: null,
         currentVersionId,
@@ -2465,12 +2465,12 @@ describe("effective run session config freshness", () => {
         const decision = await revisionEdit({
           adapterType: "omp_local",
           first: {
-            effectiveAdapterConfig: ompConfig({ wardmoteSkillSync: { desiredSkills: ["paperclip"] } }),
-            runtimeSkills: [skill("paperclip", "skill-version-1")],
+            effectiveAdapterConfig: ompConfig({ wardmoteSkillSync: { desiredSkills: ["wardmote"] } }),
+            runtimeSkills: [skill("wardmote", "skill-version-1")],
           },
           next: {
-            effectiveAdapterConfig: ompConfig({ wardmoteSkillSync: { desiredSkills: ["paperclip", "reviewer"] } }),
-            runtimeSkills: [skill("paperclip", "skill-version-1"), skill("reviewer", "skill-version-1")],
+            effectiveAdapterConfig: ompConfig({ wardmoteSkillSync: { desiredSkills: ["wardmote", "reviewer"] } }),
+            runtimeSkills: [skill("wardmote", "skill-version-1"), skill("reviewer", "skill-version-1")],
           },
         });
 
@@ -2779,8 +2779,8 @@ describe("effective run session config freshness", () => {
         metadata: await buildSessionConfigMetadata({
           runtimeSkills: [
             {
-              key: "paperclip",
-              runtimeName: "paperclip",
+              key: "wardmote",
+              runtimeName: "wardmote",
               source: "/tmp/wardmote/runtime-skills/wardmote",
               versionId: null,
               currentVersionId: "skill-version-2",

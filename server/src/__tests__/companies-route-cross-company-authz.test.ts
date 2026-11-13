@@ -108,7 +108,7 @@ const exportRequest = {
 
 function exportResult() {
   return {
-    rootPath: "paperclip",
+    rootPath: "wardmote",
     manifest: {
       agents: [],
       skills: [],

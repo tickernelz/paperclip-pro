@@ -61,7 +61,7 @@ it("keeps a beta pin in the autosave payload while the flag is off", async () =>
     desiredSkillEntries: [{ key: pinnedKey, versionId }],
   });
   client.setQueryData(queryKeys.companySkills.list(agent.companyId), [
-    { id: "skill-1", key: pinnedKey, name: "paperclip", categories: [], sourceKind: "bundled", sourceType: "bundled" },
+    { id: "skill-1", key: pinnedKey, name: "wardmote", categories: [], sourceKind: "bundled", sourceType: "bundled" },
     { id: "skill-2", key: "other/skill", name: "other", categories: [], sourceKind: "bundled", sourceType: "bundled" },
   ]);
   client.setQueryData(queryKeys.instance.experimentalSettings, { enableBetaSkills: false });

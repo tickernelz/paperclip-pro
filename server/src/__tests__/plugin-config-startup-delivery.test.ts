@@ -86,7 +86,7 @@ describeEmbeddedPostgres("registry.listConfigs (startup config delivery)", () =>
 
   it("returns every company-scoped config row for a plugin", async () => {
     const registry = pluginRegistryService(db);
-    const pluginId = await seedPlugin("paperclip.gateway-test", 1);
+    const pluginId = await seedPlugin("wardmote.gateway-test", 1);
     const companyA = await seedCompany();
     const companyB = await seedCompany();
 
@@ -109,8 +109,8 @@ describeEmbeddedPostgres("registry.listConfigs (startup config delivery)", () =>
 
   it("only returns rows for the requested plugin (no cross-plugin bleed)", async () => {
     const registry = pluginRegistryService(db);
-    const pluginId = await seedPlugin("paperclip.gateway-test", 1);
-    const otherPluginId = await seedPlugin("paperclip.other-test", 2);
+    const pluginId = await seedPlugin("wardmote.gateway-test", 1);
+    const otherPluginId = await seedPlugin("wardmote.other-test", 2);
     const companyA = await seedCompany();
 
     await registry.upsertConfig(pluginId, companyA, {
@@ -129,7 +129,7 @@ describeEmbeddedPostgres("registry.listConfigs (startup config delivery)", () =>
 
   it("returns an empty list when the plugin has no configured companies", async () => {
     const registry = pluginRegistryService(db);
-    const pluginId = await seedPlugin("paperclip.gateway-test", 1);
+    const pluginId = await seedPlugin("wardmote.gateway-test", 1);
     const rows = await registry.listConfigs(pluginId);
     expect(rows).toEqual([]);
   });

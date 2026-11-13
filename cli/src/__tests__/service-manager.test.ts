@@ -90,7 +90,7 @@ describe("service definition generation", () => {
   it.each([
     ["instanceId", { instanceId: "team-a\nExecStartPre=/tmp/attack", shimPath: "/home/alice/.local/bin/wardmote", homeDir: "/home/alice/.wardmote" }],
     ["shimPath", { instanceId: "team-a", shimPath: "/home/alice/bin/wardmote\r\nExecStartPre=/tmp/attack", homeDir: "/home/alice/.wardmote" }],
-    ["homeDir", { instanceId: "team-a", shimPath: "/home/alice/.local/bin/wardmote", homeDir: "/home/alice/.paperclip\nEnvironment=ATTACK=1" }],
+    ["homeDir", { instanceId: "team-a", shimPath: "/home/alice/.local/bin/wardmote", homeDir: "/home/alice/.wardmote\nEnvironment=ATTACK=1" }],
   ])("rejects line breaks in the systemd %s", (_field, input) => {
     expect(() => renderSystemdUnit(input)).toThrow("Systemd service values must not contain line breaks");
   });

@@ -321,7 +321,7 @@ describe("composed ACPX run fault matrix", () => {
     const capture = captureDisposition();
     const stop = vi.fn(async () => {});
     vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(async () => {
-      throw new Error("paperclip bridge boom");
+      throw new Error("wardmote bridge boom");
     });
     vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(
       async () => ({ agentCommand: null, stop }) as never,
@@ -336,7 +336,7 @@ describe("composed ACPX run fault matrix", () => {
 
     await expect(
       execute({ runId: "fault-bridge", ...remoteArgs(stateDir, localCwd, executionTarget) } as never),
-    ).rejects.toThrow("paperclip bridge boom");
+    ).rejects.toThrow("wardmote bridge boom");
 
     assertDispositionReport(capture.last(), { acquired: ["staged_runtime", "staging_lease"] });
   });

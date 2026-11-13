@@ -50,7 +50,7 @@ describe("runtimeExposureConfigSchema", () => {
 
 describe("readRuntimeExposureIntent", () => {
   it("treats a legacy expose block with no exposure fields as unset", () => {
-    expect(readRuntimeExposureIntent({ urlTemplate: "http://paperclip-dev:{{port}}" })).toBe("unset");
+    expect(readRuntimeExposureIntent({ urlTemplate: "http://wardmote-dev:{{port}}" })).toBe("unset");
     expect(readRuntimeExposureIntent(undefined)).toBe("unset");
     expect(readRuntimeExposureIntent(null)).toBe("unset");
     expect(readRuntimeExposureIntent({})).toBe("unset");
@@ -77,7 +77,7 @@ describe("readRuntimeExposureIntent", () => {
 describe("resolveDeclaredRuntimeExposureConfig", () => {
   it("returns null unless the block explicitly opts in", () => {
     expect(resolveDeclaredRuntimeExposureConfig(undefined)).toBeNull();
-    expect(resolveDeclaredRuntimeExposureConfig({ urlTemplate: "http://paperclip-dev:{{port}}" })).toBeNull();
+    expect(resolveDeclaredRuntimeExposureConfig({ urlTemplate: "http://wardmote-dev:{{port}}" })).toBeNull();
     expect(resolveDeclaredRuntimeExposureConfig({ tailscaleHttps: false })).toBeNull();
   });
 

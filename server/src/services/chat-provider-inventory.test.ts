@@ -139,7 +139,7 @@ describe("chat provider inventory", () => {
               name: "repo",
               full_name: "wardmote/repo",
               html_url: "https://github.com/wardmote/repo",
-              owner: { id: 12, login: "paperclip" },
+              owner: { id: 12, login: "wardmote" },
               private: true,
             },
           ],
@@ -184,7 +184,7 @@ describe("chat provider inventory", () => {
       response([
         {
           id: 44,
-          account: { id: 12, login: "paperclip", type: "Organization" },
+          account: { id: 12, login: "wardmote", type: "Organization" },
           permissions: {
             issues: "write",
             metadata: "read",
@@ -204,7 +204,7 @@ describe("chat provider inventory", () => {
     ).resolves.toEqual({
       installationId: "44",
       accountId: "12",
-      accountLabel: "paperclip",
+      accountLabel: "wardmote",
       accountType: "Organization",
       permissions: {
         issues: "write",
@@ -220,7 +220,7 @@ describe("chat provider inventory", () => {
         return response([
           {
             id: 144,
-            account: { id: 12, login: "paperclip", type: "Organization" },
+            account: { id: 12, login: "wardmote", type: "Organization" },
             permissions: {
               issues: "write",
               metadata: "read",
@@ -244,7 +244,7 @@ describe("chat provider inventory", () => {
     ).resolves.toMatchObject({
       installationId: "144",
       accountId: "12",
-      accountLabel: "paperclip",
+      accountLabel: "wardmote",
     });
     expect(fetch).toHaveBeenCalledTimes(2);
     expect(fetch).toHaveBeenLastCalledWith(
@@ -261,7 +261,7 @@ describe("chat provider inventory", () => {
           response([
             {
               id: 44,
-              account: { id: 12, login: "paperclip" },
+              account: { id: 12, login: "wardmote" },
               permissions: {
                 issues: "read",
                 metadata: "read",

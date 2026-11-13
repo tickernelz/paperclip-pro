@@ -588,7 +588,7 @@ describe("worker-bound live pseudo-terminal opener", () => {
     );
     const getLeaseById = vi.fn(async () => ({
       providerLeaseId: "provider-lease-9",
-      metadata: { pluginId: "paperclip.daytona", provider: "daytona" },
+      metadata: { pluginId: "wardmote.daytona", provider: "daytona" },
     }));
 
     const openLivePtySession = createWorkerBoundLoginPtyOpener({
@@ -612,7 +612,7 @@ describe("worker-bound live pseudo-terminal opener", () => {
     // route id, so the opener passes none. The open carries no command string.
     expect(openLoginPtySession).toHaveBeenCalledTimes(1);
     const [pluginId, openInput] = openLoginPtySession.mock.calls[0];
-    expect(pluginId).toBe("paperclip.daytona");
+    expect(pluginId).toBe("wardmote.daytona");
     expect(openInput).toMatchObject({
       driverKey: "daytona",
       companyId: "company-1",
@@ -641,7 +641,7 @@ describe("worker-bound live pseudo-terminal opener", () => {
       environments: {
         getLeaseById: async () => ({
           providerLeaseId: "provider-lease-9",
-          metadata: { pluginId: "paperclip.daytona", provider: "daytona" },
+          metadata: { pluginId: "wardmote.daytona", provider: "daytona" },
         }),
       },
     });

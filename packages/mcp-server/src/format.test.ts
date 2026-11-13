@@ -29,7 +29,7 @@ function mockJsonResponse(body: unknown, status = 200) {
   });
 }
 
-describe("paperclip MCP error responses", () => {
+describe("wardmote MCP error responses", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });

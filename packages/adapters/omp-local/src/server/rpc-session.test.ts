@@ -358,7 +358,7 @@ describe("OMP RPC session protocol", () => {
     await state.feed({
       type: "notice",
       level: "warning",
-      message: 'Warning: MCP server "paperclip" failed to connect: spawn ENOENT; its tools are unavailable for this run.',
+      message: 'Warning: MCP server "wardmote" failed to connect: spawn ENOENT; its tools are unavailable for this run.',
     });
     await state.endTurn();
     state.finish();

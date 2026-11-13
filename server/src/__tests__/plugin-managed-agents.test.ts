@@ -52,7 +52,7 @@ function issuePrefix(id: string) {
 
 function manifest(): WardmotePluginManifestV1 {
   return {
-    id: "paperclip.managed-agents-test",
+    id: "wardmote.managed-agents-test",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Managed Agents Test",
@@ -217,7 +217,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
 
     expect(created.agent).toMatchObject({
       status: "paused",
-      pauseReason: "Provisioned paused by plugin paperclip.managed-agents-test; requires explicit activation.",
+      pauseReason: "Provisioned paused by plugin wardmote.managed-agents-test; requires explicit activation.",
     });
     expect(created.agent?.pausedAt).toBeInstanceOf(Date);
   });
@@ -234,7 +234,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
 
     expect(reconciled.agent).toMatchObject({
       status: "paused",
-      pauseReason: "Provisioned paused by plugin paperclip.managed-agents-test; requires explicit activation.",
+      pauseReason: "Provisioned paused by plugin wardmote.managed-agents-test; requires explicit activation.",
     });
   });
 
@@ -567,8 +567,8 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
         await db.update(plugins).set({ manifestJson: { ...pluginManifest, agents: [] } }).where(eq(plugins.id, pluginId));
       } else {
         const otherId = randomUUID();
-        await db.insert(plugins).values({ id: otherId, pluginKey: "paperclip.other-owner", packageName: "other",
-          version: "0.1.0", apiVersion: 1, categories: [], manifestJson: { ...pluginManifest, id: "paperclip.other-owner" }, status: "ready", installOrder: 2 });
+        await db.insert(plugins).values({ id: otherId, pluginKey: "wardmote.other-owner", packageName: "other",
+          version: "0.1.0", apiVersion: 1, categories: [], manifestJson: { ...pluginManifest, id: "wardmote.other-owner" }, status: "ready", installOrder: 2 });
         await db.update(agents).set({ metadata: { ...created.agent!.metadata,
           wardmoteManagedResource: { pluginId: otherId, pluginKey: pluginManifest.id, resourceKind: "agent", resourceKey: "wiki-maintainer" },
         } }).where(eq(agents.id, created.agentId!));
@@ -598,7 +598,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
     });
     expect(approval?.payload).toMatchObject({
       agentId: created.agentId,
-      sourcePluginKey: "paperclip.managed-agents-test",
+      sourcePluginKey: "wardmote.managed-agents-test",
       managedResourceKey: "wiki-maintainer",
     });
   });

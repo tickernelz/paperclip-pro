@@ -86,7 +86,7 @@ describe("agent lifecycle commands", () => {
       "skills:sync",
       AGENT_ID,
       "--desired-skills",
-      "paperclip,github",
+      "wardmote,github",
       "--mode",
       "replace",
     ]);

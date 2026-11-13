@@ -253,7 +253,7 @@ describe("attentionTaskRef", () => {
         kind: "issue",
         id: "i1",
         companyId: "c1",
-        title: "Update primary paperclip instance",
+        title: "Update primary wardmote instance",
         identifier: "PAP-23",
         status: "blocked",
         href: "/PAP/issues/PAP-23",

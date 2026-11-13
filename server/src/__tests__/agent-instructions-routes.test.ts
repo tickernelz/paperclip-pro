@@ -736,7 +736,7 @@ describe("agent instructions bundle routes", () => {
     );
   });
 
-  it("preserves paperclip skill-sync selections when switching adapters", async () => {
+  it("preserves wardmote skill-sync selections when switching adapters", async () => {
     mockAgentService.getById.mockResolvedValue({
       ...makeAgent(),
       adapterType: "claude_local",

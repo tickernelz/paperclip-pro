@@ -2046,7 +2046,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
         status: "todo",
         priority: "medium",
         assigneeAgentId: agentId,
-        originKind: "plugin:paperclip.missions:feature",
+        originKind: "plugin:wardmote.missions:feature",
       },
       {
         id: operationIssueId,
@@ -2056,7 +2056,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
         status: "todo",
         priority: "medium",
         assigneeAgentId: agentId,
-        originKind: "plugin:paperclip.missions:operation",
+        originKind: "plugin:wardmote.missions:operation",
         originId: "mission-alpha:operation-1",
       },
       {
@@ -2067,7 +2067,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
         status: "todo",
         priority: "medium",
         assigneeAgentId: agentId,
-        originKind: "plugin:paperclip.missions:operation:evaluation",
+        originKind: "plugin:wardmote.missions:operation:evaluation",
         originId: "mission-alpha:operation-2",
       },
       {
@@ -2100,11 +2100,11 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
     expect(inboxIssueIds).not.toContain(typedOperationIssueId);
     expect(inboxIssueIds).not.toContain(legacyContentMachineOperationIssueId);
 
-    await expect(svc.list(companyId, { originKind: "plugin:paperclip.missions:operation" }))
+    await expect(svc.list(companyId, { originKind: "plugin:wardmote.missions:operation" }))
       .resolves.toEqual([expect.objectContaining({ id: operationIssueId })]);
     await expect(svc.list(companyId, { originId: "mission-alpha:operation-1" }))
       .resolves.toEqual([expect.objectContaining({ id: operationIssueId })]);
-    await expect(svc.list(companyId, { originKindPrefix: "plugin:paperclip.missions:operation" }))
+    await expect(svc.list(companyId, { originKindPrefix: "plugin:wardmote.missions:operation" }))
       .resolves.toEqual(expect.arrayContaining([
         expect.objectContaining({ id: operationIssueId }),
         expect.objectContaining({ id: typedOperationIssueId }),
@@ -2150,7 +2150,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
         status: "todo",
         priority: "medium",
         createdByUserId: userId,
-        originKind: "plugin:paperclip.missions:operation",
+        originKind: "plugin:wardmote.missions:operation",
       },
     ]);
     await db.insert(issueComments).values([
@@ -4210,7 +4210,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
         id: parentProjectWorkspaceId,
         companyId,
         projectId: parentProjectId,
-        name: "paperclip",
+        name: "wardmote",
         isPrimary: true,
       },
       {
@@ -5317,7 +5317,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
         id: parentProjectWorkspaceId,
         companyId,
         projectId: parentProjectId,
-        name: "paperclip",
+        name: "wardmote",
         isPrimary: true,
       },
       {

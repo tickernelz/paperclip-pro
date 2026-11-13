@@ -1465,7 +1465,7 @@ describe("inbox helpers", () => {
   });
 
   it("groups project sections by latest issue activity while preserving non-issue sections", () => {
-    const wardmoteIssue = makeIssue("paperclip", true);
+    const wardmoteIssue = makeIssue("wardmote", true);
     wardmoteIssue.projectId = "project-1";
 
     const onboardingIssue = makeIssue("onboarding", false);

@@ -146,7 +146,7 @@ describe("cli auth routes", () => {
     expect(skillRes.status, skillRes.text || JSON.stringify(skillRes.body)).toBe(401);
   });
 
-  it("serves the invite-scoped paperclip skill anonymously for active invites", async () => {
+  it("serves the invite-scoped wardmote skill anonymously for active invites", async () => {
     const invite = {
       id: "invite-1",
       companyId: "company-1",
