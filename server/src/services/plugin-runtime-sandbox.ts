@@ -144,15 +144,15 @@ export async function loadPluginModuleInSandbox(
     // `(fn)(exports, module, ...)` in the script text, the timeout also covers
     // the actual module body execution — preventing infinite loops from hanging.
     const sandboxArgs = {
-      __paperclip_exports: module.exports,
-      __paperclip_module: module,
-      __paperclip_require: requireInSandbox,
-      __paperclip_filename: realPath,
-      __paperclip_dirname: path.dirname(realPath),
+      __wardmote_exports: module.exports,
+      __wardmote_module: module,
+      __wardmote_require: requireInSandbox,
+      __wardmote_filename: realPath,
+      __wardmote_dirname: path.dirname(realPath),
     };
     // Temporarily inject args into the context, run, then remove to avoid pollution.
     Object.assign(context, sandboxArgs);
-    const wrapped = `(function (exports, module, require, __filename, __dirname) {\n${code}\n})(__paperclip_exports, __paperclip_module, __paperclip_require, __paperclip_filename, __paperclip_dirname)`;
+    const wrapped = `(function (exports, module, require, __filename, __dirname) {\n${code}\n})(__wardmote_exports, __wardmote_module, __wardmote_require, __wardmote_filename, __wardmote_dirname)`;
     const script = new vm.Script(wrapped, { filename: realPath });
     try {
       script.runInContext(context, { timeout: timeoutMs });

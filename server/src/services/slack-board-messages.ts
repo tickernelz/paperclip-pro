@@ -197,7 +197,7 @@ export async function mirrorSlackBoardComment(
         endpointId: endpoint.id,
         conversationId: conversation.id,
         commentId: comment.id,
-        source: "paperclip_comment",
+        source: "wardmote_comment",
       },
     });
   }

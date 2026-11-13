@@ -126,7 +126,7 @@ export function decisionModelService(db: Db, options: { provider?: typeof runDec
     if (connection.provider !== config.provider || config.model !== DECISION_MODELS[connection.provider].id) throw new DecisionUnavailable("incompatible_connection");
     return { config, connection, userId, agentId, runId, identityContextId, issueId, projectId,
       actorType: actor.type === "board" ? "user" as const : actor.type === "agent" ? "agent" as const : "system" as const,
-      actorId: actor.type === "system" ? "paperclip-decisions" : agentId ?? userId! };
+      actorId: actor.type === "system" ? "wardmote-decisions" : agentId ?? userId! };
   }
   async function availability(context: DecisionContext): Promise<DecisionAvailability> {
     try { await resolve(context); return { available: true }; }

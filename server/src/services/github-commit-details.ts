@@ -94,7 +94,7 @@ export function createGitHubCommitDiffDetailsResolver(
       const token = (typeof tokenProvider === "function" ? await tokenProvider(companyId) : tokenProvider)?.trim() || null;
       const headers: Record<string, string> = {
         accept: "application/vnd.github+json",
-        "user-agent": "paperclip-work-product-resolver",
+        "user-agent": "wardmote-work-product-resolver",
         "x-github-api-version": "2022-11-28",
       };
       if (token) headers.authorization = `Bearer ${token}`;
