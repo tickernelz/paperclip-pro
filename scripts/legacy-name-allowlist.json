@@ -15,15 +15,15 @@
     },
     "lisensi": {
       "reason": "LICENSE MIT: notice hak cipta upstream \"Copyright (c) 2025 Paperclip AI\" wajib tetap ada pada salinan.",
-      "approvedBy": "Wira, pengecekan lisensi di ZHA-5279 (2026-11-08)"
+      "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833); sebelumnya: Wira, pengecekan lisensi di ZHA-5279 (2026-11-08)"
     },
     "migrasi": {
       "reason": "Migrasi database yang sudah diterapkan bersifat append-only; pengenal baru hanya lewat migrasi baru.",
-      "approvedBy": "Deskripsi ZHA-5279 bagian risiko (Wira atas permintaan Zhafron 2026-11-08)"
+      "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833); sebelumnya: Deskripsi ZHA-5279 bagian risiko (Wira atas permintaan Zhafron 2026-11-08)"
     },
     "migrasi-otomatis": {
-      "reason": "Kode migrasi otomatis saat install/upgrade (home, nama skill di database, teks instruction bundle, kunci env lama di adapterConfig) harus mengenali nama lama untuk menggantinya; hanya modul migrasi dan tesnya.",
-      "approvedBy": "Keputusan Zhafron 2026-11-08 11:54 UTC (migrasi otomatis di install/upgrade), deskripsi ZHA-5279 butir keputusan 2"
+      "reason": "Kode migrasi otomatis saat install/upgrade (home, nama skill di database, teks instruction bundle, kunci env lama di adapterConfig) harus mengenali nama lama untuk menggantinya; hanya modul migrasi dan tesnya. Dibuang satu rilis setelah PC, integron dan lab0 menjalankan rilis yang memuat rename ZHA-5833.",
+      "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833); sebelumnya: Keputusan Zhafron 2026-11-08 11:54 UTC (migrasi otomatis di install/upgrade), deskripsi ZHA-5279 butir keputusan 2"
     },
     "turunan": {
       "reason": "Teks yang harus sama persis dengan pengenal lama di tempat lain dan berubah bersamanya: jalur berkas tes di data durasi shard, user/database Postgres tertanam yang dipakai 22 berkas. Hilang saat pengenal asalnya diganti di fase rename.",
@@ -35,7 +35,7 @@
     },
     "upstream": {
       "reason": "Sementara: alamat repo upstream paperclipai/paperclip untuk sinkron upstream, sampai Zhafron memutuskan nasib sinkron (rekomendasi Wira: hentikan, hard fork).",
-      "approvedBy": "Deskripsi ZHA-5279 butir keputusan 5 (menunggu keputusan Zhafron; tidak diubah sebelum itu)"
+      "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833) (pengecualian tetap literal artefak luar); sebelumnya: Deskripsi ZHA-5279 butir keputusan 5 (menunggu keputusan Zhafron; tidak diubah sebelum itu)"
     },
     "closure-terpin": {
       "reason": "Berkas yang byte-nya masuk closure distribusi Pi (wrapper pi-acp hasil patch, helper dist/paperclip-runtime.js, extension extensions/paperclip.js) dan dipin per platform (darwin-arm64, darwin-x64, linux-x64) di pi-closure-pins.ts serta identitas profil Pi. Mengganti nama di sini mengubah digest closure, jadi harus bersamaan dengan materialisasi ulang ketiga target dan profil Pi baru. Sementara: dijadwalkan hilang di irisan re-pin closure Pi ZHA-5279; hanya boleh turun.",
@@ -51,15 +51,15 @@
     },
     "sumber-daya-eksternal": {
       "reason": "Nama lama di sumber daya milik operator di luar database Wardmote: nama dan tag secret AWS Secrets Manager yang dibuat sebelum rename. Tidak bisa dimigrasi otomatis tanpa menyalin nilai secret ke secret baru, jadi hanya dikenali: rotasi dan hapus secret lama tetap jalan, dan guard isolasi (tolak impor sebagai external ref, sembunyikan secret company lain di discovery) tetap menolak. Secret baru selalu memakai nama baru. Modul: server/src/secrets/retired-aws-secret-names.ts.",
-      "approvedBy": "Raka, keputusan otonom ZHA-5279 (mode full otonom, 2026-11-11); ditinjau Hendra"
+      "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833) (pengecualian tetap literal artefak luar); sebelumnya: Raka, keputusan otonom ZHA-5279 (mode full otonom, 2026-11-11); ditinjau Hendra"
     },
     "repo-eksternal": {
       "reason": "Alamat dan jalur berkas di repo eksternal milik pihak lain (korpus eval paperclipai/paperclip-evals: tautan blob GitHub dan jalur kasus uji). Menggantinya memutus tautan ke berkas yang tidak kita kendalikan. Hanya jalur ke repo itu; nama produk di berkas yang sama sudah Wardmote.",
-      "approvedBy": "Raka, keputusan otonom ZHA-5279 (mode full otonom, 2026-11-12); jalur yang sama dipulihkan atas temuan Hendra ronde 95 (PR #269); ditinjau Hendra"
+      "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833) (pengecualian tetap literal artefak luar); sebelumnya: Raka, keputusan otonom ZHA-5279 (mode full otonom, 2026-11-12); jalur yang sama dipulihkan atas temuan Hendra ronde 95 (PR #269); ditinjau Hendra"
     },
     "artefak-eksternal": {
       "reason": "Literal yang harus sama persis dengan artefak di luar repo: image ghcr.io/paperclipai/* yang dipakai/di-pin (agent-runtime, daytona-runner, buildcache), ARN bucket S3 dan subjek OIDC AWS yang sudah ada, URL issue upstream di kontrak telemetri, undangan Discord, domain dokumen/brand pihak luar, URI resource Teams yang terdaftar di Azure AD, identitas repo yang diverifikasi skrip sumber Cloud, dan rekaman kualifikasi bertanggal yang ber-digest.",
-      "approvedBy": "Deskripsi ZHA-5833 butir 2 (pengecualian literal artefak luar, ditabelkan di komentar penutup); menunggu kartu akhir Zhafron"
+      "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833) (pengecualian tetap literal artefak luar); sebelumnya: Deskripsi ZHA-5833 butir 2 (pengecualian literal artefak luar, ditabelkan di komentar penutup); menunggu kartu akhir Zhafron"
     }
   },
   "entries": [
@@ -82,9 +82,6 @@
     [".devin/wiki.json",1,"artefak-eksternal"],
     [".env.runner-e2e.example",2,"artefak-eksternal"],
     [".github/ISSUE_TEMPLATE/config.yml",1,"artefak-eksternal"],
-    [".github/cloud-migrator-deploy/cloudfront-read-statement.json",1,"artefak-eksternal"],
-    [".github/cloud-migrator-deploy/trust-policy.json",2,"artefak-eksternal"],
-    [".github/cloud-migrator-deploy/upload-policy.json",2,"artefak-eksternal"],
     [".gitignore",4,"belum-diganti"],
     ["LICENSE",1,"lisensi"],
     ["README.md",8,"belum-diganti"],
@@ -104,7 +101,6 @@
     ["cli/src/commands/migrate-home.ts",2,"migrasi-otomatis"],
     ["cli/src/commands/worktree.ts",1,"belum-diganti"],
     ["cli/src/prompts/storage.ts",1,"belum-diganti"],
-    ["doc/ANNOUNCEMENTS.md",1,"artefak-eksternal"],
     ["doc/CHANNELS.md",16,"repo-eksternal"],
     ["doc/CLI.md",4,"belum-diganti"],
     ["doc/CLIPHUB.md",1,"belum-diganti"],
@@ -126,7 +122,6 @@
     ["doc/architecture/runner-rich-acp-qualification-2026-09-29.json",8,"artefak-eksternal"],
     ["doc/architecture/runner-rich-acp-validation-2026-09-30-current.json",1,"belum-diganti"],
     ["doc/architecture/runner-rich-acp-validation-2026-09-30.json",4,"belum-diganti"],
-    ["doc/cloud-build-readiness.md",12,"belum-diganti"],
     ["doc/connection-intents.md",1,"repo-eksternal"],
     ["doc/connections/BROWSER-USE.md",5,"repo-eksternal"],
     ["doc/connections/CONNECTOR-PLAYBOOK.md",1,"repo-eksternal"],
@@ -295,31 +290,31 @@
     ["packages/db/src/migrations/0329_private_task_draft_assets.sql",1,"migrasi"],
     ["packages/db/src/migrations/0330_rapid_emma_frost.sql",1,"migrasi"],
     ["packages/db/src/migrations/0354_melodic_romulus.sql",2,"migrasi"],
-    ["packages/db/src/migrations/0358_wardmote_bundled_skill_keys.sql",48,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0359_wardmote_bundled_skill_slugs.sql",10,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0360_wardmote_channel_values.sql",5,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0361_wardmote_stored_modes.sql",3,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0362_wardmote_runner_adapter_type.sql",12,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0363_wardmote_camel_keys.sql",7,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0364_wardmote_catalog_keys.sql",33,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0365_wardmote_plugin_ids.sql",18,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0366_wardmote_managed_environment_key.sql",6,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0367_wardmote_schema_ids.sql",10,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0368_wardmote_mcp_scopes.sql",34,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0369_wardmote_chat_state_key.sql",2,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0370_wardmote_wake_context_key.sql",3,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0371_wardmote_session_config_keys.sql",2,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0372_wardmote_tool_provider_types.sql",11,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0373_wardmote_repo_only_cwd.sql",2,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0374_wardmote_runner_question_key.sql",2,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0375_wardmote_railway_tool_names.sql",6,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0376_wardmote_ai_model_prefix.sql",2,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0377_wardmote_managed_archive_token.sql",6,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0378_wardmote_tool_template_keys.sql",39,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0379_wardmote_tool_selector_names.sql",48,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0380_wardmote_self_tool_names.sql",18,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0381_wardmote_plugin_skill_keys.sql",28,"migrasi-otomatis"],
-    ["packages/db/src/migrations/0382_wardmote_work_product_provider.sql",2,"migrasi-otomatis"],
+    ["packages/db/src/migrations/0358_wardmote_bundled_skill_keys.sql",48,"migrasi"],
+    ["packages/db/src/migrations/0359_wardmote_bundled_skill_slugs.sql",10,"migrasi"],
+    ["packages/db/src/migrations/0360_wardmote_channel_values.sql",5,"migrasi"],
+    ["packages/db/src/migrations/0361_wardmote_stored_modes.sql",3,"migrasi"],
+    ["packages/db/src/migrations/0362_wardmote_runner_adapter_type.sql",12,"migrasi"],
+    ["packages/db/src/migrations/0363_wardmote_camel_keys.sql",7,"migrasi"],
+    ["packages/db/src/migrations/0364_wardmote_catalog_keys.sql",33,"migrasi"],
+    ["packages/db/src/migrations/0365_wardmote_plugin_ids.sql",18,"migrasi"],
+    ["packages/db/src/migrations/0366_wardmote_managed_environment_key.sql",6,"migrasi"],
+    ["packages/db/src/migrations/0367_wardmote_schema_ids.sql",10,"migrasi"],
+    ["packages/db/src/migrations/0368_wardmote_mcp_scopes.sql",34,"migrasi"],
+    ["packages/db/src/migrations/0369_wardmote_chat_state_key.sql",2,"migrasi"],
+    ["packages/db/src/migrations/0370_wardmote_wake_context_key.sql",3,"migrasi"],
+    ["packages/db/src/migrations/0371_wardmote_session_config_keys.sql",2,"migrasi"],
+    ["packages/db/src/migrations/0372_wardmote_tool_provider_types.sql",11,"migrasi"],
+    ["packages/db/src/migrations/0373_wardmote_repo_only_cwd.sql",2,"migrasi"],
+    ["packages/db/src/migrations/0374_wardmote_runner_question_key.sql",2,"migrasi"],
+    ["packages/db/src/migrations/0375_wardmote_railway_tool_names.sql",6,"migrasi"],
+    ["packages/db/src/migrations/0376_wardmote_ai_model_prefix.sql",2,"migrasi"],
+    ["packages/db/src/migrations/0377_wardmote_managed_archive_token.sql",6,"migrasi"],
+    ["packages/db/src/migrations/0378_wardmote_tool_template_keys.sql",39,"migrasi"],
+    ["packages/db/src/migrations/0379_wardmote_tool_selector_names.sql",48,"migrasi"],
+    ["packages/db/src/migrations/0380_wardmote_self_tool_names.sql",18,"migrasi"],
+    ["packages/db/src/migrations/0381_wardmote_plugin_skill_keys.sql",28,"migrasi"],
+    ["packages/db/src/migrations/0382_wardmote_work_product_provider.sql",2,"migrasi"],
     ["packages/db/src/migrations/0384_wardmote_stored_keys.sql",10,"migrasi"],
     ["packages/db/src/migrations/0385_wardmote_package_metadata.sql",10,"migrasi"],
     ["packages/db/src/migrations/0386_wardmote_acpx_permission_mode.sql",3,"migrasi"],
@@ -744,8 +739,6 @@
     ["scripts/check-docker-runner-cache.sh",6,"artefak-eksternal"],
     ["scripts/check-no-git-push.mjs",1,"belum-diganti"],
     ["scripts/clean-onboard-npm.sh",1,"belum-diganti"],
-    ["scripts/cloud-source-verification.mjs",2,"artefak-eksternal"],
-    ["scripts/cloud-source-verification.test.mjs",4,"artefak-eksternal"],
     ["scripts/codemod-extract-misc.mjs",1,"belum-diganti"],
     ["scripts/codex-acp-network-policy.test.mjs",1,"belum-diganti"],
     ["scripts/cursor-public-install-sandbox.mjs",2,"belum-diganti"],

@@ -150,7 +150,7 @@
           "content": "Explain local-trusted versus authenticated modes, exposure policy, persistent database/storage, secrets, migrations, and health/readiness boundaries. Distinguish local development, self-hosted packaged/Docker deployment, and cloud integration; label external infrastructure dependencies rather than claiming the public repository contains a complete hosted service. Trace release/version selection through build artifacts and verification, including Runner/package compatibility where relevant. Link existing backup, upgrade, and rollback runbooks rather than embedding a long operational command transcript. Separate automated checks from live release smoke evidence and derive all version/tooling rules from current sources."
         },
         {
-          "content": "Source anchors: `doc/DEPLOYMENT-MODES.md`, `doc/DOCKER.md`, `doc/PUBLISHING.md`, `doc/RELEASE-CHECKLIST.md`, `doc/cloud-build-readiness.md`, `server/src/config.ts`, `scripts/build-npm.sh`, `scripts/release.sh`, `.github/workflows/release-verify.yml`, `doc/architecture/wardmote-runner-compatibility.md`. Regression anchors: `scripts/release-package-map.test.mjs`, `scripts/release-lib.test.mjs`."
+          "content": "Source anchors: `doc/DEPLOYMENT-MODES.md`, `doc/DOCKER.md`, `doc/PUBLISHING.md`, `doc/RELEASE-CHECKLIST.md`, `server/src/config.ts`, `scripts/build-npm.sh`, `scripts/release.sh`, `.github/workflows/release-verify.yml`, `doc/architecture/wardmote-runner-compatibility.md`. Regression anchors: `scripts/release-package-map.test.mjs`, `scripts/release-lib.test.mjs`."
         }
       ]
     },

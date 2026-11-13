@@ -148,15 +148,15 @@ cannot overwrite the production manifest. With no source directory it uses
 `announcements/examples/staging/`, including a sample banner. Commands default
 to dry-run unless `--publish` is supplied.
 
-For Wardmote's existing preview host, use the branch preview area that
-CloudFront already has permission to read:
+Point the publisher at a preview bucket you own and the CloudFront (or other
+CDN) URL that serves it:
 
 ```sh
 aws sso login --profile wardmote-dev
 export WARDMOTE_PAGE_AWS_PROFILE=wardmote-dev
-export WARDMOTE_PAGE_BUCKET=paperclipai-runner-e2e-history-078455283791-us-east-1
-export WARDMOTE_PAGE_BASE_URL=https://d1p6rlowie26tp.cloudfront.net
-export WARDMOTE_PAGE_DEFAULT_PREFIX=storybook/branches/codex-announcements
+export WARDMOTE_PAGE_BUCKET=<your-preview-bucket>
+export WARDMOTE_PAGE_BASE_URL=<https://your-preview-host>
+export WARDMOTE_PAGE_DEFAULT_PREFIX=announcements-preview
 
 # Copy the public fixture into an ignored directory and edit current.json there.
 mkdir -p .wardmote
@@ -166,12 +166,9 @@ node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .wardmot
 ```
 
 Choose a unique staging name for your test and use the printed manifest URL.
-The preview host currently uses CloudFront's `Managed-CachingDisabled` policy
-for this branch area: edge TTL is zero even though public responses preserve
-the five-minute manifest and one-year asset cache headers. This is useful for
-preview iteration; it does not verify a production distribution's effective
-cache lifetime. For another host, configure its bucket, base URL and optional
-prefix, then verify its matching cache behavior as described above.
+A preview host with caching disabled at the edge is convenient for iteration,
+but it does not verify a production distribution's effective cache lifetime;
+verify the production host's cache behavior as described above.
 
 Create a test-drive configuration in this worktree. Put the feed override in
 the **selected instance's `.env`**, not just the invoking shell: test-drive
