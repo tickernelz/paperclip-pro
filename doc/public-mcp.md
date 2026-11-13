@@ -17,7 +17,7 @@ effect immediately without restarting the server.
 Use the instance's configured authentication public URL, or explicitly set:
 
 ```sh
-WARDMOTE_PUBLIC_URL=https://YOUR-PAPERCLIP-HOST
+WARDMOTE_PUBLIC_URL=https://YOUR-WARDMOTE-HOST
 ```
 
 The retired `WARDMOTE_PUBLIC_MCP_ENABLED` variable has no effect. The persisted

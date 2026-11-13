@@ -380,7 +380,7 @@ Per-link data flow direction:
 
 Per-link execution posture:
 
-- `paperclip_controlled` — Wardmote governance decides when agents run; external state changes
+- `wardmote_controlled` — Wardmote governance decides when agents run; external state changes
   inform but do not command execution.
 - `symphony_compatible` — active external states create/wake Wardmote work automatically per
   Section 9; the external tracker effectively drives dispatch.
@@ -677,7 +677,7 @@ Comment commands give external users explicit control without new UI in the prov
 ## 9. Execution Orchestration: Symphony Profile
 
 This section defines how tracker-driven execution maps onto host primitives. It applies to links
-with `runMode=symphony_compatible`; `paperclip_controlled` links use only Sections 9.4–9.5 advice.
+with `runMode=symphony_compatible`; `wardmote_controlled` links use only Sections 9.4–9.5 advice.
 
 ### 9.1 Dispatch Model
 
@@ -861,7 +861,7 @@ where known), `status` (`open`, `resolved`, `dismissed`), `resolution`.
 
 Exposed in the conflict queue UI and as agent-invocable connector tools:
 
-- `keep_paperclip` (push Wardmote value outbound)
+- `keep_wardmote` (push Wardmote value outbound)
 - `keep_external` (apply external value inbound)
 - `merge_manual` (operator/agent supplies the merged value)
 - `unlink`

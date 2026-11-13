@@ -47,16 +47,16 @@ describe("issue thread interaction schemas", () => {
       questions: [
         { id: "repo", prompt: "Repository URL?", required: true, answerMode: "text", textValidation: { minLength: 1 } },
         { id: "scope", prompt: "Review scope?", required: true, answerMode: "single_select", options: [{ id: "all", label: "All changes", recommended: true }, { id: "selected", label: "Selected changes" }] },
-        { id: "hosting", prompt: "Preview hosting?", required: false, answerMode: "multi_select", options: [{ id: "paperclip_custom_answer", label: "Existing host" }, { id: "new", label: "New host" }], customAnswer: { enabled: true } },
+        { id: "hosting", prompt: "Preview hosting?", required: false, answerMode: "multi_select", options: [{ id: "wardmote_custom_answer", label: "Existing host" }, { id: "new", label: "New host" }], customAnswer: { enabled: true } },
       ],
     });
     const parsed = createIssueThreadInteractionSchema.parse({ kind: "ask_user_questions", payload: { version: 1, questionSet } });
     if (parsed.kind !== "ask_user_questions") throw new Error("expected questions");
     expect(parsed.payload.questionSet).toEqual(questionSet);
     expect(parsed.payload.questions).toMatchObject([
-      { id: "repo", required: true, selectionMode: "single", options: [{ id: "paperclip_text_answer", freeText: true }] },
+      { id: "repo", required: true, selectionMode: "single", options: [{ id: "wardmote_text_answer", freeText: true }] },
       { id: "scope", required: true, selectionMode: "single", allowOther: false, options: [{ id: "all", label: "All changes" }, { id: "selected", label: "Selected changes" }] },
-      { id: "hosting", required: false, selectionMode: "multi", allowOther: true, options: [{ id: "paperclip_custom_answer" }, { id: "new" }, { id: "paperclip_custom_answer_2", freeText: true }] },
+      { id: "hosting", required: false, selectionMode: "multi", allowOther: true, options: [{ id: "wardmote_custom_answer" }, { id: "new" }, { id: "wardmote_custom_answer_2", freeText: true }] },
     ]);
     expect(askUserQuestionsPayloadSchema.parse(parsed.payload)).toEqual(parsed.payload);
   });

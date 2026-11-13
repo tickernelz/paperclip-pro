@@ -291,7 +291,7 @@ Report
 
 ---
 
-## Relationship to Paperclip
+## Relationship to Wardmote
 
 ClipHub is **not required** to use Wardmote. You can build companies entirely from scratch without ever touching ClipHub. But ClipHub dramatically lowers the barrier to entry:
 

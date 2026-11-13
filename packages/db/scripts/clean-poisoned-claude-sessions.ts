@@ -168,7 +168,7 @@ const USAGE = `Usage:
   tsx packages/db/scripts/clean-poisoned-claude-sessions.ts [flags]
 
 Flags:
-  --config <path>            Path to paperclip config.json (defaults to
+  --config <path>            Path to Wardmote config.json (defaults to
                              $WARDMOTE_HOME/instances/default/config.json or
                              the standard locations).
   --database-url <url>       Override DB connection string entirely.
@@ -204,7 +204,7 @@ function defaultConfigPath(): string | null {
   if (process.env.WARDMOTE_HOME) {
     candidates.push(path.join(process.env.WARDMOTE_HOME, "config.json"));
   }
-  candidates.push(path.join(home, ".paperclip", "instances", "default", "config.json"));
+  candidates.push(path.join(home, ".wardmote", "instances", "default", "config.json"));
   for (const candidate of candidates) {
     if (fs.existsSync(candidate)) return candidate;
   }
@@ -264,7 +264,7 @@ async function main(argv: string[]): Promise<void> {
     (configPath ? readDatabaseUrlFromConfig(configPath) : null);
   if (!databaseUrl) {
     throw new Error(
-      "Unable to resolve database URL. Pass --database-url or --config <paperclip config.json>.",
+      "Unable to resolve database URL. Pass --database-url or --config <Wardmote config.json>.",
     );
   }
   const claudeConfigDir = resolveClaudeConfigDir(process.env, args.claudeConfigDir ?? undefined);

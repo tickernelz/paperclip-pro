@@ -745,7 +745,7 @@ describeEmbeddedPostgres("native question bridge", () => {
     const answer = {
       answers: [{
         questionId: "color",
-        optionIds: ["paperclip_custom_answer"],
+        optionIds: ["wardmote_custom_answer"],
         otherText: "purple",
       }],
     };

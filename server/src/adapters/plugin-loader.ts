@@ -130,7 +130,7 @@ function extractUiParserSource(
     return undefined;
   }
 
-  const contractVersion = pkg.paperclip?.adapterUiParser;
+  const contractVersion = pkg.wardmote?.adapterUiParser;
   if (contractVersion) {
     const major = contractVersion.split(".")[0];
     if (major !== SUPPORTED_PARSER_CONTRACT) {
@@ -143,7 +143,7 @@ function extractUiParserSource(
   } else {
     logger.info(
       { packageName },
-      "Adapter has ./ui-parser export but no paperclip.adapterUiParser version — loading anyway (future versions may require it)",
+      "Adapter has ./ui-parser export but no wardmote.adapterUiParser version — loading anyway (future versions may require it)",
     );
   }
 

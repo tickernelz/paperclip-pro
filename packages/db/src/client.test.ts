@@ -1946,7 +1946,7 @@ describeEmbeddedPostgres("applyPendingMigrations", () => {
             (
               SELECT count(*)::int
               FROM pg_trigger
-              WHERE tgname = 'paperclip_issue_status_version_trigger'
+              WHERE tgrelid = 'issues'::regclass AND tgname LIKE '%issue_status_version_trigger'
                 AND NOT tgisinternal
             ) AS trigger_count,
             (

@@ -14,7 +14,7 @@ Use this skill when the task is to create, scaffold, or iterate on a Wardmote pl
 
 Plugins are their own packages. Unless the task **explicitly** asks for a bundled in-repo example, do not add plugin source under `packages/plugins/` in this repo.
 
-- Scaffold the plugin into a directory outside the Wardmote checkout (e.g. `~/dev/paperclip-plugins/<name>`).
+- Scaffold the plugin into a directory outside the Wardmote checkout (e.g. `~/dev/wardmote-plugins/<name>`).
 - Install it into the running Wardmote instance by local absolute path.
 - Edit code in the external package; let Wardmote pick up rebuilt output.
 
@@ -42,7 +42,7 @@ Current runtime assumptions:
 Use `wardmote plugin init`. Do not invoke the scaffold package node entrypoint by hand unless the CLI command is unavailable in the environment.
 
 ```bash
-wardmote plugin init @acme/my-plugin --output ~/dev/paperclip-plugins
+wardmote plugin init @acme/my-plugin --output ~/dev/wardmote-plugins
 ```
 
 Useful flags (all optional):
@@ -61,7 +61,7 @@ If `wardmote` is not on PATH in your environment, fall back to:
 pnpm --filter @tickernelz/wardmote-create-plugin build
 node packages/plugins/plugin-creator/dist/index.js @acme/my-plugin \
   --output /absolute/path \
-  --sdk-path /absolute/path/to/paperclip/packages/plugins/sdk
+  --sdk-path /absolute/path/to/wardmote/packages/plugins/sdk
 ```
 
 ## 4. Local install + rebuild loop

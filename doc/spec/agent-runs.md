@@ -545,7 +545,7 @@ Runtime log storage is deployment-configured (not per-agent by default).
   "runLogStore": {
     "type": "local_file | object_store | postgres",
     "basePath": "./data/run-logs",
-    "bucket": "paperclip-run-logs",
+    "bucket": "wardmote-run-logs",
     "prefix": "runs/",
     "compress": true,
     "maxInlineExcerptBytes": 32768
