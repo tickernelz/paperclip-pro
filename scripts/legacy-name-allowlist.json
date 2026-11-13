@@ -814,7 +814,7 @@
     ["server/scripts/benchmark-tool-gateway-listing.ts",1,"belum-diganti"],
     ["server/scripts/smoke-native-task-monitor.ts",1,"belum-diganti"],
     ["server/src/__tests__/aws-secrets-manager-retired-names.test.ts",13,"uji-regresi"],
-    ["server/src/__tests__/chat-channels.integration.test.ts",10,"belum-diganti"],
+    ["server/src/__tests__/chat-channels.integration.test.ts",5,"belum-diganti"],
     ["server/src/__tests__/cli-invocation-safety.test.ts",6,"belum-diganti"],
     ["server/src/__tests__/company-portability.test.ts",18,"belum-diganti"],
     ["server/src/__tests__/company-skills-catalog-service.test.ts",1,"belum-diganti"],
