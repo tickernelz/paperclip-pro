@@ -136,8 +136,8 @@ describe("runtimeExposureStatusSchema", () => {
       runtimeExposureStatusSchema.parse({
         provider: "tailscale_https",
         state: "ready",
-        publicUrl: "https://paperclip-dev.tail29c1aa.ts.net:42010",
-        hostname: "paperclip-dev.tail29c1aa.ts.net",
+        publicUrl: "https://wardmote-dev.tail29c1aa.ts.net:42010",
+        hostname: "wardmote-dev.tail29c1aa.ts.net",
         listeners: [
           { purpose: "app", publicPort: 42010, targetPort: 42010 },
           { purpose: "vite_hmr", publicPort: 52010, targetPort: 52010 },

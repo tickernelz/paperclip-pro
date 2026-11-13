@@ -48,7 +48,7 @@ import {
   type RealizedExecutionWorkspace,
 } from "../services/workspace-runtime.ts";
 
-const DEFAULT_BROKER_SOCKET = "/run/paperclip-tailscale-broker/broker.sock";
+const DEFAULT_BROKER_SOCKET = "/run/wardmote-tailscale-broker/broker.sock";
 const brokerSocketPath = process.env.WARDMOTE_TAILSCALE_BROKER_SOCKET ?? DEFAULT_BROKER_SOCKET;
 
 async function brokerSocketPresent() {

@@ -8,7 +8,7 @@ import {
   primaryDigest,
 } from "./serve-config.js";
 
-const HOST = "paperclip-dev.tail29c1aa.ts.net";
+const HOST = "wardmote-dev.tail29c1aa.ts.net";
 
 function serve(ports: Record<number, string | null>): unknown {
   const TCP: Record<string, unknown> = {};

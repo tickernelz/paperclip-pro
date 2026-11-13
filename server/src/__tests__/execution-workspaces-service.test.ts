@@ -4165,7 +4165,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
     const provisioningWorkspaceId = randomUUID();
     const readyServiceId = randomUUID();
     const provisioningServiceId = randomUUID();
-    const hostname = "paperclip-dev.tail29c1aa.ts.net";
+    const hostname = "wardmote-dev.tail29c1aa.ts.net";
     const httpsUrl = `https://${hostname}:42010`;
 
     await db.insert(companies).values({

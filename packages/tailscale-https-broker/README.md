@@ -64,19 +64,19 @@ Tailscale-operator service account distinct from the Wardmote app account.
 2. **Create the dedicated operator account and socket group.**
 
    ```sh
-   sudo useradd --system --home /var/lib/paperclip-tailscale-broker \
-     --shell /usr/sbin/nologin paperclip-tsbroker
-   sudo groupadd --system paperclip-tsbroker-sock
+   sudo useradd --system --home /var/lib/wardmote-tailscale-broker \
+     --shell /usr/sbin/nologin wardmote-tsbroker
+   sudo groupadd --system wardmote-tsbroker-sock
    # The Wardmote *app* service account must have this as its PRIMARY group so
    # its SO_PEERCRED gid matches the socket group (supplemental membership is
    # intentionally NOT accepted).
-   sudo usermod -g paperclip-tsbroker-sock <paperclip-app-account>
+   sudo usermod -g wardmote-tsbroker-sock <wardmote-app-account>
    ```
 
 3. **Grant Tailscale operator authority to the broker account only.**
 
    ```sh
-   sudo tailscale set --operator=paperclip-tsbroker
+   sudo tailscale set --operator=wardmote-tsbroker
    ```
 
    Do **not** grant `--operator` to the Wardmote app/agent account (that grant
@@ -86,9 +86,9 @@ Tailscale-operator service account distinct from the Wardmote app account.
    packaged unit creates these automatically; for a manual install use:
 
    ```sh
-   sudo install -d -o paperclip-tsbroker -g paperclip-tsbroker-sock -m 0750 /run/paperclip-tailscale-broker
-   sudo install -d -o paperclip-tsbroker -g paperclip-tsbroker-sock -m 0700 /var/lib/paperclip-tailscale-broker
-   sudo install -d -o paperclip-tsbroker -g paperclip-tsbroker-sock -m 0700 /var/log/paperclip-tailscale-broker
+   sudo install -d -o wardmote-tsbroker -g wardmote-tsbroker-sock -m 0750 /run/wardmote-tailscale-broker
+   sudo install -d -o wardmote-tsbroker -g wardmote-tsbroker-sock -m 0700 /var/lib/wardmote-tailscale-broker
+   sudo install -d -o wardmote-tsbroker -g wardmote-tsbroker-sock -m 0700 /var/log/wardmote-tailscale-broker
    ```
 
    The broker refuses to start if the registry path's parent is group/other
@@ -97,7 +97,7 @@ Tailscale-operator service account distinct from the Wardmote app account.
 5. **Build, install the package under `/opt/wardmote`, and install the
    packaged systemd unit.** The unit's `ExecStart` (and the doctor command
    below) run the build output from
-   `/opt/paperclip/packages/tailscale-https-broker/dist`, so copy it there
+   `/opt/wardmote/packages/tailscale-https-broker/dist`, so copy it there
    explicitly. The Linux build requires a C compiler and Node.js headers to
    compile the dependency-free N-API `SO_PEERCRED` addon. The output is
    self-contained (Node builtins plus the compiled addon; no `node_modules`
@@ -105,14 +105,14 @@ Tailscale-operator service account distinct from the Wardmote app account.
 
    ```sh
    pnpm --filter @tickernelz/wardmote-tailscale-https-broker build
-   sudo install -d -m 0755 /opt/paperclip/packages/tailscale-https-broker
+   sudo install -d -m 0755 /opt/wardmote/packages/tailscale-https-broker
    sudo cp -r packages/tailscale-https-broker/dist \
-     /opt/paperclip/packages/tailscale-https-broker/
+     /opt/wardmote/packages/tailscale-https-broker/
    sudo install -D -m 0644 \
      packages/tailscale-https-broker/deploy/wardmote-tailscale-https-broker.service \
      /etc/systemd/system/wardmote-tailscale-https-broker.service
    sudo install -d -m 0750 /etc/wardmote
-   sudoedit /etc/paperclip/tailscale-https-broker.env
+   sudoedit /etc/wardmote/tailscale-https-broker.env
    ```
 
    The packaged unit is equivalent to:
@@ -125,23 +125,23 @@ Tailscale-operator service account distinct from the Wardmote app account.
 
    [Service]
    Type=simple
-   User=paperclip-tsbroker
-   # Socket must end up 0660 paperclip-tsbroker:paperclip-tsbroker-sock. Set the group here and
+   User=wardmote-tsbroker
+   # Socket must end up 0660 wardmote-tsbroker:wardmote-tsbroker-sock. Set the group here and
    # the broker chmods the socket to 0660 on bind.
-   Group=paperclip-tsbroker-sock
-   EnvironmentFile=/etc/paperclip/tailscale-https-broker.env
-   ExecStart=/usr/bin/node /opt/paperclip/packages/tailscale-https-broker/dist/main.js
+   Group=wardmote-tsbroker-sock
+   EnvironmentFile=/etc/wardmote/tailscale-https-broker.env
+   ExecStart=/usr/bin/node /opt/wardmote/packages/tailscale-https-broker/dist/main.js
    Restart=on-failure
    NoNewPrivileges=true
    ProtectSystem=strict
-   ReadWritePaths=/run/paperclip-tailscale-broker /var/lib/paperclip-tailscale-broker /var/log/paperclip-tailscale-broker
+   ReadWritePaths=/run/wardmote-tailscale-broker /var/lib/wardmote-tailscale-broker /var/log/wardmote-tailscale-broker
 
    [Install]
    WantedBy=multi-user.target
    ```
 
    Put the `BROKER_*` values from the table below in the environment file. Set
-   `WARDMOTE_TAILSCALE_BROKER_SOCKET=/run/paperclip-tailscale-broker/broker.sock`
+   `WARDMOTE_TAILSCALE_BROKER_SOCKET=/run/wardmote-tailscale-broker/broker.sock`
    on the Wardmote service only if overriding its default.
 
    Environment variables (defaults in `src/config.ts`):
@@ -153,9 +153,9 @@ Tailscale-operator service account distinct from the Wardmote app account.
    | `BROKER_SERVICE_GID` | yes | — | GID of the dedicated socket group (caller's primary GID) |
    | `BROKER_RUNTIME_UID` | yes | — | UID that owns Wardmote-managed runtime processes (normally the Wardmote app service account); only its loopback listeners are eligible |
    | `BROKER_TAILSCALE_BIN` | no | `/usr/bin/tailscale` | absolute path to the Tailscale CLI |
-   | `BROKER_SOCKET_PATH` | no | `/run/paperclip-tailscale-broker/broker.sock` | Unix socket path |
-   | `BROKER_REGISTRY_PATH` | no | `/var/lib/paperclip-tailscale-broker/registry.json` | root-owned `0600` ownership registry |
-   | `BROKER_AUDIT_PATH` | no | `/var/log/paperclip-tailscale-broker/audit.log` | append-only security audit log |
+   | `BROKER_SOCKET_PATH` | no | `/run/wardmote-tailscale-broker/broker.sock` | Unix socket path |
+   | `BROKER_REGISTRY_PATH` | no | `/var/lib/wardmote-tailscale-broker/registry.json` | root-owned `0600` ownership registry |
+   | `BROKER_AUDIT_PATH` | no | `/var/log/wardmote-tailscale-broker/audit.log` | append-only security audit log |
    | `BROKER_PROTECTED_PORTS` | no | *(empty)* | comma/space separated ports the broker must **never** create, remove, or reclaim — even when its own registry holds a valid lease for them (see below) |
 
    ### `BROKER_PROTECTED_PORTS` — operator-declared preservation (PAP-17285)
@@ -185,17 +185,17 @@ Tailscale-operator service account distinct from the Wardmote app account.
    Confirm it took effect before trusting it — `--doctor` echoes the parsed set:
 
    ```sh
-   sudo -u paperclip-tsbroker \
-     env $(cat /etc/paperclip/tailscale-https-broker.env | xargs) \
-     node /opt/paperclip/packages/tailscale-https-broker/dist/main.js --doctor
+   sudo -u wardmote-tsbroker \
+     env $(cat /etc/wardmote/tailscale-https-broker.env | xargs) \
+     node /opt/wardmote/packages/tailscale-https-broker/dist/main.js --doctor
    ```
 
 6. **Preflight (read-only, no mutation).**
 
    ```sh
-   sudo -u paperclip-tsbroker \
+   sudo -u wardmote-tsbroker \
      BROKER_NODE_IDENTITY=$(hostname) BROKER_SERVICE_UID=... BROKER_SERVICE_GID=... BROKER_RUNTIME_UID=... \
-     node /opt/paperclip/packages/tailscale-https-broker/dist/main.js --doctor
+     node /opt/wardmote/packages/tailscale-https-broker/dist/main.js --doctor
    ```
 
    Verifies: supported Tailscale CLI version, Serve status is readable, the
@@ -204,12 +204,12 @@ Tailscale-operator service account distinct from the Wardmote app account.
 
 7. **Enable.** `sudo systemctl daemon-reload && sudo systemctl enable --now
    wardmote-tailscale-https-broker`. Confirm the socket is `0660
-   paperclip-tsbroker:paperclip-tsbroker-sock`.
+   wardmote-tsbroker:wardmote-tsbroker-sock`.
 
 ## Upgrade
 
 Deploy new package output to
-`/opt/paperclip/packages/tailscale-https-broker/dist`, then
+`/opt/wardmote/packages/tailscale-https-broker/dist`, then
 `sudo systemctl restart wardmote-tailscale-https-broker`. On
 restart the broker re-reads its root-owned registry and adopts only exact-lease
 matches; a changed `BROKER_NODE_IDENTITY` (host reimage / boot-id change) forces

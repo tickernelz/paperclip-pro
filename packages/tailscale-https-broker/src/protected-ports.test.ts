@@ -29,7 +29,7 @@ import { changedProtectedPorts, parseServeStatus } from "./serve-config.js";
 import { saveRegistry } from "./registry.js";
 import type { BrokerRequest, PeerCredentials } from "./types.js";
 
-const HOST = "paperclip-dev.tail29c1aa.ts.net";
+const HOST = "wardmote-dev.tail29c1aa.ts.net";
 const BIN = "/usr/bin/tailscale";
 const RUNTIME_A = "2af79bb1-ecc5-4410-8438-091be135a921";
 const PEER: PeerCredentials = { uid: 999, gid: 987, pid: 4242 };

@@ -7,7 +7,7 @@ import { BrokerCore, type CliResult, type ListenerOwnership } from "./broker-cor
 import { defaultIsAllowedPort } from "./port-policy.js";
 import type { BrokerRequest, PeerCredentials } from "./types.js";
 
-const HOST = "paperclip-dev.tail29c1aa.ts.net";
+const HOST = "wardmote-dev.tail29c1aa.ts.net";
 const BIN = "/usr/bin/tailscale";
 const RUNTIME_A = "2af79bb1-ecc5-4410-8438-091be135a921";
 const RUNTIME_B = "3108ef8e-5ed0-41d9-b561-6b41c41b8545";
