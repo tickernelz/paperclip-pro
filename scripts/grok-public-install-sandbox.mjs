@@ -175,7 +175,7 @@ export function grokConsumerDockerArgs({ assets, consumer, cache, command, uid, 
     '--mount', `type=bind,src=${assets},dst=/packages,readonly`,
     '--mount', `type=bind,src=${consumer},dst=/consumer`,
     '--mount', `type=bind,src=${cache},dst=/cache`,
-    ...(prerequisite ? ['--mount', `type=bind,src=${prerequisite},dst=/opt/paperclip/providers/grok/1.0.13/grok,readonly`] : []),
+    ...(prerequisite ? ['--mount', `type=bind,src=${prerequisite},dst=/opt/wardmote/providers/grok/1.0.13/grok,readonly`] : []),
     '--workdir', '/consumer', GROK_PUBLIC_INSTALL_IMAGE, ...command,
   ];
 }

@@ -969,7 +969,7 @@ export function builtinGrokLauncherPath(moduleUrl: string = import.meta.url): st
   throw new Error("Grok builtin launcher is missing from the Wardmote installation");
 }
 
-export const GROK_PREREQUISITE_PATH = "/opt/paperclip/providers/grok/1.0.13/grok";
+export const GROK_PREREQUISITE_PATH = "/opt/wardmote/providers/grok/1.0.13/grok";
 
 export async function verifyProvisionedGrokExecutable(executablePath = GROK_PREREQUISITE_PATH): Promise<VerifiedAcpxRuntimeExecutable> {
   const digests: Record<string, string> = {

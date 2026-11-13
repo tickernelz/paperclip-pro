@@ -559,7 +559,7 @@ describe("persistent agent directories", () => {
     expect(execute).toHaveBeenCalledTimes(2);
     expect(execute).toHaveBeenLastCalledWith(expect.objectContaining({ lease: expect.objectContaining({ id: leaseId, providerLeaseId: "original-sandbox" }),
       command: "rm", args: ["-rf", "--", executionRoot,
-        path.posix.join(remoteCwd, ".wardmote-runtime", "paperclip-runner", "agent-file-transfers", agentId, copy.runId)], bypassSession: true }));
+        path.posix.join(remoteCwd, ".wardmote-runtime", "wardmote-runner", "agent-file-transfers", agentId, copy.runId)], bypassSession: true }));
     await copies.recoverCaptured();
     expect(execute).toHaveBeenCalledTimes(2);
     await copies.release(companyId, copy.runId);
@@ -859,7 +859,7 @@ describe("persistent agent directories", () => {
     await fs.mkdir(path.join(root, "build"));
     await fs.writeFile(path.join(root, "build", "personal.txt"), "cache-like names are still agent files");
     const first = await prepare();
-    const firstScratch = path.join(remoteCwd, ".wardmote-runtime", "paperclip-runner", "agent-file-transfers", agentId, first.runId);
+    const firstScratch = path.join(remoteCwd, ".wardmote-runtime", "wardmote-runner", "agent-file-transfers", agentId, first.runId);
     expect(await fs.readdir(firstScratch)).toEqual([]);
     await expect(fs.stat(path.join(first.executionRoot, ".wardmote-runtime"))).rejects.toMatchObject({ code: "ENOENT" });
     expect(await fs.readFile(path.join(first.executionRoot, "build", "personal.txt"), "utf8")).toBe("cache-like names are still agent files");

@@ -61,14 +61,14 @@ docker buildx build \
   --platform linux/amd64 \
   --build-arg WARDMOTE_RUNNER_CONTENT_ID="${content_id}" \
   --build-arg WARDMOTE_RUNNER_SOURCE_REVISION="$(git rev-parse HEAD)" \
-  --tag "paperclip-daytona-runner:e2e-content-${content_id}" \
+  --tag "wardmote-daytona-runner:e2e-content-${content_id}" \
   --load \
   --file docker/daytona-runner/Dockerfile \
   .
 
 docker run --rm --platform linux/amd64 \
   --entrypoint wardmote-runnerd \
-  "paperclip-daytona-runner:e2e-content-${content_id}" \
+  "wardmote-daytona-runner:e2e-content-${content_id}" \
   --build-metadata
 ```
 
@@ -160,6 +160,6 @@ dependencies when a task starts. Grok's additive native ACP profile keeps its
 qualified 1.0.13 executable at the verified sandbox prerequisite path. It does not replace the
 legacy adapter's `grok` command on PATH.
 
-Native Grok is an image prerequisite at `/opt/paperclip/providers/grok/1.0.13/grok`.
+Native Grok is an image prerequisite at `/opt/wardmote/providers/grok/1.0.13/grok`.
 Its checksum-verified provisioning is separate from the provider pack, which ships
 only the built-in launcher. Public npm installation never downloads this binary.

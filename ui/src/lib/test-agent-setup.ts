@@ -44,7 +44,7 @@ export async function testAgentSetup(input: {
         ...input.adapterConfig,
         engine: "cli",
         ...(input.adapterType === "wardmote_runner" && input.providerAdapter === "grok_local"
-          ? { command: "/opt/paperclip/providers/grok/1.0.13/grok" }
+          ? { command: "/opt/wardmote/providers/grok/1.0.13/grok" }
           : {}),
       },
     },

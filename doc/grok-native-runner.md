@@ -34,11 +34,11 @@ its native runtime identity is `native:grok` version 1.0.13. The historical
 not npm dependencies. Existing npm-backed ACP bridges retain their package pins.
 
 Provision Grok Build 1.0.13 at
-`/opt/paperclip/providers/grok/1.0.13/grok` in the selected execution environment.
+`/opt/wardmote/providers/grok/1.0.13/grok` in the selected execution environment.
 The sandbox provisioning helper is explicit and is never run by npm:
 
 ```sh
-sudo node packages/wardmote-runner/scripts/provision-grok.mjs /opt/paperclip/providers/grok/1.0.13/grok
+sudo node packages/wardmote-runner/scripts/provision-grok.mjs /opt/wardmote/providers/grok/1.0.13/grok
 ```
 
 The standard Daytona image provisions it separately from the provider pack.

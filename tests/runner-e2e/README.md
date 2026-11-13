@@ -637,7 +637,7 @@ or publish the current source locally:
 ```bash
 content_id="$(pnpm --silent test:e2e:runner:image-id)"
 source_revision="$(git rev-parse HEAD)"
-image="ghcr.io/paperclipai/paperclip-daytona-runner:e2e-content-${content_id}"
+image="ghcr.io/paperclipai/wardmote-daytona-runner:e2e-content-${content_id}"
 if ! docker buildx imagetools inspect "$image" >/dev/null 2>&1; then
   docker buildx build \
     --platform linux/amd64 \
@@ -704,7 +704,7 @@ match. Docker must be running; the temporary container below is never started.
   container_id="$(docker create --platform linux/amd64 --network none \
     --entrypoint /bin/true "$WARDMOTE_E2E_DAYTONA_IMAGE")"
   trap 'docker rm "$container_id" >/dev/null' EXIT
-  docker cp "$container_id:/opt/paperclip-runner/provider-pack/." "$pack_dir/"
+  docker cp "$container_id:/opt/wardmote-runner/provider-pack/." "$pack_dir/"
   test -f "$pack_dir/provider-pack.json"
   printf 'Set WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH to: %s\n' "$pack_dir"
 )

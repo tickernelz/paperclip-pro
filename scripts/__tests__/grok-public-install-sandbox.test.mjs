@@ -72,7 +72,7 @@ test('the separately provisioned executable is exposed read-only to the offline 
   const prerequisite = '/private/staging/native/grok';
   const args = grokConsumerDockerArgs({ ...paths, prerequisite, command: ['node', '/packages/probe.mjs', 'present'] });
   assert.deepEqual(values(args, '--network'), ['none']);
-  assert.equal(values(args, '--mount').at(-1), `type=bind,src=${prerequisite},dst=/opt/paperclip/providers/grok/1.0.13/grok,readonly`);
+  assert.equal(values(args, '--mount').at(-1), `type=bind,src=${prerequisite},dst=/opt/wardmote/providers/grok/1.0.13/grok,readonly`);
 });
 
 test('verification never elevates PR-controlled provisioning or cleanup on the host', () => {

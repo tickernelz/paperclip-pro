@@ -57,7 +57,7 @@ export async function discoverRemoteExecutable(
 ): Promise<string | null> {
   const result = await runner.execute({
     command: "sh",
-    args: ["-c", `for candidate in /opt/paperclip-runner/bin/${name} "$HOME/.local/bin/${name}"; do ` +
+    args: ["-c", `for candidate in /opt/wardmote-runner/bin/${name} "$HOME/.local/bin/${name}"; do ` +
       `if [ -x "$candidate" ]; then printf '%s\\n' "$candidate"; exit 0; fi; done; ` +
       `command -v ${name} 2>/dev/null || true`],
     cwd, bypassSession: true, timeoutMs: 10_000,
