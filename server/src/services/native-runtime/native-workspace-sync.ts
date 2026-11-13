@@ -654,7 +654,7 @@ async function writeRemoteStamp(input: {
   const runtimeDir = path.posix.join(
     input.target.remoteCwd,
     ".wardmote-runtime",
-    "wardmote-runner",
+    "paperclip-runner",
   );
   const stampPath = path.posix.join(runtimeDir, REMOTE_STAMP_NAME);
   const tempPath = `${stampPath}.tmp`;
@@ -686,7 +686,7 @@ async function remoteStampMatches(input: {
   const stampPath = path.posix.join(
     input.target.remoteCwd,
     ".wardmote-runtime",
-    "wardmote-runner",
+    "paperclip-runner",
     REMOTE_STAMP_NAME,
   );
   // File hashes do not detect empty commits or branch changes. A fresh host
@@ -772,7 +772,7 @@ async function prepareRuntime(input: {
   return prepareAdapterExecutionTargetRuntime({
     runId: input.runId,
     target: input.target,
-    adapterKey: "wardmote-runner",
+    adapterKey: "paperclip-runner",
     workspaceLocalDir: input.workspaceLocalDir,
     workspaceRemoteDir: input.target.remoteCwd,
     workspaceInboundMode: input.mode,

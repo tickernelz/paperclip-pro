@@ -10,5 +10,6 @@ export async function moveRetiredRunnerRuntimeDirectory(instanceRoot: string, cu
   if (!source || !source.isDirectory() || source.isSymbolicLink()) return false;
   if (await fs.lstat(to).catch(() => null)) return false;
   await fs.rename(from, to);
+  await fs.symlink(currentName, from);
   return true;
 }

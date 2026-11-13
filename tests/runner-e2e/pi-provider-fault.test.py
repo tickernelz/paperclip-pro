@@ -22,7 +22,7 @@ ROOT = {'pid': 21, 'ppid': 1, 'startTicks': '100', 'bootId': BOOT}
 PARENT = {'pid': 22, 'ppid': 21, 'startTicks': '101', 'bootId': BOOT}
 TARGET = {'pid': 23, 'ppid': 22, 'startTicks': '102', 'bootId': BOOT}
 DIST = '/tmp/paperclip-acpx-native-fixture/distribution'
-RUNTIME = '/workspace/.wardmote-runtime/wardmote-runner'
+RUNTIME = '/workspace/.wardmote-runtime/paperclip-runner'
 CANCELLED = False
 
 def check_cancelled():
@@ -233,7 +233,7 @@ class PidfdTests(unittest.TestCase):
         base = Path(tempfile.mkdtemp(prefix='pi-fault-calibration-', dir='/tmp'))
         snapshot = Path(tempfile.mkdtemp(prefix='paperclip-acpx-native-', dir='/tmp'))
         distribution = snapshot / 'distribution'; workspace = base / 'workspace'; workspace.mkdir()
-        runtime = workspace / '.wardmote-runtime/wardmote-runner'; (runtime / 'bin').mkdir(parents=True)
+        runtime = workspace / '.wardmote-runtime/paperclip-runner'; (runtime / 'bin').mkdir(parents=True)
         pack = base / 'pack'; (pack / 'provider-assets/pi/linux-x64').mkdir(parents=True)
         root_child = None
         owned_fds = []

@@ -177,7 +177,15 @@ describe("retired product name migration", () => {
     const report = await migrateRetiredNames(db, { instanceRoot, now: new Date("2026-11-13T00:00:10Z") });
     expect(report.quarantinedRunnerStates).toEqual([]);
     await expect(fs.readdir(currentBase)).resolves.toEqual([key]);
-    await expect(fs.lstat(path.join(instanceRoot, "runtime", RETIRED_RUNNER_RUNTIME_DIR))).rejects.toMatchObject({ code: "ENOENT" });
+    const retiredRoot = path.join(instanceRoot, "runtime", RETIRED_RUNNER_RUNTIME_DIR);
+    expect((await fs.lstat(retiredRoot)).isSymbolicLink()).toBe(true);
+    const liveState = path.join(retiredRoot, "durable-sessions", key, "control-plane", "control-plane-state.json");
+    await fs.writeFile(`${liveState}.tmp`, JSON.stringify({ schema: "wardmote.runner.durable.control-plane-state.v1", saved: "after-move" }));
+    await fs.rename(`${liveState}.tmp`, liveState);
+    expect(JSON.parse(await fs.readFile(path.join(currentBase, key, "control-plane", "control-plane-state.json"), "utf8")).saved).toBe("after-move");
+    const again = await migrateRetiredNames(db, { instanceRoot, now: new Date("2026-11-13T00:00:20Z") });
+    expect(again.quarantinedRunnerStates).toEqual([]);
+    expect((await fs.lstat(retiredRoot)).isSymbolicLink()).toBe(true);
     await fs.rm(instanceRoot, { recursive: true, force: true });
   }, 60_000);
 

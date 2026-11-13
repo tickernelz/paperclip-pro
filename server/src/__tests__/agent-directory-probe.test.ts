@@ -102,7 +102,7 @@ describe("stable live agent directory observation", () => {
   it("keeps restart fallback transfer scratch outside the native memory directory", async () => {
     const remoteCwd = `${root}-remote`;
     const agentHome = join(remoteCwd, ".wardmote-runtime", "agent-files", "agent", "original-run");
-    const scratch = join(remoteCwd, ".wardmote-runtime", "wardmote-runner", "agent-file-transfers", "agent", "original-run");
+    const scratch = join(remoteCwd, ".wardmote-runtime", "paperclip-runner", "agent-file-transfers", "agent", "original-run");
     fs.mkdirSync(agentHome, { recursive: true });
     fs.cpSync(root, agentHome, { recursive: true });
     const target = { kind: "remote" as const, transport: "sandbox" as const, remoteCwd,

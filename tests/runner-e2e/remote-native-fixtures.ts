@@ -17,7 +17,7 @@ const INSTALL_BUDGET_MS = 27_000;
 export const REMOTE_FIXTURE_MIN_SETUP_BUDGET_MS = LEASE_READMISSION_BUDGET_MS
   + RUNTIME_READY_BUDGET_MS + INSTALL_BUDGET_MS + TEARDOWN_RESERVE_MS;
 const CLOSE_GRACE_MS = 10_000;
-const RUNTIME_RELATIVE = ".wardmote-runtime/wardmote-runner";
+const RUNTIME_RELATIVE = ".wardmote-runtime/paperclip-runner";
 const digest = (value: string) => `sha256:${createHash("sha256").update(value).digest("hex")}`;
 const record = (value: unknown): Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 const fail = (condition: unknown, code: string): void => { if (!condition) throw new Error(`remote_native_fixture:${code}`); };
