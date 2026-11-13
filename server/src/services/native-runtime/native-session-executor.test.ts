@@ -9833,7 +9833,7 @@ describe("runnerd provider runtime wiring", () => {
           contentType: "text/plain",
           byteSize: 12,
           workspaceRelativePath:
-            ".paperclip-inbound/run/00000000-0000-4000-8000-000000009202",
+            ".wardmote-inbound/run/00000000-0000-4000-8000-000000009202",
           unavailableReason: null,
         },
       ],

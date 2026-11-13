@@ -1376,6 +1376,7 @@
     ["server/src/services/native-runtime/provider-profile.ts",2,"belum-diganti"],
     ["server/src/services/native-runtime/remote-pi-companion.ts",4,"belum-diganti"],
     ["server/src/services/native-runtime/retired-dot-home.ts",1,"migrasi-otomatis"],
+    ["server/src/services/native-runtime/retired-staging-root.ts",1,"migrasi-otomatis"],
     ["server/src/services/native-runtime/runner-api-reference.ts",5,"belum-diganti"],
     ["server/src/services/native-runtime/runner-bridge-tools.test.ts",5,"nama-lama-ditolak"],
     ["server/src/services/native-runtime/runner-bridge-tools.ts",2,"belum-diganti"],
