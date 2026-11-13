@@ -119,7 +119,7 @@ describe("update command", () => {
     createPayload(newPayload, "0.3.1");
     fs.writeFileSync(path.join(newPayload, "node_modules", "@tickernelz", "wardmote", "package.json"), JSON.stringify({ version: "0.3.1" }));
     flipCurrentAtomic(oldPayload, paths);
-    writeInstallManifestAtomic({ schemaVersion: 1, source: "git", version: "0.3.1", channel: "pinned", repo: "paperclipai/paperclip", ref: "master", sha: oldSha, payloadPath: oldPayload, installedAt: "2026-07-22T00:00:00.000Z", previous: [] }, paths);
+    writeInstallManifestAtomic({ schemaVersion: 1, source: "git", version: "0.3.1", channel: "pinned", repo: "tickernelz/wardmote", ref: "master", sha: oldSha, payloadPath: oldPayload, installedAt: "2026-07-22T00:00:00.000Z", previous: [] }, paths);
     writeManagedShim(paths);
     // Simulate a launcher generated before child-runtime PATH pinning existed.
     fs.writeFileSync(paths.shimPath, fs.readFileSync(paths.shimPath, "utf8").replace(/^export PATH=.*\n/m, ""));
@@ -140,7 +140,7 @@ describe("update command", () => {
     const paths = resolveInstallStorePaths(); initializeInstallStore(paths);
     const sha = "3".repeat(40); const payload = payloadPathFor(paths, "git", sha.slice(0, 12)); const executable = createPayload(payload, "0.3.1");
     flipCurrentAtomic(payload, paths);
-    writeInstallManifestAtomic({ schemaVersion: 1, source: "git", version: "0.3.1", channel: "pinned", repo: "paperclipai/paperclip", ref: sha.slice(0, 12), sha, payloadPath: payload, installedAt: "2026-07-22T00:00:00.000Z", previous: [] }, paths);
+    writeInstallManifestAtomic({ schemaVersion: 1, source: "git", version: "0.3.1", channel: "pinned", repo: "tickernelz/wardmote", ref: sha.slice(0, 12), sha, payloadPath: payload, installedAt: "2026-07-22T00:00:00.000Z", previous: [] }, paths);
     const runCommand = vi.fn(async () => ({ stdout: "", stderr: "" }));
     await updateCommand({}, { paths, executablePath: executable, runCommand });
     expect(runCommand).not.toHaveBeenCalled();
