@@ -121,7 +121,7 @@ function makeArtifactWorkProduct(
     executionWorkspaceId: null,
     runtimeServiceId: null,
     type: "artifact",
-    provider: "paperclip",
+    provider: "wardmote",
     externalId: null,
     title: overrides.title ?? `Artifact ${id}`,
     url: null,

@@ -300,9 +300,9 @@ describeEmbeddedPostgres("public issue share links", () => {
     await db.insert(issueWorkProducts).values([
       { companyId, issueId: ids.root, type: "preview_url", provider: "custom", title: "Preview", status: "active", url: "https://preview.example.test/app", metadata: { internal: "WP_META" } },
       { companyId, issueId: ids.root, type: "branch", provider: "custom", title: "Branch", status: "active", url: "javascript:alert(1)" },
-      { companyId, issueId: ids.root, type: "artifact", provider: "paperclip", title: "Report", status: "active", metadata: { attachmentId: files.issueFile.attachmentId } },
-      { companyId, issueId: ids.root, type: "artifact", provider: "paperclip", title: "Private report", status: "active", metadata: { attachmentId: files.privateFile.attachmentId } },
-      { companyId, issueId: ids.root, type: "artifact", provider: "paperclip", title: "Orphan report", status: "active", metadata: { attachmentId: files.orphanFile.attachmentId } },
+      { companyId, issueId: ids.root, type: "artifact", provider: "wardmote", title: "Report", status: "active", metadata: { attachmentId: files.issueFile.attachmentId } },
+      { companyId, issueId: ids.root, type: "artifact", provider: "wardmote", title: "Private report", status: "active", metadata: { attachmentId: files.privateFile.attachmentId } },
+      { companyId, issueId: ids.root, type: "artifact", provider: "wardmote", title: "Orphan report", status: "active", metadata: { attachmentId: files.orphanFile.attachmentId } },
     ]);
     return { companyId, otherCompanyId, agentId, otherAgentId, userId, runId, ids, comments, files };
   }

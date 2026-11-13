@@ -517,7 +517,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
       companyId,
       issueId,
       type: "artifact",
-      provider: "paperclip",
+      provider: "wardmote",
       title: `${fixture.id} evidence`,
       status: "ready_for_review",
       reviewState: completionState === "new_evidence_satisfies_contract" ? "none" : "approved",

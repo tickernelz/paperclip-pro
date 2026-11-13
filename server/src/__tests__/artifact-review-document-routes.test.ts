@@ -177,7 +177,7 @@ function makeWorkProduct(overrides: Record<string, unknown> = {}) {
     companyId: "company-1",
     issueId: ISSUE_ID,
     type: "artifact",
-    provider: "paperclip",
+    provider: "wardmote",
     title: "Verification report",
     metadata: {
       attachmentId,

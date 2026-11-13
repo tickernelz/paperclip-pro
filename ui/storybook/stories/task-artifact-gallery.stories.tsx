@@ -25,7 +25,7 @@ const media = [["Paper Trail", trail], ["Big Type", type], ["Ticket Board", tick
 function product(title: string, index: number, overrides: Partial<IssueWorkProduct> = {}): IssueWorkProduct {
   return {
     id: `gallery-product-${index}`, companyId: issue.companyId, projectId: null, issueId: issue.id,
-    executionWorkspaceId: null, runtimeServiceId: null, type: "artifact", provider: "paperclip",
+    executionWorkspaceId: null, runtimeServiceId: null, type: "artifact", provider: "wardmote",
     externalId: null, title, url: null, status: "approved", reviewState: "none", isPrimary: false,
     healthStatus: "unknown", summary: null, metadata: null, createdByRunId: "style-exploration",
     createdAt: new Date(date.getTime() - index * 1000), updatedAt: date, ...overrides,

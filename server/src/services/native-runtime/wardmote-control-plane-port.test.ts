@@ -181,7 +181,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       companyId: identity.companyId,
       issueId: taskIssueId,
       type: "artifact",
-      provider: "paperclip",
+      provider: "wardmote",
       title: "Verified native task result",
       status: "ready_for_review",
       reviewState: "approved",

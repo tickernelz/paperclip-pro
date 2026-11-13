@@ -13437,7 +13437,7 @@ export function issueService(db: Db) {
                 companyId: issue.companyId,
                 issueId: issue.id,
                 type: "artifact",
-                provider: "paperclip",
+                provider: "wardmote",
                 externalId: attachment.id,
                 title: asset.originalFilename ?? "Attachment",
                 status: "active",

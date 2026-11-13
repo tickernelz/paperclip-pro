@@ -160,7 +160,7 @@ describe("TaskChatProtocolCard", () => {
   it("shows pending artifacts with a dashed Pending chip", () => {
     const product = workProduct({
       type: "artifact",
-      provider: "paperclip",
+      provider: "wardmote",
       url: "/api/attachments/attachment-1/content",
       status: "pending",
       title: "demo.png",
@@ -331,7 +331,7 @@ describe("TaskChatProtocolCard", () => {
   it("shows an unhealthy active runtime as unhealthy", () => {
     const product = workProduct({
       type: "runtime_service",
-      provider: "paperclip",
+      provider: "wardmote",
       status: "active",
       healthStatus: "unhealthy",
       title: "Storybook",
@@ -355,7 +355,7 @@ describe("TaskChatProtocolCard", () => {
   it("does not show running for an active runtime with unknown health", () => {
     const product = workProduct({
       type: "runtime_service",
-      provider: "paperclip",
+      provider: "wardmote",
       status: "active",
       healthStatus: "unknown",
       title: "Storybook",
@@ -379,7 +379,7 @@ describe("TaskChatProtocolCard", () => {
   it("shows an unhealthy runtime with a non-standard open status as unhealthy", () => {
     const product = workProduct({
       type: "runtime_service",
-      provider: "paperclip",
+      provider: "wardmote",
       status: "open",
       healthStatus: "unhealthy",
       title: "Storybook",
@@ -403,7 +403,7 @@ describe("TaskChatProtocolCard", () => {
   it("shows a closed runtime as stopped even when its last health check failed", () => {
     const product = workProduct({
       type: "runtime_service",
-      provider: "paperclip",
+      provider: "wardmote",
       status: "closed",
       healthStatus: "unhealthy",
       title: "Storybook",

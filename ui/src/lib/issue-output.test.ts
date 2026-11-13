@@ -19,7 +19,7 @@ function makeWorkProduct(overrides: Partial<IssueWorkProduct> & { id: string }):
     executionWorkspaceId: null,
     runtimeServiceId: null,
     type: "artifact",
-    provider: "paperclip",
+    provider: "wardmote",
     externalId: null,
     title: overrides.title ?? "output.mp4",
     url: null,

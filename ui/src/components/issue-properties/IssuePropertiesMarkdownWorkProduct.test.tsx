@@ -60,7 +60,7 @@ function makeMarkdownWorkProduct(overrides: Partial<IssueWorkProduct> = {}): Iss
     executionWorkspaceId: null,
     runtimeServiceId: null,
     type: "artifact",
-    provider: "paperclip",
+    provider: "wardmote",
     externalId: null,
     title: "Verification report",
     url: null,
