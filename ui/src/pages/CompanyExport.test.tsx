@@ -81,7 +81,7 @@ async function flushReact() {
 
 function buildExportPreviewResult() {
   return {
-    rootPath: "paperclip",
+    rootPath: "wardmote",
     manifest: {
       agents: [],
       skills: [],
@@ -149,7 +149,7 @@ function buildRichExportPreviewResult() {
 
 function buildFidelityReport(warnings: ExportFidelityReport["warnings"]): ExportFidelityReport {
   return {
-    schema: "paperclip-export-fidelity-v1",
+    schema: "wardmote-export-fidelity-v1",
     companyId: "company-1",
     counts: {
       labelDefinitions: 0,
@@ -179,7 +179,7 @@ describe("CompanyExport", () => {
     mockAgentsApi.list.mockResolvedValue([]);
     mockProjectsApi.list.mockResolvedValue([]);
     mockCompaniesApi.exportPreview.mockResolvedValue(buildExportPreviewResult());
-    mockCompaniesApi.exportBundle.mockResolvedValue({ rootPath: "paperclip", files: {} });
+    mockCompaniesApi.exportBundle.mockResolvedValue({ rootPath: "wardmote", files: {} });
     mockCompaniesApi.exportFidelity.mockResolvedValue(buildFidelityReport([]));
     Object.assign(URL, {
       createObjectURL: vi.fn(() => "blob:mock"),

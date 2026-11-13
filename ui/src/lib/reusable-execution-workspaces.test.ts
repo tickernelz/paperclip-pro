@@ -184,7 +184,7 @@ describe("buildReusableExecutionWorkspaceOptionGroups", () => {
       workspace({
         id: "workspace-1",
         name: "Wardmote app",
-        cwd: "/repo/paperclip",
+        cwd: "/repo/wardmote",
         branchName: "feature/workspaces",
         status: "active",
         lastUsedAt: "2026-01-10T00:00:00.000Z",
@@ -194,7 +194,7 @@ describe("buildReusableExecutionWorkspaceOptionGroups", () => {
     const option = groups[0]!.options[0]!;
     expect(option.label).toBe("Wardmote app");
     expect(option.description).toBe("feature/workspaces");
-    expect(option.searchText).toBe("Wardmote app active feature/workspaces /repo/paperclip workspace-1");
+    expect(option.searchText).toBe("Wardmote app active feature/workspaces /repo/wardmote workspace-1");
   });
 
   it("matches workspace options with fuzzy query tokens", () => {
@@ -202,7 +202,7 @@ describe("buildReusableExecutionWorkspaceOptionGroups", () => {
       workspace({
         id: "workspace-1",
         name: "Wardmote app",
-        cwd: "/srv/paperclip",
+        cwd: "/srv/wardmote",
         branchName: "feature/reusable-workspaces",
         status: "active",
         lastUsedAt: "2026-01-10T00:00:00.000Z",
@@ -210,7 +210,7 @@ describe("buildReusableExecutionWorkspaceOptionGroups", () => {
     ], { now });
 
     const option = groups[0]!.options[0]!;
-    expect(reusableWorkspaceOptionMatches(option, "pclip reusable")).toBe(true);
+    expect(reusableWorkspaceOptionMatches(option, "wmote reusable")).toBe(true);
     expect(reusableWorkspaceOptionMatches(option, "inactive")).toBe(false);
   });
 
@@ -219,7 +219,7 @@ describe("buildReusableExecutionWorkspaceOptionGroups", () => {
       workspace({
         id: "routine-bodies",
         name: "PAP-11694-editing-routine-bodies-should-have-revision-tracking",
-        cwd: "/srv/paperclip/home/paperclipai/paperclip/.wardmote/worktrees/PAP-11694-editing-routine-bodies",
+        cwd: "/srv/wardmote/home/acmeai/wardmote/.wardmote/worktrees/PAP-11694-editing-routine-bodies",
         branchName: "PAP-11694-editing-routine-bodies-should-have-revision-tracking",
         status: "active",
         lastUsedAt: "2026-01-10T00:00:00.000Z",
@@ -227,7 +227,7 @@ describe("buildReusableExecutionWorkspaceOptionGroups", () => {
       workspace({
         id: "mobile-agent-chat",
         name: "PAP-11446-on-mobile-the-agent-chat-shouldn-t-hone-indented",
-        cwd: "/srv/paperclip/home/paperclipai/paperclip/.wardmote/worktrees/PAP-11446-on-mobile-agent-chat",
+        cwd: "/srv/wardmote/home/acmeai/wardmote/.wardmote/worktrees/PAP-11446-on-mobile-agent-chat",
         branchName: "PAP-11446-on-mobile-the-agent-chat-shouldnt-hone-indented",
         status: "active",
         lastUsedAt: "2026-01-09T00:00:00.000Z",
@@ -235,7 +235,7 @@ describe("buildReusableExecutionWorkspaceOptionGroups", () => {
       workspace({
         id: "simultaneous-work",
         name: "PAP-11429-why-are-these-live-simultaneously",
-        cwd: "/srv/paperclip/home/paperclipai/paperclip/.wardmote/worktrees/PAP-11429-live-simultaneously",
+        cwd: "/srv/wardmote/home/acmeai/wardmote/.wardmote/worktrees/PAP-11429-live-simultaneously",
         branchName: "PAP-11429-why-are-these-live-simultaneously",
         status: "active",
         lastUsedAt: "2026-01-08T00:00:00.000Z",
@@ -258,14 +258,14 @@ describe("buildReusableExecutionWorkspaceOptionGroups", () => {
       workspace({
         id: "path-only-mobile",
         name: "Wardmote app",
-        cwd: "/srv/paperclip/mobile-checkout",
+        cwd: "/srv/wardmote/mobile-checkout",
         branchName: "feature/workspace-reuse",
         lastUsedAt: "2026-01-10T00:00:00.000Z",
       }),
       workspace({
         id: "label-mobile",
         name: "Mobile agent chat",
-        cwd: "/srv/paperclip/agent-chat",
+        cwd: "/srv/wardmote/agent-chat",
         branchName: "feature/agent-chat",
         lastUsedAt: "2026-01-09T00:00:00.000Z",
       }),

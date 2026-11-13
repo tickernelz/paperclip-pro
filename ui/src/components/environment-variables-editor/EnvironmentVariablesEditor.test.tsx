@@ -165,7 +165,7 @@ describe("EnvironmentVariablesEditor", () => {
 
   it("keeps long secret names clear of the latest version control", () => {
     const longSecret = makeSecret("long", {
-      name: "/paperclip-cloud/prod/provider/resend/api-key-with-a-very-long-name",
+      name: "/wardmote-cloud/prod/provider/resend/api-key-with-a-very-long-name",
       latestVersion: 4,
     });
 
@@ -567,7 +567,7 @@ describe("EnvironmentVariablesEditor", () => {
   it("renders name warnings as a row spanning the name and value columns", () => {
     render(
       <EnvironmentVariablesEditor
-        value={{ WARDMOTE_PAGE_BASE_URL: { type: "plain", value: "https://pages.paperclip.ing" } }}
+        value={{ WARDMOTE_PAGE_BASE_URL: { type: "plain", value: "https://pages.wardmote.dev" } }}
         secrets={secrets}
         onChange={() => {}}
         onCreateSecret={async () => secrets[0]}
@@ -862,8 +862,8 @@ describe("EnvironmentVariablesEditor", () => {
   });
 
   it("lets slash-delimited secrets be browsed by folder and exposes full paths on hover", async () => {
-    const cloudProviderKey = "/paperclip-cloud/prod/provider/aws-access-key-id";
-    const cloudMigrationKey = "/paperclip-cloud/prod/migration/postgres-url";
+    const cloudProviderKey = "/wardmote-cloud/prod/provider/aws-access-key-id";
+    const cloudMigrationKey = "/wardmote-cloud/prod/migration/postgres-url";
     const onSelect = vi.fn();
     render(
       <SecretPicker
@@ -889,19 +889,19 @@ describe("EnvironmentVariablesEditor", () => {
       );
     const rowTitle = (item: HTMLElement | undefined) => item?.querySelector<HTMLElement>("[title]")?.getAttribute("title");
 
-    expect(rowTitle(itemByText("paperclip-cloud"))).toBe("/paperclip-cloud");
+    expect(rowTitle(itemByText("wardmote-cloud"))).toBe("/wardmote-cloud");
     expect(rowTitle(itemByText("wardmote-page-aws-access-key-id"))).toBe(
       "wardmote-page-aws-access-key-id",
     );
 
-    itemByText("paperclip-cloud")!.click();
+    itemByText("wardmote-cloud")!.click();
     await flush();
-    expect(rowTitle(itemByText("prod"))).toBe("/paperclip-cloud/prod");
+    expect(rowTitle(itemByText("prod"))).toBe("/wardmote-cloud/prod");
 
     itemByText("prod")!.click();
     await flush();
-    expect(rowTitle(itemByText("provider"))).toBe("/paperclip-cloud/prod/provider");
-    expect(rowTitle(itemByText("migration"))).toBe("/paperclip-cloud/prod/migration");
+    expect(rowTitle(itemByText("provider"))).toBe("/wardmote-cloud/prod/provider");
+    expect(rowTitle(itemByText("migration"))).toBe("/wardmote-cloud/prod/migration");
 
     itemByText("provider")!.click();
     await flush();
@@ -914,14 +914,14 @@ describe("EnvironmentVariablesEditor", () => {
   });
 
   it("keeps secret search global while browsing starts at slash folders", async () => {
-    const cloudMigrationKey = "/paperclip-cloud/prod/migration/postgres-url";
+    const cloudMigrationKey = "/wardmote-cloud/prod/migration/postgres-url";
     render(
       <SecretPicker
         secretId=""
         secrets={[
           makeSecret("provider-key", {
-            name: "/paperclip-cloud/prod/provider/aws-access-key-id",
-            key: "/paperclip-cloud/prod/provider/aws-access-key-id",
+            name: "/wardmote-cloud/prod/provider/aws-access-key-id",
+            key: "/wardmote-cloud/prod/provider/aws-access-key-id",
           }),
           makeSecret("migration-key", { name: cloudMigrationKey, key: cloudMigrationKey }),
         ]}
@@ -934,7 +934,7 @@ describe("EnvironmentVariablesEditor", () => {
     const combobox = container.querySelector<HTMLElement>('[role="combobox"]')!;
     combobox.focus();
     await flush();
-    expect(document.body.textContent).toContain("paperclip-cloud");
+    expect(document.body.textContent).toContain("wardmote-cloud");
     expect(document.body.textContent).not.toContain("postgres-url");
 
     const search = document.querySelector<HTMLInputElement>('input[placeholder="Search secrets…"]')!;
