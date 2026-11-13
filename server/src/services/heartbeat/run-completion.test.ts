@@ -239,13 +239,16 @@ describe.skipIf(!support.supported)("heartbeat run completion boundary", () => {
   });
 
   const REJECTION = "400 The request contains image input, but this combo has no confirmed vision-capable target (type=invalid_request_error)";
-  async function rejectedRunFixture(input: { manager?: boolean; issue?: Partial<typeof issues.$inferInsert>; result?: Record<string, unknown> } = {}) {
+  async function rejectedRunFixture(input: { manager?: boolean; heldByOtherRun?: boolean; issue?: Partial<typeof issues.$inferInsert>; result?: Record<string, unknown> } = {}) {
     const f = await fixture();
+    const otherRun = input.heldByOtherRun
+      ? (await db.insert(heartbeatRuns).values({ companyId: f.run.companyId, agentId: f.agent.id, status: "running", runtimeMode: "legacy" }).returning())[0]
+      : null;
     const [manager] = await db.insert(agents).values({ companyId: f.run.companyId, name: "Manager", adapterType: "process" }).returning();
     if (input.manager !== false) await db.update(agents).set({ reportsTo: manager.id }).where(eq(agents.id, f.agent.id));
     const [issue] = await db.insert(issues).values({
       companyId: f.run.companyId, title: "Status card refresh", status: "in_progress",
-      assigneeAgentId: f.agent.id, executionRunId: f.run.id, hiddenAt: new Date(), ...input.issue,
+      assigneeAgentId: f.agent.id, executionRunId: otherRun?.id ?? f.run.id, hiddenAt: new Date(), ...input.issue,
     }).returning();
     const real = issueService(db);
     f.deps.issuesSvc.update.mockImplementation(real.update);
@@ -286,6 +289,8 @@ describe.skipIf(!support.supported)("heartbeat run completion boundary", () => {
   it.each([
     ["leaves an issue already done", { issue: { status: "done" } }, "done"],
     ["leaves another failure family", { result: { errorCode: "omp_exit_1", errorFamily: null, errorMessage: "tool crashed" } }, "in_progress"],
+    ["leaves an issue held by another run", { heldByOtherRun: true }, "in_progress"],
+    ["leaves an issue assigned to another agent", { issue: { assigneeAgentId: null } }, "in_progress"],
   ] as const)("%s untouched", async (_label, input, expected) => {
     const { current, comments } = await rejectedRunFixture(input as never);
     expect(current.status).toBe(expected);
