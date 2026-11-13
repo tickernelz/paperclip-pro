@@ -9,7 +9,7 @@ Companion records: [Capability interaction map](capability-scenario-explorer-ux.
 (the 7F contract — everything not overridden here is inherited verbatim),
 [Live console interaction map](live-console-interaction-map.md) (chat console
 baseline), [SDK component decisions](sdk-component-decisions.md).
-(annotated desktop + mobile renders in `.paperclip-local/evidence/capability/`,
+(annotated desktop + mobile renders in `.wardmote-local/evidence/capability/`,
 `scenario-chat-*` slugs).
 
 Scenario chat adds a **Codex-style interactive chat** over the same package-local
@@ -313,7 +313,7 @@ Hash routing, extending the 7F scheme:
 
 ## 11. Screenshot acceptance matrix
 
-Evidence lands in `.paperclip-local/evidence/capability/` as
+Evidence lands in `.wardmote-local/evidence/capability/` as
 `scenario-chat-<slug>-<viewport>.png` at **1440×900** and **390×844**, captured
 from §9 routes after `data-chat-state="settled"`. Mobile captures must show
 the correct active segment and no horizontal scrollbar.

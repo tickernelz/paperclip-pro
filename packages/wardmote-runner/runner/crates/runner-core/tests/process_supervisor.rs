@@ -55,7 +55,7 @@ fn sha256_file(path: &Path) -> String {
 #[test]
 fn verified_launch_uses_open_command_and_script_after_atomic_path_replacement() {
     let directory = std::env::temp_dir().join(format!(
-        "paperclip-verified-launch-{}-{}",
+        "wardmote-verified-launch-{}-{}",
         std::process::id(),
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -123,7 +123,7 @@ fn verified_launch_uses_open_command_and_script_after_atomic_path_replacement() 
     assert!(inherited_runtime.starts_with("/proc/self/fd/"));
     #[cfg(target_os = "macos")]
     {
-        assert!(inherited_runtime.contains(".paperclip-verified-executable-"));
+        assert!(inherited_runtime.contains(".wardmote-verified-executable-"));
         assert_eq!(
             Path::new(&inherited_runtime).parent(),
             command.parent(),
@@ -297,7 +297,7 @@ mod darwin_executable_role {
             .file_name()
             .unwrap()
             .to_string_lossy()
-            .starts_with(".paperclip-verified-executable-"));
+            .starts_with(".wardmote-verified-executable-"));
         assert!(Path::new(&inherited_runtime).exists());
         assert_eq!(
             process
@@ -353,7 +353,7 @@ mod darwin_executable_role {
             .file_name()
             .unwrap()
             .to_string_lossy()
-            .starts_with(".paperclip-verified-executable-"));
+            .starts_with(".wardmote-verified-executable-"));
         assert!(Path::new(&executed_node).exists());
         wait_for_success(&mut process);
         drop(process);

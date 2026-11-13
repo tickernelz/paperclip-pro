@@ -15,7 +15,7 @@ import {
 import { basename, dirname, isAbsolute } from "node:path";
 
 export const TRUSTED_OPENCODE_EXECUTABLE_ARG =
-  "--paperclip-trusted-opencode-executable";
+  "--wardmote-trusted-opencode-executable";
 
 export function withoutAmbientOpenCodeCommand(
   environment: NodeJS.ProcessEnv,
@@ -86,7 +86,7 @@ export function trustedOpenCodeLaunchBinding(
     process.platform === "darwin" &&
     isAbsolute(command) &&
     basename(command) === "launch" &&
-    /^\.paperclip-verified-executable-[0-9a-f]{32}$/.test(
+    /^\.wardmote-verified-executable-[0-9a-f]{32}$/.test(
       basename(dirname(command)),
     )
   ) {

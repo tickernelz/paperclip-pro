@@ -29,7 +29,7 @@ const seed =
   process.env.WARDMOTE_EVAL_SCHEDULE_SEED ?? "runner-live-seven-week-v1";
 const outputDirectory = resolve(
   packageRoot,
-  ".paperclip-local/evals/workflows",
+  ".wardmote-local/evals/workflows",
 );
 const historyDirectory = resolve(
   process.env.WARDMOTE_EVAL_HISTORY_DIR ?? resolve(outputDirectory, "history"),

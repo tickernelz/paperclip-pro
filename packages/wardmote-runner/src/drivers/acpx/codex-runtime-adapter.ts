@@ -35,7 +35,7 @@ import { admitCursorInstructions, createCursorInstructionAdmission } from "./cur
 import { createAcpxModeBinding } from "./provider-mode.js";
 import { assertCopilotPromptPolicy, createCopilotProtocolGuard } from "./copilot-policy.js";
 
-const VERIFIED_COMMAND_SENTINEL = "paperclip-verified-acpx-command";
+const VERIFIED_COMMAND_SENTINEL = "wardmote-verified-acpx-command";
 const DEFAULT_RUNTIME_CLOSE_TIMEOUT_MS = 2_000;
 const MAX_ADMISSION_CLEANUP_RETRY_ATTEMPTS = 3;
 const MAX_ADMISSION_CLEANUP_ATTEMPTS = 1 + MAX_ADMISSION_CLEANUP_RETRY_ATTEMPTS;
@@ -316,8 +316,8 @@ export async function openQualifiedAcpxRuntime(
       // Preserve Claude's ACP capability identity. This is metadata only: the
       // spawn callback below always launches the verified command lease.
       overrides: { [options.profile.agent]: options.profile.agent === "grok"
-        ? ["/paperclip-verified/grok", "agent", "stdio"]
-        : [options.profile.agent === "claude" ? "/paperclip-verified/claude-agent-acp" : VERIFIED_COMMAND_SENTINEL] },
+        ? ["/wardmote-verified/grok", "agent", "stdio"]
+        : [options.profile.agent === "claude" ? "/wardmote-verified/claude-agent-acp" : VERIFIED_COMMAND_SENTINEL] },
     }),
     permissionMode: options.permissionMode === "approve-wardmote"
       ? "approve-reads"

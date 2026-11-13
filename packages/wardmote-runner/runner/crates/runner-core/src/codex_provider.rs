@@ -48,7 +48,7 @@ const OPENCODE_PROVIDER_ENVIRONMENT_KEYS: &[&str] = &[
     "WARDMOTE_NORMALIZED_SESSION_ID",
     "WARDMOTE_NATIVE_RUNTIME_CONTEXT_PATH",
 ];
-const TRUSTED_OPENCODE_EXECUTABLE_ARG: &str = "--paperclip-trusted-opencode-executable";
+const TRUSTED_OPENCODE_EXECUTABLE_ARG: &str = "--wardmote-trusted-opencode-executable";
 const MAX_PROVIDER_STDERR_LINES: usize = 32;
 const MAX_PROVIDER_STDERR_BYTES: usize = 8 * 1024;
 const MAX_INSTRUCTIONS_BYTES: usize = 1024 * 1024;
