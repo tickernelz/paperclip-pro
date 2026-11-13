@@ -40,7 +40,7 @@ use crate::retired_agentcore_names::{
     RETIRED_AGENTCORE_DIGEST_METADATA,
 };
 
-const AGENTCORE_COST_SOURCE: &str = "wardmote_estimate";
+pub(crate) const AGENTCORE_COST_SOURCE: &str = "wardmote_estimate";
 const AGENTCORE_DIGEST_METADATA: &str = "wardmote-sha256";
 const MAX_AGENTCORE_TOOLS: usize = 64;
 

@@ -16,9 +16,10 @@ use crate::aws_agentcore_provider::{
     AwsAgentCoreHarnessProvider, AGENTCORE_CONSERVATIVE_COST_FLOOR_FIELD,
     AGENTCORE_PENDING_CEILING_FIELD, AGENTCORE_PENDING_INVOCATION_FIELD,
     AGENTCORE_USAGE_RECONCILIATION_CONSERVATIVE, AGENTCORE_USAGE_RECONCILIATION_FIELD,
-    AGENTCORE_USAGE_RECONCILIATION_OBSERVED, AGENTCORE_USAGE_RECONCILIATION_PENDING,
+    AGENTCORE_COST_SOURCE, AGENTCORE_USAGE_RECONCILIATION_OBSERVED, AGENTCORE_USAGE_RECONCILIATION_PENDING,
 };
 use crate::claude_managed_provider::ClaudeManagedProvider;
+use crate::retired_agentcore_names::RETIRED_AGENTCORE_COST_SOURCE;
 use crate::durable::{
     create_private_temporary_file, open_private_regular_file, sanitize_value,
     verify_private_directory, Command, CommandExecution, CommandExecutor, DurableRunnerConfig,
@@ -474,7 +475,10 @@ fn valid_agentcore_usage_snapshot(value: &Value) -> bool {
         && conservative_floor
             .zip(estimated_cost)
             .is_none_or(|(floor, estimated)| estimated >= floor)
-        && object.get("costSource").and_then(Value::as_str) == Some("paperclip_estimate")
+        && matches!(
+            object.get("costSource").and_then(Value::as_str),
+            Some(AGENTCORE_COST_SOURCE | RETIRED_AGENTCORE_COST_SOURCE)
+        )
 }
 
 fn valid_claude_managed_skill_ref(value: &ClaudeManagedSkillRef) -> bool {
@@ -1156,7 +1160,7 @@ impl ManagedProviderCommandExecutor {
                 state.lifecycle = "session_opening".to_owned();
                 if kind == ManagedProviderKind::AwsAgentcore {
                     state.provider_session_id =
-                        Some(format!("paperclip-{}-{}", Uuid::new_v4(), Uuid::new_v4()));
+                        Some(format!("wardmote-{}-{}", Uuid::new_v4(), Uuid::new_v4()));
                 }
                 self.save_state()?;
             } else if !matches!(
@@ -2196,7 +2200,7 @@ fn managed_usage_event(
             "cumulative": measurement,
             "runDeltaAvailable": false,
             "runDelta": Value::Null,
-            "costSource": if descriptor.kind() == ManagedProviderKind::AwsAgentcore { "paperclip_estimate" } else { "provider_reported" },
+            "costSource": if descriptor.kind() == ManagedProviderKind::AwsAgentcore { AGENTCORE_COST_SOURCE } else { "provider_reported" },
         }),
     }
 }
@@ -2878,7 +2882,7 @@ mod tests {
             "cacheWriteInputTokens": 0,
             "requestCount": 1,
             "estimatedCostUsd": 0.0,
-            "costSource": "paperclip_estimate",
+            "costSource": "wardmote_estimate",
         }));
         state.pending_events.clear();
         if recovery {
@@ -3218,9 +3222,15 @@ mod tests {
             "cacheWriteInputTokens": 5,
             "requestCount": 2,
             "estimatedCostUsd": 0.75,
-            "costSource": "paperclip_estimate"
+            "costSource": "wardmote_estimate"
         });
         assert!(valid_agentcore_usage_snapshot(&usage));
+        let mut retired = usage.clone();
+        retired["costSource"] = json!(RETIRED_AGENTCORE_COST_SOURCE);
+        assert!(valid_agentcore_usage_snapshot(&retired));
+        let mut foreign = usage.clone();
+        foreign["costSource"] = json!("provider_reported");
+        assert!(!valid_agentcore_usage_snapshot(&foreign));
 
         let mut observed = usage.clone();
         observed[AGENTCORE_USAGE_RECONCILIATION_FIELD] =
@@ -3283,7 +3293,7 @@ mod tests {
             "cacheWriteInputTokens": 5,
             "requestCount": 2,
             "estimatedCostUsd": 0.75,
-            "costSource": "paperclip_estimate",
+            "costSource": "wardmote_estimate",
             "usageReconciliation": AGENTCORE_USAGE_RECONCILIATION_PENDING,
             "pendingInvocationId": "invocation-before-restart",
             "pendingEstimatedCeilingUsd": 1.0
@@ -3624,8 +3634,8 @@ mod tests {
         );
         let mut payload = claude_prepare_payload();
         payload["provider"]["claudeManagedSkills"] = json!([{
-            "skillId": "skill_not_owned_by_paperclip",
-            "version": "skver_not_owned_by_paperclip"
+            "skillId": "skill_not_owned_by_wardmote",
+            "version": "skver_not_owned_by_wardmote"
         }]);
         let error = executor
             .execute(&test_command(1, "run.prepare", payload))
