@@ -143,7 +143,7 @@ describeEmbeddedPostgres("artifactReviewDocumentService", () => {
       companyId,
       issueId,
       type: "artifact" as const,
-      provider: "paperclip",
+      provider: "wardmote",
       metadata: {
         attachmentId,
         contentType,

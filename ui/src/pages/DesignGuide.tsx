@@ -228,7 +228,7 @@ function sampleOutput(
     executionWorkspaceId: null,
     runtimeServiceId: null,
     type: "artifact",
-    provider: "paperclip",
+    provider: "wardmote",
     externalId: null,
     title: filename,
     url: null,

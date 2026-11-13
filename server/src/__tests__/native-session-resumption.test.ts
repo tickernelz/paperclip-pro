@@ -898,7 +898,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
         companyId,
         issueId,
         type: "artifact",
-        provider: "paperclip",
+        provider: "wardmote",
         title: "Recovered result evidence",
         status: "ready_for_review",
         reviewState: "approved",

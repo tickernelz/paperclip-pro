@@ -483,7 +483,7 @@ export function companyArtifactsService(db: Db, storage?: StorageService) {
         const workProductBaseConditions: SQL[] = [
           eq(issueWorkProducts.companyId, companyId),
           eq(issueWorkProducts.type, "artifact"),
-          eq(issueWorkProducts.provider, "paperclip"),
+          eq(issueWorkProducts.provider, "wardmote"),
           ...issueConditions,
         ];
         const workProductConditions: SQL[] = [...workProductBaseConditions];

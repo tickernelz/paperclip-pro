@@ -30,7 +30,7 @@ function attachmentMetadata(overrides: Record<string, unknown> = {}) {
 function workProduct(overrides: Record<string, unknown> = {}) {
   return {
     type: "artifact" as const,
-    provider: "paperclip",
+    provider: "wardmote",
     metadata: attachmentMetadata(),
     ...overrides,
   };

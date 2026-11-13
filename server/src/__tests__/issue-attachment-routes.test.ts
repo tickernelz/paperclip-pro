@@ -878,7 +878,7 @@ describe("issue attachment routes", () => {
       issueId: issue.id,
       companyId: issue.companyId,
       type: "artifact",
-      provider: "paperclip",
+      provider: "wardmote",
       title: "Clip",
       metadata: null,
     });
@@ -888,7 +888,7 @@ describe("issue attachment routes", () => {
       .post(`/api/issues/${issue.id}/work-products`)
       .send({
         type: "artifact",
-        provider: "paperclip",
+        provider: "wardmote",
         title: "Clip",
         metadata: {
           attachmentId: "22222222-2222-4222-8222-222222222222",
@@ -907,7 +907,7 @@ describe("issue attachment routes", () => {
       issue.companyId,
       expect.objectContaining({
         type: "artifact",
-        provider: "paperclip",
+        provider: "wardmote",
         metadata: {
           attachmentId: "22222222-2222-4222-8222-222222222222",
           contentType: "video/mp4",
@@ -941,7 +941,7 @@ describe("issue attachment routes", () => {
       .post(`/api/issues/${issue.id}/work-products`)
       .send({
         type: "artifact",
-        provider: "paperclip",
+        provider: "wardmote",
         title: "Clip",
         metadata: {
           attachmentId: "22222222-2222-4222-8222-222222222222",
@@ -966,7 +966,7 @@ describe("issue attachment routes", () => {
       issueId: issue.id,
       companyId: issue.companyId,
       type: "artifact",
-      provider: "paperclip",
+      provider: "wardmote",
       title: "Clip",
       metadata: null,
     });
@@ -982,7 +982,7 @@ describe("issue attachment routes", () => {
       issueId: issue.id,
       companyId: issue.companyId,
       type: "artifact",
-      provider: "paperclip",
+      provider: "wardmote",
       title: "Clip",
       metadata: null,
     });

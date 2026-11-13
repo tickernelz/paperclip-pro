@@ -488,7 +488,7 @@ describe("native runner file handoff", () => {
     ).resolves.toEqual([
       expect.objectContaining({
         type: "artifact",
-        provider: "paperclip",
+        provider: "wardmote",
         title: "Requested answer",
         createdByRunId: runId,
       }),
@@ -1050,7 +1050,7 @@ describe("native runner file handoff", () => {
       companyId,
       issueId,
       type: "artifact",
-      provider: "paperclip",
+      provider: "wardmote",
       externalId: existingAttachment!.id,
       title: "Reminted by another run",
       status: "active",
