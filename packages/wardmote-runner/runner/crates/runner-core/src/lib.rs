@@ -29,6 +29,7 @@ pub mod provider_events;
 pub mod qualified_launch;
 pub mod question_response;
 pub mod replay;
+mod retired_agentcore_names;
 mod stable_identity;
 
 use std::error::Error;
