@@ -387,7 +387,7 @@ publish_package_to_npm() {
   local publish_tool="${4:-pnpm}"
   local publish_log
 
-  publish_log="$(mktemp "${TMPDIR:-/tmp}/paperclip-npm-publish.XXXXXX")"
+  publish_log="$(mktemp "${TMPDIR:-/tmp}/wardmote-npm-publish.XXXXXX")"
 
   if (set -o pipefail; run_package_publish "$publish_tool" "$dist_tag" false 2>&1 | tee "$publish_log"); then
     rm -f "$publish_log"

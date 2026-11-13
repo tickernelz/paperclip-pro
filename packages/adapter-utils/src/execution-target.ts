@@ -1662,7 +1662,7 @@ fi
 printf '\0WARDMOTE_GIT_CONTEXT_END\0'
 `;
     const result = await adapterExecutionTargetCommandRunner(remote).execute({
-      command: "sh", args: ["-c", probe, "paperclip-git-context", input.hostCredentials ? "host" : "managed"],
+      command: "sh", args: ["-c", probe, "wardmote-git-context", input.hostCredentials ? "host" : "managed"],
       // The caller's cwd belongs to the controller. Copied sandbox/SSH
       // workspaces can live at a different path on the execution target.
       cwd: remote.remoteCwd, timeoutMs: 15_000,

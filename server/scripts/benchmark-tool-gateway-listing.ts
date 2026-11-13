@@ -31,7 +31,7 @@ const connections = counts(option("--connections", "1"))[0]!;
 const implementation = option("--implementation", "");
 const moduleUrl = implementation ? pathToFileURL(implementation) : new URL("../src/services/tool-gateway.js", import.meta.url);
 const factory = (await import(moduleUrl.href)).createToolGatewayService as typeof createToolGatewayService;
-const temp = await startEmbeddedPostgresTestDatabase("paperclip-listing-benchmark-");
+const temp = await startEmbeddedPostgresTestDatabase("wardmote-listing-benchmark-");
 const db = createDb(temp.connectionString);
 try {
   for (const tools of toolCounts) {

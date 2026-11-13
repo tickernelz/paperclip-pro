@@ -7,7 +7,7 @@
 # nothing is pushed.
 set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-probe_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-runner-cache.XXXXXX")"
+probe_dir="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-runner-cache.XXXXXX")"
 baseline_builder="${probe_dir##*/}-baseline"
 rebuild_builder="${probe_dir##*/}-rebuild"
 cleanup() {

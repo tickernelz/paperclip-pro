@@ -248,7 +248,7 @@ run_privileged() {
 
 ensure_temp_dir() {
   if [ -z "$TEMP_DIR" ]; then
-    TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-install.XXXXXX")"
+    TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-install.XXXXXX")"
   fi
 }
 

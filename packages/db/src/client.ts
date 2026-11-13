@@ -261,7 +261,7 @@ function createDbClient(url: string, resolved: DatabaseClientOptions, owner?: ob
   // that know the complete operation is idempotent.
   const db = installDatabaseWorkSignals(drizzlePg(sql, { schema }), owner);
   dedicatedDbFactories.set(db, () => createDbClient(url, {
-    ...resolved, maxConnections: 1, applicationName: "paperclip-workspace-finalization-lock",
+    ...resolved, maxConnections: 1, applicationName: "wardmote-workspace-finalization-lock",
   }, db));
   return db;
 }
