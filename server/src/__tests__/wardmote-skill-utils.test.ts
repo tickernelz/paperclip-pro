@@ -229,7 +229,7 @@ exit 2
   return { env, filePath, lockDir, root, run, sha256, stateDir };
 }
 
-describe("paperclip skill utils", () => {
+describe("wardmote skill utils", () => {
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -571,7 +571,7 @@ describe("paperclip skill utils", () => {
     cleanupDirs.add(root);
 
     const skillsHome = path.join(root, "skills-home");
-    const runtimeSkill = path.join(root, "skills", "paperclip");
+    const runtimeSkill = path.join(root, "skills", "wardmote");
     const customSkill = path.join(root, "custom", "release-notes");
     const staleMaintainerSkill = path.join(root, ".agents", "skills", "release");
 
@@ -579,15 +579,15 @@ describe("paperclip skill utils", () => {
     await fs.mkdir(runtimeSkill, { recursive: true });
     await fs.mkdir(customSkill, { recursive: true });
 
-    await fs.symlink(runtimeSkill, path.join(skillsHome, "paperclip"));
+    await fs.symlink(runtimeSkill, path.join(skillsHome, "wardmote"));
     await fs.symlink(customSkill, path.join(skillsHome, "release-notes"));
     await fs.symlink(staleMaintainerSkill, path.join(skillsHome, "release"));
 
-    const removed = await removeMaintainerOnlySkillSymlinks(skillsHome, ["paperclip"]);
+    const removed = await removeMaintainerOnlySkillSymlinks(skillsHome, ["wardmote"]);
 
     expect(removed).toEqual(["release"]);
     await expect(fs.lstat(path.join(skillsHome, "release"))).rejects.toThrow();
-    expect((await fs.lstat(path.join(skillsHome, "paperclip"))).isSymbolicLink()).toBe(true);
+    expect((await fs.lstat(path.join(skillsHome, "wardmote"))).isSymbolicLink()).toBe(true);
     expect((await fs.lstat(path.join(skillsHome, "release-notes"))).isSymbolicLink()).toBe(true);
   });
 });

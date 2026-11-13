@@ -1494,7 +1494,7 @@ describe("IssueThreadInteractionCard connection-authorization card", () => {
       anchor.textContent?.includes("Connect Gmail"),
     );
     expect(connect?.getAttribute("href")).toBe(
-      "https://accounts.google.com/o/oauth2/v2/auth?client_id=paperclip",
+      "https://accounts.google.com/o/oauth2/v2/auth?client_id=wardmote",
     );
     expect(connect?.getAttribute("target")).toBe("_blank");
 
