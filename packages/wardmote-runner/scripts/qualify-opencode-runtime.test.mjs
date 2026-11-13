@@ -79,7 +79,7 @@ test("the pinned OpenCode executable serves health, sessions, SSE, and a local-p
       HOME: root, XDG_CONFIG_HOME: join(root, "config"), XDG_DATA_HOME: join(root, "data"), XDG_CACHE_HOME: join(root, "cache"),
       OPENCODE_CONFIG: config,
       OPENCODE_DISABLE_PROJECT_CONFIG: "true", OPENCODE_DISABLE_MODELS_FETCH: "true", OPENCODE_DISABLE_DEFAULT_PLUGINS: "true",
-      OPENCODE_SERVER_USERNAME: "paperclip", OPENCODE_SERVER_PASSWORD: "local-fixture-only",
+      OPENCODE_SERVER_USERNAME: "wardmote", OPENCODE_SERVER_PASSWORD: "local-fixture-only",
     },
     stdio: ["ignore", "pipe", "pipe"],
     detached: true,
@@ -95,7 +95,7 @@ test("the pinned OpenCode executable serves health, sessions, SSE, and a local-p
     await delay(100);
   }
   assert.ok(baseUrl, `OpenCode did not start: ${output}`);
-  const headers = { Authorization: `Basic ${Buffer.from("paperclip:local-fixture-only").toString("base64")}`, "Content-Type": "application/json" };
+  const headers = { Authorization: `Basic ${Buffer.from("wardmote:local-fixture-only").toString("base64")}`, "Content-Type": "application/json" };
   const api = async (path, options = {}) => {
     const response = await fetch(`${baseUrl}${path}`, { headers, signal: AbortSignal.timeout(15_000), ...options });
     assert.ok(response.ok, `${path}: ${response.status} ${await response.clone().text()}`);
