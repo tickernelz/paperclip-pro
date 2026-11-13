@@ -344,8 +344,8 @@ function credentialMaterial(token: string): {
 } {
   const bytes = Buffer.from(token);
   return {
-    credentialId: `sha256:${domainDigest("paperclip-runner-credential-id-v1", [bytes]).toString("hex")}`,
-    authKey: domainDigest("paperclip-runner-auth-key-v1", [bytes]),
+    credentialId: `sha256:${domainDigest("wardmote-runner-credential-id-v1", [bytes]).toString("hex")}`,
+    authKey: domainDigest("wardmote-runner-auth-key-v1", [bytes]),
   };
 }
 
@@ -977,12 +977,12 @@ function createSecureChannel(
     Buffer.from(serverProof),
     Buffer.from(clientProof),
   ];
-  const binding = domainDigest("paperclip-runner-session-binding-v1", parts);
+  const binding = domainDigest("wardmote-runner-session-binding-v1", parts);
   return {
     sendKey: domainHmac(authKey, "wardmote-runner-core-to-client-key-v1", [
       binding,
     ]),
-    receiveKey: domainHmac(authKey, "paperclip-runner-client-to-core-key-v1", [
+    receiveKey: domainHmac(authKey, "wardmote-runner-client-to-core-key-v1", [
       binding,
     ]),
     sendCounter: 0n,
@@ -2536,7 +2536,7 @@ export class DurablePrpControlPlane {
     const canonicalChallenge = canonicalJson(challengePayload);
     const serverProof = domainHmac(
       authorization.authKey,
-      "paperclip-runner-server-proof-v1",
+      "wardmote-runner-server-proof-v1",
       [Buffer.from(canonicalChallenge)],
     ).toString("hex");
     connection.pendingChallenge = {
@@ -2589,7 +2589,7 @@ export class DurablePrpControlPlane {
     }
     const expectedClientProof = domainHmac(
       authorization.authKey,
-      "paperclip-runner-client-proof-v1",
+      "wardmote-runner-client-proof-v1",
       [
         Buffer.from(pending.canonicalChallenge),
         Buffer.from(pending.serverProof),

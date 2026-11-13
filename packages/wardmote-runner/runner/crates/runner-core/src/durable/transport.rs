@@ -705,11 +705,11 @@ impl CredentialMaterial {
             credential_id: format!(
                 "sha256:{}",
                 hex_encode(&digest_domain(
-                    "paperclip-runner-credential-id-v1",
+                    "wardmote-runner-credential-id-v1",
                     &[token.as_bytes()]
                 ))
             ),
-            auth_key: digest_domain("paperclip-runner-auth-key-v1", &[token.as_bytes()]),
+            auth_key: digest_domain("wardmote-runner-auth-key-v1", &[token.as_bytes()]),
         }
     }
 }
@@ -792,12 +792,12 @@ impl SecureChannel {
         server_direction: bool,
     ) -> Result<Self, DurableRunnerError> {
         let session_binding = digest_domain(
-            "paperclip-runner-session-binding-v1",
+            "wardmote-runner-session-binding-v1",
             &[challenge, server_proof, client_proof],
         );
         let client_to_server = hmac_domain(
             auth_key,
-            "paperclip-runner-client-to-core-key-v1",
+            "wardmote-runner-client-to-core-key-v1",
             &[&session_binding],
         );
         let server_to_client = hmac_domain(
@@ -1068,13 +1068,13 @@ impl AuthenticatedTransport {
             let signing_bytes = challenge_signing_bytes(&challenge);
             verify_hmac_hex(
                 &credential.auth_key,
-                "paperclip-runner-server-proof-v1",
+                "wardmote-runner-server-proof-v1",
                 &[&signing_bytes],
                 &challenge.server_proof,
             )?;
             let client_proof = hex_encode(&hmac_domain(
                 &credential.auth_key,
-                "paperclip-runner-client-proof-v1",
+                "wardmote-runner-client-proof-v1",
                 &[&signing_bytes, challenge.server_proof.as_bytes()],
             ));
             send_auth_response_plain(
@@ -1809,7 +1809,7 @@ mod tests {
         let signing = challenge_signing_bytes(&challenge);
         challenge.server_proof = hex_encode(&hmac_domain(
             &credential.auth_key,
-            "paperclip-runner-server-proof-v1",
+            "wardmote-runner-server-proof-v1",
             &[&signing],
         ));
         send_plain(
@@ -1849,7 +1849,7 @@ mod tests {
             .to_owned();
         verify_hmac_hex(
             &credential.auth_key,
-            "paperclip-runner-client-proof-v1",
+            "wardmote-runner-client-proof-v1",
             &[&signing, challenge.server_proof.as_bytes()],
             &client_proof,
         )
@@ -2399,7 +2399,7 @@ mod tests {
             let signing = challenge_signing_bytes(&challenge);
             challenge.server_proof = hex_encode(&hmac_domain(
                 &credential.auth_key,
-                "paperclip-runner-server-proof-v1",
+                "wardmote-runner-server-proof-v1",
                 &[&signing],
             ));
             send_plain(
@@ -2436,7 +2436,7 @@ mod tests {
             let client_proof = response["payload"]["clientProof"].as_str().unwrap();
             verify_hmac_hex(
                 &credential.auth_key,
-                "paperclip-runner-client-proof-v1",
+                "wardmote-runner-client-proof-v1",
                 &[&signing, challenge.server_proof.as_bytes()],
                 client_proof,
             )
@@ -2545,7 +2545,7 @@ mod tests {
         let mut config = config(port);
         config.max_runtime = Duration::from_secs(5);
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-reconnect-fault-{}-{renewal_reply_lost}",
+            "wardmote-runner-reconnect-fault-{}-{renewal_reply_lost}",
             std::process::id()
         ));
         let _ = std::fs::remove_dir_all(&directory);

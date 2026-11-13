@@ -4890,7 +4890,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
               runId: identity.runId,
               cwd: String(params.cwd ?? tmpdir()),
               instructions: baseInstructions,
-              providerPolicy: { readOnly: params.permissions === "paperclip-runner-workspace-read-only" },
+              providerPolicy: { readOnly: params.permissions === "wardmote-runner-workspace-read-only" },
               ...(selectedAcpxMode === undefined ? {} : { mode: selectedAcpxMode }),
               ...(acpxProfile!.agent === "pi" ? { piThinkingLevel: this.options.piThinkingLevel } : {}),
               permissionMode: resolveRunnerdAcpxPermissionMode(
@@ -4998,7 +4998,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
                       : baseInstructions,
                   collaborationMode:
                     params.permissions ===
-                    "paperclip-runner-workspace-read-only"
+                    "wardmote-runner-workspace-read-only"
                       ? "plan"
                       : "default",
                   ...(params.conversationMode === "prepared"

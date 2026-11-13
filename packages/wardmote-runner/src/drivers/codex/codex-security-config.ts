@@ -147,11 +147,11 @@ function readCodexPackageManifest(path: string): Record<string, unknown> & {
 }
 
 export const CODEX_SKILLLESS_PERMISSION_PROFILE =
-  "paperclip-runner-workspace-only";
+  "wardmote-runner-workspace-only";
 export const CODEX_PLANNING_PERMISSION_PROFILE =
-  "paperclip-runner-workspace-read-only";
+  "wardmote-runner-workspace-read-only";
 export const CODEX_EXTERNAL_SANDBOX_PERMISSION_PROFILE =
-  "paperclip-runner-external-sandbox";
+  "wardmote-runner-external-sandbox";
 
 export function codexNetworkAccess(source: NodeJS.ProcessEnv = process.env): boolean {
   return source.WARDMOTE_RUNNER_NETWORK_ACCESS === "enabled";

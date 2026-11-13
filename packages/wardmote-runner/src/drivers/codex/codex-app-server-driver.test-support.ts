@@ -150,7 +150,7 @@ export class FakeCodexTransport implements CodexAppServerTransport {
     }
     if (method === "thread/start" || method === "thread/resume") {
       const planMode =
-        params.permissions === "paperclip-runner-workspace-read-only";
+        params.permissions === "wardmote-runner-workspace-read-only";
       return {
         thread: {
           id: this.threadId,
@@ -163,8 +163,8 @@ export class FakeCodexTransport implements CodexAppServerTransport {
           turns: [],
           activePermissionProfile: {
             id: params.permissions ?? (planMode
-              ? "paperclip-runner-workspace-read-only"
-              : "paperclip-runner-workspace-only"),
+              ? "wardmote-runner-workspace-read-only"
+              : "wardmote-runner-workspace-only"),
           },
         },
         model: "gpt-test",
