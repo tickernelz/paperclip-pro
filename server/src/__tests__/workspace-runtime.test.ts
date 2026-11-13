@@ -550,7 +550,7 @@ describe("resolveManagedWardmoteRuntimePublicOrigin", () => {
     expect(() => resolveManagedWardmoteRuntimePublicOrigin({
       ...baseInput,
       environment: {},
-      exposedUrl: "https://managed-worktree.paperclip.dev",
+      exposedUrl: "https://managed-worktree.example.dev",
       exposedUrlTemplate: "https://{{workspace.branchName}}.com",
     })).toThrow(/does not define a stable hostname boundary/);
   });
@@ -2573,7 +2573,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
           "  exit 0",
           "fi",
           "if [ \"$1\" = \"wardmote\" ] && [ \"$2\" = \"worktree\" ] && [ \"$3\" = \"init\" ]; then",
-          "  mkdir -p \"$PWD/.paperclip\"",
+          "  mkdir -p \"$PWD/.wardmote\"",
           "  printf '%s\\n' '{\"database\":{\"embeddedPostgresDataDir\":\"'$PWD'/.wardmote/runtime/db\"}}' > \"$PWD/.wardmote/config.json\"",
           "  printf '%s\\n' \"WARDMOTE_HOME=$PWD/.wardmote/runtime\" \"WARDMOTE_INSTANCE_ID=healthy\" \"WARDMOTE_CONFIG=$PWD/.wardmote/config.json\" > \"$PWD/.wardmote/.env\"",
           "  exit 0",

@@ -3,7 +3,7 @@
 # Kill all local Wardmote dev server processes (across all worktrees).
 #
 # Usage:
-#   scripts/kill-dev.sh        # kill all paperclip dev processes
+#   scripts/kill-dev.sh        # kill all wardmote dev processes
 #   scripts/kill-dev.sh --dry  # preview what would be killed
 #
 
@@ -87,7 +87,7 @@ while IFS= read -r line; do
   pid=$(echo "$line" | awk '{print $2}')
   node_pids+=("$pid")
   node_lines+=("$line")
-done < <(ps aux | grep -E '/paperclip(-[^/]+)?/' | grep node | grep -v grep || true)
+done < <(ps aux | grep -E '/wardmote(-[^/]+)?/' | grep node | grep -v grep || true)
 
 # --- Agent browser processes (headless Chrome from ~/.agent-browser) ---
 while IFS= read -r line; do
@@ -104,7 +104,7 @@ candidate_pidfiles+=(
   "$REPO_ROOT"/.wardmote/runtime-services/instances/*/db/postmaster.pid
 )
 
-for sibling_root in "$REPO_PARENT"/paperclip*; do
+for sibling_root in "$REPO_PARENT"/wardmote*; do
   [[ -d "$sibling_root" ]] || continue
   candidate_pidfiles+=(
     "$sibling_root"/.wardmote/instances/*/db/postmaster.pid
