@@ -1599,7 +1599,7 @@ paths at request time. Root `skills/` remains reserved for Wardmote runtime
 skills and is not part of the catalog.
 
 Skill-capable legacy local adapters always select the bundled
-`paperclipai/paperclip/paperclip` operational skill when it is present in the
+`tickernelz/wardmote/wardmote` operational skill when it is present in the
 runtime inventory. This applies to existing agents without a stored skill
 preference and to explicit empty optional-skill selections. The operational
 skill supplies the control-plane workflow that those adapters need for
