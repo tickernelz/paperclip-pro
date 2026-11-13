@@ -458,7 +458,7 @@ wait_for_npm_package_versions() {
     local pkg_version
     local i
 
-    status_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-release-visibility.XXXXXX")"
+    status_dir="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-release-visibility.XXXXXX")"
 
     # shellcheck disable=SC2329 # invoked via the trap below
     reap_visibility_pollers() {
@@ -508,7 +508,7 @@ verify_npm_installable() {
   local install_dir
   local installed_version
 
-  install_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-release-install.XXXXXX")"
+  install_dir="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-release-install.XXXXXX")"
 
   if ! npm install --prefix "$install_dir" "$package_spec" --no-audit --no-fund; then
     rm -rf "$install_dir"

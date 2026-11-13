@@ -427,11 +427,11 @@ export type AnyWardmoteTelemetryEvent = {
 }[WardmoteEventName];
 
 export interface WardmoteTelemetryBatch {
-app: "paperclip"
+app: "wardmote"
 schemaVersion: typeof SCHEMA_VERSION
 installId: string
 /**
- * Optional client application build version. Paperclip clients report PEP 440
+ * Optional client application build version. Wardmote clients report PEP 440
  * local versions such as <nearest-tag>+<commits-since-tag>.git.<abbrev-sha>;
  * nearest tags are usually CalVer, but legacy SemVer tags such as 0.3.1 can
  * appear. Ingest documents this shape but does not strictly enforce PEP 440.
@@ -452,7 +452,7 @@ export function makeBatch(
   installId: string,
   events: readonly AnyWardmoteTelemetryEvent[],
   /**
-   * Optional client application build version. Paperclip clients report PEP 440
+   * Optional client application build version. Wardmote clients report PEP 440
    * local versions such as <nearest-tag>+<commits-since-tag>.git.<abbrev-sha>;
    * nearest tags are usually CalVer, but legacy SemVer tags such as 0.3.1 can
    * appear. Ingest documents this shape but does not strictly enforce PEP 440.
@@ -460,7 +460,7 @@ export function makeBatch(
   version?: string
 ): WardmoteTelemetryBatch {
   return {
-    app: "paperclip",
+    app: "wardmote",
     schemaVersion: SCHEMA_VERSION,
     installId,
     ...(version === undefined ? {} : { version }),
