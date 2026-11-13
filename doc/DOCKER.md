@@ -59,9 +59,9 @@ full-SHA `-cloud` tag when needed. They do not advance a release channel or
 replace downstream private composition.
 
 A published image alone does not prove source tests or migration compatibility.
-Downstream deployment tooling must verify [source proof](cloud-build-readiness.md),
-the standard image attestation, the exact-source migrator, and its own composed
-image before rollout. Resolve immutable digests instead of deploying mutable tags.
+Downstream deployment tooling must verify the exact-source CI run, the standard
+image attestation, the exact-source migrator, and its own composed image before
+rollout. Resolve immutable digests instead of deploying mutable tags.
 
 ## One-liner (build + run)
 
