@@ -35,7 +35,7 @@ export const GIT_PUSH_PATTERNS = [
 ];
 // Kept for backwards-compatibility with existing tests/importers.
 export const GIT_PUSH_PATTERN = GIT_PUSH_PATTERNS[0];
-export const ALLOW_MARKER = "paperclip:allow-git-push";
+export const ALLOW_MARKER = "wardmote:allow-git-push";
 
 function lineMatchesGitPush(line) {
   return GIT_PUSH_PATTERNS.some((pattern) => pattern.test(line));

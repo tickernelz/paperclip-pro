@@ -348,8 +348,8 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     const historicalPayload = structuredClone(created.payload);
     delete historicalPayload.questionSet!.questions[0].customAnswer;
     await db.update(issueThreadInteractions).set({ payload: historicalPayload }).where(eq(issueThreadInteractions.id, created.id));
-    await expect(interactionsSvc.answerQuestions(issue, created.id, { answers: [{ questionId: "scope", optionIds: ["paperclip_custom_answer"], otherText: "ab" }] }, { userId: "local-board" })).rejects.toThrow("at least 3");
-    const answered = await interactionsSvc.answerQuestions(issue, created.id, { answers: [{ questionId: "scope", optionIds: ["paperclip_custom_answer"], otherText: "Specific files" }] }, { userId: "local-board" });
+    await expect(interactionsSvc.answerQuestions(issue, created.id, { answers: [{ questionId: "scope", optionIds: ["wardmote_custom_answer"], otherText: "ab" }] }, { userId: "local-board" })).rejects.toThrow("at least 3");
+    const answered = await interactionsSvc.answerQuestions(issue, created.id, { answers: [{ questionId: "scope", optionIds: ["wardmote_custom_answer"], otherText: "Specific files" }] }, { userId: "local-board" });
     expect(answered.status).toBe("answered");
   });
 

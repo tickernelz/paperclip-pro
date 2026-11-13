@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# build-npm.sh — Build the paperclip-pro CLI package for npm publishing.
-#
 # Uses esbuild to bundle all workspace code into a single file,
 # keeping external npm dependencies as regular package dependencies.
 #
@@ -23,7 +21,7 @@ for arg in "$@"; do
   esac
 done
 
-echo "==> Building paperclip-pro for npm"
+echo "==> Building wardmote for npm"
 
 # ── Step 1: Forbidden token check ──────────────────────────────────────────────
 if [ "$skip_checks" = false ]; then

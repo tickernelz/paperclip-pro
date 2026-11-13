@@ -2,7 +2,7 @@
 set -euo pipefail
 
 dockerfile="${1:-Dockerfile}"
-image="${2:-paperclip-omp-pin:check}"
+image="${2:-wardmote-omp-pin:check}"
 
 pin="$(sed -n 's/^ARG OMP_VERSION=//p' "$dockerfile" | head -n 1)"
 if [ -z "$pin" ]; then

@@ -118,7 +118,7 @@ export async function promptStorage(current?: StorageConfig): Promise<StorageCon
   const prefix = await p.text({
     message: "Object key prefix (optional)",
     defaultValue: base.s3.prefix ?? "",
-    placeholder: "paperclip/",
+    placeholder: "wardmote/",
   });
 
   if (p.isCancel(prefix)) {

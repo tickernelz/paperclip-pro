@@ -592,7 +592,7 @@ export async function withShallowGitWorkspaceClone<T>(
   fn: (cloneDir: string) => Promise<T>,
 ): Promise<T> {
   const cloneDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-git-workspace-"));
-  const tempRef = `refs/paperclip/git-sync/import/${randomUUID()}`;
+  const tempRef = `refs/wardmote/git-sync/import/${randomUUID()}`;
   try {
     const originUrl = await readSanitizedOriginRemoteUrl(input.localDir);
     await runLocalGit(input.localDir, ["update-ref", tempRef, input.snapshot.headCommit], {
@@ -659,11 +659,11 @@ export async function withShallowGitWorkspaceClone<T>(
 }
 
 export function createImportedGitRef(scope = "remote"): string {
-  return `refs/paperclip/git-sync/imported/${scope}/${randomUUID()}`;
+  return `refs/wardmote/git-sync/imported/${scope}/${randomUUID()}`;
 }
 
 export function createRemoteGitExportRef(scope = "remote"): string {
-  return `refs/paperclip/git-sync/export/${scope}/${randomUUID()}`;
+  return `refs/wardmote/git-sync/export/${scope}/${randomUUID()}`;
 }
 
 export async function deleteLocalGitRef(input: {

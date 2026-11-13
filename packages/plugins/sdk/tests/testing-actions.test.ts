@@ -107,7 +107,7 @@ describe("createTestHarness issue interactions", () => {
     };
     const created = await harness.ctx.issues.askUserQuestions(issue.id, input, "company-1");
     expect(created.payload.questionSet).toEqual(input.payload.questionSet);
-    expect(created.payload.questions).toMatchObject([{ id: "repo", options: [{ id: "paperclip_text_answer", freeText: true }] }]);
+    expect(created.payload.questions).toMatchObject([{ id: "repo", options: [{ id: "wardmote_text_answer", freeText: true }] }]);
     expect(await harness.ctx.issues.askUserQuestions(issue.id, input, "company-1")).toEqual(created);
   });
   it("creates request_checkbox_confirmation interactions through the typed host helper", async () => {

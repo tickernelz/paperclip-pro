@@ -246,7 +246,7 @@ describe("definition executable extraction", () => {
   });
 
   it("round-trips paths the renderers escape", () => {
-    const hostile = '/tmp/we"ird $pa%th & <x>/paperclip-pro';
+    const hostile = '/tmp/we"ird $pa%th & <x>/wardmote';
     const unit = renderSystemdUnit({ instanceId: "default", shimPath: hostile, homeDir: "/home/x/.wardmote" });
     expect(extractExecutableFromSystemdUnit(unit)).toBe(hostile);
     const plist = renderLaunchdPlist({ instanceId: "default", shimPath: hostile, homeDir: "/home/x/.wardmote", stdoutPath: "/tmp/o.log", stderrPath: "/tmp/e.log" });

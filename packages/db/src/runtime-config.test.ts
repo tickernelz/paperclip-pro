@@ -30,13 +30,13 @@ afterEach(() => {
 
 describe("resolveDatabaseTarget", () => {
   it("uses DATABASE_URL from process env first", () => {
-    process.env.DATABASE_URL = "postgres://env-user:env-pass@db.example.com:5432/paperclip";
+    process.env.DATABASE_URL = "postgres://env-user:env-pass@db.example.com:5432/wardmote";
 
     const target = resolveDatabaseTarget();
 
     expect(target).toMatchObject({
       mode: "postgres",
-      connectionString: "postgres://env-user:env-pass@db.example.com:5432/paperclip",
+      connectionString: "postgres://env-user:env-pass@db.example.com:5432/wardmote",
       source: "DATABASE_URL",
     });
   });
@@ -60,7 +60,7 @@ describe("resolveDatabaseTarget", () => {
     expect(target).toMatchObject({
       mode: "postgres",
       connectionString: "postgres://file-user:file-pass@db.example.com:6543/wardmote",
-      source: "paperclip-env",
+      source: "wardmote-env",
     });
   });
 
@@ -71,7 +71,7 @@ describe("resolveDatabaseTarget", () => {
     writeJson(configPath, {
       database: {
         mode: "postgres",
-        connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/paperclip",
+        connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/wardmote",
       },
     });
 
@@ -79,7 +79,7 @@ describe("resolveDatabaseTarget", () => {
 
     expect(target).toMatchObject({
       mode: "postgres",
-      connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/paperclip",
+      connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/wardmote",
       source: "config.database.connectionString",
     });
   });

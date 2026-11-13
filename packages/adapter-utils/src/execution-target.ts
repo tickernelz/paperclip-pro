@@ -1828,12 +1828,12 @@ async function readBridgeForwardResponseBody(
   return Buffer.concat(chunks, totalBytes);
 }
 
-const PROCESS_SESSION_PROXY_SCRIPT = "paperclip-process-session-proxy.mjs";
-const PROCESS_SESSION_REMOTE_SCRIPT = "paperclip-process-session-remote.mjs";
+const PROCESS_SESSION_PROXY_SCRIPT = "wardmote-process-session-proxy.mjs";
+const PROCESS_SESSION_REMOTE_SCRIPT = "wardmote-process-session-remote.mjs";
 // The streamed variant writes its output frames to stdout, so it rides a
 // separate remote path. A sandbox can hold both scripts without the content
 // hash-skip gate thrashing when a run switches output mode.
-const PROCESS_SESSION_REMOTE_STREAM_SCRIPT = "paperclip-process-session-remote-stream.mjs";
+const PROCESS_SESSION_REMOTE_STREAM_SCRIPT = "wardmote-process-session-remote-stream.mjs";
 const PROCESS_SESSION_AUTH_TIMEOUT_MS = 5_000;
 // The bounded budget `stop()` waits for the wrapper's `shutdownAck` event
 // before it removes `sessionDir` unconditionally. The wrapper writes the
