@@ -54,7 +54,7 @@ function agentCoreProfile(overrides: Record<string, unknown> = {}) {
     agentRuntimeArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/test",
     memoryArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:memory/test",
     memoryId: "memory-test",
-    invocationRoleArn: "arn:aws:iam::123456789012:role/paperclip-agentcore",
+    invocationRoleArn: "arn:aws:iam::123456789012:role/wardmote-agentcore",
     contextBucket: "wardmote-agentcore-context",
     contextPrefix: "wardmote/agentcore/test",
     contextKmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/test",

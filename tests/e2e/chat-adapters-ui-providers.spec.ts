@@ -44,12 +44,12 @@ async function exerciseGitHubReviewSetup(page: Page, mock: ChatMock, seed: Seed,
   await expect(page.getByLabel("GitHub account")).toHaveValue("personal");
   await expect(page.getByLabel("App name", { exact: true })).toHaveValue("Maya");
   await page.getByLabel("GitHub account").selectOption("organization");
-  await page.getByLabel("Organization", { exact: true }).fill("paperclip-ai");
+  await page.getByLabel("Organization", { exact: true }).fill("wardmote-ai");
   await testInfo.attach("Connect GitHub — organization", { body: await page.screenshot(), contentType: "image/png" });
   await page.getByRole("button", { name: "Save & exit", exact: true }).click();
   await page.goto(`/${seed.prefix}/apps/chat/connect?provider=github&purpose=chat&resume=endpoint-github`);
   await expect(page.getByLabel("GitHub account")).toHaveValue("organization");
-  await expect(page.getByLabel("Organization", { exact: true })).toHaveValue("paperclip-ai");
+  await expect(page.getByLabel("Organization", { exact: true })).toHaveValue("wardmote-ai");
   await expect(page.getByRole("button", { name: "Select agent…", exact: true })).toHaveCount(0);
   // Existing-App recovery stays available and preserves entered credentials after failure.
   await page.getByRole("button", { name: "I already have an App" }).click();
