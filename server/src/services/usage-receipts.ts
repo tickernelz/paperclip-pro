@@ -13,6 +13,7 @@ import { idleAccountingSpoolPath, registerIdleSpoolDirectory } from "./idle-loca
 import { conflict, notFound } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { receiptFingerprint } from "./receipt-fingerprint.js";
+import { RETIRED_ACCOUNTING_RECEIPT_SCHEMA } from "./retired-accounting-receipt-schema.js";
 import { withAccountingTransaction } from "./accounting-transaction.js";
 import { ensureDurableDirectory, syncDirectory } from "../lib/durable-directory.js";
 
@@ -32,8 +33,9 @@ const checkpointSchema = z.object({
   costUsdExact: z.string().max(160).refine(value => { try { return !value.startsWith("-") && usdToUnits(value) >= 0n; } catch { return false; } }, "Invalid exact USD amount").nullable().optional(),
   providerRequestId: z.string().max(250).nullable().optional(), complete: z.boolean(),
 });
+const ACCOUNTING_RECEIPT_SCHEMA = "wardmote/accounting-receipt/v1";
 const envelopeSchema = z.object({
-  schema: z.literal("paperclip/accounting-receipt/v1"), id: z.string().uuid(), companyId: z.string().uuid(),
+  schema: z.enum([ACCOUNTING_RECEIPT_SCHEMA, RETIRED_ACCOUNTING_RECEIPT_SCHEMA]), id: z.string().uuid(), companyId: z.string().uuid(),
   runId: z.string().uuid(), sourceId: z.string().uuid(), sequence: z.number().int().positive(), receivedAt: z.iso.datetime(),
   adapterType: z.string().max(100), receipt: checkpointSchema,
 });
@@ -210,7 +212,7 @@ export async function createRunUsageRecorder(db: Db, input: { companyId: string;
     const [previous] = await db.select().from(runUsageReceipts).where(and(
       eq(runUsageReceipts.id, priorReceiptId), eq(runUsageReceipts.runId, input.runId), eq(runUsageReceipts.companyId, input.companyId),
     ));
-    if (previous) attempts.set("default", envelopeSchema.parse(previous.receiptJson).receipt as AdapterUsageCheckpoint);
+    if (previous) attempts.set("default", checkpointSchema.parse(previous.receiptJson.receipt) as AdapterUsageCheckpoint);
   }
   let chain = Promise.resolve();
   let captureFailed = bound[0].usageJson?.accountingCaptureFailed === true;
@@ -289,7 +291,7 @@ export async function createRunUsageRecorder(db: Db, input: { companyId: string;
       // can be considered complete, even if a later attempt succeeded.
       receipt.complete = !captureFailed && parts.every(part => part.complete);
     }
-    const envelope: UsageReceiptEnvelope = { schema: "paperclip/accounting-receipt/v1", id: randomUUID(), ...input, sourceId, sequence: ++sequence, receivedAt: new Date().toISOString(), receipt };
+    const envelope: UsageReceiptEnvelope = { schema: ACCOUNTING_RECEIPT_SCHEMA, id: randomUUID(), ...input, sourceId, sequence: ++sequence, receivedAt: new Date().toISOString(), receipt };
     const file = await spoolUsageReceipt(envelope, directory);
     try { await persistUsageReceipt(db, envelope); await fs.rm(file, { force: true }); }
     catch (error) { logger.warn({ err: error, runId: input.runId, receiptId: envelope.id }, "Usage receipt is durable on disk; database replay pending"); }
