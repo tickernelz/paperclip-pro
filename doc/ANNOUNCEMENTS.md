@@ -179,7 +179,7 @@ mkdir -p .wardmote/announcement-test-drive/instances/default
 # On a new test directory, create this file. On reuse, update these entries
 # while preserving the file's existing keys.
 cat > .wardmote/announcement-test-drive/instances/default/.env <<'EOF'
-WARDMOTE_ANNOUNCEMENTS_FEED_URL=https://d1p6rlowie26tp.cloudfront.net/storybook/branches/codex-announcements/announcements/staging/my-preview/v1/current.json
+WARDMOTE_ANNOUNCEMENTS_FEED_URL=<https://your-preview-host>/announcements-preview/announcements/staging/my-preview/v1/current.json
 WARDMOTE_ANNOUNCEMENTS_ENABLED=true
 WARDMOTE_DB_BACKUP_ENABLED=false
 HEARTBEAT_SCHEDULER_ENABLED=false
