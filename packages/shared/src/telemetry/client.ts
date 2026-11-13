@@ -204,7 +204,7 @@ export class TelemetryClient {
   private buildEnvelope(events: TelemetryEvent[], batchId?: string): TelemetryEventEnvelope {
     const state = this.getState();
     return {
-      app: this.config.app ?? "paperclip",
+      app: this.config.app ?? "wardmote",
       schemaVersion: this.config.schemaVersion ?? "1",
       installId: state.installId,
       version: this.version,
