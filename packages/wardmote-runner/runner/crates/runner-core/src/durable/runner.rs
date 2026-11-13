@@ -3311,10 +3311,8 @@ mod tests {
             }
         }
         for fail_ack in [false, true] {
-            let directory = std::env::temp_dir().join(format!(
-                "wardmote-attach-evidence-{}",
-                uuid::Uuid::new_v4()
-            ));
+            let directory = std::env::temp_dir()
+                .join(format!("wardmote-attach-evidence-{}", uuid::Uuid::new_v4()));
             let config = config(directory.clone());
             let store = DurableStateStore::new(&directory).unwrap();
             let (mut state, _) = store.load_or_create(&config).unwrap();
