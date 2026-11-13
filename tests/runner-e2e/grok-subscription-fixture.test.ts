@@ -16,7 +16,7 @@ afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, {
 async function setup() {
   const root = await realpath(await mkdtemp(path.join(tmpdir(), "grok-fixture-")));
   roots.push(root);
-  const home = path.join(root, "paperclip-home");
+  const home = path.join(root, "wardmote-home");
   await mkdir(home);
   return { WARDMOTE_RUNNER_E2E_TEMP_ROOT: root, WARDMOTE_HOME: home, WARDMOTE_INSTANCE_ID: "runner-e2e-test" };
 }

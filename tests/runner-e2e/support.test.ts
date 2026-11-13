@@ -934,8 +934,8 @@ describe("runner E2E server isolation", () => {
         WARDMOTE_STORAGE_S3_BUCKET: "production-bucket",
       },
       {
-        WARDMOTE_HOME: "/tmp/cell/paperclip-home",
-        WARDMOTE_CONFIG: "/tmp/cell/paperclip-home/instances/e2e/config.json",
+        WARDMOTE_HOME: "/tmp/cell/wardmote-home",
+        WARDMOTE_CONFIG: "/tmp/cell/wardmote-home/instances/e2e/config.json",
         XDG_CACHE_HOME: "/tmp/cell/xdg-cache",
         WARDMOTE_AGENT_JWT_SECRET: "generated-agent-jwt",
         WARDMOTE_DECISION_SIGNING_SECRET: "generated-decision-key",
@@ -964,8 +964,8 @@ describe("runner E2E server isolation", () => {
     expect(() =>
       assertIsolatedServerEnvironment(env, {
         temporaryRoot: "/tmp/cell",
-        wardmoteHome: "/tmp/cell/paperclip-home",
-        configPath: "/tmp/cell/paperclip-home/instances/e2e/config.json",
+        wardmoteHome: "/tmp/cell/wardmote-home",
+        configPath: "/tmp/cell/wardmote-home/instances/e2e/config.json",
       }),
     ).not.toThrow();
   });
@@ -985,14 +985,14 @@ describe("runner E2E server isolation", () => {
       path.join(os.tmpdir(), "runner-e2e-instance-isolation-test-"),
     );
     cleanupDirectories.push(root);
-    const database = path.join(root, "paperclip-home", "db");
+    const database = path.join(root, "wardmote-home", "db");
     const secretsKey = path.join(
       root,
-      "paperclip-home",
+      "wardmote-home",
       "secrets",
       "master.key",
     );
-    const configPath = path.join(root, "paperclip-home", "config.json");
+    const configPath = path.join(root, "wardmote-home", "config.json");
     await mkdir(database, { recursive: true });
     await mkdir(path.dirname(secretsKey), { recursive: true });
     await writeFile(secretsKey, "generated-master-key");

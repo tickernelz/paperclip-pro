@@ -495,7 +495,7 @@ async function runAttempt(input: {
   let startupReceiptPath: string | undefined;
   const rawCleanupResults: Array<{ cleanup: string; synthetic: boolean; status: string }> = [];
   try {
-    const wardmoteHome = path.join(temporaryRoot, "paperclip-home");
+    const wardmoteHome = path.join(temporaryRoot, "wardmote-home");
     const workspace = path.join(temporaryRoot, "workspace");
     const privateDir = path.join(temporaryRoot, "artifacts-private");
     const instanceId = `runner-e2e-${randomBytes(8).toString("hex")}`;

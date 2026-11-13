@@ -56,7 +56,7 @@ export async function startConnectionTarget(config: ConnectionConfig, executions
   const stop = async () => { if (child) await stopOwnedServer(child); await rm(root, { recursive: true, force: true }); };
   try {
     assertActive();
-    const home = path.join(root, "paperclip-home");
+    const home = path.join(root, "wardmote-home");
     const instance = `connection-${randomBytes(6).toString("hex")}`;
     const port = await reserveRunnerE2EServerPort();
     await mkdir(home, { mode: 0o700 });
