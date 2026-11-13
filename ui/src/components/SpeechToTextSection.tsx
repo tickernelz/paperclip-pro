@@ -265,6 +265,9 @@ export function SpeechToTextSection({
                 disabled={disabled}
                 onChange={(event) => update({ maxAudioSeconds: numeric(event.target.value, draft.maxAudioSeconds) })}
               />
+              <span className="block text-xs text-ink-3">
+                Checked for Ogg Opus voice notes; other formats are limited by size only.
+              </span>
             </label>
             <label className="space-y-1.5">
               <span className="text-xs font-medium text-ink-3">Wake wait (seconds)</span>

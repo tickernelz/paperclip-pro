@@ -798,9 +798,8 @@ settings page (`speechToText` in `GET`/`PATCH /api/instance/settings/general`):
 | Model | `model` | empty | free text; **Fetch** lists provider models |
 | API key environment variable | `apiKeyEnvVar` | empty | a server environment variable name, never the key; for Google the variable holds a service account JSON key or the path of that file |
 | Language | `language` | empty (detect) | `en`, `id`, `pt-BR`, or `multi` (Deepgram Nova-3); Google: empty only for Chirp models (`auto`) |
-| Speaker diarization | `diarize` | off | Deepgram and ElevenLabs |
+| Speaker diarization | `diarize` | off | Deepgram, ElevenLabs, Google (`diarizationConfig`; Chirp 3 only in the languages Google lists for it) |
 | Keyterms | `keyterms` | none | Deepgram, ElevenLabs and Google (inline phrase set); up to 100, 50 characters each |
-| Speaker diarization (Google) | `diarize` | off | Google sends `diarizationConfig`; Chirp 3 diarizes only in the languages Google lists for it |
 | Smart formatting | `deepgram.smartFormat` | on | Deepgram |
 | Tag audio events | `elevenlabs.tagAudioEvents` | off | ElevenLabs |
 | Maximum speakers | `elevenlabs.numSpeakers` | automatic | ElevenLabs, 1 to 32, sent with diarization |
@@ -808,7 +807,7 @@ settings page (`speechToText` in `GET`/`PATCH /api/instance/settings/general`):
 | Project id | `google.projectId` | empty | Google: empty uses `project_id` from the service account key |
 | Automatic punctuation | `google.autoPunctuation` | on | Google |
 | Alternative languages | `google.alternativeLanguages` | none | Google: up to 2 beside `language`, models `long`, `short`, `telephony` only |
-| Max audio (seconds) | `maxAudioSeconds` | 600 | 1 to 7200 |
+| Max audio (seconds) | `maxAudioSeconds` | 600 | 1 to 7200; enforced for Ogg Opus (WhatsApp and Telegram voice notes) and for a caller's duration hint; other formats are limited by bytes only |
 | Wake wait (seconds) | `sttWaitSeconds` | 15 | 1 to 120 |
 
 A stored setting without `provider` reads as `openai_compatible` and sends the
@@ -850,6 +849,9 @@ the item is marked `transcript_unavailable`.
 
 Any audio or video attachment, including Telegram voice notes and task files,
 can be transcribed on demand with `POST /api/attachments/{attachmentId}/transcript`
+(an attachment larger than the provider byte limit, the instance attachment limit
+or 7,500,000 bytes for Google, answers `413 stt_too_large` before it is read; a
+local-disk attachment is streamed from its file, not loaded into memory)
 (MCP `wardmoteTranscribeAttachment`, extended toolset). It needs read access to
 the attachment's task, returns `{ attachmentId, text, language?, segments? }`,
 stores nothing, and answers `stt_*` codes: 409 `stt_disabled`, 413

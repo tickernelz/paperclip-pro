@@ -910,7 +910,7 @@ describe("issue attachment routes", () => {
       const [url, init] = providerFetch.mock.calls[0];
       expect(String(url)).toMatch(/^https:\/\/api\.deepgram\.com\/v1\/listen\?/);
       expect(init?.headers).toMatchObject({ Authorization: "Token dg-secret", "Content-Type": "audio/ogg" });
-      expect(Buffer.from(init?.body as Uint8Array).toString()).toBe("OggS-voice");
+      expect(await (init?.body as Blob).text()).toBe("OggS-voice");
       expect(JSON.stringify(res.body)).not.toContain("dg-secret");
     });
 
@@ -925,6 +925,43 @@ describe("issue attachment routes", () => {
       expect(res.body.code).toBe("stt_disabled");
       expect(storage.getObject).not.toHaveBeenCalled();
       expect(providerFetch).not.toHaveBeenCalled();
+    });
+
+    it("refuses an attachment above the provider byte limit without reading it", async () => {
+      mockSpeechSettings({ ...deepgramSettings, provider: "google", model: "chirp_3", google: { location: "us", projectId: "", autoPunctuation: true, alternativeLanguages: [] } });
+      const storage = createStorageService();
+      mockIssueService.getAttachmentById.mockResolvedValue({ ...makeAttachment("audio/mpeg", "call.mp3"), byteSize: 7_500_001 });
+
+      const res = await request(await createApp(storage)).post("/api/attachments/attachment-1/transcript");
+
+      expect(res.status).toBe(413);
+      expect(res.body.code).toBe("stt_too_large");
+      expect(storage.getObject).not.toHaveBeenCalled();
+      expect(providerFetch).not.toHaveBeenCalled();
+    });
+
+    it("sends a local-disk attachment from its file without opening the object stream", async () => {
+      mockSpeechSettings(deepgramSettings);
+      providerFetch.mockResolvedValue(
+        new Response(JSON.stringify({ results: { channels: [{ alternatives: [{ transcript: "dari disk" }] }] } }), { status: 200 }),
+      );
+      const dir = await mkdtemp(path.join(os.tmpdir(), "zha6055-transcript-"));
+      try {
+        const file = path.join(dir, "voice.ogg");
+        const { writeFile } = await import("node:fs/promises");
+        await writeFile(file, "disk-voice");
+        const storage = { ...createStorageService(), localPath: vi.fn(async () => file) };
+        mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("audio/ogg", "voice.ogg"));
+
+        const res = await request(await createApp(storage)).post("/api/attachments/attachment-1/transcript");
+
+        expect(res.status).toBe(200);
+        expect(res.body.text).toBe("dari disk");
+        expect(storage.getObject).not.toHaveBeenCalled();
+        expect(await (providerFetch.mock.calls[0][1]?.body as Blob).text()).toBe("disk-voice");
+      } finally {
+        await rm(dir, { recursive: true, force: true });
+      }
     });
 
     it("refuses attachments that are not audio or video", async () => {

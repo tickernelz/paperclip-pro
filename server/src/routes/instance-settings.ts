@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { openAsBlob } from "node:fs";
 import { trackIdleWork } from "../services/task-admission.js";
 import { Router, type Request } from "express";
 import { heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
@@ -286,7 +286,7 @@ export function instanceSettingsRoutes(db: Db, pluginWorkers?: PluginWorkerManag
       const started = Date.now();
       try {
         const transcript = await transcribeAudio(
-          { buffer: await readFile(file.path), mime: file.mimetype, filename: file.originalname || "sample" },
+          { blob: await openAsBlob(file.path), mime: file.mimetype, filename: file.originalname || "sample" },
           { settings: { ...parsed.data, enabled: true } },
         );
         result = { ok: true, durationMs: Date.now() - started, ...transcript };

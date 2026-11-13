@@ -45,6 +45,7 @@ export class SpeechToTextError extends Error {
 export interface SpeechToTextInput {
   stream?: Readable;
   buffer?: Buffer;
+  blob?: Blob;
   mime: string;
   filename: string;
   durationHintSeconds?: number | null;
@@ -119,7 +120,18 @@ export function oggOpusDurationSeconds(body: Buffer): number | null {
   return null;
 }
 
-async function collect(stream: Readable, limit: number): Promise<Buffer> {
+const OGG_HEAD_BYTES = 4096;
+const OGG_TAIL_BYTES = 65_536;
+
+async function oggOpusBlobDurationSeconds(audio: Blob): Promise<number | null> {
+  if (audio.size <= OGG_HEAD_BYTES + OGG_TAIL_BYTES) return oggOpusDurationSeconds(Buffer.from(await audio.arrayBuffer()));
+  const head = Buffer.from(await audio.slice(0, OGG_HEAD_BYTES).arrayBuffer());
+  if (head.toString("latin1", 0, 4) !== "OggS" || head.indexOf("OpusHead", 0, "latin1") < 0) return null;
+  const tail = Buffer.from(await audio.slice(audio.size - OGG_TAIL_BYTES).arrayBuffer());
+  return oggOpusDurationSeconds(Buffer.concat([head, tail]));
+}
+
+async function collect(stream: Readable, limit: number): Promise<Blob> {
   const chunks: Buffer[] = [];
   let total = 0;
   for await (const chunk of stream) {
@@ -131,7 +143,7 @@ async function collect(stream: Readable, limit: number): Promise<Buffer> {
     }
     chunks.push(buffer);
   }
-  return chunks.length === 1 ? chunks[0] : Buffer.concat(chunks, total);
+  return new Blob(chunks.map((chunk) => new Uint8Array(chunk.buffer as ArrayBuffer, chunk.byteOffset, chunk.byteLength)));
 }
 
 async function readBoundedText(response: Response): Promise<string> {
@@ -206,8 +218,8 @@ function primaryLanguage(language: string): string {
   return language === "multi" ? "" : language.split("-")[0].toLowerCase();
 }
 
-function audioBlob(body: Buffer, mime: string): Blob {
-  return new Blob([new Uint8Array(body.buffer as ArrayBuffer, body.byteOffset, body.byteLength)], { type: mime });
+function typedAudio(audio: Blob, mime: string): Blob {
+  return audio.type === mime ? audio : audio.slice(0, audio.size, mime);
 }
 
 function speakerLabel(raw: unknown): string | null {
@@ -238,7 +250,7 @@ function transcript(text: string, language: unknown, segments: SpeechToTextSegme
 type ProviderRequest = { url: string; headers: Record<string, string>; body: BodyInit };
 
 interface ProviderAdapter {
-  request(settings: SpeechToTextSettings, apiKey: string, body: Buffer, input: SpeechToTextInput, context: RequestContext): ProviderRequest | Promise<ProviderRequest>;
+  request(settings: SpeechToTextSettings, apiKey: string, audio: Blob, input: SpeechToTextInput, context: RequestContext): ProviderRequest | Promise<ProviderRequest>;
   parse(record: Record<string, unknown>, settings: SpeechToTextSettings, status: number): SpeechToTextResult;
 }
 
@@ -285,9 +297,9 @@ async function googleAuthorization(
 }
 
 const openAiCompatible: ProviderAdapter = {
-  request(settings, apiKey, body, input) {
+  request(settings, apiKey, audio, input) {
     const form = new FormData();
-    form.append("file", audioBlob(body, input.mime), input.filename);
+    form.append("file", typedAudio(audio, input.mime), input.filename);
     form.append("model", settings.model);
     form.append("response_format", "json");
     const language = primaryLanguage(settings.language);
@@ -306,7 +318,7 @@ const openAiCompatible: ProviderAdapter = {
 };
 
 const deepgram: ProviderAdapter = {
-  request(settings, apiKey, body, input) {
+  request(settings, apiKey, audio, input) {
     const query = new URLSearchParams({ model: settings.model, punctuate: "true" });
     if (settings.deepgram.smartFormat) query.set("smart_format", "true");
     if (settings.language) query.set("language", settings.language);
@@ -317,7 +329,7 @@ const deepgram: ProviderAdapter = {
     return {
       url: providerOrigin("deepgram", settings.baseUrl) + "/v1/listen?" + query.toString(),
       headers: { Authorization: "Token " + apiKey, Accept: "application/json", "Content-Type": input.mime || "application/octet-stream" },
-      body: new Uint8Array(body.buffer as ArrayBuffer, body.byteOffset, body.byteLength),
+      body: audio,
     };
   },
   parse(record, settings, status) {
@@ -341,10 +353,10 @@ const deepgram: ProviderAdapter = {
 };
 
 const elevenlabs: ProviderAdapter = {
-  request(settings, apiKey, body, input) {
+  request(settings, apiKey, audio, input) {
     const form = new FormData();
     form.append("model_id", settings.model);
-    form.append("file", audioBlob(body, input.mime), input.filename);
+    form.append("file", typedAudio(audio, input.mime), input.filename);
     const language = primaryLanguage(settings.language);
     if (language) form.append("language_code", language);
     form.append("tag_audio_events", settings.elevenlabs.tagAudioEvents ? "true" : "false");
@@ -375,7 +387,7 @@ const elevenlabs: ProviderAdapter = {
 };
 
 const google: ProviderAdapter = {
-  async request(settings, credentials, body, _input, context) {
+  async request(settings, credentials, audio, _input, context) {
     const { token, projectId } = await googleAuthorization(credentials, settings.google.projectId, context);
     const location = settings.google.location;
     const languageCodes = settings.language ? [settings.language, ...settings.google.alternativeLanguages] : ["auto"];
@@ -397,7 +409,7 @@ const google: ProviderAdapter = {
         "/locations/" + encodeURIComponent(location) +
         "/recognizers/_:recognize",
       headers: { Authorization: "Bearer " + token, Accept: "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({ config, content: body.toString("base64") }),
+      body: JSON.stringify({ config, content: Buffer.from(await audio.arrayBuffer()).toString("base64") }),
     };
   },
   parse(record, settings, status) {
@@ -437,6 +449,14 @@ export function formatSpeechToTextTranscript(result: SpeechToTextTranscript): st
   return segments.map((segment) => segment.speaker + ": " + segment.text).join("\n");
 }
 
+export function speechToTextByteLimit(settings: SpeechToTextSettings, maxBytes?: number): number {
+  return Math.min(
+    maxBytes ?? getMaxAttachmentBytes(),
+    getMaxAttachmentBytes(),
+    settings.provider === "google" ? GOOGLE_SYNC_MAX_AUDIO_BYTES : Number.POSITIVE_INFINITY,
+  );
+}
+
 export async function transcribeAudio(input: SpeechToTextInput, options: SpeechToTextOptions): Promise<SpeechToTextResult> {
   const settings = options.settings;
   const provider = settings.provider ?? "openai_compatible";
@@ -444,21 +464,18 @@ export async function transcribeAudio(input: SpeechToTextInput, options: SpeechT
     throw new SpeechToTextError("stt_disabled", "Speech-to-text is not enabled for this instance");
   const apiKey = readApiKey(settings.apiKeyEnvVar, options.env);
   const maxSeconds = provider === "google" ? Math.min(settings.maxAudioSeconds, SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS) : settings.maxAudioSeconds;
-  const limit = Math.min(
-    options.maxBytes ?? getMaxAttachmentBytes(),
-    getMaxAttachmentBytes(),
-    provider === "google" ? GOOGLE_SYNC_MAX_AUDIO_BYTES : Number.POSITIVE_INFINITY,
-  );
+  const limit = speechToTextByteLimit(settings, options.maxBytes);
   if (input.durationHintSeconds != null && input.durationHintSeconds > maxSeconds)
     throw new SpeechToTextError("stt_too_long", "Audio is longer than " + maxSeconds + " seconds");
-  let body: Buffer;
-  if (input.buffer) body = input.buffer;
-  else if (input.stream) body = await collect(input.stream, limit);
+  let audio: Blob;
+  if (input.blob) audio = input.blob;
+  else if (input.buffer) audio = new Blob([new Uint8Array(input.buffer.buffer as ArrayBuffer, input.buffer.byteOffset, input.buffer.byteLength)]);
+  else if (input.stream) audio = await collect(input.stream, limit);
   else throw new SpeechToTextError("stt_empty", "No audio was supplied");
-  if (body.length === 0) throw new SpeechToTextError("stt_empty", "No audio was supplied");
-  if (body.length > limit) throw new SpeechToTextError("stt_too_large", "Audio exceeds the " + limit + " byte speech-to-text limit");
+  if (audio.size === 0) throw new SpeechToTextError("stt_empty", "No audio was supplied");
+  if (audio.size > limit) throw new SpeechToTextError("stt_too_large", "Audio exceeds the " + limit + " byte speech-to-text limit");
   if (input.durationHintSeconds == null) {
-    const measured = oggOpusDurationSeconds(body);
+    const measured = await oggOpusBlobDurationSeconds(audio);
     if (measured !== null && measured > maxSeconds)
       throw new SpeechToTextError("stt_too_long", "Audio is longer than " + maxSeconds + " seconds");
   }
@@ -466,7 +483,7 @@ export async function transcribeAudio(input: SpeechToTextInput, options: SpeechT
   const timeout = AbortSignal.timeout(options.timeoutMs ?? SPEECH_TO_TEXT_REQUEST_TIMEOUT_MS);
   const signal = input.signal ? AbortSignal.any([timeout, input.signal]) : timeout;
   const fetchImpl = options.fetchImpl ?? fetch;
-  const request = await adapter.request(settings, apiKey, body, input, { fetchImpl, signal });
+  const request = await adapter.request(settings, apiKey, audio, input, { fetchImpl, signal });
   const { record, status } = await requestJson(
     fetchImpl,
     request.url,

@@ -166,7 +166,7 @@ describe("transcribeAudio with Deepgram", () => {
     expect(url.searchParams.has("diarize_model")).toBe(false);
     expect(url.searchParams.getAll("keyterm")).toEqual(["Wardmote", "Open WA"]);
     expect(fake.calls[0].init.headers).toMatchObject({ Authorization: "Token secret-key", "Content-Type": "audio/ogg" });
-    expect(Buffer.from(fake.calls[0].init.body as Uint8Array).toString()).toBe("fake audio bytes");
+    expect(await (fake.calls[0].init.body as Blob).text()).toBe("fake audio bytes");
   });
 
   it("uses the configured region origin, a fixed language, keywords for older models and diarization", async () => {
@@ -549,5 +549,48 @@ describe("listSpeechToTextModels for Google", () => {
       listSpeechToTextModels({ provider: "google", baseUrl: "", apiKeyEnvVar: "STT_KEY" }, { env: googleEnv(), fetchImpl: fake.impl }),
       "stt_invalid_response",
     );
+  });
+});
+
+describe("transcribeAudio limits on file-backed audio", () => {
+  function oggOpus(durationSeconds: number, paddingBytes: number): Buffer {
+    const first = Buffer.alloc(47);
+    first.write("OggS", 0, "latin1");
+    first.write("OpusHead", 28, "latin1");
+    const last = Buffer.alloc(27);
+    last.write("OggS", 0, "latin1");
+    last.writeBigUInt64LE(BigInt(durationSeconds * 48_000), 6);
+    return Buffer.concat([first, Buffer.alloc(paddingBytes), last]);
+  }
+
+  it("measures a large Ogg Opus blob from its head and tail and refuses it past maxAudioSeconds", async () => {
+    const fake = fakeFetch(() => json({ text: "never" }));
+    const long = new Blob([new Uint8Array(oggOpus(700, 500_000))]);
+    await expectCode(transcribeAudio({ blob: long, mime: "audio/ogg", filename: "v.ogg" }, { settings: openAiSettings, env, fetchImpl: fake.impl }), "stt_too_long");
+    expect(fake.calls).toHaveLength(0);
+    const short = new Blob([new Uint8Array(oggOpus(30, 500_000))]);
+    await transcribeAudio({ blob: short, mime: "audio/ogg", filename: "v.ogg" }, { settings: openAiSettings, env, fetchImpl: fake.impl });
+    expect(fake.calls).toHaveLength(1);
+  });
+
+  it("sends a blob without copying it to a different size or type", async () => {
+    const fake = fakeFetch(() => json(DEEPGRAM_OK));
+    const blob = new Blob([Buffer.from("blob audio")]);
+    await transcribeAudio({ blob, mime: "audio/mpeg", filename: "a.mp3" }, { settings: deepgramSettings, env, fetchImpl: fake.impl });
+    expect(await (fake.calls[0].init.body as Blob).text()).toBe("blob audio");
+    const multipart = fakeFetch(() => json({ text: "ok" }));
+    await transcribeAudio({ blob, mime: "audio/mpeg", filename: "a.mp3" }, { settings: openAiSettings, env, fetchImpl: multipart.impl });
+    const file = (multipart.calls[0].init.body as FormData).get("file") as File;
+    expect([file.name, file.type, file.size]).toEqual(["a.mp3", "audio/mpeg", 10]);
+  });
+
+  it("refuses a blob above the Google synchronous byte limit", async () => {
+    const fake = fakeFetch(() => json({}));
+    const big = new Blob([Buffer.alloc(7_500_001)]);
+    await expectCode(
+      transcribeAudio({ blob: big, mime: "audio/mpeg", filename: "a.mp3" }, { settings: settings({ provider: "google", model: "chirp_3" }), env, fetchImpl: fake.impl }),
+      "stt_too_large",
+    );
+    expect(fake.calls).toHaveLength(0);
   });
 });

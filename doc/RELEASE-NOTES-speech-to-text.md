@@ -16,4 +16,5 @@
 - The API key stays a server environment variable name (`apiKeyEnvVar`); its value, and for Google the service account key, is never stored, logged or returned.
 - New error code `stt_invalid_credentials` (HTTP 503 on the transcript route) for a Google key that cannot be read or used.
 - `GET`/`PATCH /api/instance/settings/general` returns and accepts the new `speechToText` keys: `provider`, `language`, `diarize`, `keyterms`, `deepgram.smartFormat`, `elevenlabs.tagAudioEvents`, `elevenlabs.numSpeakers`.
+- **Max audio (seconds)** is enforced for Ogg Opus voice notes and for a caller's duration hint. An agent transcribing an mp3, m4a, wav or mp4 attachment is limited by bytes only (the instance attachment limit, or 7.5 MB for Google), so each call is billed by the provider for the full recording.
 - The speech-to-text response size limit rises from 1 MB to 4 MB so that Deepgram's word timings for long audio fit.
