@@ -258,7 +258,7 @@ async function createClonedRepoWithRemote() {
   await execFileAsync("git", ["clone", "--bare", sourceRepo, remotePath]);
 
   const cloneRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-clone-"));
-  const repoRoot = path.join(cloneRoot, "paperclip");
+  const repoRoot = path.join(cloneRoot, "wardmote");
   await execFileAsync("git", ["clone", remotePath, repoRoot]);
   await runGit(repoRoot, ["config", "user.email", "wardmote@example.com"]);
   await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);
@@ -894,7 +894,7 @@ describe("realizeExecutionWorkspace", () => {
     await execFileAsync("git", ["clone", "--bare", sourceRepo, remotePath]);
 
     const cloneRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-clone-"));
-    const repoRoot = path.join(cloneRoot, "paperclip");
+    const repoRoot = path.join(cloneRoot, "wardmote");
     await execFileAsync("git", ["clone", remotePath, repoRoot]);
     await runGit(repoRoot, ["config", "user.email", "wardmote@example.com"]);
     await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);

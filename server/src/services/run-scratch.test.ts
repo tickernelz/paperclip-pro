@@ -94,7 +94,7 @@ describe("heartbeat run scratch cleanup", () => {
   });
 
   it("removes marked scratch directories created with the legacy prefix", async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-run-zha-720-5059b89f-ecc-"));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-run-zha-720-5059b89f-ecc-"));
     cleanupDirs.add(dir);
     const scratch: HeartbeatRunScratch = {
       dir,
@@ -118,8 +118,8 @@ describe("heartbeat run scratch cleanup", () => {
     await expect(fs.stat(dir)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
-  it("preserves paperclip-named directories without the ownership marker", async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-run-unmarked-"));
+  it("preserves wardmote-named directories without the ownership marker", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-run-unmarked-"));
     cleanupDirs.add(dir);
     const scratch: HeartbeatRunScratch = {
       dir,
