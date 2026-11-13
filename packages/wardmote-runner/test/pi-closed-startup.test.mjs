@@ -25,7 +25,7 @@ if (process.argv[2] === "--pi-no-key-probe") {
     await bundle.transport.request("thread/start", {
       cwd: workspace, model: "openrouter/deepseek/deepseek-v4-flash-0731",
       baseInstructions: "Credential-free admission probe. No prompt is submitted.",
-      permissions: "paperclip-runner-workspace-read-only", dynamicTools: [],
+      permissions: "wardmote-runner-workspace-read-only", dynamicTools: [],
     });
   } catch (failure) { error = String(failure); }
   finally {

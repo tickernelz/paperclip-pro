@@ -55,10 +55,10 @@ async function authenticatedRunner(
   const digest = (domain: string, parts: Buffer[]) =>
     createHash("sha256").update(framed(domain, parts)).digest();
   const credential = Buffer.from(core.issueBootstrapTicket());
-  const authKey = digest("paperclip-runner-auth-key-v1", [credential]);
+  const authKey = digest("wardmote-runner-auth-key-v1", [credential]);
   const mac = (domain: string, parts: Buffer[]) =>
     createHmac("sha256", authKey).update(framed(domain, parts)).digest();
-  const credentialId = `sha256:${digest("paperclip-runner-credential-id-v1", [credential]).toString("hex")}`;
+  const credentialId = `sha256:${digest("wardmote-runner-credential-id-v1", [credential]).toString("hex")}`;
   const socket = new WebSocket(core.connectUrl);
   const frames = new TestQueue<Record<string, unknown>>();
   const reader = frames[Symbol.asyncIterator]();
@@ -98,9 +98,9 @@ async function authenticatedRunner(
     durableRecoveryInternals.canonicalJson(challengeFields),
   );
   expect(serverProof).toBe(
-    mac("paperclip-runner-server-proof-v1", [canonical]).toString("hex"),
+    mac("wardmote-runner-server-proof-v1", [canonical]).toString("hex"),
   );
-  const clientProof = mac("paperclip-runner-client-proof-v1", [
+  const clientProof = mac("wardmote-runner-client-proof-v1", [
     canonical,
     Buffer.from(String(serverProof)),
   ]).toString("hex");
@@ -117,7 +117,7 @@ async function authenticatedRunner(
       },
     }),
   );
-  const binding = digest("paperclip-runner-session-binding-v1", [
+  const binding = digest("wardmote-runner-session-binding-v1", [
     canonical,
     Buffer.from(String(serverProof)),
     Buffer.from(clientProof),
@@ -156,7 +156,7 @@ async function authenticatedRunner(
     send(value: Record<string, unknown>) {
       const cipher = createCipheriv(
         "aes-256-gcm",
-        mac("paperclip-runner-client-to-core-key-v1", [binding]),
+        mac("wardmote-runner-client-to-core-key-v1", [binding]),
         nonce("P3C1", counter),
       );
       cipher.setAAD(aad("client_to_core", counter));

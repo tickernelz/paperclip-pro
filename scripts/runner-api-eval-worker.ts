@@ -128,7 +128,7 @@ try {
           cwd: fixture.workspace, model: request.model,
           completionContract: { revision: "runner-api-eval-v1", criterionIds: ["objective"] },
           config: { ...createSkilllessCodexThreadConfig(fixture.workspace), model_reasoning_effort: "low" },
-          permissions: "paperclip-runner-workspace-only", runtimeWorkspaceRoots: [fixture.workspace], approvalPolicy: "never",
+          permissions: "wardmote-runner-workspace-only", runtimeWorkspaceRoots: [fixture.workspace], approvalPolicy: "never",
           baseInstructions: "You are operating a disposable real Wardmote company. Use the provided tools to do the user's task. Do not use shell, network, skills, or credentials. Stop when the requested work is verified. " + (request.arm === "baseline" ? "" : "Prefer available dedicated tools. Only use search_api and call_api when no dedicated tool supports the required operation or parameters. Do not search before ordinary dedicated tool use.") + "\n" + CONNECTION_INTENT_AGENT_GUIDANCE + (request.conversation ? "\n" + AGENT_CHAT_DIRECTIVE : ""),
           dynamicTools: definitions, experimentalRawEvents: true, persistExtendedHistory: true,
         });

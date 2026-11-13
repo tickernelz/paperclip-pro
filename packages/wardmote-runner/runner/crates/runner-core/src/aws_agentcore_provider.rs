@@ -3167,7 +3167,7 @@ mod tests {
     #[test]
     fn agentcore_upload_plan_contains_instruction_siblings_and_complete_assigned_skill_trees() {
         let root = std::env::temp_dir().join(format!(
-            "paperclip-agentcore-context-{}",
+            "wardmote-agentcore-context-{}",
             uuid::Uuid::new_v4()
         ));
         let instruction_root = root.join("instructions");
@@ -3276,7 +3276,7 @@ mod tests {
     #[test]
     fn agentcore_rejects_too_many_assigned_skills_before_reading_any_skill_root() {
         let root = std::env::temp_dir().join(format!(
-            "paperclip-agentcore-context-count-{}",
+            "wardmote-agentcore-context-count-{}",
             uuid::Uuid::new_v4()
         ));
         fs::create_dir_all(&root).unwrap();

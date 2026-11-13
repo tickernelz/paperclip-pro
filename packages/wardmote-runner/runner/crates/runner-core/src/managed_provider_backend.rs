@@ -2700,7 +2700,7 @@ mod tests {
     #[test]
     fn attach_refreshes_tools_in_the_same_session_and_preserves_profile_fences() {
         let directory =
-            std::env::temp_dir().join(format!("paperclip-managed-refresh-{}", Uuid::new_v4()));
+            std::env::temp_dir().join(format!("wardmote-managed-refresh-{}", Uuid::new_v4()));
         fs::create_dir_all(&directory).unwrap();
         #[cfg(unix)]
         fs::set_permissions(&directory, fs::Permissions::from_mode(0o700)).unwrap();
@@ -2855,7 +2855,7 @@ mod tests {
 
     fn managed_failure_event_types(recovery: bool) -> Vec<String> {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-managed-terminal-test-{}",
+            "wardmote-managed-terminal-test-{}",
             Uuid::new_v4()
         ));
         fs::create_dir_all(&directory).unwrap();
@@ -3273,7 +3273,7 @@ mod tests {
     #[test]
     fn durable_pending_agentcore_usage_is_charged_once_before_turn_admission() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-managed-provider-test-{}",
+            "wardmote-managed-provider-test-{}",
             Uuid::new_v4()
         ));
         fs::create_dir_all(&directory).unwrap();
@@ -3429,7 +3429,7 @@ mod tests {
     #[test]
     fn durable_claude_skill_ownership_is_reused_on_cold_recovery() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-managed-provider-test-{}",
+            "wardmote-managed-provider-test-{}",
             Uuid::new_v4()
         ));
         fs::create_dir_all(&directory).unwrap();
@@ -3497,7 +3497,7 @@ mod tests {
     #[test]
     fn failed_fresh_bootstrap_checkpoints_session_and_skills_before_recovery() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-managed-provider-test-{}",
+            "wardmote-managed-provider-test-{}",
             Uuid::new_v4()
         ));
         fs::create_dir_all(&directory).unwrap();
@@ -3562,7 +3562,7 @@ mod tests {
     #[test]
     fn ambiguous_fresh_create_checkpoints_skills_before_metadata_reconciliation() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-managed-provider-test-{}",
+            "wardmote-managed-provider-test-{}",
             Uuid::new_v4()
         ));
         fs::create_dir_all(&directory).unwrap();
@@ -3617,7 +3617,7 @@ mod tests {
     #[test]
     fn claude_skill_ids_cannot_be_supplied_by_the_prepare_caller() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-managed-provider-test-{}",
+            "wardmote-managed-provider-test-{}",
             Uuid::new_v4()
         ));
         fs::create_dir_all(&directory).unwrap();
@@ -3651,7 +3651,7 @@ mod tests {
     #[test]
     fn claude_destroy_reports_closed_only_after_all_owned_resources_are_deleted() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-managed-provider-test-{}",
+            "wardmote-managed-provider-test-{}",
             Uuid::new_v4()
         ));
         fs::create_dir_all(&directory).unwrap();

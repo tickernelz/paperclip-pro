@@ -2403,10 +2403,10 @@ impl CodexCommandExecutor {
                 let key = args[index + 1].split('=').next().unwrap_or("");
                 if matches!(
                     key,
-                    "permissions.paperclip-runner-workspace-only.filesystem"
-                        | "permissions.paperclip-runner-workspace-read-only.filesystem"
-                        | "permissions.paperclip-runner-workspace-only.network.enabled"
-                        | "permissions.paperclip-runner-workspace-read-only.network.enabled"
+                    "permissions.wardmote-runner-workspace-only.filesystem"
+                        | "permissions.wardmote-runner-workspace-read-only.filesystem"
+                        | "permissions.wardmote-runner-workspace-only.network.enabled"
+                        | "permissions.wardmote-runner-workspace-read-only.network.enabled"
                         | "shell_environment_policy.inherit"
                         | "shell_environment_policy.ignore_default_excludes"
                         | "shell_environment_policy.include_only"
@@ -4659,7 +4659,7 @@ mod tests {
     #[test]
     fn startup_evidence_save_failure_cannot_become_an_empty_drain_or_admission() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-startup-write-failure-{}",
+            "wardmote-startup-write-failure-{}",
             uuid::Uuid::new_v4()
         ));
         let mut executor = CodexCommandExecutor::new(&directory);
@@ -4696,7 +4696,7 @@ mod tests {
     fn goal_command_can_persist_provider_restart_ownership() {
         for command_type in ["session.goal.get", "session.goal.set", "session.goal.clear"] {
             let directory = std::env::temp_dir()
-                .join(format!("paperclip-goal-startup-{}", uuid::Uuid::new_v4()));
+                .join(format!("wardmote-goal-startup-{}", uuid::Uuid::new_v4()));
             let mut executor = CodexCommandExecutor::new(&directory);
             executor.state = Some(opencode_result_state());
             executor.startup_command = Some(ProviderStartupCommand {
@@ -4784,7 +4784,7 @@ mod tests {
     #[test]
     fn failed_authenticated_identity_commit_keeps_the_durable_startup_fence() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-startup-identity-commit-{}",
+            "wardmote-startup-identity-commit-{}",
             uuid::Uuid::new_v4()
         ));
         let mut executor = CodexCommandExecutor::new(&directory);
@@ -4850,7 +4850,7 @@ mod tests {
     fn runtime_launch_rebinding_preserves_protected_arguments() {
         let before: Vec<String> = vec![
             "-c",
-            "default_permissions=\"paperclip-runner-workspace-only\"",
+            "default_permissions=\"wardmote-runner-workspace-only\"",
             "-c",
             "shell_environment_policy.set={PATH=\"/run/a\"}",
             "--disable",
@@ -4862,7 +4862,7 @@ mod tests {
         .collect();
         let after: Vec<String> = vec![
             "-c",
-            "default_permissions=\"paperclip-runner-workspace-only\"",
+            "default_permissions=\"wardmote-runner-workspace-only\"",
             "-c",
             "shell_environment_policy.set={PATH=\"/run/b\"}",
             "-c",
@@ -5061,7 +5061,7 @@ mod tests {
     #[test]
     fn stopped_prepared_checkpoint_rebinds_without_restarting_its_old_provider() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-provider-stopped-checkpoint-rebind-{}",
+            "wardmote-provider-stopped-checkpoint-rebind-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -6151,7 +6151,7 @@ mod tests {
     #[test]
     fn restore_reattaches_the_durable_tool_result_byte_counter() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-provider-tool-byte-restore-{}",
+            "wardmote-provider-tool-byte-restore-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -6342,7 +6342,7 @@ mod tests {
     #[test]
     fn receipt_limit_deadline_settlement_preserves_unacknowledged_events() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-provider-receipt-deadline-{}",
+            "wardmote-provider-receipt-deadline-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);

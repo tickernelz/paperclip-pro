@@ -734,7 +734,7 @@ mod tests {
     impl TestDirectory {
         fn new() -> Self {
             let p =
-                std::env::temp_dir().join(format!("paperclip-dot-test-{}", uuid::Uuid::new_v4()));
+                std::env::temp_dir().join(format!("wardmote-dot-test-{}", uuid::Uuid::new_v4()));
             fs::create_dir(&p).unwrap();
             Self(p)
         }

@@ -45,7 +45,7 @@ try {
     await bundle.transport.request('thread/start', {
       cwd: workspace, model: 'openrouter/deepseek/deepseek-v4-flash-0731',
       baseInstructions: 'Credential-free admission probe. No prompt is submitted.',
-      permissions: 'paperclip-runner-workspace-read-only', dynamicTools: [],
+      permissions: 'wardmote-runner-workspace-read-only', dynamicTools: [],
     });
   } catch (error) { failure = String(error); }
   settledMs = Math.round(performance.now() - started);

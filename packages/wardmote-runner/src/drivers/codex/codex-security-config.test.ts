@@ -425,7 +425,7 @@ describe("Codex security configuration", () => {
   it("uses a read-only permission profile for plan mode", () => {
     expect(createSecuredCodexThreadParams("/workspace", "plan")).toMatchObject({
       cwd: "/workspace",
-      permissions: "paperclip-runner-workspace-read-only",
+      permissions: "wardmote-runner-workspace-read-only",
       runtimeWorkspaceRoots: ["/workspace"],
       config: {
         "skills.include_instructions": false,
@@ -442,13 +442,13 @@ describe("Codex security configuration", () => {
       "--dangerously-bypass-approvals-and-sandbox",
     );
     expect(serializedExternalArgs).toContain(
-      'default_permissions="paperclip-runner-external-sandbox"',
+      'default_permissions="wardmote-runner-external-sandbox"',
     );
     expect(serializedExternalArgs).toContain(
-      'permissions.paperclip-runner-external-sandbox.filesystem={":root"="write"}',
+      'permissions.wardmote-runner-external-sandbox.filesystem={":root"="write"}',
     );
     expect(serializedExternalArgs).toContain(
-      "permissions.paperclip-runner-external-sandbox.network.enabled=true",
+      "permissions.wardmote-runner-external-sandbox.network.enabled=true",
     );
     expect(
       createSecuredCodexThreadParams(
@@ -459,7 +459,7 @@ describe("Codex security configuration", () => {
         source,
       ),
     ).toMatchObject({
-      permissions: "paperclip-runner-external-sandbox",
+      permissions: "wardmote-runner-external-sandbox",
     });
     expect(
       createSecuredCodexThreadParams(
@@ -470,7 +470,7 @@ describe("Codex security configuration", () => {
         source,
       ),
     ).toMatchObject({
-      permissions: "paperclip-runner-workspace-read-only",
+      permissions: "wardmote-runner-workspace-read-only",
     });
     expect(createIsolatedCodexAppServerArgs({})).not.toContain(
       "--dangerously-bypass-approvals-and-sandbox",
