@@ -1,4 +1,4 @@
-# Paperclip Workflow Playbooks
+# Wardmote Workflow Playbooks
 
 Reference material for niche workflows that are pointed to from `SKILL.md`. Load only when the task matches.
 
@@ -89,15 +89,15 @@ Use the company-scoped routes when a CEO agent needs to inspect or move package 
   - `replace` is rejected
   - collisions resolve with `rename` or `skip`
   - issues are always created as new issues
-- CEO agents may use the safe routes with `target.mode = "new_company"` to create a new company directly. Paperclip copies active user memberships from the source company so the new company is not orphaned.
+- CEO agents may use the safe routes with `target.mode = "new_company"` to create a new company directly. Wardmote copies active user memberships from the source company so the new company is not orphaned.
 
-For export, preview first and keep tasks explicit:
+For export, preview first, then **always produce**. An export ask is a two-step action whose required terminal write is the produced export — the preview is never the deliverable:
 
-- `POST /api/companies/{companyId}/exports/preview`
-- `POST /api/companies/{companyId}/exports`
-- Export preview defaults to `issues: false`
-- Add `issues` or `projectIssues` only when you intentionally need task files
-- Use `selectedFiles` to narrow the final package to specific agents, skills, projects, or tasks after you inspect the preview inventory
+1. `POST /api/companies/{companyId}/exports/preview` — inspect the package inventory. Preview defaults to `issues: false`.
+2. `POST /api/companies/{companyId}/exports` — produce the package, narrowed with `selectedFiles` to the specific agents, skills, projects, or tasks you confirmed in the preview inventory. `selectedFiles` is the narrowing mechanism; an `include` map alone does not narrow the final package.
+
+- Add `issues` or `projectIssues` only when you intentionally need task files.
+- Stopping after the preview — or answering with an inventory table/report instead of sending the producing POST — leaves the export unproduced. The ask is complete only when the `POST /exports` with `selectedFiles` has returned 2xx.
 
 See `api-reference.md` for full schema examples.
 
@@ -105,37 +105,37 @@ See `api-reference.md` for full schema examples.
 
 ## Self-Test Playbook (App-Level)
 
-Use this when validating Paperclip itself (assignment flow, checkouts, run visibility, and status transitions).
+Use this when validating Wardmote itself (assignment flow, checkouts, run visibility, and status transitions).
 
 1. Create a throwaway issue assigned to a known local agent (`claudecoder` or `codexcoder`):
 
 ```bash
-npx @tickernelz/paperclip-pro issue create \
-  --company-id "$PAPERCLIP_COMPANY_ID" \
+npx @tickernelz/wardmote issue create \
+  --company-id "$WARDMOTE_COMPANY_ID" \
   --title "Self-test: assignment/watch flow" \
   --description "Temporary validation issue" \
   --status todo \
-  --assignee-agent-id "$PAPERCLIP_AGENT_ID"
+  --assignee-agent-id "$WARDMOTE_AGENT_ID"
 ```
 
 2. Trigger and watch a heartbeat for that assignee:
 
 ```bash
-npx @tickernelz/paperclip-pro heartbeat run --agent-id "$PAPERCLIP_AGENT_ID"
+npx @tickernelz/wardmote heartbeat run --agent-id "$WARDMOTE_AGENT_ID"
 ```
 
 3. Verify the issue transitions (`todo -> in_progress -> done` or `blocked`) and that comments are posted:
 
 ```bash
-npx @tickernelz/paperclip-pro issue get <issue-id-or-identifier>
+npx @tickernelz/wardmote issue get <issue-id-or-identifier>
 ```
 
 4. Reassignment test (optional): move the same issue between `claudecoder` and `codexcoder` and confirm wake/run behavior:
 
 ```bash
-npx @tickernelz/paperclip-pro issue update <issue-id> --assignee-agent-id <other-agent-id> --status todo
+npx @tickernelz/wardmote issue update <issue-id> --assignee-agent-id <other-agent-id> --status todo
 ```
 
 5. Cleanup: mark temporary issues done/cancelled with a clear note.
 
-If you use direct `curl` during these tests, include `X-Paperclip-Run-Id` on all mutating issue requests whenever running inside a heartbeat.
+If you use direct `curl` during these tests, include `X-Wardmote-Run-Id` on all mutating issue requests whenever running inside a heartbeat.
