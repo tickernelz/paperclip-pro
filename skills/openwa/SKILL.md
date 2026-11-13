@@ -202,6 +202,9 @@ of the person you answer.
   reader); do not download it with curl or list attachments first.
 - A transcript that finishes later arrives in a following wake under
   `lateTranscripts` (keyed by message `id`) or is steered into this run.
+- A stored voice note with `transcriptUnavailable` (an `stt_*` code) or no
+  transcript: call `wardmoteTranscribeAttachment` with its `attachmentId`
+  instead of asking the sender to type it; the result is cached per file.
 - `openwa_find({query} | {phone} | {lid})` searches contacts and chats, checks a
   number, or resolves a LID. Give exactly one. A `nextCursor` on a query result
   pages with `{query, cursor}`.

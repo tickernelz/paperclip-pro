@@ -498,7 +498,8 @@ describe("transcribeAudio with Google Cloud Speech-to-Text v2", () => {
     await expectCode(run({ env: { STT_KEY: JSON.stringify({ type: "authorized_user", client_id: "x" }) } }), "stt_invalid_credentials");
     await expectCode(run({ env: googleEnv({ project_id: "" }) }), "stt_invalid_credentials");
     await expectCode(run({ env: googleEnv({ private_key: "-----BEGIN PRIVATE KEY-----\nbroken\n-----END PRIVATE KEY-----\n" }) }), "stt_invalid_credentials");
-    await expectCode(run({}, { ...audio, durationHintSeconds: 61 }), "stt_too_long");
+    await expectCode(run({}, { ...audio, mime: "audio/mpeg", durationHintSeconds: 61 }), "stt_too_long");
+    await expectCode(run({}, { ...audio, mime: "audio/mpeg", buffer: Buffer.alloc(7_500_001) }), "stt_too_large");
     await expectCode(run({}, { ...audio, buffer: Buffer.alloc(7_500_001) }), "stt_too_large");
     await expectCode(run({}, { ...audio, buffer: Buffer.alloc(0) }), "stt_empty");
     await expectCode(run({ settings: { ...googleSettings, enabled: false } }), "stt_disabled");

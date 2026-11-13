@@ -15,7 +15,7 @@ import {
 } from "@tickernelz/wardmote-shared";
 import { badRequest, conflict, forbidden } from "../errors.js";
 import { removeStagedUpload, stageSingleFileUpload } from "../attachment-upload.js";
-import { listSpeechToTextModels, SpeechToTextError, transcribeAudio } from "../services/speech-to-text.js";
+import { listSpeechToTextModels, speechToTextCredentialStatus, SpeechToTextError, transcribeAudio } from "../services/speech-to-text.js";
 import { getHiddenSettings } from "../services/settings-visibility.js";
 import { readIdleSleepSafety } from "../services/idle-sleep-safety.js";
 import { readIdleLocalWork } from "../services/idle-local-work.js";
@@ -262,6 +262,12 @@ export function instanceSettingsRoutes(db: Db, pluginWorkers?: PluginWorkerManag
       }
     },
   );
+
+  router.get("/instance/settings/general/speech-to-text/credentials", async (req, res) => {
+    assertCanManageInstanceSettings(req);
+    assertSpeechToTextSettingsVisible();
+    res.json(await speechToTextCredentialStatus());
+  });
 
   router.post("/instance/settings/general/speech-to-text/test", async (req, res) => {
     assertCanManageInstanceSettings(req);

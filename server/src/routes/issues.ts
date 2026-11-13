@@ -1,4 +1,3 @@
-import { openAsBlob } from "node:fs";
 import { parseObject } from "../adapters/utils.js";
 import { enqueueFastResponse } from "../services/fast-responses.js";
 import { deferUntilAdapterTurnActive } from "@tickernelz/wardmote-adapter-utils/adapter-steer-registry";
@@ -344,7 +343,8 @@ import {
 import { decisionTrainingService } from "../services/decision-training.js";
 import { feedbackService } from "../services/feedback.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
-import { SpeechToTextError, speechToTextByteLimit, speechToTextErrorHttpStatus, transcribeAudio } from "../services/speech-to-text.js";
+import { SpeechToTextError, speechToTextErrorHttpStatus } from "../services/speech-to-text.js";
+import { transcribeStoredAudio } from "../services/attachment-transcripts.js";
 import {
   ISSUE_BLOCKER_DIAGNOSTICS_MAX_BLOCKERS,
   ISSUE_WAKE_DIAGNOSTICS_LOOKBACK_DAYS,
@@ -21720,28 +21720,12 @@ export function issueRoutes(
       res.status(speechToTextErrorHttpStatus("stt_disabled")).json({ error: "Speech-to-text is not enabled for this instance", code: "stt_disabled" });
       return;
     }
-    const byteLimit = speechToTextByteLimit(settings);
-    if (attachment.byteSize > byteLimit) {
-      res.status(speechToTextErrorHttpStatus("stt_too_large")).json({
-        error: "Audio exceeds the " + byteLimit + " byte speech-to-text limit",
-        code: "stt_too_large",
-      });
-      return;
-    }
-    const localPath = storage.localPath ? await storage.localPath(attachment.companyId, attachment.objectKey) : null;
-    const object = localPath ? null : await storage.getObject(attachment.companyId, attachment.objectKey);
     try {
-      const audio = localPath ? { blob: await openAsBlob(localPath) } : { stream: object!.stream };
-      const transcript = await transcribeAudio(
-        { ...audio, mime: attachment.contentType, filename: attachment.originalFilename || "audio" },
-        { settings },
-      );
-      res.json({ attachmentId, ...transcript });
+      const { result, cached } = await transcribeStoredAudio({ storage, file: attachment, settings });
+      res.json({ attachmentId, ...result, cached });
     } catch (error) {
       if (!(error instanceof SpeechToTextError)) throw error;
       res.status(speechToTextErrorHttpStatus(error.code)).json({ error: error.message, code: error.code });
-    } finally {
-      object?.stream.destroy();
     }
   });
 

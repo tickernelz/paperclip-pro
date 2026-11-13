@@ -1,5 +1,8 @@
 import type { Readable } from "node:stream";
 import {
+  SPEECH_TO_TEXT_DEFAULT_KEY_ENV_VARS,
+  SPEECH_TO_TEXT_PROVIDERS,
+  type SpeechToTextCredentialStatus,
   SPEECH_TO_TEXT_CURATED_MODELS,
   SPEECH_TO_TEXT_DEFAULT_BASE_URLS,
   SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS,
@@ -16,6 +19,7 @@ import {
   GoogleTokenError,
   loadGoogleServiceAccount,
 } from "./speech-to-text-google-auth.js";
+import { splitOggOpus } from "./ogg-opus-chunks.js";
 
 export type SpeechToTextErrorCode =
   | "stt_disabled"
@@ -449,12 +453,45 @@ export function formatSpeechToTextTranscript(result: SpeechToTextTranscript): st
   return segments.map((segment) => segment.speaker + ": " + segment.text).join("\n");
 }
 
-export function speechToTextByteLimit(settings: SpeechToTextSettings, maxBytes?: number): number {
+export const GOOGLE_CHUNK_SECONDS = 55;
+
+function isOggMime(mime: string): boolean {
+  return /ogg|opus/i.test(mime);
+}
+
+export function speechToTextByteLimit(settings: SpeechToTextSettings, maxBytes?: number, mime = ""): number {
   return Math.min(
     maxBytes ?? getMaxAttachmentBytes(),
     getMaxAttachmentBytes(),
-    settings.provider === "google" ? GOOGLE_SYNC_MAX_AUDIO_BYTES : Number.POSITIVE_INFINITY,
+    settings.provider === "google" && !isOggMime(mime) ? GOOGLE_SYNC_MAX_AUDIO_BYTES : Number.POSITIVE_INFINITY,
   );
+}
+
+function blobOf(buffer: Buffer): Blob {
+  return new Blob([new Uint8Array(buffer.buffer as ArrayBuffer, buffer.byteOffset, buffer.byteLength)]);
+}
+
+function mergeTranscripts(parts: SpeechToTextResult[]): SpeechToTextResult {
+  if (parts.length === 1) return parts[0];
+  const merged: SpeechToTextResult = { text: parts.map((part) => part.text).filter(Boolean).join(" ") };
+  const language = parts.find((part) => part.language)?.language;
+  if (language) merged.language = language;
+  const segments = parts.flatMap((part) => part.segments ?? []);
+  if (segments.length > 0) merged.segments = segments;
+  return merged;
+}
+
+async function googlePieces(audio: Blob, measured: number | null): Promise<Blob[]> {
+  if (measured === null || measured <= GOOGLE_CHUNK_SECONDS) {
+    if (audio.size > GOOGLE_SYNC_MAX_AUDIO_BYTES)
+      throw new SpeechToTextError("stt_too_large", "Audio exceeds the " + GOOGLE_SYNC_MAX_AUDIO_BYTES + " byte Google synchronous limit");
+    return [audio];
+  }
+  const chunks = splitOggOpus(Buffer.from(await audio.arrayBuffer()), GOOGLE_CHUNK_SECONDS);
+  if (!chunks) throw new SpeechToTextError("stt_too_long", "Google transcribes at most " + SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS + " seconds per request and this Ogg stream could not be split");
+  if (chunks.some((chunk) => chunk.length > GOOGLE_SYNC_MAX_AUDIO_BYTES))
+    throw new SpeechToTextError("stt_too_large", "An audio part exceeds the " + GOOGLE_SYNC_MAX_AUDIO_BYTES + " byte Google synchronous limit");
+  return chunks.map(blobOf);
 }
 
 export async function transcribeAudio(input: SpeechToTextInput, options: SpeechToTextOptions): Promise<SpeechToTextResult> {
@@ -463,34 +500,57 @@ export async function transcribeAudio(input: SpeechToTextInput, options: SpeechT
   if (!settings.enabled || !settings.model || !settings.apiKeyEnvVar || (provider === "openai_compatible" && !settings.baseUrl))
     throw new SpeechToTextError("stt_disabled", "Speech-to-text is not enabled for this instance");
   const apiKey = readApiKey(settings.apiKeyEnvVar, options.env);
-  const maxSeconds = provider === "google" ? Math.min(settings.maxAudioSeconds, SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS) : settings.maxAudioSeconds;
-  const limit = speechToTextByteLimit(settings, options.maxBytes);
+  const maxSeconds =
+    provider === "google" && !isOggMime(input.mime) ? Math.min(settings.maxAudioSeconds, SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS) : settings.maxAudioSeconds;
+  const limit = speechToTextByteLimit(settings, options.maxBytes, input.mime);
   if (input.durationHintSeconds != null && input.durationHintSeconds > maxSeconds)
     throw new SpeechToTextError("stt_too_long", "Audio is longer than " + maxSeconds + " seconds");
   let audio: Blob;
   if (input.blob) audio = input.blob;
-  else if (input.buffer) audio = new Blob([new Uint8Array(input.buffer.buffer as ArrayBuffer, input.buffer.byteOffset, input.buffer.byteLength)]);
+  else if (input.buffer) audio = blobOf(input.buffer);
   else if (input.stream) audio = await collect(input.stream, limit);
   else throw new SpeechToTextError("stt_empty", "No audio was supplied");
   if (audio.size === 0) throw new SpeechToTextError("stt_empty", "No audio was supplied");
   if (audio.size > limit) throw new SpeechToTextError("stt_too_large", "Audio exceeds the " + limit + " byte speech-to-text limit");
-  if (input.durationHintSeconds == null) {
-    const measured = await oggOpusBlobDurationSeconds(audio);
-    if (measured !== null && measured > maxSeconds)
-      throw new SpeechToTextError("stt_too_long", "Audio is longer than " + maxSeconds + " seconds");
-  }
+  const measured = input.durationHintSeconds == null || provider === "google" ? await oggOpusBlobDurationSeconds(audio) : null;
+  if (input.durationHintSeconds == null && measured !== null && measured > maxSeconds)
+    throw new SpeechToTextError("stt_too_long", "Audio is longer than " + maxSeconds + " seconds");
+  const pieces = provider === "google" ? await googlePieces(audio, measured) : [audio];
   const adapter = ADAPTERS[provider];
   const timeout = AbortSignal.timeout(options.timeoutMs ?? SPEECH_TO_TEXT_REQUEST_TIMEOUT_MS);
   const signal = input.signal ? AbortSignal.any([timeout, input.signal]) : timeout;
   const fetchImpl = options.fetchImpl ?? fetch;
-  const request = await adapter.request(settings, apiKey, audio, input, { fetchImpl, signal });
-  const { record, status } = await requestJson(
-    fetchImpl,
-    request.url,
-    { method: "POST", headers: request.headers, body: request.body },
-    signal,
+  const parts: SpeechToTextResult[] = [];
+  for (const piece of pieces) {
+    const request = await adapter.request(settings, apiKey, piece, input, { fetchImpl, signal });
+    const { record, status } = await requestJson(
+      fetchImpl,
+      request.url,
+      { method: "POST", headers: request.headers, body: request.body },
+      signal,
+    );
+    parts.push(adapter.parse(record, settings, status));
+  }
+  return mergeTranscripts(parts);
+}
+
+export async function speechToTextCredentialStatus(
+  env: Record<string, string | undefined> = process.env,
+): Promise<SpeechToTextCredentialStatus> {
+  const entries = await Promise.all(
+    SPEECH_TO_TEXT_PROVIDERS.map(async (provider) => {
+      const envVar = SPEECH_TO_TEXT_DEFAULT_KEY_ENV_VARS[provider];
+      const value = env[envVar];
+      if (provider !== "google" || !value) return [provider, { envVar, set: Boolean(value) }] as const;
+      try {
+        const account = await loadGoogleServiceAccount(value);
+        return [provider, { envVar, set: true, usable: true, projectId: account.projectId || null }] as const;
+      } catch {
+        return [provider, { envVar, set: true, usable: false, projectId: null }] as const;
+      }
+    }),
   );
-  return adapter.parse(record, settings, status);
+  return Object.fromEntries(entries) as SpeechToTextCredentialStatus;
 }
 
 function curatedModels(provider: SpeechToTextProvider): SpeechToTextModelList {
@@ -524,6 +584,22 @@ export async function listSpeechToTextModels(
     const models = asRecord(asRecord(asRecord(record.metadata)?.languages)?.models);
     if (!models) throw new SpeechToTextError("stt_invalid_response", "Google location metadata lists no models", status);
     ids = Object.values(models).flatMap((language) => Object.keys(asRecord(asRecord(language)?.modelFeatures) ?? {}));
+    const locations = await requestJson(
+      fetchImpl,
+      googleOrigin(request.baseUrl, location) + "/v2/projects/" + encodeURIComponent(projectId) + "/locations",
+      { method: "GET", headers: { Authorization: "Bearer " + token, Accept: "application/json" } },
+      signal,
+    )
+      .then(({ record: list }) =>
+        Array.isArray(list.locations)
+          ? list.locations.flatMap((entry) => {
+              const id = asRecord(entry)?.locationId;
+              return typeof id === "string" && /^[a-z][a-z0-9-]{1,39}$/.test(id) ? [id] : [];
+            })
+          : [],
+      )
+      .catch(() => []);
+    if (ids.length > 0) return { models: uniqueSorted(ids), source: "provider", ...(locations.length > 0 ? { locations: [...new Set(locations)].sort() } : {}) };
   } else if (request.provider === "deepgram") {
     const { record, status } = await requestJson(
       fetchImpl,

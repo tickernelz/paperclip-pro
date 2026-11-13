@@ -7991,6 +7991,16 @@ registry.registerPath({
 });
 
 registry.registerPath({
+  method: "get",
+  path: "/api/instance/settings/general/speech-to-text/credentials",
+  tags: ["instance"],
+  summary: "Show whether each speech-to-text provider's default key variable is set",
+  description:
+    "Instance admin only. For each provider returns its default server environment variable name (OPENAI_API_KEY, DEEPGRAM_API_KEY, ELEVENLABS_API_KEY, GOOGLE_APPLICATION_CREDENTIALS) and whether it is set; for Google also whether the service account key is usable and its project id. Only these fixed names are checked and values are never returned.",
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
+registry.registerPath({
   method: "post",
   path: "/api/instance/settings/general/speech-to-text/test",
   tags: ["instance"],
@@ -9382,7 +9392,7 @@ registry.registerPath({
   tags: ["assets"],
   summary: "Transcribe an audio or video attachment",
   description:
-    "Transcribes the attachment with the instance speech-to-text provider (Settings > General > Speech-to-text) and returns `{ attachmentId, text, language?, segments? }`; segments carry speaker turns when diarization is on. Needs read access to the attachment's task. Each call is billed by the provider; the transcript is not stored. Errors carry an stt_* code: 409 stt_disabled, 413 stt_too_long or stt_too_large, 422 stt_not_audio or stt_empty, 502 stt_rejected, stt_network or stt_invalid_response, 503 stt_missing_key, stt_invalid_credentials or stt_unavailable, 504 stt_timeout.",
+    "Transcribes the attachment with the instance speech-to-text provider (Settings > General > Speech-to-text) and returns `{ attachmentId, text, language?, segments?, cached }`; segments carry speaker turns when diarization is on. Needs read access to the attachment's task. Transcripts are cached per file content and transcript settings, so only the first call is billed. Errors carry an stt_* code: 409 stt_disabled, 413 stt_too_long or stt_too_large, 422 stt_not_audio or stt_empty, 502 stt_rejected, stt_network or stt_invalid_response, 503 stt_missing_key, stt_invalid_credentials or stt_unavailable, 504 stt_timeout.",
   request: { params: z.object({ attachmentId: z.string() }) },
   responses: {
     200: r.ok(),

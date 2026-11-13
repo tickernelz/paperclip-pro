@@ -1478,6 +1478,45 @@ describe("instance settings routes", () => {
       expect(JSON.stringify(res.body)).not.toContain("dg-secret");
     });
 
+    it("reports only the default key variables per provider, never their values, to instance admins", async () => {
+      const { mkdtemp, writeFile } = await import("node:fs/promises");
+      const os = await import("node:os");
+      const path = await import("node:path");
+      const { generateKeyPairSync } = await import("node:crypto");
+      const dir = await mkdtemp(path.join(os.tmpdir(), "zha6055-creds-"));
+      const keyFile = path.join(dir, "sa.json");
+      const privateKey = generateKeyPairSync("rsa", { modulusLength: 2048 }).privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+      await writeFile(keyFile, JSON.stringify({ type: "service_account", project_id: "proj-zha6055", client_email: "sa@proj-zha6055.iam.gserviceaccount.com", private_key: privateKey }));
+      vi.stubEnv("DEEPGRAM_API_KEY", "dg-value-secret");
+      vi.stubEnv("ELEVENLABS_API_KEY", "");
+      vi.stubEnv("OPENAI_API_KEY", "");
+      vi.stubEnv("GOOGLE_APPLICATION_CREDENTIALS", keyFile);
+      vi.stubEnv("ZHA6055_OTHER_SECRET", "other-value");
+
+      const denied = await request(await createApp(memberActor)).get("/api/instance/settings/general/speech-to-text/credentials");
+      expect(denied.status).toBe(403);
+
+      const res = await request(await createApp(adminActor)).get("/api/instance/settings/general/speech-to-text/credentials");
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        openai_compatible: { envVar: "OPENAI_API_KEY", set: false },
+        deepgram: { envVar: "DEEPGRAM_API_KEY", set: true },
+        elevenlabs: { envVar: "ELEVENLABS_API_KEY", set: false },
+        google: { envVar: "GOOGLE_APPLICATION_CREDENTIALS", set: true, usable: true, projectId: "proj-zha6055" },
+      });
+      const raw = JSON.stringify(res.body);
+      expect(raw).not.toContain("dg-value-secret");
+      expect(raw).not.toContain("PRIVATE KEY");
+      expect(raw).not.toContain("sa@proj-zha6055");
+      expect(raw).not.toContain("ZHA6055_OTHER_SECRET");
+
+      vi.stubEnv("GOOGLE_APPLICATION_CREDENTIALS", "/nonexistent/zha6055.json");
+      const broken = await request(await createApp(adminActor)).get("/api/instance/settings/general/speech-to-text/credentials");
+      expect(broken.body.google).toEqual({ envVar: "GOOGLE_APPLICATION_CREDENTIALS", set: true, usable: false, projectId: null });
+      const { rm } = await import("node:fs/promises");
+      await rm(dir, { recursive: true, force: true });
+    });
+
     it("answers 422 with the stt code when listing fails and rejects an inline key", async () => {
       const missing = await request(await createApp(adminActor))
         .post("/api/instance/settings/general/speech-to-text/models")

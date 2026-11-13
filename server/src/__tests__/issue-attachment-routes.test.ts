@@ -163,7 +163,7 @@ function createStorageService(body = Buffer.from("test"), options: { failPut?: b
   };
 }
 
-async function createApp(storage: StorageService, options?: { companyIds?: string[]; source?: string }) {
+async function createApp(storage: StorageService, options?: { companyIds?: string[]; source?: string; actor?: Record<string, unknown> }) {
   const [{ errorHandler }, { issueRoutes }] = await Promise.all([
     vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
     vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js"),
@@ -171,7 +171,7 @@ async function createApp(storage: StorageService, options?: { companyIds?: strin
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
-    (req as any).actor = {
+    (req as any).actor = options?.actor ?? {
       type: "board",
       userId: "local-board",
       companyIds: options?.companyIds ?? ["company-1"],
@@ -905,7 +905,7 @@ describe("issue attachment routes", () => {
       const res = await request(app).post("/api/attachments/attachment-1/transcript");
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ attachmentId: "attachment-1", text: "halo dunia", language: "id" });
+      expect(res.body).toEqual({ attachmentId: "attachment-1", text: "halo dunia", language: "id", cached: false });
       expect(providerFetch).toHaveBeenCalledTimes(1);
       const [url, init] = providerFetch.mock.calls[0];
       expect(String(url)).toMatch(/^https:\/\/api\.deepgram\.com\/v1\/listen\?/);
@@ -925,6 +925,32 @@ describe("issue attachment routes", () => {
       expect(res.body.code).toBe("stt_disabled");
       expect(storage.getObject).not.toHaveBeenCalled();
       expect(providerFetch).not.toHaveBeenCalled();
+    });
+
+    it("lets an agent transcribe an attachment on an issue it can read and hides other issues' attachments", async () => {
+      mockSpeechSettings(deepgramSettings);
+      providerFetch.mockResolvedValue(
+        new Response(JSON.stringify({ results: { channels: [{ alternatives: [{ transcript: "catatan agen" }] }] } }), { status: 200 }),
+      );
+      mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("audio/ogg", "voice.ogg"));
+      const agent = { type: "agent", agentId: "agent-1", companyId: "company-1", runId: "run-1", source: "agent_key" };
+
+      const own = await request(await createApp(createStorageService(), { actor: agent })).post("/api/attachments/attachment-1/transcript");
+      expect(own.status).toBe(200);
+      expect(own.body.text).toBe("catatan agen");
+
+      mockAccessService.decide.mockResolvedValue({ allowed: false, explanation: "Denied by test mock" });
+      const otherStorage = createStorageService();
+      const other = await request(await createApp(otherStorage, { actor: agent })).post("/api/attachments/attachment-1/transcript");
+      expect(other.status).toBe(404);
+      expect(otherStorage.getObject).not.toHaveBeenCalled();
+
+      mockAccessService.decide.mockResolvedValue({ allowed: true, explanation: "Allowed by test mock" });
+      const foreignStorage = createStorageService();
+      const foreign = await request(await createApp(foreignStorage, { actor: { ...agent, companyId: "company-2" } })).post("/api/attachments/attachment-1/transcript");
+      expect(foreign.status).toBe(404);
+      expect(foreignStorage.getObject).not.toHaveBeenCalled();
+      expect(providerFetch).toHaveBeenCalledTimes(1);
     });
 
     it("refuses an attachment above the provider byte limit without reading it", async () => {

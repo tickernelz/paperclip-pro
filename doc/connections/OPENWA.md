@@ -788,7 +788,30 @@ absolute file path resolved inside the storage root (symlinks escaping it are
 ignored), so an agent on the same host opens the file without downloading it.
 
 Speech-to-text is instance-wide: **Speech-to-text** on the instance General
-settings page (`speechToText` in `GET`/`PATCH /api/instance/settings/general`):
+settings page (`speechToText` in `GET`/`PATCH /api/instance/settings/general`).
+The form shows the toggle, **Provider**, the key status, **Model** and
+**Language** (searchable, **Automatic** first, codes from each provider's
+documentation); everything else sits in the closed **Advanced** part. Only an
+OpenAI-compatible endpoint asks for a typed base URL; any provider takes a typed
+model only after choosing **Other model...**. Keyterms are chips added with
+Enter, Google alternative languages a multi-pick, and the numbers steppers with
+their unit and a **Default** button. Each field error names one fix.
+
+Each provider has a default key variable, filled in when the provider is
+chosen: `OPENAI_API_KEY`, `DEEPGRAM_API_KEY`, `ELEVENLABS_API_KEY`,
+`GOOGLE_APPLICATION_CREDENTIALS`. The form shows whether it is set from
+`GET /api/instance/settings/general/speech-to-text/credentials` (instance admin):
+only those four names are checked, values never leave the server, and for Google
+the response adds whether the key is a usable service account and its project id,
+which the form shows read-only. A different variable name is set in **Advanced**
+and is not checked; **Test speech-to-text** confirms it.
+
+Wardmote's company secrets (`company_secrets`, local vault or AWS Secrets
+Manager, doc/SECRETS-AWS-PROVIDER.md) are scoped to one company and resolved for
+agent runs and connections; speech-to-text is an instance setting used by every
+company's chat connectors, so its key stays in the server environment like the
+AWS provider's own bootstrap credentials. Moving it into the secret store needs
+an instance-level secret scope, which does not exist today.
 
 | Field | Key | Default | Bounds |
 | --- | --- | --- | --- |
@@ -808,7 +831,7 @@ settings page (`speechToText` in `GET`/`PATCH /api/instance/settings/general`):
 | Automatic punctuation | `google.autoPunctuation` | on | Google |
 | Alternative languages | `google.alternativeLanguages` | none | Google: up to 2 beside `language`, models `long`, `short`, `telephony` only |
 | Max audio (seconds) | `maxAudioSeconds` | 600 | 1 to 7200; enforced for Ogg Opus (WhatsApp and Telegram voice notes) and for a caller's duration hint; other formats are limited by bytes only |
-| Wake wait (seconds) | `sttWaitSeconds` | 15 | 1 to 120 |
+| Voice note wait (seconds) | `sttWaitSeconds` | 15 | 1 to 120 |
 
 A stored setting without `provider` reads as `openai_compatible` and sends the
 same request as before (`POST {baseUrl}/audio/transcriptions`, multipart
@@ -822,12 +845,20 @@ same request as before (`POST {baseUrl}/audio/transcriptions`, multipart
 | Google (Speech-to-Text v2) | `POST {origin}/v2/projects/{project}/locations/{location}/recognizers/_:recognize`, JSON with base64 `content` | `Authorization: Bearer` OAuth token from the service account (JWT bearer grant, scope `cloud-platform`, cached until a minute before expiry) | `autoDecodingConfig`, `model`, `languageCodes` (`auto` when empty), `features.enableAutomaticPunctuation`, `features.diarizationConfig`, `adaptation.phraseSets[].inlinePhraseSet` |
 
 Google synchronous recognition takes audio up to about 60 seconds and 10 MB per
-request; longer audio needs Cloud Storage batch recognition, which Wardmote does
-not use. A Google transcript is therefore refused with `stt_too_long` past 60
-seconds (Ogg Opus duration or the caller's hint) and `stt_too_large` past
-7,500,000 audio bytes, whatever `maxAudioSeconds` says; other formats past 60
-seconds come back from Google as `stt_rejected`. Unreadable credentials answer
-`stt_invalid_credentials`.
+request; BatchRecognize takes up to about 480 minutes but only from a Cloud
+Storage URI, which needs a bucket, its storage cost and write permission, so
+Wardmote does not use it. Instead an Ogg Opus voice note (WhatsApp, Telegram)
+longer than 55 seconds is split at Ogg page boundaries, without decoding, into
+standalone streams of at most 55 seconds: the Opus header pages are repeated,
+granule positions rebased, page sequence numbers and CRCs rewritten, and a part
+never starts on a page that continues a packet. Each part is one synchronous
+request, sent in order, and the texts are joined with a space; with diarization,
+speaker labels restart in each part. A 130 s Opus file split this way gave parts
+of 55.0, 55.0 and 20.0 s that ffmpeg decodes without errors. Each part keeps the
+7,500,000-byte request limit, and `maxAudioSeconds` applies to the whole note.
+Other formats stay limited to 60 seconds (caller's hint) and 7,500,000 bytes;
+longer ones come back from Google as `stt_rejected`. Unreadable credentials
+answer `stt_invalid_credentials`.
 
 **Fetch** (`POST /api/instance/settings/general/speech-to-text/models`, instance
 admin) lists Deepgram batch models from `GET /v1/models`, OpenAI-compatible
@@ -843,21 +874,36 @@ unsaved settings and shows the text or the `stt_*` error code.
 With diarization on and more than one speaker detected, the transcript is
 written as one `Speaker N: text` line per turn.
 
-The wake waits for a transcript up to `sttWaitSeconds`; a later transcript is
-carried to the active run or the next wake. On failure the audio is kept and
-the item is marked `transcript_unavailable`.
+The wake waits for a transcript up to `sttWaitSeconds`; the wake media item
+then carries `transcript`, `transcriptPending: true` (a later transcript is
+carried to the active run or the next wake under `lateTranscripts`), or
+`transcriptUnavailable` with the `stt_*` code. On failure the audio is kept.
 
 Any audio or video attachment, including Telegram voice notes and task files,
 can be transcribed on demand with `POST /api/attachments/{attachmentId}/transcript`
-(an attachment larger than the provider byte limit, the instance attachment limit
-or 7,500,000 bytes for Google, answers `413 stt_too_large` before it is read; a
-local-disk attachment is streamed from its file, not loaded into memory)
-(MCP `wardmoteTranscribeAttachment`, extended toolset). It needs read access to
-the attachment's task, returns `{ attachmentId, text, language?, segments? }`,
-stores nothing, and answers `stt_*` codes: 409 `stt_disabled`, 413
+(MCP `wardmoteTranscribeAttachment`, in the core toolset every agent adapter
+gets). It needs read access to the attachment's task: an agent can transcribe
+files on issues it may read and gets 404 for any other. An attachment larger
+than the provider byte limit (the instance attachment limit, or 7,500,000 bytes
+for non-Ogg audio on Google) answers `413 stt_too_large` before it is read, and a
+local-disk attachment is streamed from its file, not loaded into memory. It
+returns `{ attachmentId, text, language?, segments?, cached }` and answers
+`stt_*` codes: 409 `stt_disabled`, 413
 `stt_too_long`/`stt_too_large`, 422 `stt_not_audio`/`stt_empty`, 502
 `stt_rejected`/`stt_network`/`stt_invalid_response`, 503
 `stt_missing_key`/`stt_invalid_credentials`/`stt_unavailable`, 504 `stt_timeout`.
+The OpenAI Dot runner gets the same capability as `transcribe_task_attachment`
+for files on its assigned task when task attachment reading is on.
+
+Transcripts are cached: one paid request per audio content and transcript
+setting. The cache is a JSON object in instance storage at
+`{companyId}/speech-to-text-cache/{sha256}-{settingsHash}.json`, keyed by the
+file's SHA-256 and a hash of provider, base URL, model, language, diarization,
+keyterms and the provider options (not the key variable or the limits). OpenWA
+voice notes, the transcript route and the Dot tool share it, so an agent asking
+for a voice note OpenWA already transcribed pays nothing. Failures are never
+cached. With attachment retention's orphan rule on, entries older than its age
+are removed and the next request pays again.
 
 ## Audit
 

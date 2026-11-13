@@ -21066,7 +21066,7 @@
       "assertCanManageInstanceSettings"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:356",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:362",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30493,7 +30493,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:372",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:378",
     "authorityCapability": null,
     "parameters": []
   },
@@ -30543,7 +30543,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:303",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:309",
     "authorityCapability": null,
     "parameters": []
   },
@@ -45158,8 +45158,8 @@
     "operationId": "POST /api/attachments/{attachmentId}/transcript",
     "method": "POST",
     "path": "/attachments/{attachmentId}/transcript",
-    "description": "Transcribe an audio or video attachment (voice note, call recording) with the instance speech-to-text provider. Returns text, the detected language, and speaker segments when diarization is on. Billed per call by the provider; call it once per attachment and reuse the text.",
-    "toolset": "extended",
+    "description": "Transcribe an audio/video attachment (voice note, recording) you can read. Cached per file.",
+    "toolset": "core",
     "authority": "agent",
     "authoritySource": "default",
     "tags": [

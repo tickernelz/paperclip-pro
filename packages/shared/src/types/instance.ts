@@ -97,7 +97,17 @@ export interface SpeechToTextModelOption {
 export interface SpeechToTextModelList {
   models: SpeechToTextModelOption[];
   source: "provider" | "curated";
+  locations?: string[];
 }
+
+export interface SpeechToTextCredentialState {
+  envVar: string;
+  set: boolean;
+  projectId?: string | null;
+  usable?: boolean;
+}
+
+export type SpeechToTextCredentialStatus = Record<SpeechToTextProvider, SpeechToTextCredentialState>;
 
 export type SpeechToTextTestResult =
   | ({ ok: true; durationMs: number } & SpeechToTextTranscript)

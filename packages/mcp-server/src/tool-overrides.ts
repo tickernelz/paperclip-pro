@@ -176,9 +176,14 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
   },
   "POST /api/attachments/{attachmentId}/transcript": {
     name: "wardmoteTranscribeAttachment",
-    description:
-      "Transcribe an audio or video attachment (voice note, call recording) with the instance speech-to-text provider. Returns text, the detected language, and speaker segments when diarization is on. Billed per call by the provider; call it once per attachment and reuse the text.",
+    description: "Transcribe an audio/video attachment (voice note, recording) you can read. Cached per file.",
+    toolset: "core",
+  },
+  "GET /api/instance/settings/general/speech-to-text/credentials": {
+    name: "wardmoteGetSpeechToTextCredentials",
+    description: "Show whether each speech-to-text provider key variable is set (instance admin only).",
     toolset: "extended",
+    annotations: { readOnlyHint: true },
   },
   "POST /api/instance/settings/general/speech-to-text/models": {
     name: "wardmoteListSpeechToTextModels",

@@ -73,6 +73,7 @@
   "GET /api/heartbeat-runs/{runId}/events": "protocol",
   "GET /api/heartbeat-runs/{runId}/provider-trace/download": "non_json_response",
   "GET /api/instance/attachment-retention": "instance_admin",
+  "GET /api/instance/settings/general/speech-to-text/credentials": "credential_surface",
   "GET /api/instance/updates": "instance_admin",
   "GET /api/instance/updates/install": "instance_admin",
   "GET /api/invites/{token}": "actor:public",

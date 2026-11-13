@@ -9,6 +9,7 @@ import type {
   PatchInstanceSettings,
   PatchInstanceGeneralSettings,
   PatchInstanceExperimentalSettings,
+  SpeechToTextCredentialStatus,
   SpeechToTextModelList,
   SpeechToTextProvider,
   SpeechToTextSettings,
@@ -42,6 +43,8 @@ export const instanceSettingsApi = {
     google?: { location: string; projectId: string };
   }) =>
     api.post<SpeechToTextModelList>("/instance/settings/general/speech-to-text/models", request),
+  getSpeechToTextCredentials: () =>
+    api.get<SpeechToTextCredentialStatus>("/instance/settings/general/speech-to-text/credentials", { cache: "no-store" }),
   testSpeechToText: (settings: SpeechToTextSettings, file: File) => {
     const form = new FormData();
     form.append("settings", JSON.stringify(settings));

@@ -5,6 +5,8 @@ import { eq } from "drizzle-orm";
 import { activityLog, agents, assets, companies, createDb, heartbeatRuns, issueAttachments, issues, runnerApiResponseReservations } from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import type { StorageService } from "../../storage/types.js";
+import { SPEECH_TO_TEXT_DEFAULTS } from "@tickernelz/wardmote-shared";
+import { instanceSettingsService } from "../instance-settings.js";
 import { TaskAttachmentReadCache } from "./runner-task-attachments.js";
 import { runnerApiCatalog } from "./runner-api-catalog.js";
 import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
@@ -54,6 +56,34 @@ describe("Dot assigned-task attachment reading", () => {
     expect(logs).toHaveLength(1);
     expect(logs[0]).toMatchObject({ action: "dot.attachment_read", runId: f.runId });
     expect(JSON.stringify(logs)).not.toContain(f.body.toString());
+  });
+  it("transcribes an audio file on the assigned task once, then serves the cached transcript, and refuses other files", async () => {
+    const f = await fixture(Buffer.from("OggS-voice"));
+    await db.update(assets).set({ contentType: "audio/ogg", originalFilename: "voice.ogg" }).where(eq(assets.id, f.asset.id));
+    const objects = new Map<string, Buffer>();
+    Object.assign(f.storage, {
+      headObject: vi.fn(async (_companyId: string, key: string) => ({ exists: objects.has(key), contentLength: objects.get(key)?.length })),
+      putFile: vi.fn(async (input: { objectKey: string; body: Buffer }) => { objects.set(input.objectKey, input.body); return {}; }),
+    });
+    f.getObject.mockImplementation(async (_companyId: string, key: string) => ({ stream: Readable.from([objects.get(key) ?? f.body]) }));
+    vi.stubEnv("ZHA6055_DOT_DG", "dg-secret");
+    const providerFetch = vi.fn(async () => new Response(JSON.stringify({ results: { channels: [{ alternatives: [{ transcript: "isi voice note" }] }] } }), { status: 200 }));
+    vi.stubGlobal("fetch", providerFetch);
+    await instanceSettingsService(db).updateGeneral({ speechToText: { ...SPEECH_TO_TEXT_DEFAULTS, enabled: true, provider: "deepgram", model: "nova-3", apiKeyEnvVar: "ZHA6055_DOT_DG" } });
+    try {
+      expect(f.authority.definitions().map(t => t.name)).toContain("transcribe_task_attachment");
+      expect(await f.call("transcribe_task_attachment", { attachmentId: f.attachment.id })).toMatchObject({ text: "isi voice note", cached: false, contentTrust: "untrusted_attachment" });
+      expect(await f.call("transcribe_task_attachment", { attachmentId: f.attachment.id })).toMatchObject({ text: "isi voice note", cached: true });
+      expect(providerFetch).toHaveBeenCalledTimes(1);
+      const foreign = await fixture();
+      expect(await f.call("transcribe_task_attachment", { attachmentId: foreign.attachment.id })).toMatchObject({ outcome: "failed", code: "runner_attachment_not_found" });
+      const text = await fixture();
+      expect(await text.call("transcribe_task_attachment", { attachmentId: text.attachment.id })).toMatchObject({ outcome: "failed", code: "runner_attachment_not_audio" });
+      const logs = await db.select().from(activityLog).where(eq(activityLog.companyId, f.companyId));
+      expect(logs.map(log => log.action)).toEqual(["dot.attachment_transcribed", "dot.attachment_transcribed"]);
+    } finally {
+      await instanceSettingsService(db).updateGeneral({ speechToText: { ...SPEECH_TO_TEXT_DEFAULTS } });
+    }
   });
   it("rejects another task, another company, and caller-supplied scope", async () => {
     const f = await fixture(), foreign = await fixture();

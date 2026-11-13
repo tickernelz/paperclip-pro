@@ -977,6 +977,8 @@ export type {
   SpeechToTextTranscript,
   SpeechToTextModelOption,
   SpeechToTextModelList,
+  SpeechToTextCredentialState,
+  SpeechToTextCredentialStatus,
   SpeechToTextTestResult,
   AttachmentRetentionSettings,
   AttachmentLimitSource,
@@ -3047,3 +3049,5 @@ export type { AgentLifecycleRequest, AgentLifecycleResult } from "./types/agent-
 export * from "./fast-response.js";
 
 export * from "./wardmote-updates.js";
+
+export * from "./speech-to-text-languages.js";

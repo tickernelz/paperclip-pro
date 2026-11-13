@@ -125,6 +125,8 @@ export type {
   SpeechToTextTranscript,
   SpeechToTextModelOption,
   SpeechToTextModelList,
+  SpeechToTextCredentialState,
+  SpeechToTextCredentialStatus,
   SpeechToTextTestResult,
   AttachmentRetentionSettings,
   AttachmentLimitSource,

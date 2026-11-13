@@ -22,6 +22,7 @@ import type { StorageService } from "../../storage/types.js";
 import { issueService } from "../issues.js";
 import { instanceSettingsService } from "../instance-settings.js";
 import { formatSpeechToTextTranscript, SpeechToTextError, transcribeAudio, type SpeechToTextErrorCode } from "../speech-to-text.js";
+import { withTranscriptCache } from "../attachment-transcripts.js";
 import { OpenwaGatewayError, type OpenwaGatewayClient } from "./gateway.js";
 import type { OpenwaInboundEvent } from "./receiver.js";
 
@@ -673,9 +674,13 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
     const source = { attachmentId: item.attachmentId!, sha256: audio.sha256, filename: audio.filename };
     const attempt = (async () => {
       try {
-        const result = await transcribeAudio(
-          { buffer: audio.body, mime: audio.contentType, filename: audio.filename, signal: controller.signal },
-          { settings, env: options.env, fetchImpl: options.fetchImpl, maxBytes: maxBytes() },
+        const { result } = await withTranscriptCache(
+          { storage: options.storage, companyId: scope.companyId, sha256: audio.sha256, settings },
+          () =>
+            transcribeAudio(
+              { buffer: audio.body, mime: audio.contentType, filename: audio.filename, signal: controller.signal },
+              { settings, env: options.env, fetchImpl: options.fetchImpl, maxBytes: maxBytes() },
+            ),
         );
         const text = formatSpeechToTextTranscript(result);
         const transcriptAttachmentId = await persistTranscript(scope, source, text).catch((error) => {

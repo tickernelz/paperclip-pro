@@ -298,7 +298,7 @@ describe("generated Wardmote API tools", () => {
     const { listing } = wardmoteToolCatalog(makeClient(), ["core"], false);
     const serialized = JSON.stringify(listing.tools);
     expect(serialized).not.toContain('"$schema":');
-    expect(Buffer.byteLength(serialized)).toBeLessThan(49_000);
+    expect(Buffer.byteLength(serialized)).toBeLessThan(49_500);
     const updateIssue = listing.tools.find((tool) => tool.name === "wardmoteUpdateIssue");
     expect(updateIssue?.inputSchema.required).toEqual(["issueId"]);
     const properties = updateIssue?.inputSchema.properties as Record<string, unknown>;
