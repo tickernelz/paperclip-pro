@@ -792,16 +792,54 @@ settings page (`speechToText` in `GET`/`PATCH /api/instance/settings/general`):
 
 | Field | Key | Default | Bounds |
 | --- | --- | --- | --- |
-| Toggle | `enabled` | off | needs base URL, model and env var |
-| Base URL | `baseUrl` | empty | http(s) origin or ending at `/v1` (OpenAI-compatible `/audio/transcriptions`) |
-| Model | `model` | empty | |
+| Toggle | `enabled` | off | needs a model and env var; OpenAI-compatible also needs a base URL |
+| Provider | `provider` | `openai_compatible` | `openai_compatible`, `deepgram`, `elevenlabs` |
+| Base URL | `baseUrl` | empty | http(s) origin or ending at `/v1`; empty uses `https://api.deepgram.com` or `https://api.elevenlabs.io` |
+| Model | `model` | empty | free text; **Fetch** lists provider models |
 | API key environment variable | `apiKeyEnvVar` | empty | a server environment variable name, never the key |
+| Language | `language` | empty (detect) | `en`, `id`, `pt-BR`, or `multi` (Deepgram Nova-3) |
+| Speaker diarization | `diarize` | off | Deepgram and ElevenLabs |
+| Keyterms | `keyterms` | none | Deepgram and ElevenLabs; up to 100, 50 characters each |
+| Smart formatting | `deepgram.smartFormat` | on | Deepgram |
+| Tag audio events | `elevenlabs.tagAudioEvents` | off | ElevenLabs |
+| Maximum speakers | `elevenlabs.numSpeakers` | automatic | ElevenLabs, 1 to 32, sent with diarization |
 | Max audio (seconds) | `maxAudioSeconds` | 600 | 1 to 7200 |
 | Wake wait (seconds) | `sttWaitSeconds` | 15 | 1 to 120 |
+
+A stored setting without `provider` reads as `openai_compatible` and sends the
+same request as before (`POST {baseUrl}/audio/transcriptions`, multipart
+`file`, `model`, `response_format=json`, `Authorization: Bearer`).
+
+| Provider | Request | Auth | Options sent |
+| --- | --- | --- | --- |
+| OpenAI-compatible | `POST {baseUrl}/audio/transcriptions`, multipart | `Authorization: Bearer` | `language` (primary subtag) when set |
+| Deepgram | `POST {origin}/v1/listen`, raw audio body | `Authorization: Token` | `model`, `punctuate`, `smart_format`, `language` or `detect_language`, `diarize_model=latest`, `keyterm` (Nova-3) or `keywords` (older models) |
+| ElevenLabs | `POST {origin}/v1/speech-to-text`, multipart | `xi-api-key` | `model_id`, `language_code`, `tag_audio_events`, `diarize`, `num_speakers`, `timestamps_granularity`, `keyterms` |
+
+**Fetch** (`POST /api/instance/settings/general/speech-to-text/models`, instance
+admin) lists Deepgram batch models from `GET /v1/models` and OpenAI-compatible
+models from `GET {baseUrl}/models`. ElevenLabs publishes no speech-to-text model
+list, so it returns `scribe_v3`, `scribe_v2` and `scribe_v2_medical`; any other
+model id can be typed. **Test speech-to-text**
+(`POST /api/instance/settings/general/speech-to-text/test`, instance admin,
+multipart `file` plus `settings` JSON) transcribes a chosen audio file with the
+unsaved settings and shows the text or the `stt_*` error code.
+
+With diarization on and more than one speaker detected, the transcript is
+written as one `Speaker N: text` line per turn.
 
 The wake waits for a transcript up to `sttWaitSeconds`; a later transcript is
 carried to the active run or the next wake. On failure the audio is kept and
 the item is marked `transcript_unavailable`.
+
+Any audio or video attachment, including Telegram voice notes and task files,
+can be transcribed on demand with `POST /api/attachments/{attachmentId}/transcript`
+(MCP `wardmoteTranscribeAttachment`, extended toolset). It needs read access to
+the attachment's task, returns `{ attachmentId, text, language?, segments? }`,
+stores nothing, and answers `stt_*` codes: 409 `stt_disabled`, 413
+`stt_too_long`/`stt_too_large`, 422 `stt_not_audio`/`stt_empty`, 502
+`stt_rejected`/`stt_network`/`stt_invalid_response`, 503
+`stt_missing_key`/`stt_unavailable`, 504 `stt_timeout`.
 
 ## Audit
 

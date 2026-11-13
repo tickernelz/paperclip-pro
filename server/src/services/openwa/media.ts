@@ -21,7 +21,7 @@ import { logger } from "../../middleware/logger.js";
 import type { StorageService } from "../../storage/types.js";
 import { issueService } from "../issues.js";
 import { instanceSettingsService } from "../instance-settings.js";
-import { SpeechToTextError, transcribeAudio, type SpeechToTextErrorCode } from "../speech-to-text.js";
+import { formatSpeechToTextTranscript, SpeechToTextError, transcribeAudio, type SpeechToTextErrorCode } from "../speech-to-text.js";
 import { OpenwaGatewayError, type OpenwaGatewayClient } from "./gateway.js";
 import type { OpenwaInboundEvent } from "./receiver.js";
 
@@ -677,14 +677,15 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
           { buffer: audio.body, mime: audio.contentType, filename: audio.filename, signal: controller.signal },
           { settings, env: options.env, fetchImpl: options.fetchImpl, maxBytes: maxBytes() },
         );
-        const transcriptAttachmentId = await persistTranscript(scope, source, result.text).catch((error) => {
+        const text = formatSpeechToTextTranscript(result);
+        const transcriptAttachmentId = await persistTranscript(scope, source, text).catch((error) => {
           logger.warn(
             { endpointId: scope.endpointId, issueId: scope.issueId, error: error instanceof Error ? error.name : "unknown" },
             "OpenWA transcript derivative was not stored",
           );
           return null;
         });
-        return { ok: true as const, text: result.text, transcriptAttachmentId };
+        return { ok: true as const, text, transcriptAttachmentId };
       } catch (error) {
         const code: SpeechToTextErrorCode = error instanceof SpeechToTextError ? error.code : "stt_network";
         return { ok: false as const, code };

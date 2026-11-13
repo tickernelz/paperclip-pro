@@ -201,6 +201,7 @@
   "POST /api/instance/attachment-retention/preview": "instance_admin",
   "POST /api/instance/attachment-retention/run": "instance_admin",
   "POST /api/instance/database-backups": "instance_admin",
+  "POST /api/instance/settings/general/speech-to-text/test": "non_json_request",
   "POST /api/instance/updates/install": "instance_admin",
   "POST /api/instance/updates/install/force": "instance_admin",
   "POST /api/invites/{inviteId}/revoke": "credential_surface",

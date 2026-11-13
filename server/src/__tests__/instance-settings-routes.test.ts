@@ -1431,4 +1431,123 @@ describe("instance settings routes", () => {
       expect(mockHeartbeatService.applyTaskDrain).not.toHaveBeenCalled();
     });
   });
+  describe("speech-to-text admin routes", () => {
+    const adminActor = { type: "board", userId: "admin-1", source: "session", isInstanceAdmin: true, companyIds: ["company-1"] };
+    const memberActor = { type: "board", userId: "member-1", source: "session", isInstanceAdmin: false, companyIds: ["company-1"] };
+    const providerFetch = vi.fn<typeof fetch>();
+    let home: string;
+    const elevenlabsDraft = {
+      provider: "elevenlabs",
+      model: "scribe_v3",
+      apiKeyEnvVar: "ZHA6055_EL_KEY",
+      enabled: false,
+    };
+
+    beforeEach(async () => {
+      const { mkdtemp } = await import("node:fs/promises");
+      const os = await import("node:os");
+      const path = await import("node:path");
+      home = await mkdtemp(path.join(os.tmpdir(), "zha6055-stt-"));
+      vi.stubEnv("WARDMOTE_HOME", home);
+      vi.stubEnv("WARDMOTE_INSTANCE_ID", "default");
+      vi.stubEnv("ZHA6055_EL_KEY", "el-secret");
+      vi.stubEnv("ZHA6055_DG_KEY", "dg-secret");
+      providerFetch.mockReset();
+      vi.stubGlobal("fetch", providerFetch);
+    });
+
+    afterEach(async () => {
+      vi.unstubAllGlobals();
+      vi.unstubAllEnvs();
+      delete process.env.WARDMOTE_HIDDEN_SETTINGS;
+      const { rm } = await import("node:fs/promises");
+      await rm(home, { recursive: true, force: true });
+    });
+
+    it("lists Deepgram models for an instance admin and refuses other board users", async () => {
+      providerFetch.mockResolvedValue(new Response(JSON.stringify({ stt: [{ canonical_name: "nova-3", batch: true }] }), { status: 200 }));
+      const body = { provider: "deepgram", baseUrl: "", apiKeyEnvVar: "ZHA6055_DG_KEY" };
+
+      const denied = await request(await createApp(memberActor)).post("/api/instance/settings/general/speech-to-text/models").send(body);
+      expect(denied.status).toBe(403);
+      expect(providerFetch).not.toHaveBeenCalled();
+
+      const res = await request(await createApp(adminActor)).post("/api/instance/settings/general/speech-to-text/models").send(body);
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ models: [{ id: "nova-3" }], source: "provider" });
+      expect(JSON.stringify(res.body)).not.toContain("dg-secret");
+    });
+
+    it("answers 422 with the stt code when listing fails and rejects an inline key", async () => {
+      const missing = await request(await createApp(adminActor))
+        .post("/api/instance/settings/general/speech-to-text/models")
+        .send({ provider: "deepgram", baseUrl: "", apiKeyEnvVar: "ZHA6055_UNSET_KEY" });
+      expect(missing.status).toBe(422);
+      expect(missing.body.code).toBe("stt_missing_key");
+
+      const inline = await request(await createApp(adminActor))
+        .post("/api/instance/settings/general/speech-to-text/models")
+        .send({ provider: "deepgram", baseUrl: "", apiKeyEnvVar: "sk-live-123" });
+      expect(inline.status).toBe(400);
+    });
+
+    it("transcribes the uploaded sample with unsaved settings", async () => {
+      providerFetch.mockResolvedValue(new Response(JSON.stringify({ text: "halo", language_code: "ind", words: [] }), { status: 200 }));
+      const res = await request(await createApp(adminActor))
+        .post("/api/instance/settings/general/speech-to-text/test")
+        .field("settings", JSON.stringify(elevenlabsDraft))
+        .attach("file", Buffer.from("voice"), { filename: "sample.ogg", contentType: "audio/ogg" });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({ ok: true, text: "halo", language: "ind" });
+      expect(typeof res.body.durationMs).toBe("number");
+      const [url, init] = providerFetch.mock.calls[0];
+      expect(String(url)).toBe("https://api.elevenlabs.io/v1/speech-to-text");
+      expect(init?.headers).toMatchObject({ "xi-api-key": "el-secret" });
+      expect(mockInstanceSettingsService.updateGeneral).not.toHaveBeenCalled();
+      const { readdir } = await import("node:fs/promises");
+      const path = await import("node:path");
+      expect(await readdir(path.join(home, "instances", "default", "data", "tmp", "uploads")).catch(() => [])).toEqual([]);
+    });
+
+    it("returns the stt error code as a failed test result", async () => {
+      providerFetch.mockResolvedValue(new Response("{}", { status: 401 }));
+      const res = await request(await createApp(adminActor))
+        .post("/api/instance/settings/general/speech-to-text/test")
+        .field("settings", JSON.stringify(elevenlabsDraft))
+        .attach("file", Buffer.from("voice"), { filename: "sample.ogg", contentType: "audio/ogg" });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ ok: false, code: "stt_rejected", message: "Speech-to-text endpoint answered HTTP 401", status: 401 });
+    });
+
+    it("rejects missing files, non-audio files, bad settings, non-admins and operator-hidden settings", async () => {
+      const app = await createApp(adminActor);
+      const noFile = await request(app).post("/api/instance/settings/general/speech-to-text/test").field("settings", JSON.stringify(elevenlabsDraft));
+      expect(noFile.status).toBe(400);
+      const pdf = await request(app)
+        .post("/api/instance/settings/general/speech-to-text/test")
+        .field("settings", JSON.stringify(elevenlabsDraft))
+        .attach("file", Buffer.from("%PDF"), { filename: "x.pdf", contentType: "application/pdf" });
+      expect(pdf.status).toBe(400);
+      const badSettings = await request(app)
+        .post("/api/instance/settings/general/speech-to-text/test")
+        .field("settings", JSON.stringify({ ...elevenlabsDraft, provider: "whisperx" }))
+        .attach("file", Buffer.from("voice"), { filename: "sample.ogg", contentType: "audio/ogg" });
+      expect(badSettings.status).toBe(400);
+
+      const member = await request(await createApp(memberActor))
+        .post("/api/instance/settings/general/speech-to-text/test")
+        .field("settings", JSON.stringify(elevenlabsDraft))
+        .attach("file", Buffer.from("voice"), { filename: "sample.ogg", contentType: "audio/ogg" });
+      expect(member.status).toBe(403);
+
+      process.env.WARDMOTE_HIDDEN_SETTINGS = "instance.general.speechToText";
+      const hidden = await request(await createApp(adminActor))
+        .post("/api/instance/settings/general/speech-to-text/models")
+        .send({ provider: "elevenlabs", baseUrl: "", apiKeyEnvVar: "" });
+      expect(hidden.status).toBe(403);
+      expect(providerFetch).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -397,6 +397,7 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
     try {
       await instanceSettingsService(db).updateGeneral({
         speechToText: {
+          ...SPEECH_TO_TEXT_DEFAULTS,
           enabled: true,
           baseUrl: "http://127.0.0.1:" + (sttServer.address() as AddressInfo).port + "/v1",
           model: "whisper-test",

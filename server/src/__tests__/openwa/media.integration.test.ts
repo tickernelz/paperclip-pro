@@ -121,7 +121,7 @@ describe("OpenWA media ingest and speech-to-text (embedded Postgres + fake gatew
   });
 
   function settings(overrides: Partial<SpeechToTextSettings> = {}): SpeechToTextSettings {
-    return { enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 5, ...overrides };
+    return { ...SPEECH_TO_TEXT_DEFAULTS, enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 5, ...overrides };
   }
 
   function service(options: { stt?: SpeechToTextSettings; mediaTimeoutMs?: number; maxBytes?: number; env?: Record<string, string | undefined> } = {}) {

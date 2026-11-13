@@ -21,24 +21,80 @@ export const DEFAULT_BACKUP_RETENTION: BackupRetentionPolicy = {
   maxFiles: 2,
 };
 
+export const SPEECH_TO_TEXT_PROVIDERS = ["openai_compatible", "deepgram", "elevenlabs"] as const;
+export type SpeechToTextProvider = (typeof SPEECH_TO_TEXT_PROVIDERS)[number];
+
+export const SPEECH_TO_TEXT_DEFAULT_BASE_URLS: Record<SpeechToTextProvider, string> = {
+  openai_compatible: "",
+  deepgram: "https://api.deepgram.com",
+  elevenlabs: "https://api.elevenlabs.io",
+};
+
+export const SPEECH_TO_TEXT_CURATED_MODELS: Record<SpeechToTextProvider, readonly string[]> = {
+  openai_compatible: ["whisper-1", "gpt-4o-transcribe", "gpt-4o-mini-transcribe"],
+  deepgram: ["nova-3", "nova-3-medical", "nova-2", "nova-2-general", "nova-2-meeting", "nova-2-phonecall", "nova-2-voicemail", "nova-2-finance", "nova-2-medical", "enhanced", "base"],
+  elevenlabs: ["scribe_v3", "scribe_v2", "scribe_v2_medical"],
+};
+
+export const SPEECH_TO_TEXT_KEYTERMS_MAX = 100;
+export const SPEECH_TO_TEXT_KEYTERM_MAX_LENGTH = 50;
+export const SPEECH_TO_TEXT_MAX_SPEAKERS = 32;
+
 /** Instance-wide speech-to-text; the API key is read from the named server environment variable at call time. */
 export interface SpeechToTextSettings {
   enabled: boolean;
+  provider: SpeechToTextProvider;
   baseUrl: string;
   model: string;
   apiKeyEnvVar: string;
+  language: string;
+  diarize: boolean;
+  keyterms: string[];
+  deepgram: { smartFormat: boolean };
+  elevenlabs: { tagAudioEvents: boolean; numSpeakers: number | null };
   maxAudioSeconds: number;
   sttWaitSeconds: number;
 }
 
 export const SPEECH_TO_TEXT_DEFAULTS: SpeechToTextSettings = {
   enabled: false,
+  provider: "openai_compatible",
   baseUrl: "",
   model: "",
   apiKeyEnvVar: "",
+  language: "",
+  diarize: false,
+  keyterms: [],
+  deepgram: { smartFormat: true },
+  elevenlabs: { tagAudioEvents: false, numSpeakers: null },
   maxAudioSeconds: 600,
   sttWaitSeconds: 15,
 };
+
+export interface SpeechToTextSegment {
+  speaker: string;
+  text: string;
+}
+
+export interface SpeechToTextTranscript {
+  text: string;
+  language?: string;
+  segments?: SpeechToTextSegment[];
+}
+
+export interface SpeechToTextModelOption {
+  id: string;
+  label?: string;
+}
+
+export interface SpeechToTextModelList {
+  models: SpeechToTextModelOption[];
+  source: "provider" | "curated";
+}
+
+export type SpeechToTextTestResult =
+  | ({ ok: true; durationMs: number } & SpeechToTextTranscript)
+  | { ok: false; code: string; message: string; status: number | null };
 
 export const ATTACHMENT_MAX_MEGABYTES_MIN = 1;
 export const ATTACHMENT_MAX_MEGABYTES_MAX = 500;

@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { trackIdleWork } from "../services/task-admission.js";
 import { Router, type Request } from "express";
 import { heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
@@ -6,9 +7,15 @@ import {
   patchInstanceSettingsSchema,
   patchInstanceExperimentalSettingsSchema,
   patchInstanceGeneralSettingsSchema,
+  speechToTextModelListRequestSchema,
+  speechToTextSettingsSchema,
   startTaskDrainRequestSchema,
+  type SpeechToTextModelList,
+  type SpeechToTextTestResult,
 } from "@tickernelz/wardmote-shared";
-import { conflict, forbidden } from "../errors.js";
+import { badRequest, conflict, forbidden } from "../errors.js";
+import { removeStagedUpload, stageSingleFileUpload } from "../attachment-upload.js";
+import { listSpeechToTextModels, SpeechToTextError, transcribeAudio } from "../services/speech-to-text.js";
 import { getHiddenSettings } from "../services/settings-visibility.js";
 import { readIdleSleepSafety } from "../services/idle-sleep-safety.js";
 import { readIdleLocalWork } from "../services/idle-local-work.js";
@@ -80,6 +87,17 @@ function publishActivitiesBestEffort(publications: ActivityPublication[], action
       logger.error({ err, action, companyId: publication.companyId }, "failed to publish activity event");
     }
   }
+}
+
+function assertSpeechToTextSettingsVisible() {
+  if (getHiddenSettings().has("instance.general.speechToText")) {
+    throw forbidden("speechToText is managed by the hosting operator on this instance", { code: "settings_operator_managed" });
+  }
+}
+
+function speechToTextFailure(error: unknown): SpeechToTextTestResult {
+  if (error instanceof SpeechToTextError) return { ok: false, code: error.code, message: error.message, status: error.status };
+  return { ok: false, code: "stt_network", message: "Speech-to-text test failed", status: null };
 }
 
 function assertCanManageInstanceSettings(req: Request) {
@@ -228,6 +246,58 @@ export function instanceSettingsRoutes(db: Db, pluginWorkers?: PluginWorkerManag
       res.json(updated.general);
     },
   );
+
+  router.post(
+    "/instance/settings/general/speech-to-text/models",
+    validate(speechToTextModelListRequestSchema),
+    async (req, res) => {
+      assertCanManageInstanceSettings(req);
+      assertSpeechToTextSettingsVisible();
+      try {
+        const list: SpeechToTextModelList = await listSpeechToTextModels(req.body);
+        res.json(list);
+      } catch (error) {
+        if (!(error instanceof SpeechToTextError)) throw error;
+        res.status(422).json({ error: error.message, code: error.code, status: error.status });
+      }
+    },
+  );
+
+  router.post("/instance/settings/general/speech-to-text/test", async (req, res) => {
+    assertCanManageInstanceSettings(req);
+    assertSpeechToTextSettingsVisible();
+    const file = await stageSingleFileUpload(req, res, {
+      limitMessage: (limit) => "Speech-to-text test audio exceeds " + limit,
+    });
+    let result: SpeechToTextTestResult;
+    try {
+      if (!file) throw badRequest("Attach an audio file in the multipart field 'file'");
+      if (!file.mimetype.startsWith("audio/") && !file.mimetype.startsWith("video/"))
+        throw badRequest("The speech-to-text test needs an audio or video file");
+      const rawSettings = (req.body as Record<string, unknown> | undefined)?.settings;
+      let candidate: unknown;
+      try {
+        candidate = typeof rawSettings === "string" ? JSON.parse(rawSettings) : undefined;
+      } catch {
+        throw badRequest("The 'settings' field must be JSON");
+      }
+      const parsed = speechToTextSettingsSchema.safeParse({ ...(candidate as object | undefined), enabled: false });
+      if (!parsed.success) throw badRequest("Invalid speech-to-text settings", parsed.error.issues);
+      const started = Date.now();
+      try {
+        const transcript = await transcribeAudio(
+          { buffer: await readFile(file.path), mime: file.mimetype, filename: file.originalname || "sample" },
+          { settings: { ...parsed.data, enabled: true } },
+        );
+        result = { ok: true, durationMs: Date.now() - started, ...transcript };
+      } catch (error) {
+        result = speechToTextFailure(error);
+      }
+    } finally {
+      await removeStagedUpload(file);
+    }
+    res.json(result);
+  });
 
   router.get("/instance/settings/local-run-limits", async (req, res) => {
     assertBoardOrgAccess(req);

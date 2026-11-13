@@ -396,7 +396,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
   it("carries a voice note transcript from the fake speech-to-text service into the wake payload", async () => {
     const t = await setup();
     await instanceSettingsService(db).updateGeneral({
-      speechToText: { enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 5 },
+      speechToText: { ...SPEECH_TO_TEXT_DEFAULTS, enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 5 },
     });
     await goLive(t);
     const waMessageId = t.gateway.nextWaMessageId(false, jid(OWNER_PHONE));
@@ -418,7 +418,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
   it("records a transcript that lands after the wake for the active run and carries it in the next wake", async () => {
     const t = await setup();
     await instanceSettingsService(db).updateGeneral({
-      speechToText: { enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 1 },
+      speechToText: { ...SPEECH_TO_TEXT_DEFAULTS, enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 1 },
     });
     let release!: () => void;
     stt.hold = new Promise<void>((resolve) => (release = resolve));
@@ -464,7 +464,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
   it("ignores a late transcript when no run of the conversation is active", async () => {
     const t = await setup();
     await instanceSettingsService(db).updateGeneral({
-      speechToText: { enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 1 },
+      speechToText: { ...SPEECH_TO_TEXT_DEFAULTS, enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 1 },
     });
     let release!: () => void;
     stt.hold = new Promise<void>((resolve) => (release = resolve));

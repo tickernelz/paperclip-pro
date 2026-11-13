@@ -1,5 +1,13 @@
 import type { Readable } from "node:stream";
-import type { SpeechToTextSettings } from "@tickernelz/wardmote-shared";
+import {
+  SPEECH_TO_TEXT_CURATED_MODELS,
+  SPEECH_TO_TEXT_DEFAULT_BASE_URLS,
+  type SpeechToTextModelList,
+  type SpeechToTextProvider,
+  type SpeechToTextSegment,
+  type SpeechToTextSettings,
+  type SpeechToTextTranscript,
+} from "@tickernelz/wardmote-shared";
 import { getMaxAttachmentBytes } from "../attachment-types.js";
 
 export type SpeechToTextErrorCode =
@@ -35,10 +43,7 @@ export interface SpeechToTextInput {
   signal?: AbortSignal;
 }
 
-export interface SpeechToTextResult {
-  text: string;
-  language?: string;
-}
+export type SpeechToTextResult = SpeechToTextTranscript;
 
 export interface SpeechToTextOptions {
   settings: SpeechToTextSettings;
@@ -48,12 +53,46 @@ export interface SpeechToTextOptions {
   maxBytes?: number;
 }
 
+export interface SpeechToTextModelListRequest {
+  provider: SpeechToTextProvider;
+  baseUrl: string;
+  apiKeyEnvVar: string;
+}
+
+export interface SpeechToTextModelListOptions {
+  env?: Record<string, string | undefined>;
+  fetchImpl?: typeof fetch;
+  timeoutMs?: number;
+}
+
 export const SPEECH_TO_TEXT_REQUEST_TIMEOUT_MS = 120_000;
-const RESPONSE_BYTE_LIMIT = 1024 * 1024;
+export const SPEECH_TO_TEXT_MODEL_LIST_TIMEOUT_MS = 15_000;
+const RESPONSE_BYTE_LIMIT = 4 * 1024 * 1024;
 const OPUS_GRANULE_RATE = 48_000;
+
+const ERROR_HTTP_STATUS: Record<SpeechToTextErrorCode, number> = {
+  stt_disabled: 409,
+  stt_missing_key: 503,
+  stt_too_long: 413,
+  stt_too_large: 413,
+  stt_empty: 422,
+  stt_timeout: 504,
+  stt_rejected: 502,
+  stt_unavailable: 503,
+  stt_network: 502,
+  stt_invalid_response: 502,
+};
+
+export function speechToTextErrorHttpStatus(code: SpeechToTextErrorCode): number {
+  return ERROR_HTTP_STATUS[code];
+}
 
 export function speechToTextTranscriptionUrl(baseUrl: string): string {
   return baseUrl.replace(/\/+$/, "") + "/audio/transcriptions";
+}
+
+function providerOrigin(provider: SpeechToTextProvider, baseUrl: string): string {
+  return (baseUrl || SPEECH_TO_TEXT_DEFAULT_BASE_URLS[provider]).replace(/\/+$/, "").replace(/\/v1$/, "");
 }
 
 /** Reads the playback length of an Ogg Opus stream from its last page granule position. */
@@ -106,41 +145,19 @@ function isAbort(error: unknown): boolean {
   return error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
 }
 
-/** Posts audio to the configured OpenAI-compatible /audio/transcriptions endpoint. */
-export async function transcribeAudio(input: SpeechToTextInput, options: SpeechToTextOptions): Promise<SpeechToTextResult> {
-  const settings = options.settings;
-  if (!settings.enabled || !settings.baseUrl || !settings.model || !settings.apiKeyEnvVar)
-    throw new SpeechToTextError("stt_disabled", "Speech-to-text is not enabled for this instance");
-  const apiKey = (options.env ?? process.env)[settings.apiKeyEnvVar];
-  if (!apiKey) throw new SpeechToTextError("stt_missing_key", "The speech-to-text API key environment variable is not set");
-  const limit = Math.min(options.maxBytes ?? getMaxAttachmentBytes(), getMaxAttachmentBytes());
-  if (input.durationHintSeconds != null && input.durationHintSeconds > settings.maxAudioSeconds)
-    throw new SpeechToTextError("stt_too_long", "Audio is longer than " + settings.maxAudioSeconds + " seconds");
-  let body: Buffer;
-  if (input.buffer) body = input.buffer;
-  else if (input.stream) body = await collect(input.stream, limit);
-  else throw new SpeechToTextError("stt_empty", "No audio was supplied");
-  if (body.length === 0) throw new SpeechToTextError("stt_empty", "No audio was supplied");
-  if (body.length > limit) throw new SpeechToTextError("stt_too_large", "Audio exceeds the " + limit + " byte speech-to-text limit");
-  if (input.durationHintSeconds == null) {
-    const measured = oggOpusDurationSeconds(body);
-    if (measured !== null && measured > settings.maxAudioSeconds)
-      throw new SpeechToTextError("stt_too_long", "Audio is longer than " + settings.maxAudioSeconds + " seconds");
-  }
-  const form = new FormData();
-  form.append("file", new Blob([new Uint8Array(body.buffer as ArrayBuffer, body.byteOffset, body.byteLength)], { type: input.mime }), input.filename);
-  form.append("model", settings.model);
-  form.append("response_format", "json");
-  const timeout = AbortSignal.timeout(options.timeoutMs ?? SPEECH_TO_TEXT_REQUEST_TIMEOUT_MS);
-  const signal = input.signal ? AbortSignal.any([timeout, input.signal]) : timeout;
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+async function requestJson(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: { method: "GET" | "POST"; headers: Record<string, string>; body?: BodyInit },
+  signal: AbortSignal,
+): Promise<{ record: Record<string, unknown>; status: number }> {
   let response: Response;
   try {
-    response = await (options.fetchImpl ?? fetch)(speechToTextTranscriptionUrl(settings.baseUrl), {
-      method: "POST",
-      headers: { Authorization: "Bearer " + apiKey, Accept: "application/json" },
-      body: form,
-      signal,
-    });
+    response = await fetchImpl(url, { ...init, signal });
   } catch (error) {
     if (isAbort(error)) throw new SpeechToTextError("stt_timeout", "Speech-to-text request timed out");
     throw new SpeechToTextError("stt_network", "Speech-to-text endpoint could not be reached");
@@ -163,9 +180,235 @@ export async function transcribeAudio(input: SpeechToTextInput, options: SpeechT
   } catch {
     throw new SpeechToTextError("stt_invalid_response", "Speech-to-text endpoint returned malformed JSON", response.status);
   }
-  const record = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null;
-  if (!record || typeof record.text !== "string")
-    throw new SpeechToTextError("stt_invalid_response", "Speech-to-text response has no text", response.status);
-  const language = typeof record.language === "string" && record.language ? record.language : undefined;
-  return language ? { text: record.text.trim(), language } : { text: record.text.trim() };
+  const record = asRecord(parsed);
+  if (!record) throw new SpeechToTextError("stt_invalid_response", "Speech-to-text response is not a JSON object", response.status);
+  return { record, status: response.status };
+}
+
+function readApiKey(apiKeyEnvVar: string, env: Record<string, string | undefined> | undefined): string {
+  const apiKey = apiKeyEnvVar ? (env ?? process.env)[apiKeyEnvVar] : undefined;
+  if (!apiKey) throw new SpeechToTextError("stt_missing_key", "The speech-to-text API key environment variable is not set");
+  return apiKey;
+}
+
+function primaryLanguage(language: string): string {
+  return language === "multi" ? "" : language.split("-")[0].toLowerCase();
+}
+
+function audioBlob(body: Buffer, mime: string): Blob {
+  return new Blob([new Uint8Array(body.buffer as ArrayBuffer, body.byteOffset, body.byteLength)], { type: mime });
+}
+
+function speakerLabel(raw: unknown): string | null {
+  if (typeof raw === "number" && Number.isInteger(raw) && raw >= 0) return "Speaker " + (raw + 1);
+  if (typeof raw !== "string" || !raw) return null;
+  const numbered = /^speaker_(\d+)$/.exec(raw);
+  return numbered ? "Speaker " + (Number(numbered[1]) + 1) : raw;
+}
+
+function groupSegments(pieces: Array<{ speaker: string | null; text: string }>): SpeechToTextSegment[] | undefined {
+  const segments: SpeechToTextSegment[] = [];
+  for (const piece of pieces) {
+    const last = segments[segments.length - 1];
+    if (last && (piece.speaker === null || piece.speaker === last.speaker)) last.text += piece.text;
+    else if (piece.speaker !== null) segments.push({ speaker: piece.speaker, text: piece.text });
+  }
+  const trimmed = segments.map((segment) => ({ speaker: segment.speaker, text: segment.text.trim() })).filter((segment) => segment.text);
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function transcript(text: string, language: unknown, segments: SpeechToTextSegment[] | undefined): SpeechToTextResult {
+  const result: SpeechToTextResult = { text: text.trim() };
+  if (typeof language === "string" && language) result.language = language;
+  if (segments) result.segments = segments;
+  return result;
+}
+
+interface ProviderAdapter {
+  request(settings: SpeechToTextSettings, apiKey: string, body: Buffer, input: SpeechToTextInput): { url: string; headers: Record<string, string>; body: BodyInit };
+  parse(record: Record<string, unknown>, settings: SpeechToTextSettings, status: number): SpeechToTextResult;
+}
+
+const openAiCompatible: ProviderAdapter = {
+  request(settings, apiKey, body, input) {
+    const form = new FormData();
+    form.append("file", audioBlob(body, input.mime), input.filename);
+    form.append("model", settings.model);
+    form.append("response_format", "json");
+    const language = primaryLanguage(settings.language);
+    if (language) form.append("language", language);
+    return {
+      url: speechToTextTranscriptionUrl(settings.baseUrl),
+      headers: { Authorization: "Bearer " + apiKey, Accept: "application/json" },
+      body: form,
+    };
+  },
+  parse(record, _settings, status) {
+    if (typeof record.text !== "string")
+      throw new SpeechToTextError("stt_invalid_response", "Speech-to-text response has no text", status);
+    return transcript(record.text, record.language, undefined);
+  },
+};
+
+const deepgram: ProviderAdapter = {
+  request(settings, apiKey, body, input) {
+    const query = new URLSearchParams({ model: settings.model, punctuate: "true" });
+    if (settings.deepgram.smartFormat) query.set("smart_format", "true");
+    if (settings.language) query.set("language", settings.language);
+    else query.set("detect_language", "true");
+    if (settings.diarize) query.set("diarize_model", "latest");
+    const keytermParam = settings.model.startsWith("nova-3") ? "keyterm" : "keywords";
+    for (const term of settings.keyterms) query.append(keytermParam, term);
+    return {
+      url: providerOrigin("deepgram", settings.baseUrl) + "/v1/listen?" + query.toString(),
+      headers: { Authorization: "Token " + apiKey, Accept: "application/json", "Content-Type": input.mime || "application/octet-stream" },
+      body: new Uint8Array(body.buffer as ArrayBuffer, body.byteOffset, body.byteLength),
+    };
+  },
+  parse(record, settings, status) {
+    const results = asRecord(record.results);
+    const channel = Array.isArray(results?.channels) ? asRecord(results.channels[0]) : null;
+    const alternative = channel && Array.isArray(channel.alternatives) ? asRecord(channel.alternatives[0]) : null;
+    if (!alternative || typeof alternative.transcript !== "string")
+      throw new SpeechToTextError("stt_invalid_response", "Speech-to-text response has no transcript", status);
+    let segments: SpeechToTextSegment[] | undefined;
+    if (settings.diarize && Array.isArray(alternative.words)) {
+      segments = groupSegments(
+        alternative.words.flatMap((entry, index) => {
+          const word = asRecord(entry);
+          const token = typeof word?.punctuated_word === "string" ? word.punctuated_word : typeof word?.word === "string" ? word.word : null;
+          return token === null ? [] : [{ speaker: speakerLabel(word?.speaker), text: (index > 0 ? " " : "") + token }];
+        }),
+      );
+    }
+    return transcript(alternative.transcript, channel?.detected_language, segments);
+  },
+};
+
+const elevenlabs: ProviderAdapter = {
+  request(settings, apiKey, body, input) {
+    const form = new FormData();
+    form.append("model_id", settings.model);
+    form.append("file", audioBlob(body, input.mime), input.filename);
+    const language = primaryLanguage(settings.language);
+    if (language) form.append("language_code", language);
+    form.append("tag_audio_events", settings.elevenlabs.tagAudioEvents ? "true" : "false");
+    form.append("diarize", settings.diarize ? "true" : "false");
+    if (settings.diarize && settings.elevenlabs.numSpeakers !== null) form.append("num_speakers", String(settings.elevenlabs.numSpeakers));
+    form.append("timestamps_granularity", settings.diarize ? "word" : "none");
+    for (const term of settings.keyterms) form.append("keyterms", term);
+    return {
+      url: providerOrigin("elevenlabs", settings.baseUrl) + "/v1/speech-to-text",
+      headers: { "xi-api-key": apiKey, Accept: "application/json" },
+      body: form,
+    };
+  },
+  parse(record, settings, status) {
+    if (typeof record.text !== "string")
+      throw new SpeechToTextError("stt_invalid_response", "Speech-to-text response has no text", status);
+    let segments: SpeechToTextSegment[] | undefined;
+    if (settings.diarize && Array.isArray(record.words)) {
+      segments = groupSegments(
+        record.words.flatMap((entry) => {
+          const word = asRecord(entry);
+          return typeof word?.text === "string" ? [{ speaker: speakerLabel(word.speaker_id), text: word.text }] : [];
+        }),
+      );
+    }
+    return transcript(record.text, record.language_code, segments);
+  },
+};
+
+const ADAPTERS: Record<SpeechToTextProvider, ProviderAdapter> = {
+  openai_compatible: openAiCompatible,
+  deepgram,
+  elevenlabs,
+};
+
+export function formatSpeechToTextTranscript(result: SpeechToTextTranscript): string {
+  const segments = result.segments ?? [];
+  if (new Set(segments.map((segment) => segment.speaker)).size < 2) return result.text;
+  return segments.map((segment) => segment.speaker + ": " + segment.text).join("\n");
+}
+
+export async function transcribeAudio(input: SpeechToTextInput, options: SpeechToTextOptions): Promise<SpeechToTextResult> {
+  const settings = options.settings;
+  const provider = settings.provider ?? "openai_compatible";
+  if (!settings.enabled || !settings.model || !settings.apiKeyEnvVar || (provider === "openai_compatible" && !settings.baseUrl))
+    throw new SpeechToTextError("stt_disabled", "Speech-to-text is not enabled for this instance");
+  const apiKey = readApiKey(settings.apiKeyEnvVar, options.env);
+  const limit = Math.min(options.maxBytes ?? getMaxAttachmentBytes(), getMaxAttachmentBytes());
+  if (input.durationHintSeconds != null && input.durationHintSeconds > settings.maxAudioSeconds)
+    throw new SpeechToTextError("stt_too_long", "Audio is longer than " + settings.maxAudioSeconds + " seconds");
+  let body: Buffer;
+  if (input.buffer) body = input.buffer;
+  else if (input.stream) body = await collect(input.stream, limit);
+  else throw new SpeechToTextError("stt_empty", "No audio was supplied");
+  if (body.length === 0) throw new SpeechToTextError("stt_empty", "No audio was supplied");
+  if (body.length > limit) throw new SpeechToTextError("stt_too_large", "Audio exceeds the " + limit + " byte speech-to-text limit");
+  if (input.durationHintSeconds == null) {
+    const measured = oggOpusDurationSeconds(body);
+    if (measured !== null && measured > settings.maxAudioSeconds)
+      throw new SpeechToTextError("stt_too_long", "Audio is longer than " + settings.maxAudioSeconds + " seconds");
+  }
+  const adapter = ADAPTERS[provider];
+  const request = adapter.request(settings, apiKey, body, input);
+  const timeout = AbortSignal.timeout(options.timeoutMs ?? SPEECH_TO_TEXT_REQUEST_TIMEOUT_MS);
+  const signal = input.signal ? AbortSignal.any([timeout, input.signal]) : timeout;
+  const { record, status } = await requestJson(
+    options.fetchImpl ?? fetch,
+    request.url,
+    { method: "POST", headers: request.headers, body: request.body },
+    signal,
+  );
+  return adapter.parse(record, settings, status);
+}
+
+function curatedModels(provider: SpeechToTextProvider): SpeechToTextModelList {
+  return { models: SPEECH_TO_TEXT_CURATED_MODELS[provider].map((id) => ({ id })), source: "curated" };
+}
+
+function uniqueSorted(ids: string[]): SpeechToTextModelList["models"] {
+  return [...new Set(ids)].sort((left, right) => left.localeCompare(right)).map((id) => ({ id }));
+}
+
+export async function listSpeechToTextModels(
+  request: SpeechToTextModelListRequest,
+  options: SpeechToTextModelListOptions = {},
+): Promise<SpeechToTextModelList> {
+  if (request.provider === "elevenlabs") return curatedModels("elevenlabs");
+  if (request.provider === "openai_compatible" && !request.baseUrl)
+    throw new SpeechToTextError("stt_disabled", "An OpenAI-compatible endpoint needs a base URL before its models can be listed");
+  const apiKey = readApiKey(request.apiKeyEnvVar, options.env);
+  const signal = AbortSignal.timeout(options.timeoutMs ?? SPEECH_TO_TEXT_MODEL_LIST_TIMEOUT_MS);
+  const fetchImpl = options.fetchImpl ?? fetch;
+  let ids: string[];
+  if (request.provider === "deepgram") {
+    const { record, status } = await requestJson(
+      fetchImpl,
+      providerOrigin("deepgram", request.baseUrl) + "/v1/models",
+      { method: "GET", headers: { Authorization: "Token " + apiKey, Accept: "application/json" } },
+      signal,
+    );
+    if (!Array.isArray(record.stt)) throw new SpeechToTextError("stt_invalid_response", "Deepgram model list has no stt entries", status);
+    ids = record.stt.flatMap((entry) => {
+      const model = asRecord(entry);
+      if (!model || model.batch === false) return [];
+      const id = typeof model.canonical_name === "string" && model.canonical_name ? model.canonical_name : model.name;
+      return typeof id === "string" && id ? [id] : [];
+    });
+  } else {
+    const { record, status } = await requestJson(
+      fetchImpl,
+      request.baseUrl.replace(/\/+$/, "") + "/models",
+      { method: "GET", headers: { Authorization: "Bearer " + apiKey, Accept: "application/json" } },
+      signal,
+    );
+    if (!Array.isArray(record.data)) throw new SpeechToTextError("stt_invalid_response", "Model list has no data array", status);
+    ids = record.data.flatMap((entry) => {
+      const id = asRecord(entry)?.id;
+      return typeof id === "string" && id ? [id] : [];
+    });
+  }
+  return ids.length > 0 ? { models: uniqueSorted(ids), source: "provider" } : curatedModels(request.provider);
 }
