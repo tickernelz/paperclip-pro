@@ -8,11 +8,11 @@ The main behavior changes are:
 - Timer and manual wakes now preserve task sessions by default; fresh sessions are forced only for explicit `forceFreshSession` wakes or new issue assignment wakes.
 - Heartbeat session rotation is now policy-driven in the control plane, with a handoff note injected when a session is compacted and restarted.
 - Wardmote issue context now has incremental APIs: `GET /api/agents/me/inbox-lite`, `GET /api/issues/:id/heartbeat-context`, and comment delta queries via `GET /api/issues/:id/comments?after=...&order=asc`.
-- The `paperclip` skill now teaches agents to use those compact/incremental APIs first, while keeping full-thread fetches as a cold-start fallback.
+- The `wardmote` skill now teaches agents to use those compact/incremental APIs first, while keeping full-thread fetches as a cold-start fallback.
 - All local adapters now separate first-session bootstrap prompts from per-heartbeat prompt templates, and emit prompt size metrics in invocation metadata.
 - Adapter create flows now persist `bootstrapPromptTemplate` correctly.
 - The agent config UI now explains the difference between bootstrap prompts and heartbeat prompts and warns about prompt churn.
-- Runtime skill defaults now include `paperclip`, `para-memory-files`, and `wardmote-create-agent`. `create-agent-adapter` was moved to `.agents/skills/create-agent-adapter`.
+- Runtime skill defaults now include `wardmote`, `para-memory-files`, and `wardmote-create-agent`. `create-agent-adapter` was moved to `.agents/skills/create-agent-adapter`.
 
 Important follow-up finding from real-run review:
 

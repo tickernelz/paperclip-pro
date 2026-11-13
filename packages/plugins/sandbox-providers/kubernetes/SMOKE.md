@@ -8,7 +8,7 @@ dev). Future work may automate this in CI.
 
 - A running kind cluster:
   ```bash
-  kind create cluster --name paperclip
+  kind create cluster --name wardmote
   ```
 - `kubectl --context kind-paperclip get nodes` returns a node in `Ready` state.
 

@@ -208,4 +208,4 @@ Pushing a `v<YYYY.MDD.P>` tag runs [`.github/workflows/release.yml`](.github/wor
 
 ## Licence and attribution
 
-MIT, see [LICENSE](LICENSE). Wardmote is a **hard fork** of [paperclipai/paperclip](https://github.com/paperclipai/paperclip), branched at upstream commit `7b7c4d417` and developed separately since. Upstream work is copyright Paperclip AI; the fork's changes are copyright Zhafron Adani Kautsar. Both notices are in [LICENSE](LICENSE). Wardmote is not an upstream release and is not endorsed by the upstream authors, so please file Wardmote bugs here, not upstream.
+MIT, see [LICENSE](LICENSE). Wardmote is a **hard fork** of [paperclipai/paperclip](https://github.com/paperclipai/paperclip), branched at upstream commit `7b7c4d417` and developed separately since. Upstream work is copyright Wardmote AI; the fork's changes are copyright Zhafron Adani Kautsar. Both notices are in [LICENSE](LICENSE). Wardmote is not an upstream release and is not endorsed by the upstream authors, so please file Wardmote bugs here, not upstream.

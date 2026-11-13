@@ -6,7 +6,7 @@ recommendedForRoles:
   - manager
   - general
 tags:
-  - paperclip
+  - wardmote
   - reflection
   - coaching
   - agents

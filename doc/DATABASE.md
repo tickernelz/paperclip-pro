@@ -143,7 +143,7 @@ DATABASE_POOL_MAX=25                 # connection pool size; default: 10
 DATABASE_IDLE_TIMEOUT_SECONDS=60     # close idle pooled connections; default: 60 (0 = keep open)
 DATABASE_CONNECT_TIMEOUT_SECONDS=10  # default: 30
 DATABASE_MAX_LIFETIME_SECONDS=1800   # recycle a pooled connection after this long; default: 30-60 min (random)
-DATABASE_APPLICATION_NAME=paperclip  # application_name in pg_stat_activity; default: paperclip
+DATABASE_APPLICATION_NAME=wardmote  # application_name in pg_stat_activity; default: wardmote
 ```
 
 ### Push the schema

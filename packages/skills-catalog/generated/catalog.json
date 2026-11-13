@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageName": "@tickernelz/wardmote-skills-catalog",
   "packageVersion": "0.3.1",
-  "generatedAt": "2026-11-11T09:12:31.116Z",
+  "generatedAt": "2026-11-13T00:32:20.156Z",
   "skills": [
     {
       "id": "tickernelz:bundled:docs:doc-maintenance",
@@ -59,7 +59,7 @@
       ],
       "requires": [],
       "tags": [
-        "paperclip",
+        "wardmote",
         "brand",
         "capsules",
         "agents",
@@ -70,8 +70,8 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 5820,
-          "sha256": "8ae0eb45136897928474dfb9f1630ac79a5b93f578ecb6d4652535898e0c120b"
+          "sizeBytes": 5819,
+          "sha256": "c2fabefd98f4682d21efe16555b8d48dfb00aab92b49140d482c894523acac80"
         },
         {
           "path": "references/generator-workflows.md",
@@ -98,7 +98,7 @@
           "sha256": "34ef1c050c6dea40b605d35a6173f31a4e42fe95a27b1fbb50bf2025a2744f6b"
         }
       ],
-      "contentHash": "sha256:34cba01e34e4a3074debc58b68007beccea10b2c44a88b159839775762e24554"
+      "contentHash": "sha256:113714f04cce371b84ca8f66b575133b2d72f7cdd629e6fe75c09566cf1dcf73"
     },
     {
       "id": "tickernelz:bundled:product:wireframe",
@@ -260,7 +260,7 @@
       ],
       "requires": [],
       "tags": [
-        "paperclip",
+        "wardmote",
         "triage",
         "inbox",
         "workflow"
@@ -269,11 +269,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 4039,
-          "sha256": "03d44f52b40e2677a339fcc9f26364965ff28e1e791c7874aea5ee0e4f97f52c"
+          "sizeBytes": 4038,
+          "sha256": "e4a105c883fe9f70e92a46748369a0b3107cf0008018c76f2af8cfe1c28b3e9b"
         }
       ],
-      "contentHash": "sha256:7dfcf3fbceba701c25d0c059f00556c3336e80cbd5f21889301ac7e831cf4489"
+      "contentHash": "sha256:69dd17f8447b3be93e866b3c904b9d822eb84b0d03328f22b1ea0cf1be2d61e5"
     },
     {
       "id": "tickernelz:bundled:wardmote-operations:reflection-coach",
@@ -294,7 +294,7 @@
       ],
       "requires": [],
       "tags": [
-        "paperclip",
+        "wardmote",
         "reflection",
         "coaching",
         "agents",
@@ -304,11 +304,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 12013,
-          "sha256": "a76ede0da56975d69f545c85c7fdb502bf30882b272ac17b5055b3c6d9f1db77"
+          "sizeBytes": 12012,
+          "sha256": "8650a292e9e2fb4bbb4bddac18f224f6efe74c322cb5480917c28bf273c5389d"
         }
       ],
-      "contentHash": "sha256:5698e783bd688453447177f5f2f3f768f5f2c067ad9515158b3812f065fb8e7d"
+      "contentHash": "sha256:b71e7b63229c9c8e141fcb4237a9b116bd48897d82d54cdc39c51200dbb44bc9"
     },
     {
       "id": "tickernelz:bundled:wardmote-operations:status-card-query",
@@ -329,7 +329,7 @@
       ],
       "requires": [],
       "tags": [
-        "paperclip",
+        "wardmote",
         "status",
         "search",
         "reporting",
@@ -339,11 +339,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 6353,
-          "sha256": "a1a09ebf7de40a6478cdb93377189844b8b64bfcbf872fe7ef666ec9be449ff4"
+          "sizeBytes": 6352,
+          "sha256": "9b84c05d21f52688d87008523ac4bbf01f4415a04e18948df8f1c40744988646"
         }
       ],
-      "contentHash": "sha256:f86953671518363046b093fee7919ebce46e7ba22933e6d395d1a7c25ee553e4"
+      "contentHash": "sha256:a7d62b67e94b4b24fdc8cf85e0455b1c3b66922e90e5e5065f45e7822ba023ba"
     },
     {
       "id": "tickernelz:bundled:wardmote-operations:summarize-status",
@@ -364,7 +364,7 @@
       ],
       "requires": [],
       "tags": [
-        "paperclip",
+        "wardmote",
         "summary",
         "status",
         "reporting",
@@ -374,11 +374,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 8869,
-          "sha256": "55324ed79fe77502b3c24e09e2f9ecc14a61ef5dbe9e4226d227ccf02b3d97ce"
+          "sizeBytes": 8868,
+          "sha256": "dc0bf82d96c3c09e1b297945c8a2c0d6f16befd81a52cf43e57d74791683a8a8"
         }
       ],
-      "contentHash": "sha256:4993bb2953c1d3886fc713a5aefbb6f0ed29316a600c539cf727e0e2e9a65de2"
+      "contentHash": "sha256:9d24d1b37a14248060305d5aa58174dcd192137c7212b185fa404908443517a4"
     },
     {
       "id": "tickernelz:bundled:wardmote-operations:task-planning",
@@ -400,7 +400,7 @@
       ],
       "requires": [],
       "tags": [
-        "paperclip",
+        "wardmote",
         "planning",
         "issues",
         "delegation"
@@ -409,11 +409,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 1512,
-          "sha256": "6ae06fecb840255f450f1c767d05032279c4ef4c22621ab2f0050ede8aaa0da4"
+          "sizeBytes": 1511,
+          "sha256": "d58c89c759db6b12cf4381a551643ed40525e336bd6813cccfa78d643002f2a8"
         }
       ],
-      "contentHash": "sha256:1022912fbe07a8af8fc4e6f724163a73790543d7e97e843e83431c25dcdd6081"
+      "contentHash": "sha256:ba6629ef488a1d6f84de8a8490ee3854377444d9dd45704388b4a7252335c8a1"
     },
     {
       "id": "tickernelz:optional:browser:agent-browser",
