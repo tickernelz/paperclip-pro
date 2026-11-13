@@ -82,9 +82,9 @@ export interface FeedbackTraceBundleFile {
   byteLength: number;
   sha256: string;
   source:
-    | "paperclip_run"
-    | "paperclip_run_events"
-    | "paperclip_run_log"
+    | "wardmote_run"
+    | "wardmote_run_events"
+    | "wardmote_run_log"
     | "codex_session"
     | "claude_stream_json"
     | "claude_project_session"

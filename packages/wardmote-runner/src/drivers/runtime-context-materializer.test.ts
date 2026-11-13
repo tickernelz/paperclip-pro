@@ -173,8 +173,8 @@ describe("runtime context materialization", () => {
     const target = join(root, "isolated");
     await mkdir(source);
     await writeFile(join(source, "auth.json"), '{"OPENAI_API_KEY":"unrelated-key"}');
-    await writeFile(join(source, "config.toml"), `model_provider = "paperclip"
-[model_providers.paperclip]
+    await writeFile(join(source, "config.toml"), `model_provider = "wardmote"
+[model_providers.wardmote]
 name = "Selected connection"
 base_url = "https://openrouter.ai/api/v1"
 wire_api = "responses"
@@ -187,7 +187,7 @@ command = "untrusted-command"
 `);
     await prepareIsolatedCodexHome({ context: null, codexHome: target, sourceCodexHome: source, apiKey: "also-unrelated" });
     const config = await readFile(join(target, "config.toml"), "utf8");
-    expect(config).toContain('model_provider = "paperclip"');
+    expect(config).toContain('model_provider = "wardmote"');
     expect(config).toContain('base_url = "https://openrouter.ai/api/v1"');
     expect(config).toContain('env_key = "WARDMOTE_AI_PROVIDER_KEY"');
     expect(config).toContain("shell_snapshot = false");

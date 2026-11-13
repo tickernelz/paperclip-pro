@@ -682,8 +682,8 @@ describeEmbeddedPostgres("feedbackService.saveIssueVote", () => {
 
     expect(trace?.status).toBe("pending");
     expect(trace?.exportId).toMatch(/^fbexp_/);
-    expect(trace?.schemaVersion).toBe("paperclip-feedback-envelope-v2");
-    expect(trace?.bundleVersion).toBe("paperclip-feedback-bundle-v2");
+    expect(trace?.schemaVersion).toBe("wardmote-feedback-envelope-v2");
+    expect(trace?.bundleVersion).toBe("wardmote-feedback-bundle-v2");
     expect(trace?.payloadDigest).toMatch(/^[a-f0-9]{64}$/);
     expect(primaryContent?.createdByRunId).toBe(runId);
     expect(String(primaryContent?.body)).toContain("[REDACTED]");
@@ -746,11 +746,11 @@ describeEmbeddedPostgres("feedbackService.saveIssueVote", () => {
 
     expect(localTrace?.status).toBe("local_only");
     expect(localTrace?.exportId).toBeNull();
-    expect(localTrace?.payloadVersion).toBe("paperclip-feedback-v1");
+    expect(localTrace?.payloadVersion).toBe("wardmote-feedback-v1");
     expect(localTrace?.payloadSnapshot?.bundle).toBeNull();
     expect(sharedTrace?.status).toBe("pending");
     expect(sharedTrace?.exportId).toMatch(/^fbexp_/);
-    expect(sharedTrace?.payloadVersion).toBe("paperclip-feedback-v1");
+    expect(sharedTrace?.payloadVersion).toBe("wardmote-feedback-v1");
   });
 
   it("rejects feedback votes on human-authored comments", async () => {
@@ -838,7 +838,7 @@ describeEmbeddedPostgres("feedbackService.saveIssueVote", () => {
       issueIdentifier: traces[0]?.issueIdentifier,
       captureStatus: expect.stringMatching(/^(full|partial|unavailable)$/),
       envelope: {
-        destination: "paperclip_labs_feedback_v1",
+        destination: "wardmote_feedback_v1",
         exportId: traces[0]?.exportId,
       },
     });

@@ -1,6 +1,7 @@
 export * from "./configured-environment.js";
 export * from "./catalog/index.js";
 export { CURSOR_DISTRIBUTION_PINS } from "./drivers/acpx/generated-profiles.js";
+export { MANAGED_CODEX_PROVIDER_ID, prepareIsolatedCodexHome } from "./drivers/runtime-context-materializer.js";
 export * from "./contracts/control-plane-port.js";
 export * from "./contracts/completion-result.js";
 export * from "./contracts/codex.js";
