@@ -2661,6 +2661,13 @@
       "when": 1794863877710,
       "tag": "0381_wardmote_plugin_skill_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 382,
+      "version": "7",
+      "when": 1794950277710,
+      "tag": "0382_wardmote_work_product_provider",
+      "breakpoints": true
     }
   ]
 }

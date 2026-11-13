@@ -410,7 +410,7 @@ describeEmbeddedPostgres("smoke lab service pack and results API", () => {
         scenarioStep: "oauth-login",
         status: "pass",
         detail: "OAuth login completed",
-        screenshotArtifactRef: { provider: "paperclip", attachmentId: randomUUID() },
+        screenshotArtifactRef: { provider: "wardmote", attachmentId: randomUUID() },
         durationMs: 42,
       })
       .expect(201);

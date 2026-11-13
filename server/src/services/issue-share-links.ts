@@ -470,7 +470,7 @@ export function issueShareLinkService(db: Db) {
       attachment.issueCommentId ? fullCommentIds.has(attachment.issueCommentId) : neverBoundToComment(attachment);
     const attachmentsById = new Map(attachments.map((attachment) => [attachment.id, attachment]));
     const publicWorkProducts: PublicShareWorkProduct[] = workProducts.flatMap((product) => {
-      const attachmentId = product.type === "artifact" && product.provider === "paperclip"
+      const attachmentId = product.type === "artifact" && product.provider === "wardmote"
         ? readAttachmentId(product.metadata)
         : null;
       const backing = attachmentId ? attachmentsById.get(attachmentId) : undefined;
@@ -573,7 +573,7 @@ export function issueShareLinkService(db: Db) {
         eq(issueWorkProducts.companyId, resolved.link.companyId),
         eq(issueWorkProducts.issueId, attachment.issueId),
         eq(issueWorkProducts.type, "artifact"),
-        eq(issueWorkProducts.provider, "paperclip"),
+        eq(issueWorkProducts.provider, "wardmote"),
         sql`${issueWorkProducts.metadata} ->> 'attachmentId' = ${attachment.id}`,
       ))
       .orderBy(asc(issueWorkProducts.createdAt))

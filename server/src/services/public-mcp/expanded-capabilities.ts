@@ -184,7 +184,7 @@ async function attachmentDeliverable(p: Parameters<Capability["run"]>[0], a: Rec
   const attachment = rows(await api(p, "GET", `/issues/${pathId(a.taskId)}/attachments`)).find(v => object(v).id === a.attachmentId);
   if (!attachment) throw new McpApiError(404);
   const contentPath = `/api/attachments/${a.attachmentId}/content`;
-  return { ...result, type: "artifact", provider: "paperclip", externalId: a.attachmentId, metadata: {
+  return { ...result, type: "artifact", provider: "wardmote", externalId: a.attachmentId, metadata: {
     ...pick(attachment, ["contentType", "byteSize", "originalFilename"]), attachmentId: a.attachmentId,
     contentPath, openPath: contentPath, downloadPath: contentPath + "?download=1",
   } };

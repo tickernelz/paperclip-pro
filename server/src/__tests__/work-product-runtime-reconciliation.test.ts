@@ -11,7 +11,7 @@ function workProduct(overrides: Partial<IssueWorkProduct> = {}): IssueWorkProduc
     executionWorkspaceId: "ews-1",
     runtimeServiceId: "runtime-1",
     type: "runtime_service",
-    provider: "paperclip",
+    provider: "wardmote",
     externalId: null,
     title: "Workspace preview",
     url: "https://workspace.example.ts.net:42013/",

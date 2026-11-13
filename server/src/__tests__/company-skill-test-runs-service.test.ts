@@ -634,7 +634,7 @@ describeEmbeddedPostgres("companySkillService skill test runs", () => {
         companyId,
         issueId,
         type: "artifact",
-        provider: "paperclip",
+        provider: "wardmote",
         title: `Artifact ${marker}`,
         status: "active",
         summary: `Generated ${marker}`,
@@ -695,7 +695,7 @@ describeEmbeddedPostgres("companySkillService skill test runs", () => {
       companyId,
       issueId: run.issueId,
       type: "artifact",
-      provider: "paperclip",
+      provider: "wardmote",
       title: "Artifact mine",
       summary: "Generated mine",
     }));

@@ -11,7 +11,7 @@ function makeWorkProduct(overrides: Partial<IssueWorkProduct> & { id: string }):
     executionWorkspaceId: null,
     runtimeServiceId: null,
     type: "artifact",
-    provider: "paperclip",
+    provider: "wardmote",
     externalId: null,
     title: "output",
     url: null,
