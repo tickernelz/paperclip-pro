@@ -344,16 +344,8 @@ fn matches_typescript_mcp_display_identity_across_tool_lifecycle() {
             "wardmote",
             "write_document",
         ),
-        (
-            "mcp.acme.write_document",
-            "acme",
-            "write_document",
-        ),
-        (
-            "  MCP__Acme__write_document  ",
-            "Acme",
-            "write_document",
-        ),
+        ("mcp.acme.write_document", "acme", "write_document"),
+        ("  MCP__Acme__write_document  ", "Acme", "write_document"),
         ("McP.other.read_document", "other", "read_document"),
         ("mcp__wardmote__nested__tool", "wardmote", "nested__tool"),
         ("mcp.acme.nested.tool", "acme", "nested.tool"),
