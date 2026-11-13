@@ -100,7 +100,6 @@
     ["cli/src/__tests__/install-command.test.ts",29,"belum-diganti"],
     ["cli/src/__tests__/managed-agent.test.ts",2,"belum-diganti"],
     ["cli/src/__tests__/migrate-home.test.ts",18,"migrasi-otomatis"],
-    ["cli/src/__tests__/prompt-default-accept.test.ts",3,"belum-diganti"],
     ["cli/src/__tests__/secrets.test.ts",1,"belum-diganti"],
     ["cli/src/__tests__/service-health-check.test.ts",1,"belum-diganti"],
     ["cli/src/__tests__/service-manager.test.ts",1,"belum-diganti"],

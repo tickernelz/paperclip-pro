@@ -66,7 +66,7 @@ function validatorFor(message: string): NonNullable<CapturedTextOptions["validat
 
 const dbFixture: DatabaseConfig = {
   mode: "postgres",
-  connectionString: "postgres://user:pass@localhost:5432/paperclip",
+  connectionString: "postgres://user:pass@localhost:5432/wardmote",
   embeddedPostgresDataDir: "/var/lib/wardmote/db",
   embeddedPostgresPort: 54329,
   backup: {
@@ -142,7 +142,7 @@ describe("promptDatabase accepts defaults", () => {
     await expect(promptDatabase()).rejects.toThrow(/Connection string is required/);
 
     const connection = validatorFor("PostgreSQL connection string");
-    expect(connection("postgres://user:pass@localhost:5432/paperclip")).toBeUndefined();
+    expect(connection("postgres://user:pass@localhost:5432/wardmote")).toBeUndefined();
     expect(connection("mysql://nope")).toBeTruthy();
   });
 });
@@ -226,7 +226,7 @@ describe("promptStorage accepts defaults", () => {
 
     const storage = await promptStorage();
 
-    expect(storage.s3.bucket).toBe("paperclip");
+    expect(storage.s3.bucket).toBe("wardmote");
     expect(storage.s3.region).toBe("us-east-1");
 
     expect(validatorFor("S3 bucket")("   ")).toBeTruthy();
