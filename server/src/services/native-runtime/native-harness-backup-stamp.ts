@@ -20,7 +20,7 @@ function stateBase(): string {
       resolve(
         resolveWardmoteInstanceRoot(),
         "runtime",
-        "paperclip-runner",
+        "wardmote-runner",
         "durable-sessions",
       ),
   );

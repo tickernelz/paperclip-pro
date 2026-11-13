@@ -73,12 +73,12 @@ describe("managed GitHub launcher environment", () => {
   it.runIf(process.platform === "linux")("keeps launcher restaging and command scratch inside the runner runtime", async () => {
     const fixture = await sandbox("usr/bin");
     const privateRoot = path.join(fixture.root, ".wardmote-runtime");
-    await mkdir(path.join(privateRoot, "paperclip-runner"), { recursive: true });
+    await mkdir(path.join(privateRoot, "wardmote-runner"), { recursive: true });
     await writeFile(path.join(fixture.root, "user.txt"), "Existing work\n");
     const mutations: string[] = [];
     const watchers = [fixture.root, privateRoot].map((directory) => watch(directory, (_kind, name) => {
       const changed = path.relative(fixture.root, path.join(directory, String(name)));
-      if (changed !== ".wardmote-runtime/paperclip-runner") mutations.push(changed);
+      if (changed !== ".wardmote-runtime/wardmote-runner") mutations.push(changed);
     }));
     try {
       const input = { runId: "restart-same-launchers", target: fixture.target, cwd: fixture.root,

@@ -1541,7 +1541,7 @@ export function githubOperationLauncherDirectory(input: GitHubLauncherLocation):
   if (!/^[a-zA-Z0-9_-]+$/.test(input.runId)) throw new Error("Invalid GitHub launcher run ID");
   return input.target?.kind === "remote"
     ? path.posix.join(input.target.remoteCwd, ".wardmote-runtime",
-        ...(input.target.transport === "sandbox" ? ["paperclip-runner"] : []), "github", input.runId)
+        ...(input.target.transport === "sandbox" ? ["wardmote-runner"] : []), "github", input.runId)
     : path.join(os.tmpdir(), "wardmote-github-runtime", input.runId);
 }
 
