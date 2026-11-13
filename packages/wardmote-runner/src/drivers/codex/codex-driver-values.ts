@@ -36,7 +36,7 @@ export function record(value: unknown): Record<string, unknown> {
  * without trying to infer a second result from its text.
  */
 export const RUNNERD_CANONICAL_ITEM = Symbol(
-  "paperclip.runnerd.canonical-item",
+  "wardmote.runnerd.canonical-item",
 );
 
 export function text(value: unknown, fallback = ""): string {

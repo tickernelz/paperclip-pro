@@ -622,7 +622,7 @@ describe("OpenCodeServerDriver", () => {
     const root = await mkdtemp(join(tmpdir(), "wardmote-opencode-routing-"));
     roots.push(root);
     const driver = new OpenCodeServerDriver({
-      model: "paperclip/team/model-alias",
+      model: "wardmote/team/model-alias",
       runtimeDirectory: root,
       command: fixture,
       environment: { PATH: process.env.PATH, WARDMOTE_AI_PROVIDER_URL: "https://gateway.example/v1", WARDMOTE_AI_PROVIDER_KEY: "selected-gateway-key" },
@@ -631,8 +631,8 @@ describe("OpenCodeServerDriver", () => {
     try {
       const configPath = join(root, "routing", "config", "opencode", "opencode.json");
       expect(JSON.parse(await readFile(configPath, "utf8"))).toMatchObject({
-        model: "paperclip/team/model-alias", small_model: "paperclip/team/model-alias", plugin: [],
-        provider: { paperclip: { npm: "@ai-sdk/openai-compatible", options: { baseURL: expect.stringMatching(/^http:\/\/127\.0\.0\.1:\d+\/v1$/), apiKey: expect.any(String) }, models: { "team/model-alias": { name: "team/model-alias" } } } },
+        model: "wardmote/team/model-alias", small_model: "wardmote/team/model-alias", plugin: [],
+        provider: { wardmote: { npm: "@ai-sdk/openai-compatible", options: { baseURL: expect.stringMatching(/^http:\/\/127\.0\.0\.1:\d+\/v1$/), apiKey: expect.any(String) }, models: { "team/model-alias": { name: "team/model-alias" } } } },
       });
       expect((await stat(configPath)).mode & 0o777).toBe(0o600);
       const shell = await promisify(execFile)("sh", ["-c", 'cat "$1"', "sh", configPath]);
@@ -665,12 +665,12 @@ describe("OpenCodeServerDriver", () => {
     let session: Awaited<ReturnType<OpenCodeServerDriver["openSession"]>> | undefined;
     try {
       const driver = new OpenCodeServerDriver({
-        model: "paperclip/team/model-alias", runtimeDirectory: root, command: fixture,
+        model: "wardmote/team/model-alias", runtimeDirectory: root, command: fixture,
         environment: { PATH: process.env.PATH, WARDMOTE_AI_PROVIDER_URL: `http://127.0.0.1:${address.port}/custom/v1`, WARDMOTE_AI_PROVIDER_KEY: key },
       });
       session = await driver.openSession({ runId: "proxy", normalizedSessionId: "proxy", workingDirectory: root });
       const config = JSON.parse(await readFile(join(root, "proxy", "config", "opencode", "opencode.json"), "utf8"));
-      const { baseURL, apiKey } = config.provider.paperclip.options;
+      const { baseURL, apiKey } = config.provider.wardmote.options;
       expect(apiKey).not.toBe(key);
       const url = `${baseURL}/chat/completions`;
       const headers = { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" };
@@ -715,12 +715,12 @@ describe("OpenCodeServerDriver", () => {
     const trustEnvironment = trust === "file" ? { SSL_CERT_FILE: certificatePath } : { SSL_CERT_DIR: certificateDir };
     const headersAndUrl = async (sessionId: string, noProxy: string) => {
       const driver = new OpenCodeServerDriver({
-        model: "paperclip/team/model-alias", runtimeDirectory: root, command: fixture,
+        model: "wardmote/team/model-alias", runtimeDirectory: root, command: fixture,
         environment: { ...trustEnvironment, PATH: process.env.PATH, WARDMOTE_AI_PROVIDER_URL: "http://gateway.invalid/v1", WARDMOTE_AI_PROVIDER_KEY: "fixture-key", [proxySetting]: `http://127.0.0.1:${address.port}`, NO_PROXY: noProxy },
       });
       const session = await driver.openSession({ runId: sessionId, normalizedSessionId: sessionId, workingDirectory: root });
       const config = JSON.parse(await readFile(join(root, sessionId, "config", "opencode", "opencode.json"), "utf8"));
-      return { session, url: `${config.provider.paperclip.options.baseURL}/chat/completions`, headers: { Authorization: `Bearer ${config.provider.paperclip.options.apiKey}`, "Content-Type": "application/json" } };
+      return { session, url: `${config.provider.wardmote.options.baseURL}/chat/completions`, headers: { Authorization: `Bearer ${config.provider.wardmote.options.apiKey}`, "Content-Type": "application/json" } };
     };
     try {
       const proxied = await headersAndUrl("proxied", "");
@@ -2549,12 +2549,12 @@ describe("OpenCodeServerDriver", () => {
     const exitingFixture = join(root, "exit-before-health.mjs");
     await writeFile(
       exitingFixture,
-      "#!/usr/bin/env node\nimport { readFileSync } from 'node:fs';\nconst config = JSON.parse(readFileSync(`${process.env.XDG_CONFIG_HOME}/opencode/opencode.json`, 'utf8'));\nprocess.stderr.write(`credential=${process.env.OPENROUTER_API_KEY}\\ngateway=${config.provider.paperclip.options.apiKey}\\nauthorization=super-secret-opencode-token\\n`);\nprocess.exit(17);\n",
+      "#!/usr/bin/env node\nimport { readFileSync } from 'node:fs';\nconst config = JSON.parse(readFileSync(`${process.env.XDG_CONFIG_HOME}/opencode/opencode.json`, 'utf8'));\nprocess.stderr.write(`credential=${process.env.OPENROUTER_API_KEY}\\ngateway=${config.provider.wardmote.options.apiKey}\\nauthorization=super-secret-opencode-token\\n`);\nprocess.exit(17);\n",
       { mode: 0o755 },
     );
     const diagnostics: string[] = [];
     const driver = new OpenCodeServerDriver({
-      model: "paperclip/team/model-alias",
+      model: "wardmote/team/model-alias",
       runtimeDirectory: root,
       command: exitingFixture,
       onDiagnostic: (message) => { diagnostics.push(message); },
@@ -2593,7 +2593,7 @@ describe("OpenCodeServerDriver", () => {
     roots.push(root, workspace);
     const key = "fixture-custom-gateway-key";
     const driver = new OpenCodeServerDriver({
-      model: "paperclip/team/model-alias",
+      model: "wardmote/team/model-alias",
       runtimeDirectory: root,
       command: fixture,
       environment: {

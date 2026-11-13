@@ -639,7 +639,7 @@ describe("transcriptToTaskChatItems protocol surfaces", () => {
           payload: {
             executionId: "exec-lifecycle",
             transport: "mcp",
-            namespace: "paperclip",
+            namespace: "wardmote",
             name: "search_tasks",
             operation: "search",
             progress: "Searching the task index",
@@ -680,7 +680,7 @@ describe("transcriptToTaskChatItems protocol surfaces", () => {
     expect(item.details).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ label: "Name", value: "search_tasks" }),
-        expect.objectContaining({ label: "Namespace", value: "paperclip" }),
+        expect.objectContaining({ label: "Namespace", value: "wardmote" }),
         expect.objectContaining({ label: "Operation", value: "search" }),
         expect.objectContaining({ label: "Target", value: "doc/plan.md" }),
         expect.objectContaining({
@@ -692,7 +692,7 @@ describe("transcriptToTaskChatItems protocol surfaces", () => {
     expect(providerActivityPresentation(item)).toMatchObject({
       runningLabel: "Searching tasks",
       completedLabel: "Searched tasks",
-      detail: "Searching the task index · Paperclip · search_tasks",
+      detail: "Searching the task index · Wardmote · search_tasks",
     });
   });
 
@@ -1077,12 +1077,12 @@ describe("buildActivityPhases provider summaries", () => {
       ...Array.from({ length: 6 }, (_, index) =>
         providerTool(`search-${index}`, "ToolSearch", "search"),
       ),
-      providerTool("context", "get_task_context", "read", "paperclip"),
-      providerTool("documents", "list_documents", "list", "paperclip"),
-      providerTool("history", "get_task_history", "read", "paperclip"),
-      providerTool("tasks", "search_tasks", "search", "paperclip"),
-      providerTool("progress", "report_progress", "edit", "paperclip"),
-      providerTool("block", "wardmote_block", "edit", "paperclip"),
+      providerTool("context", "get_task_context", "read", "wardmote"),
+      providerTool("documents", "list_documents", "list", "wardmote"),
+      providerTool("history", "get_task_history", "read", "wardmote"),
+      providerTool("tasks", "search_tasks", "search", "wardmote"),
+      providerTool("progress", "report_progress", "edit", "wardmote"),
+      providerTool("block", "wardmote_block", "edit", "wardmote"),
     ];
     expect(buildActivityPhases(items, false, "turn")[0]?.summary).toBe(
       "Searched available tools 6 times, read from Wardmote 3 times, used Wardmote 3 times",

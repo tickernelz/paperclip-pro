@@ -1153,7 +1153,7 @@ describe("TaskChatThread runtime transcript selection", () => {
             schema: "wardmote.tool.execution.v1",
             executionId: "write-plan",
             transport: anchored ? "mcp" : "builtin",
-            namespace: anchored ? "paperclip" : null,
+            namespace: anchored ? "wardmote" : null,
             name,
             operation: "execute",
             readOnly: false,

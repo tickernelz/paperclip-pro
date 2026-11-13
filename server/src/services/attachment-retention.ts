@@ -221,7 +221,7 @@ export function attachmentRetentionService(db: Db, options: AttachmentRetentionS
         AND ${sql.raw(closed)}
         AND NOT EXISTS (
           SELECT 1 FROM issue_work_products wp
-          WHERE wp.provider = 'paperclip'
+          WHERE wp.provider = 'wardmote'
             AND (wp.external_id = ia.id::text OR wp.metadata->>'attachmentId' = ia.id::text OR wp.metadata->>'assetId' = a.id::text)
         )
       ORDER BY i.completed_at NULLS LAST, i.cancelled_at NULLS LAST, ia.id

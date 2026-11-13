@@ -54,7 +54,7 @@ function agentCoreProfile(overrides: Record<string, unknown> = {}) {
     agentRuntimeArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/test",
     memoryArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:memory/test",
     memoryId: "memory-test",
-    invocationRoleArn: "arn:aws:iam::123456789012:role/paperclip-agentcore",
+    invocationRoleArn: "arn:aws:iam::123456789012:role/wardmote-agentcore",
     contextBucket: "wardmote-agentcore-context",
     contextPrefix: "wardmote/agentcore/test",
     contextKmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/test",
@@ -149,7 +149,7 @@ describe("eval-session request contract", () => {
       instructionRoot = context.instructions.bundle.rootPath;
       expect(parseNativeRuntimeContext(context)).toEqual(context);
       expect(context.skills).toEqual([]);
-      expect(context.mcp.assignmentSetId).toBe("paperclip-runner-direct-eval-v1");
+      expect(context.mcp.assignmentSetId).toBe("wardmote-runner-direct-eval-v1");
       expect(context.instructions.entryPath).toBe("AGENTS.md");
       expect(await readFile(
         join(context.instructions.bundle.rootPath, "AGENTS.md"),

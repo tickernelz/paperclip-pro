@@ -62,7 +62,7 @@ import {
 
 const LIVE_SESSION_SCHEMA = "wardmote.capability.live-session.v1" as const;
 const LIVE_COMPLETION_CONTRACT = Object.freeze({
-  revision: "paperclip-capability-live-v1",
+  revision: "wardmote-capability-live-v1",
   criterionIds: ["objective"],
 });
 const LIVE_COMPLETION_ENVELOPE = createCodexTaskEnvelope({
@@ -2440,7 +2440,7 @@ export class CapabilityLiveSession {
     this.#transport.setServerRequestHandler((request) => this.#handleServerRequest(request));
     const initialized = await this.#transport.request("initialize", {
       clientInfo: {
-        name: "paperclip-runner",
+        name: "wardmote-runner",
         title: "Wardmote Runner Capability",
         version: "capability-v1",
       },
