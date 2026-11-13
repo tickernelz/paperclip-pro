@@ -887,7 +887,7 @@ function fakeTelegramFetch(
           ok: true,
           result: {
             id: botId,
-            username: `paperclip_${botId}_bot`,
+            username: `wardmote_${botId}_bot`,
             first_name: "Wardmote Test",
           },
         }),
@@ -1073,7 +1073,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   const previousKeyFile = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   const secretsTmpDir = path.join(
     os.tmpdir(),
-    `paperclip-chat-channels-${randomUUID()}`,
+    `wardmote-chat-channels-${randomUUID()}`,
   );
 
   beforeAll(async () => {
@@ -28489,7 +28489,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               id: botId,
               is_bot: true,
               first_name: "Synthetic",
-              username: `paperclip_${botId}_bot`,
+              username: `wardmote_${botId}_bot`,
             },
           });
         const body = JSON.parse(String(init?.body ?? "{}")) as Record<
@@ -40059,7 +40059,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         .from(chatConversations)
         .where(eq(chatConversations.endpointId, endpoint.id));
 
-      const linkedUserId = `modal-paperclip-user-${randomUUID()}`;
+      const linkedUserId = `modal-wardmote-user-${randomUUID()}`;
       const now = new Date();
       await db.insert(authUsers).values({
         id: linkedUserId,
@@ -65075,7 +65075,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               title: "Telegram production group",
             },
             from: { id: 77112233, is_bot: false },
-            text: `/task@paperclip_test_bot${input.prompt ? ` ${input.prompt}` : ""}`,
+            text: `/task@wardmote_test_bot${input.prompt ? ` ${input.prompt}` : ""}`,
             entities: [
               {
                 offset: 0,
