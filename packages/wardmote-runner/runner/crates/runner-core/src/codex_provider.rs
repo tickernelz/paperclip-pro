@@ -57,7 +57,7 @@ const MAX_PENDING_TOOL_REQUEST_BYTES: usize = 16 * 1024 * 1024;
 const MAX_COMPLETED_TOOL_CALL_IDS: usize = 4_096;
 const MAX_PENDING_RUNTIME_REQUESTS: usize = 128;
 const MAX_PENDING_RUNTIME_REQUEST_BYTES: usize = 4 * 1024 * 1024;
-const OPENCODE_RUNTIME_REQUEST_METHOD: &str = "paperclip/runtimeRequest";
+const OPENCODE_RUNTIME_REQUEST_METHOD: &str = "wardmote/runtimeRequest";
 pub(crate) const MAX_SETTLED_PROVIDER_TURN_IDS: usize = 4_096;
 pub(crate) const MAX_DESCENDANT_THREAD_IDS: usize = 4_096;
 
@@ -1308,7 +1308,7 @@ impl CodexProvider {
                             | "thread/tokenUsage/updated"
                             // poll() normalizes usage from this settled turn.
                             // It remains an accounting snapshot, not new work.
-                            | "paperclip/resumeUsageSnapshot"
+                            | "wardmote/resumeUsageSnapshot"
                             | "thread/status/changed"
                             | "turn/diff/updated"
                             | "turn/plan/updated"
@@ -2743,7 +2743,7 @@ impl CodexProvider {
                     && notification_thread_id(&params) == Some(self.thread_id.as_str())
                 {
                     return Ok(Some(CodexProviderEvent::Notification {
-                        method: "paperclip/resumeUsageSnapshot".to_owned(),
+                        method: "wardmote/resumeUsageSnapshot".to_owned(),
                         params: json!({
                             "threadId": self.thread_id,
                             "turnId": notification_turn_id,
@@ -3501,7 +3501,7 @@ fn classify_notification_thread(
             || (method == "thread/started"
                 && parent.is_some_and(|id| id == root || descendants.contains(id))))
     {
-        if method.starts_with("paperclip/") {
+        if method.starts_with("wardmote/") {
             return Err(LocalRunnerError::invalid(
                 "Codex descendant cannot supply root execution authority",
             ));
@@ -4128,7 +4128,7 @@ done
                 }),
                 trace_frame_id: None,
             });
-        // poll() normalizes settled-turn usage to paperclip/resumeUsageSnapshot.
+        // poll() normalizes settled-turn usage to wardmote/resumeUsageSnapshot.
         // That accounting fact is not new work and must not force replacement.
         let result = provider.drain_completed_turn_tail_for_warm_attachment();
         provider.shutdown().unwrap();
@@ -5172,7 +5172,7 @@ mod notification_identity_tests {
                 .is_err()
         );
         assert!(classify_notification_thread(
-            "paperclip/runResult",
+            "wardmote/runResult",
             "root",
             &BTreeSet::new(),
             &params
@@ -5336,7 +5336,7 @@ mod notification_identity_tests {
         );
         assert_eq!(classify_notification_thread("thread/started", "root", &children, &json!({"thread":{"id":"grandchild","source":{"subAgent":{"thread_spawn":{"parent_thread_id":"child"}}}}})).unwrap(), NotificationThread::Descendant);
         for (method, params) in [
-            ("paperclip/runResult", json!({"threadId":"child"})),
+            ("wardmote/runResult", json!({"threadId":"child"})),
             ("turn/completed", json!({"threadId":"unrelated"})),
             ("item/started", json!({"threadId":42})),
             (

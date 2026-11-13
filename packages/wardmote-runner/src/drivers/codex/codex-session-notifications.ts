@@ -150,7 +150,7 @@ async function mapNotificationBody(state: CodexSessionState, notification: Codex
     const threadId = text(params.threadId);
     const turnId = text(params.turnId, text(turn.id));
     const itemId = text(item.id, text(params.itemId));
-    if (notification.method === "paperclip/canonicalProviderEvent") {
+    if (notification.method === "wardmote/canonicalProviderEvent") {
       if (!isCanonicalProviderEventType(params.eventType)) {
         state.failProtocol("provider_event_type_invalid", "Unknown canonical provider event type.");
         return;
@@ -163,7 +163,7 @@ async function mapNotificationBody(state: CodexSessionState, notification: Codex
       state.emit(params.eventType, canonicalPayload, { turnId: turnId || undefined, itemId: itemId || undefined });
       return;
     }
-    if (notification.method === "paperclip/workspaceChange/updated") {
+    if (notification.method === "wardmote/workspaceChange/updated") {
       if (!state.notificationNamesActiveTurn(turnId, "workspace change")) return;
       if (threadId.length > 0 && threadId !== state.opened.threadId) return;
       recordCanonicalWorkspaceChange(state,
@@ -339,7 +339,7 @@ async function mapNotificationBody(state: CodexSessionState, notification: Codex
       // not become a second acknowledgement beside the correlation-bound item.
       return;
     }
-    if (notification.method === "paperclip/runResult") {
+    if (notification.method === "wardmote/runResult") {
       if (
         threadId !== state.opened.threadId
         || !state.notificationNamesActiveTurn(turnId, "semantic result")

@@ -243,7 +243,7 @@ async function pumpEvents(opened: HarnessSession): Promise<void> {
       }
     } else if (event.eventType === "run.result.proposed") {
       send({
-        method: "paperclip/runResult",
+        method: "wardmote/runResult",
         params: {
           threadId: opened.ids().driverSessionId,
           turnId: event.turnId,
@@ -266,7 +266,7 @@ async function pumpEvents(opened: HarnessSession): Promise<void> {
       // proxy and runnerd will expire the still-pending canonical request.
       void (async () => {
         const controllerResponse = record(
-          await requestController("paperclip/runtimeRequest", {
+          await requestController("wardmote/runtimeRequest", {
             request,
           }),
         );

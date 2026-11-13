@@ -131,7 +131,7 @@ async function expectTurnStarted(
     expect(next.done).not.toBe(true);
     if (next.value.method === "turn/started") return;
     // Startup ownership and capability facts can precede the active turn.
-    expect(next.value.method).toBe("paperclip/canonicalProviderEvent");
+    expect(next.value.method).toBe("wardmote/canonicalProviderEvent");
   }
   throw new Error(
     "provider turn did not start within the bounded notification prefix",
@@ -7147,7 +7147,7 @@ it("cold-restores a suspended provider session under its durable run binding", a
       input: [{ type: "text", text: "$assigned second authority epoch" }, { type: "skill", name: "assigned", path: join(skillRoot, "SKILL.md") }],
     });
     for await (const event of rotated.transport.notifications()) {
-      if (event.method === "paperclip/runResult") break;
+      if (event.method === "wardmote/runResult") break;
     }
     expect(rotated.evidence().diagnostics).toContain(
       "runnerd attached the durable provider session to a fresh PRP run authority",

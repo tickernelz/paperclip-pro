@@ -414,23 +414,23 @@ fn validate_opencode_run_result(
 ) -> Result<(Value, String, String), DurableRunnerError> {
     if state.config.provider != "opencode" {
         return Err(DurableRunnerError::invalid(
-            "paperclip/runResult is reserved for the verified OpenCode provider",
+            "wardmote/runResult is reserved for the verified OpenCode provider",
         ));
     }
     if state.lifecycle != "turn_active" || state.active_provider_turn_id.is_none() {
         return Err(DurableRunnerError::invalid(
-            "OpenCode emitted paperclip/runResult without an active provider turn",
+            "OpenCode emitted wardmote/runResult without an active provider turn",
         ));
     }
     if params.get("threadId").and_then(Value::as_str) != state.thread_id.as_deref()
         || params.get("turnId").and_then(Value::as_str) != state.active_provider_turn_id.as_deref()
     {
         return Err(DurableRunnerError::invalid(
-            "OpenCode paperclip/runResult is not bound to the active provider turn",
+            "OpenCode wardmote/runResult is not bound to the active provider turn",
         ));
     }
     let result = params.get("result").cloned().ok_or_else(|| {
-        DurableRunnerError::invalid("OpenCode paperclip/runResult omitted its result")
+        DurableRunnerError::invalid("OpenCode wardmote/runResult omitted its result")
     })?;
     let (fingerprint, disposition) = validate_run_result(state, &result)?;
     Ok((result, fingerprint, disposition))
@@ -453,14 +453,14 @@ fn validate_run_result(
         ));
     }
     let contract = state.completion_contract.as_ref().ok_or_else(|| {
-        DurableRunnerError::invalid("OpenCode paperclip/runResult has no bound completion contract")
+        DurableRunnerError::invalid("OpenCode wardmote/runResult has no bound completion contract")
     })?;
     let claim = result.get("completionClaim").ok_or_else(|| {
-        DurableRunnerError::invalid("OpenCode paperclip/runResult omitted its completion claim")
+        DurableRunnerError::invalid("OpenCode wardmote/runResult omitted its completion claim")
     })?;
     if claim.get("contractRevision").and_then(Value::as_str) != Some(contract.revision.as_str()) {
         return Err(DurableRunnerError::invalid(
-            "OpenCode paperclip/runResult changed its completion contract revision",
+            "OpenCode wardmote/runResult changed its completion contract revision",
         ));
     }
     let criteria = claim
@@ -468,7 +468,7 @@ fn validate_run_result(
         .and_then(Value::as_array)
         .ok_or_else(|| {
             DurableRunnerError::invalid(
-                "OpenCode paperclip/runResult omitted its completion criteria",
+                "OpenCode wardmote/runResult omitted its completion criteria",
             )
         })?;
     let mut reported_criterion_ids = HashSet::new();
@@ -478,12 +478,12 @@ fn validate_run_result(
             .and_then(Value::as_str)
             .ok_or_else(|| {
                 DurableRunnerError::invalid(
-                    "OpenCode paperclip/runResult has an invalid completion criterion",
+                    "OpenCode wardmote/runResult has an invalid completion criterion",
                 )
             })?;
         if !reported_criterion_ids.insert(criterion_id) {
             return Err(DurableRunnerError::invalid(
-                "OpenCode paperclip/runResult repeated a completion criterion",
+                "OpenCode wardmote/runResult repeated a completion criterion",
             ));
         }
     }
@@ -494,7 +494,7 @@ fn validate_run_result(
             .all(|criterion_id| reported_criterion_ids.contains(criterion_id.as_str()))
     {
         return Err(DurableRunnerError::invalid(
-            "OpenCode paperclip/runResult changed its bound completion criteria",
+            "OpenCode wardmote/runResult changed its bound completion criteria",
         ));
     }
     let disposition = result
@@ -583,7 +583,7 @@ fn normalize_provider_notification(
     method: &str,
     params: &Value,
 ) -> Result<Vec<NormalizedProviderEvent>, DurableRunnerError> {
-    if method != "paperclip/runResult" {
+    if method != "wardmote/runResult" {
         return Ok(normalize_codex_notification(method, params)
             .into_iter()
             .map(|event| relabel_provider_event(event, &state.config.provider))
@@ -609,7 +609,7 @@ fn normalize_provider_notification(
             Ok(Vec::new())
         }
         _ => Err(DurableRunnerError::invalid(
-            "OpenCode emitted conflicting paperclip/runResult notifications for one turn",
+            "OpenCode emitted conflicting wardmote/runResult notifications for one turn",
         )),
     }
 }
@@ -5043,9 +5043,9 @@ mod tests {
         });
 
         let result_events =
-            normalize_provider_notification(&mut state, "paperclip/runResult", &params).unwrap();
+            normalize_provider_notification(&mut state, "wardmote/runResult", &params).unwrap();
         let replay_events =
-            normalize_provider_notification(&mut state, "paperclip/runResult", &params).unwrap();
+            normalize_provider_notification(&mut state, "wardmote/runResult", &params).unwrap();
         let terminal = terminal_events(&state, "turn.completed", None);
 
         assert_eq!(result_events.len(), 1);
@@ -5299,7 +5299,7 @@ mod tests {
         result["completionClaim"]["contractRevision"] = json!("revision-2");
         assert!(normalize_provider_notification(
             &mut wrong_revision,
-            "paperclip/runResult",
+            "wardmote/runResult",
             &params(result),
         )
         .unwrap_err()
@@ -5309,7 +5309,7 @@ mod tests {
         let mut malformed = opencode_result_state();
         assert!(normalize_provider_notification(
             &mut malformed,
-            "paperclip/runResult",
+            "wardmote/runResult",
             &params(json!({"schema": "wardmote.run_result.v1"})),
         )
         .unwrap_err()
@@ -5321,7 +5321,7 @@ mod tests {
         result["completionClaim"]["criteria"][0]["criterionId"] = json!("criterion-2");
         assert!(normalize_provider_notification(
             &mut wrong_criteria,
-            "paperclip/runResult",
+            "wardmote/runResult",
             &params(result),
         )
         .unwrap_err()
@@ -5331,7 +5331,7 @@ mod tests {
         let mut conflicting = opencode_result_state();
         normalize_provider_notification(
             &mut conflicting,
-            "paperclip/runResult",
+            "wardmote/runResult",
             &params(valid_opencode_result()),
         )
         .unwrap();
@@ -5339,7 +5339,7 @@ mod tests {
         result["summary"] = json!("A conflicting second result.");
         assert!(normalize_provider_notification(
             &mut conflicting,
-            "paperclip/runResult",
+            "wardmote/runResult",
             &params(result),
         )
         .unwrap_err()
@@ -5350,7 +5350,7 @@ mod tests {
         spoofed.config.provider = "codex".to_owned();
         assert!(normalize_provider_notification(
             &mut spoofed,
-            "paperclip/runResult",
+            "wardmote/runResult",
             &params(valid_opencode_result()),
         )
         .unwrap_err()
