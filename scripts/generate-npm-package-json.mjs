@@ -104,6 +104,7 @@ const publishPkg = {
   homepage: cliPkg.homepage,
   bugs: cliPkg.bugs,
   files: cliPkg.files,
+  wardmoteReleasePackages: cliPkg.wardmoteReleasePackages,
   engines: { node: ">=24.11.0" },
   dependencies: sortedDeps,
 };

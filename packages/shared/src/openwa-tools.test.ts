@@ -70,7 +70,7 @@ describe("OpenWA tool catalog", () => {
     const call = openwaTool("openwa_call")!.schema;
     expect(call.safeParse({ operation: "MessageController_sendText", args: { chatId: "x", text: "y" }, idempotencyKey: key }).success).toBe(true);
     expect(call.safeParse({ operation: "MessageController_sendText", sessionId: "s" }).success).toBe(false);
-    expect(openwaTool("openwa_catalog")!.schema.safeParse({ category: "paperclip" }).success).toBe(true);
+    expect(openwaTool("openwa_catalog")!.schema.safeParse({ category: "wardmote" }).success).toBe(true);
     expect(openwaTool("openwa_catalog")!.schema.safeParse({ category: "other" }).success).toBe(false);
   });
 

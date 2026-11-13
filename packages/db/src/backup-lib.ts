@@ -8,6 +8,7 @@ import { pipeline } from "node:stream/promises";
 import { createGunzip, createGzip } from "node:zlib";
 import postgres from "postgres";
 import { randomUUID } from "node:crypto";
+import { RETIRED_BACKUP_FILENAME_PREFIX, RETIRED_STATEMENT_BREAKPOINT } from "./retired-backup-names.js";
 
 export type BackupRetentionPolicy = {
   dailyDays: number;
@@ -98,7 +99,11 @@ const BACKUP_DATA_CURSOR_ROWS = 100;
 const BACKUP_CLI_STDERR_BYTES = 64 * 1024;
 const BACKUP_BREAKPOINT_DETECT_BYTES = 64 * 1024;
 
-const STATEMENT_BREAKPOINT = "-- paperclip statement breakpoint 69f6f3f1-42fd-46a6-bf17-d1d85f8f3900";
+const STATEMENT_BREAKPOINT = "-- wardmote statement breakpoint 69f6f3f1-42fd-46a6-bf17-d1d85f8f3900";
+
+function isStatementBreakpoint(line: string): boolean {
+  return line === STATEMENT_BREAKPOINT || line === RETIRED_STATEMENT_BREAKPOINT;
+}
 
 function sanitizeRestoreErrorMessage(error: unknown): string {
   if (error && typeof error === "object") {
@@ -317,7 +322,6 @@ async function ensureBackupSpace(input: {
   }
   throw new DatabaseBackupSkippedError(input.backupDir, space.freeBytes, requiredBytes);
 }
-const RETIRED_BACKUP_FILENAME_PREFIX = "paperclip";
 
 function isBackupFilename(name: string): boolean {
   return name.endsWith(".sql") || name.endsWith(".sql.gz");
@@ -454,9 +458,9 @@ function formatBackupSize(sizeBytes: number): string {
 
 function formatSqlLiteral(value: string): string {
   const sanitized = value.replace(/\u0000/g, "");
-  let tag = "$paperclip$";
+  let tag = "$wardmote$";
   while (sanitized.includes(tag)) {
-    tag = `$paperclip_${Math.random().toString(36).slice(2, 8)}$`;
+    tag = `$wardmote_${Math.random().toString(36).slice(2, 8)}$`;
   }
   return `${tag}${sanitized}${tag}`;
 }
@@ -654,10 +658,10 @@ async function hasStatementBreakpoints(backupFile: string): Promise<boolean> {
   try {
     for await (const chunk of stream) {
       text += Buffer.isBuffer(chunk) ? chunk.toString("utf8") : String(chunk);
-      if (text.includes(STATEMENT_BREAKPOINT)) return true;
+      if (text.includes(STATEMENT_BREAKPOINT) || text.includes(RETIRED_STATEMENT_BREAKPOINT)) return true;
       if (Buffer.byteLength(text, "utf8") >= BACKUP_BREAKPOINT_DETECT_BYTES) return false;
     }
-    return text.includes(STATEMENT_BREAKPOINT);
+    return text.includes(STATEMENT_BREAKPOINT) || text.includes(RETIRED_STATEMENT_BREAKPOINT);
   } finally {
     stream.destroy();
     raw.destroy();
@@ -682,7 +686,7 @@ async function* readRestoreStatements(backupFile: string): AsyncGenerator<string
 
   try {
     for await (const line of reader) {
-      if (line === STATEMENT_BREAKPOINT) {
+      if (isStatementBreakpoint(line)) {
         const statement = flushStatement();
         if (statement.length > 0) {
           yield statement;

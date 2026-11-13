@@ -43,6 +43,8 @@ An install on 2026.1109.x or older still runs the old `update` code, which canno
 
 `npx @tickernelz/wardmote install` and `wardmote update` run step 4 on their own when they find the old layout and the service is stopped.
 
+An install on 2026.1108.x to 2026.1112.x cannot upgrade with its own `wardmote update` or `wardmote install --version`: that CLI checks a fixed package list that still has the plugin scaffolding package under its earlier npm name, which later releases publish as `@tickernelz/wardmote-create-plugin`, so the check reports the release as incomplete. Run the new release's CLI instead: `npx --package @tickernelz/wardmote@<new> -- wardmote install --version <new>`. From this release on, the CLI checks the package set the target release declares, so later package renames do not block upgrades.
+
 ### Docker installs
 
 Docker, Compose and Quadlet installs keep their data where the old names put it, so move it once before starting the new image. `doc/DOCKER.md` ("Upgrading from the old names") has the commands:

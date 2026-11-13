@@ -310,7 +310,7 @@ describe("ACPX engine startup characterization", () => {
   describe("session fingerprint and session key", () => {
     beforeEach(() => vi.clearAllMocks());
 
-    it("forms the session key as paperclip:company:agent:taskKey:fingerprint and embeds the fingerprint", async () => {
+    it("forms the session key as wardmote:company:agent:taskKey:fingerprint and embeds the fingerprint", async () => {
       const root = await makeTempRoot();
       const { result } = await runExecutor({
         agent: "custom",
@@ -324,7 +324,7 @@ describe("ACPX engine startup characterization", () => {
       expect(fp).toBeTruthy();
       // No taskId/issueId/workspaceId in the default context, so taskKey is "default".
       const sessionKey = (result.sessionParams as { sessionKey?: string }).sessionKey;
-      expect(sessionKey).toBe(`paperclip:company-1:agent-1:default:${fp}`);
+      expect(sessionKey).toBe(`wardmote:company-1:agent-1:default:${fp}`);
     });
 
     it("keeps the fingerprint stable across two identical runs and a same-config new wake", async () => {
@@ -594,7 +594,7 @@ describe("ACPX engine startup characterization", () => {
       const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
       const stop = vi.fn(async () => {});
       vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(async () => {
-        throw new Error("paperclip bridge boom");
+        throw new Error("wardmote bridge boom");
       });
       vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(
         async () => ({ agentCommand: null, stop }) as never,
@@ -619,7 +619,7 @@ describe("ACPX engine startup characterization", () => {
           onMeta: async () => {},
           onEvent: async () => {},
         } as never),
-      ).rejects.toThrow("paperclip bridge boom");
+      ).rejects.toThrow("wardmote bridge boom");
 
       // The concurrently-started process-session bridge was stopped exactly once.
       expect(stop).toHaveBeenCalledTimes(1);
