@@ -46,14 +46,14 @@ describe("Scenario chat proxy configuration", () => {
 
   it("derives direct-tailnet identity from the socket instead of spoofable headers", () => {
     const headers = selectedScenarioChatProxyHeaders({
-      cookie: "paperclip_scenario-chat=capability",
+      cookie: "wardmote_scenario-chat=capability",
       "tailscale-user-login": "spoof@example.com",
       "tailscale-user-name": "Spoofed User",
       "x-forwarded-for": "203.0.113.10",
     }, new URL("http://scenario-chat.example.ts.net:4197"), "100.64.0.2");
     expect(headers).toMatchObject({
       host: "scenario-chat.example.ts.net:4197",
-      cookie: "paperclip_scenario-chat=capability",
+      cookie: "wardmote_scenario-chat=capability",
       "x-forwarded-for": "100.64.0.2",
       "x-forwarded-host": "scenario-chat.example.ts.net:4197",
       "x-forwarded-proto": "http",

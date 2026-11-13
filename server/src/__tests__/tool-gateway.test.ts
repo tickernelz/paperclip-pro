@@ -546,7 +546,7 @@ describeEmbeddedPostgres("tool gateway acceptance", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-tool-gateway-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-tool-gateway-");
     db = createDb(tempDb.connectionString);
   }, 90_000);
 
@@ -710,7 +710,7 @@ describeEmbeddedPostgres("tool gateway acceptance", () => {
       const app = createGatewayRouteApp(db, gateway);
       const publicEndpoint = created.endpointPath;
       const queryOnly = await request(app)
-        .post(`${publicEndpoint}?paperclip_capability=${encodeURIComponent(token.token)}`)
+        .post(`${publicEndpoint}?wardmote_capability=${encodeURIComponent(token.token)}`)
         .send({ jsonrpc: "2.0", id: "query-only", method: "tools/list" })
         .expect(401);
       expect(queryOnly.body.error).toBe("Bearer token is required");
@@ -3222,7 +3222,7 @@ rl.on("line", (line) => {
         connectionConfig: {
           sourceTemplateKey: "shopify",
           connectionMethodKey: "ucp-commerce",
-          methodConfig: { storeDomain: "paperclip-demo.myshopify.com" },
+          methodConfig: { storeDomain: "wardmote-demo.myshopify.com" },
         },
       });
       const toolName = expectedConnectedToolName({
@@ -3335,7 +3335,7 @@ rl.on("line", (line) => {
         connectionConfig: {
           sourceTemplateKey: "shopify",
           connectionMethodKey: "ucp-commerce",
-          methodConfig: { storeDomain: "paperclip-demo.myshopify.com" },
+          methodConfig: { storeDomain: "wardmote-demo.myshopify.com" },
         },
       });
       const toolName = expectedConnectedToolName({
@@ -3594,7 +3594,7 @@ rl.on("line", (line) => {
         connectionConfig: {
           sourceTemplateKey: "shopify",
           connectionMethodKey: "ucp-commerce",
-          methodConfig: { storeDomain: "paperclip-demo.myshopify.com" },
+          methodConfig: { storeDomain: "wardmote-demo.myshopify.com" },
         },
       });
       await allowToolsForAgent(db, company.id, agent.id, [

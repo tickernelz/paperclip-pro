@@ -61,7 +61,7 @@ describe("Scenario chat deployment boundary", () => {
     await runtime.initialize();
     expect(runtime.health()).toMatchObject({ ready: true, commitSha: "deadbeef" });
     const setCookie = scenarioChatCapabilityCookieForOrigin(new URL(publicOrigin), "capability");
-    expect(setCookie).toContain("paperclip_scenario-chat=capability");
+    expect(setCookie).toContain("wardmote_scenario-chat=capability");
     expect(setCookie).not.toContain("__Host-");
     expect(setCookie).not.toMatch(/; Secure(?:;|$)/);
     expect(setCookie).toContain("SameSite=Strict");
@@ -184,7 +184,7 @@ describe("Scenario chat deployment boundary", () => {
       const created = await createSession(request, "alice@example.com");
       const failures = [
         mutationHeaders("alice@example.com"),
-        { ...mutationHeaders("alice@example.com"), cookie: "__Host-paperclip_scenario-chat=foreign" },
+        { ...mutationHeaders("alice@example.com"), cookie: "__Host-wardmote_scenario-chat=foreign" },
         { ...mutationHeaders("mallory@example.com"), cookie: created.cookie },
       ];
       for (const headers of failures) {

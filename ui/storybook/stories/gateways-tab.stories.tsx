@@ -73,8 +73,8 @@ const POPULATED: ToolMcpGatewayWithTokens[] = [
         label: "Cursor",
         config: {
           mcpServers: {
-            "paperclip-engineering-inbox": {
-              url: "https://paperclip.app/api/mcp/gateways/engineering-inbox",
+            "wardmote-engineering-inbox": {
+              url: "https://wardmote.app/api/mcp/gateways/engineering-inbox",
               headers: { Authorization: "Bearer YOUR_TOKEN" },
             },
           },
@@ -86,8 +86,8 @@ const POPULATED: ToolMcpGatewayWithTokens[] = [
         label: "Claude Desktop",
         config: {
           mcpServers: {
-            "paperclip-engineering-inbox": {
-              url: "https://paperclip.app/api/mcp/gateways/engineering-inbox",
+            "wardmote-engineering-inbox": {
+              url: "https://wardmote.app/api/mcp/gateways/engineering-inbox",
               headers: { Authorization: "Bearer YOUR_TOKEN" },
             },
           },
@@ -99,9 +99,9 @@ const POPULATED: ToolMcpGatewayWithTokens[] = [
         label: "VS Code",
         config: {
           servers: {
-            "paperclip-engineering-inbox": {
+            "wardmote-engineering-inbox": {
               type: "http",
-              url: "https://paperclip.app/api/mcp/gateways/engineering-inbox",
+              url: "https://wardmote.app/api/mcp/gateways/engineering-inbox",
               headers: { Authorization: "Bearer YOUR_TOKEN" },
             },
           },
@@ -134,8 +134,8 @@ const POPULATED: ToolMcpGatewayWithTokens[] = [
         label: "Claude Code",
         config: {
           mcpServers: {
-            "paperclip-support-ops": {
-              url: "https://paperclip.app/api/mcp/gateways/support-ops",
+            "wardmote-support-ops": {
+              url: "https://wardmote.app/api/mcp/gateways/support-ops",
               headers: { Authorization: "Bearer YOUR_TOKEN" },
             },
           },

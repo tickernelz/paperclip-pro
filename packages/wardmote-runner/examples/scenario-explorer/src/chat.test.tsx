@@ -11,7 +11,7 @@ import {
   type CapabilityChatSessionArtifact,
   type CapabilityScenarioIndex,
   type CapabilityScenarioIndexEntry,
-} from "@paperclip-runner-local/capability";
+} from "@wardmote-runner-local/capability";
 
 import { ActivityStream } from "./components/chat-activity-stream.js";
 import { ChatConversation } from "./components/chat-conversation.js";

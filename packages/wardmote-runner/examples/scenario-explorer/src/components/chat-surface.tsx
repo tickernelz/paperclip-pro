@@ -6,7 +6,7 @@ import {
   type CapabilityChatSessionArtifact,
   type CapabilityChatSessionOptions,
   type CapabilityScenarioIndexEntry,
-} from "@paperclip-runner-local/capability";
+} from "@wardmote-runner-local/capability";
 
 import { ChatConversation } from "./chat-conversation.js";
 import { SessionHeader, type CapabilityChatMode } from "./chat-session-header.js";

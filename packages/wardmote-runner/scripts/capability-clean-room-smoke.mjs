@@ -153,7 +153,7 @@ async function main() {
     const guard = second.view.evidence.control_plane.find((record) =>
       record.id.startsWith("network-guard-"),
     );
-    assertions.realApiBlocked = guard?.outcome === "no_real_paperclip_request";
+    assertions.realApiBlocked = guard?.outcome === "no_real_wardmote_request";
     assertions.noCredentialInView = credentialLeaks(second.view).length === 0;
 
     const fresh = await post("/api/capability/ui/cleanroom/session", { sessionId: opened.sessionId });
@@ -175,7 +175,7 @@ async function main() {
     );
     await foreign.text();
     assertions.crossSessionDenied = foreign.status === 404;
-    assertions.capabilityBound = typeof jar.value("paperclip_capability_chat") === "string";
+    assertions.capabilityBound = typeof jar.value("wardmote_capability_chat") === "string";
 
     summary = {
       schema: "wardmote.capability.clean-room-smoke.v1",

@@ -561,7 +561,7 @@ export async function captureDirectorySnapshot(
   const ignored = workspacePathMatcher(options.ignoredPaths);
   let writer: WorkspaceManifestWriter | null = null;
   try {
-    writer = options.diskBacked ? await createWorkspaceManifest("paperclip-workspace-baseline-") : null;
+    writer = options.diskBacked ? await createWorkspaceManifest("wardmote-workspace-baseline-") : null;
     const memory = new Map<string, SnapshotEntry>();
     for await (const [relative, entry] of walkDirectory(rootDir, exclude, ignored)) {
       if (writer) writer.add("baseline", relative, JSON.stringify(entry));
@@ -586,7 +586,7 @@ export async function captureDirectorySnapshot(
 export async function selectDirectorySnapshot(snapshot: DirectorySnapshot, options: {
   prefix?: string; omit?: string[]; exclude: string[]; ignoredPaths?: WorkspacePaths;
 }): Promise<DirectorySnapshot> {
-  const writer = await createWorkspaceManifest("paperclip-workspace-baseline-");
+  const writer = await createWorkspaceManifest("wardmote-workspace-baseline-");
   try {
     for (const [relative, entry] of snapshot.entries) {
       if (options.prefix && !relative.startsWith(options.prefix)) continue;

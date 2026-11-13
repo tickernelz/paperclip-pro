@@ -279,8 +279,8 @@ export interface CapabilityLiveSessionSnapshot {
   authorizationRecords: CapabilitySemanticAuthorizationRecord[];
   process: CapabilityRunnerdProcessEvidence | null;
   networkEvidence: {
-    realPaperclipRequests: 0;
-    childPaperclipEnvironmentKeys: string[];
+    realWardmoteRequests: 0;
+    childWardmoteEnvironmentKeys: string[];
   };
   /** Governed worker attempts. A resumed worker is a new attempt, never a rewrite. */
   attempts?: CapabilityLiveAttemptSnapshot[];
@@ -1438,8 +1438,8 @@ export class CapabilityLiveSession {
       authorizationRecords: structuredClone(records),
       process: this.#processEvidence === null ? null : structuredClone(this.#processEvidence),
       networkEvidence: {
-        realPaperclipRequests: 0,
-        childPaperclipEnvironmentKeys: childKeys.filter((key) => key.startsWith("WARDMOTE_")),
+        realWardmoteRequests: 0,
+        childWardmoteEnvironmentKeys: childKeys.filter((key) => key.startsWith("WARDMOTE_")),
       },
       attempts: structuredClone(this.#attempts),
       currentAttemptId: this.#currentAttemptId,

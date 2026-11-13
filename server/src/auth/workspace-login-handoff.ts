@@ -403,7 +403,7 @@ export function redactWorkspaceHandoffTicket(value: string): string {
     "$1[redacted]",
   );
   return workspaceRedacted.replace(
-    /([?&]paperclip_capability=)[^&#\s]+/gi,
+    /([?&](?:wardmote|paperclip)_capability=)[^&#\s]+/gi,
     "$1[redacted]",
   );
 }

@@ -125,7 +125,7 @@ function download(snapshot: CapabilityDevtoolsSnapshot) {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `paperclip-devtools-r${snapshot.currentRevision}.json`;
+  anchor.download = `wardmote-devtools-r${snapshot.currentRevision}.json`;
   anchor.click();
   URL.revokeObjectURL(url);
 }

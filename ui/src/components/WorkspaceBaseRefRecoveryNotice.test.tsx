@@ -4,7 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WorkspaceBaseRefRecoveryNotice, type WorkspaceBaseRefRecoveryNoticeProps } from "./WorkspaceBaseRefRecoveryNotice";
 
-const evidence = { requestedRef: "main", repository: "paperclipai/paperclip", defaultBranch: "master", agentName: "Felix", failureKind: "missing_branch" as const };
+const evidence = { requestedRef: "main", repository: "tickernelz/wardmote", defaultBranch: "master", agentName: "Felix", failureKind: "missing_branch" as const };
 describe("workspace branch repair", () => {
   let container: HTMLDivElement;
   let root: Root;

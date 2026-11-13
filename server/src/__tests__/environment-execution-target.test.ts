@@ -243,7 +243,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
           type: "ssh",
           host: "ssh.example.test",
           port: 22,
-          username: "paperclip",
+          username: "wardmote",
         },
       },
       lease: null,
@@ -327,7 +327,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
       config: {
         host: "ssh.example.test",
         port: 22,
-        username: "paperclip",
+        username: "wardmote",
         remoteWorkspacePath: "/srv/wardmote",
         privateKey: "PRIVATE KEY",
         knownHosts: "[ssh.example.test]:22 ssh-ed25519 AAAA",
@@ -363,7 +363,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
       config: {
         host: "ssh.example.test",
         port: 22,
-        username: "paperclip",
+        username: "wardmote",
         remoteWorkspacePath: "/srv/wardmote",
         privateKey: "PRIVATE KEY",
         knownHosts: "[ssh.example.test]:22 ssh-ed25519 AAAA",
@@ -399,7 +399,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
       config: {
         host: "ssh.example.test",
         port: 22,
-        username: "paperclip",
+        username: "wardmote",
         remoteWorkspacePath: "/srv/wardmote",
         privateKey: "PRIVATE KEY",
         knownHosts: "[ssh.example.test]:22 ssh-ed25519 AAAA",
@@ -431,7 +431,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
       spec: {
         host: "ssh.example.test",
         port: 22,
-        username: "paperclip",
+        username: "wardmote",
         remoteWorkspacePath: "/srv/wardmote",
         remoteCwd: "/srv/wardmote",
       },

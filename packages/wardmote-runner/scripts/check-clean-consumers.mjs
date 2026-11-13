@@ -196,7 +196,7 @@ async function verifyRunnerConsumer({
 }) {
   await mkdir(consumerRoot, { recursive: true });
   await writeFile(resolve(consumerRoot, "package.json"), `${JSON.stringify({
-    name: "paperclip-runner-clean-consumer",
+    name: "wardmote-runner-clean-consumer",
     private: true,
     type: "module",
     packageManager: "pnpm@9.15.4",
@@ -271,7 +271,7 @@ if (nativeBundle.semanticTools.results[0]?.outcome !== "denied") {
 }
 
 runtime.assertWardmoteRunnerCompatibility({
-  consumer: "paperclip-runner-clean-consumer",
+  consumer: "wardmote-runner-clean-consumer",
   components: { catalog: 1, protocol: 1, runnerClient: 1, controlPlaneAdapter: 1, testkit: 1 },
   requiredOperationIds: ["finish_task"],
   provider: { id: "clean-provider", supportedOperationIds: ["finish_task"] },
@@ -289,7 +289,7 @@ const runnerd = await evals.resolveWardmoteRunnerdArtifact({
   expectedSha256: process.env.WARDMOTE_RUNNERD_SHA256,
 });
 const evalCompatibility = evals.assertWardmoteRunnerEvalCompatibility({
-  consumer: "paperclip-runner-clean-consumer",
+  consumer: "wardmote-runner-clean-consumer",
   packageVersion: evals.WARDMOTE_RUNNER_BUILD_METADATA.package.version,
   runnerd: runnerd.buildMetadata,
   nativeExecutionVersion: 1,

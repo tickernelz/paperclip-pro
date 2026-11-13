@@ -30,10 +30,10 @@ function ReferenceSidebar() {
     <aside className="flex h-full w-60 shrink-0 flex-col bg-bg-2 text-ink" aria-label="Bull navigation">
       <div className="flex h-14 shrink-0 items-center gap-2 px-6 text-sm font-semibold"><span className="flex size-5 items-center justify-center rounded-md border border-line text-xs">B</span>Bull<ChevronsUpDown className="ml-auto size-3 text-ink-3" /></div>
       <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-4">
-        <a className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-bg-3" href="https://bull.staging.paperclip.app/BUL/issues" target="_blank" rel="noreferrer"><SquarePen className="size-4" />New Task</a>
+        <a className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-bg-3" href="https://bull.staging.wardmote.app/BUL/issues" target="_blank" rel="noreferrer"><SquarePen className="size-4" />New Task</a>
         {navigation.map(({ label, icon: Icon, path, heading }) => <div key={label}>
           {heading && <p className="px-3 pb-2 pt-6 font-mono text-xs uppercase text-ink-3">{heading}</p>}
-          <a href={`https://bull.staging.paperclip.app/BUL/${path}`} target="_blank" rel="noreferrer" aria-current={path === "projects" ? "page" : undefined} className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-bg-3", path === "projects" && "bg-bg-3")}><Icon className="size-4" />{label}</a>
+          <a href={`https://bull.staging.wardmote.app/BUL/${path}`} target="_blank" rel="noreferrer" aria-current={path === "projects" ? "page" : undefined} className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-bg-3", path === "projects" && "bg-bg-3")}><Icon className="size-4" />{label}</a>
         </div>)}
       </nav>
       <div className="shrink-0 px-6 py-4 text-xs text-ink-3">Bull workspace</div>

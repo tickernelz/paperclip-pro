@@ -5,7 +5,7 @@ import type {
   CapabilityChatSessionArtifact,
   CapabilityChatTurn,
   CapabilityTimelineEntry,
-} from "@paperclip-runner-local/capability";
+} from "@wardmote-runner-local/capability";
 
 import { CHANGE_ICON, CHANGE_LABEL } from "../labels.js";
 import {

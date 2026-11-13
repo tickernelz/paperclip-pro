@@ -4190,7 +4190,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       cwd: "/tmp/https-url-serialization",
       metadata: {
         runtimeConfig: {
-          workspaceRuntime: { services: [{ name: "paperclip-dev", command: "pnpm dev" }] },
+          workspaceRuntime: { services: [{ name: "wardmote-dev", command: "pnpm dev" }] },
           desiredState: "running",
         },
       },
@@ -4230,7 +4230,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
         executionWorkspaceId: readyWorkspaceId,
         scopeType: "execution_workspace",
         scopeId: readyWorkspaceId,
-        serviceName: "paperclip-dev",
+        serviceName: "wardmote-dev",
         status: "running",
         lifecycle: "shared",
         reuseKey: "ready-dev",
@@ -4265,7 +4265,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
         executionWorkspaceId: provisioningWorkspaceId,
         scopeType: "execution_workspace",
         scopeId: provisioningWorkspaceId,
-        serviceName: "paperclip-dev",
+        serviceName: "wardmote-dev",
         status: "running",
         lifecycle: "shared",
         reuseKey: "provisioning-dev",

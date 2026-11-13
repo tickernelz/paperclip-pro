@@ -20,7 +20,7 @@ export const humanMessages = [
   { id: "comment-7", authorUserId: alexId, body: "Thanks — I am working on it.", time: "15:42:29" },
 ];
 export const comments: IssueComment[] = humanMessages.map(row => ({
-  id: row.id, companyId: "company-paperclip", issueId,
+  id: row.id, companyId: "company-wardmote", issueId,
   authorType: "user", authorUserId: row.authorUserId, authorAgentId: null,
   body: row.body, presentation: null, metadata: null,
   createdAt: new Date(`2026-10-09T${row.time}-05:00`),

@@ -36,8 +36,8 @@ const videos = [...media, ["Motion concept — Sep 21", manila], ["Motion concep
   metadata: { contentType: "video/mp4", contentPath: src, openPath: src, originalFilename: `${name.toLowerCase().replaceAll(" ", "-")}.mp4`, byteSize: 128_000 },
 }));
 const files = [
-  product("Style exploration notes.txt", 20, { metadata: { contentType: "text/plain", byteSize: 2400, downloadPath: "data:text/plain,Five%20Paperclip%20Ships%20style%20directions", contentPath: "data:text/plain,Five%20Paperclip%20Ships%20style%20directions" } }),
-  product("Preview the daily ships page", 21, { type: "preview_url", url: "https://paperclip.ing", metadata: null }),
+  product("Style exploration notes.txt", 20, { metadata: { contentType: "text/plain", byteSize: 2400, downloadPath: "data:text/plain,Five%20Wardmote%20Ships%20style%20directions", contentPath: "data:text/plain,Five%20Wardmote%20Ships%20style%20directions" } }),
+  product("Preview the daily ships page", 21, { type: "preview_url", url: "https://example.com", metadata: null }),
   product("Source package is still being prepared", 22, { status: "pending" }),
 ];
 const images = [manilaImage, nightImage].map((src, index) => product(index ? "Night Pills — cover image" : "Manila Ledger — cover image", index + 10, {

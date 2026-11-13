@@ -615,18 +615,18 @@ function networkGuardRecord(
   snapshot: CapabilityLiveSessionSnapshot,
   state: CapabilityFixtureState | null,
 ): CapabilityEvidenceControlPlaneRecord {
-  const { realPaperclipRequests, childPaperclipEnvironmentKeys } = snapshot.networkEvidence;
+  const { realWardmoteRequests, childWardmoteEnvironmentKeys } = snapshot.networkEvidence;
   return {
     id: `network-guard-${snapshot.sessionId}`,
     turnId: "turn-0",
     category: "session",
-    outcome: realPaperclipRequests === 0 ? "no_real_paperclip_request" : "real_paperclip_request",
+    outcome: realWardmoteRequests === 0 ? "no_real_wardmote_request" : "real_paperclip_request",
     reason:
-      `Real Wardmote API requests: ${realPaperclipRequests}. ` +
+      `Real Wardmote API requests: ${realWardmoteRequests}. ` +
       `Child WARDMOTE_* environment keys: ${
-        childPaperclipEnvironmentKeys.length === 0
+        childWardmoteEnvironmentKeys.length === 0
           ? "none"
-          : childPaperclipEnvironmentKeys.join(", ")
+          : childWardmoteEnvironmentKeys.join(", ")
       }.`,
     stateRevision: state?.revision ?? 0,
     threadAnchorId: null,

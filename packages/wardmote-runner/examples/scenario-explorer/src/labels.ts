@@ -3,7 +3,7 @@ import type {
   CapabilityDiffChangeKind,
   CapabilityParityStatus,
   CapabilityPrimaryDisposition,
-} from "@paperclip-runner-local/capability";
+} from "@wardmote-runner-local/capability";
 
 /**
  * The canonical label vocabulary from the interaction map §0. Every badge,

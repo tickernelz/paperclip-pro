@@ -386,7 +386,7 @@ async function completePosthogAuthorization(page, config) {
 
 async function safeScreenshot(page, outputPath, config, checkpoint) {
   const current = new URL(page.url());
-  if (current.origin !== new URL(config.baseUrl).origin) fail(checkpoint, "screenshot_not_on_paperclip");
+  if (current.origin !== new URL(config.baseUrl).origin) fail(checkpoint, "screenshot_not_on_wardmote");
   for (const queryKey of ["code", "state", "token", "access_token", "refresh_token"]) {
     if (current.searchParams.has(queryKey)) fail(checkpoint, "credential_query_in_screenshot_url");
   }
@@ -586,12 +586,12 @@ async function runSmoke({ config, chromium }) {
       }
     });
 
-    activeCheckpoint = "A.paperclip-login";
+    activeCheckpoint = "A.wardmote-login";
     await gotoWardmotePage(
       page,
       new URL("/auth?next=/", config.baseUrl).toString(),
       page.locator("#email"),
-      "A.paperclip-login",
+      "A.wardmote-login",
       "email_field_missing",
     );
     await page.locator("#email").fill(config.email);
@@ -601,9 +601,9 @@ async function runSmoke({ config, chromium }) {
     );
     await page.getByRole("button", { name: /^sign in$/i }).click();
     const loginResponse = await loginResponsePromise;
-    if (!loginResponse.ok()) fail("A.paperclip-login", `http_${loginResponse.status()}`);
+    if (!loginResponse.ok()) fail("A.wardmote-login", `http_${loginResponse.status()}`);
     await page.waitForURL((url) => url.pathname !== "/auth", { timeout: 30_000 }).catch(() => {
-      fail("A.paperclip-login", "login_redirect_missing");
+      fail("A.wardmote-login", "login_redirect_missing");
     });
 
     activeCheckpoint = "A.company-selection";

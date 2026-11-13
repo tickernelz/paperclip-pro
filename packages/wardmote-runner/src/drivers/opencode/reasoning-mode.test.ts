@@ -41,7 +41,7 @@ describe("per-turn OpenCode reasoning", () => {
         await session.startTurn({ message: { role: "user", text: "Reply Hi." }, reasoningMode });
         for await (const event of session.events()) if (event.eventType === "turn.completed") break;
       }
-      expect(submitted.map(body => body.variant)).toEqual(["paperclip-default", "paperclip-no-reasoning", "paperclip-default"]);
+      expect(submitted.map(body => body.variant)).toEqual(["wardmote-default", "wardmote-no-reasoning", "wardmote-default"]);
       expect(submitted[0]!.system).toBe(instructions);
       for (const body of submitted) {
         expect(body.system).toBe(instructions);
@@ -52,7 +52,7 @@ describe("per-turn OpenCode reasoning", () => {
       expect(envelope.task.constraints).toEqual(["Use Wardmote MCP tools for semantic operations."]);
       const config = JSON.parse(await readFile(join(root, "reasoning/config/opencode/opencode.json"), "utf8"));
       expect(config.provider.openrouter.models["deepseek/deepseek-v4-flash-0731"]).toMatchObject({
-        variants: { "paperclip-default": {}, "paperclip-no-reasoning": { reasoning: { enabled: false } } },
+        variants: { "wardmote-default": {}, "wardmote-no-reasoning": { reasoning: { enabled: false } } },
       });
       expect(config.provider.openrouter.models["deepseek/deepseek-v4-flash-0731"].options).toBeUndefined();
     } finally {

@@ -9,7 +9,7 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: "@tickernelz/wardmote-runner/react", replacement: resolve(packageRoot, "src/react/index.ts") },
-      { find: "@paperclip-runner-local/capability", replacement: resolve(packageRoot, "src/scenarios/index.ts") },
+      { find: "@wardmote-runner-local/capability", replacement: resolve(packageRoot, "src/scenarios/index.ts") },
     ],
   },
   test: {

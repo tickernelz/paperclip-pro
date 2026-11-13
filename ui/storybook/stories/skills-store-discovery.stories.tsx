@@ -12,11 +12,11 @@ const STORY_NOW = new Date("2026-08-31T12:00:00Z").getTime();
 
 const MOCK_CARDS: DiscoveryCard[] = [
   {
-    key: "paperclipai/paperclip/paperclip-dev",
+    key: "tickernelz/wardmote/wardmote-dev",
     skillId: "s-dev",
     catalogRef: null,
-    name: "paperclip-dev",
-    slug: "paperclip-dev",
+    name: "wardmote-dev",
+    slug: "wardmote-dev",
     author: "Wardmote",
     version: "v2.4.1",
     tagline: "Run and repair local Wardmote workspaces.",
@@ -56,7 +56,7 @@ const MOCK_CARDS: DiscoveryCard[] = [
     sourceBadge: "skills_sh",
   },
   {
-    key: "paperclipai/paperclip/verify",
+    key: "tickernelz/wardmote/verify",
     skillId: "s-verify",
     catalogRef: null,
     name: "verify",
@@ -122,7 +122,7 @@ const MOCK_CARDS: DiscoveryCard[] = [
     sourceBadge: "url",
   },
   {
-    key: "paperclipai/paperclip/security-review",
+    key: "tickernelz/wardmote/security-review",
     skillId: "s-sec",
     catalogRef: null,
     name: "security-review",
@@ -188,11 +188,11 @@ const MOCK_CARDS: DiscoveryCard[] = [
     sourceBadge: "local",
   },
   {
-    key: "paperclipai/paperclip/paperclip",
+    key: "tickernelz/wardmote/wardmote",
     skillId: "s-core",
     catalogRef: "c-core",
-    name: "paperclip",
-    slug: "paperclip",
+    name: "wardmote",
+    slug: "wardmote",
     author: "Wardmote",
     version: "core",
     tagline: "Coordinate company work through the control plane.",
@@ -210,7 +210,7 @@ const MOCK_CARDS: DiscoveryCard[] = [
     sourceBadge: "wardmote",
   },
   {
-    key: "paperclipai/paperclip/diagnose-why-work-stopped",
+    key: "tickernelz/wardmote/diagnose-why-work-stopped",
     skillId: "s-diag",
     catalogRef: "c-diag",
     name: "diagnose-why-work-stopped",

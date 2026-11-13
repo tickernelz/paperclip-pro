@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { Button } from "@tickernelz/wardmote-runner/react";
-import type { CapabilityScenarioIndexEntry } from "@paperclip-runner-local/capability";
+import type { CapabilityScenarioIndexEntry } from "@wardmote-runner-local/capability";
 
 import { DISPOSITION_LABEL, groupLabel, PARITY_LABEL, ROLE_LABEL } from "../labels.js";
 import { activeFilterChips, hasActiveFilters, type CapabilityFilters } from "../route.js";

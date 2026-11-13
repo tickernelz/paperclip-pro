@@ -690,7 +690,7 @@ class OpenCodeHarnessSession implements HarnessSession {
           // Always select the empty default variant on an ordinary turn so a
           // previous disabled turn cannot change this turn's provider defaults.
           ...(providerID === "openrouter"
-            ? { variant: reasoningMode === "disabled" ? "paperclip-no-reasoning" : "paperclip-default" }
+            ? { variant: reasoningMode === "disabled" ? "wardmote-no-reasoning" : "wardmote-default" }
             : {}),
           // Keep question enabled in the isolated config. OpenCode 1.18.32
           // turns a prompt's deprecated `tools` map into replacement session
@@ -2289,8 +2289,8 @@ async function startRuntime(input: {
               name: providerModelId,
               ...(modelProvider === "openrouter"
                 ? { variants: {
-                    "paperclip-default": {},
-                    "paperclip-no-reasoning": { reasoning: { enabled: false } },
+                    "wardmote-default": {},
+                    "wardmote-no-reasoning": { reasoning: { enabled: false } },
                   } }
                 : {}),
             },

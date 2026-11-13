@@ -24,7 +24,7 @@ function ChatManagementPage({ tab = "settings", scenario = "populated" }: { tab?
     let endpoint: ChatEndpoint = {
       id: "chat-management", companyId: "company-storybook", provider: "slack", status: "active",
       assignedAgentId: agent.id, assignedAgentName: agent.name, providerAccountId: "TSTORY",
-      providerAccountLabel: "Wardmote", botExternalId: "UARLO", botLabel: "Arlo", botUsername: "arlo-paperclip",
+      providerAccountLabel: "Wardmote", botExternalId: "UARLO", botLabel: "Arlo", botUsername: "arlo-wardmote",
       allowUnlinkedPeople: false, allowDirectMessages: true,
       setup: { step: "complete", slackApp: { appName: "Arlo", botName: "Arlo", command: "/arlo" } },
     };

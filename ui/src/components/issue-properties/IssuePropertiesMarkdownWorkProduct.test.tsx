@@ -447,7 +447,7 @@ describe("markdown work product review row", () => {
         title: "Artifact grouping PR",
         url: "https://github.com/tickernelz/wardmote/pull/1",
         createdByRunId: runOne,
-        metadata: { repo: "paperclipai/paperclip", number: 1, baseRef: "master", headRef: "artifacts" },
+        metadata: { repo: "tickernelz/wardmote", number: 1, baseRef: "master", headRef: "artifacts" },
       }),
       makeMarkdownWorkProduct({
         id: "33333333-3333-4333-8333-333333333333",

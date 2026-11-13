@@ -129,7 +129,7 @@ const logItems = [
     item: {
       id: "save-plan",
       type: "command_execution",
-      command: "paperclip documents update PAP-241 plan",
+      command: "wardmote documents update PAP-241 plan",
     },
   },
   {
@@ -137,7 +137,7 @@ const logItems = [
     item: {
       id: "save-plan",
       type: "command_execution",
-      command: "paperclip documents update PAP-241 plan",
+      command: "wardmote documents update PAP-241 plan",
       aggregated_output: "Saved launch plan revision 3.",
       status: "completed",
       exit_code: 0,
@@ -514,8 +514,8 @@ export function AgentChatPrototype({
           name: scenario === "project-multi-repo" ? "First agent handoff across the application, documentation, and onboarding service" : "First agent handoff",
           description: "Help new teams get their first useful result.", sourceIssueId: issue.id,
           repositories: scenario === "project-no-repo" ? [] : [
-            { id: "1", name: "paperclipai/paperclip", url: "https://github.com/paperclipai/paperclip" },
-            ...(scenario === "project-multi-repo" ? [{ id: "2", name: "paperclipai/onboarding", url: "https://github.com/paperclipai/onboarding" }] : []),
+            { id: "1", name: "tickernelz/wardmote", url: "https://github.com/tickernelz/wardmote" },
+            ...(scenario === "project-multi-repo" ? [{ id: "2", name: "tickernelz/onboarding", url: "https://github.com/tickernelz/onboarding" }] : []),
           ],
         },
       }]);

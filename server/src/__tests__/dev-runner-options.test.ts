@@ -38,15 +38,15 @@ describe("applyDevRunnerOptions", () => {
   });
 
   it.each([
-    ["short option", ["-d", "~/paperclip-dev"]],
-    ["equals form", ["--data-dir=~/paperclip-dev"]],
+    ["short option", ["-d", "~/wardmote-dev"]],
+    ["equals form", ["--data-dir=~/wardmote-dev"]],
   ])("supports the %s", (_label, args) => {
     const env: NodeJS.ProcessEnv = {};
 
     const result = applyDevRunnerOptions(args, env, "/unused");
 
     expect(result.forwardedArgs).toEqual([]);
-    expect(result.dataDir).toBe(path.join(os.homedir(), "paperclip-dev"));
+    expect(result.dataDir).toBe(path.join(os.homedir(), "wardmote-dev"));
   });
 
   it("uses the selected instance for the default config path", () => {

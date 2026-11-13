@@ -69,7 +69,7 @@ describe("prepared OpenCode context transport", () => {
       [{ type: "text", text: "completion-only OpenCode continuation" }],
     ]);
     expect(JSON.stringify(submitted)).not.toContain('"task"');
-    expect(submitted.map(body => body.variant)).toEqual(["paperclip-no-reasoning", "paperclip-default"]);
+    expect(submitted.map(body => body.variant)).toEqual(["wardmote-no-reasoning", "wardmote-default"]);
     expect(submitted.map(body => body.system)).toEqual(["Prepared agent instructions.", "Prepared agent instructions."]);
     await recovered!.session!.close({ reason: "prepared-test-recovery" });
   });

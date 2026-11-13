@@ -27,7 +27,7 @@ try {
 }
 
 const records = await listLocalServiceRegistryRecords({
-  profileKind: "paperclip-dev",
+  profileKind: "wardmote-dev",
   metadata: { repoRoot },
 });
 

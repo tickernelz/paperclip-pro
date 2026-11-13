@@ -525,7 +525,7 @@ function cleanRoomView(identifier: string, withTurn: boolean) {
     id: `network-guard-session-${identifier}`,
     turnId: "turn-0",
     category: "session",
-    outcome: "no_real_paperclip_request",
+    outcome: "no_real_wardmote_request",
     reason: "Real Wardmote API requests: 0. Child WARDMOTE_* environment keys: none.",
     stateRevision: 3,
     threadAnchorId: null,

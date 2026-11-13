@@ -7,7 +7,7 @@ export function cursorRuntimeCachePath(closureSha256: string, platform: string, 
   if (!/^[a-f0-9]{64}$/.test(closureSha256) || !["darwin-arm64", "darwin-x64", "linux-x64"].includes(`${platform}-${architecture}`)
     || !isAbsolute(home) || home.includes("\0")) throw new Error("Invalid Cursor runtime cache identity");
   let directory = home;
-  for (const part of [".paperclip", "runtimes", "cursor", `${platform}-${architecture}`, closureSha256]) {
+  for (const part of [".wardmote", "runtimes", "cursor", `${platform}-${architecture}`, closureSha256]) {
     directory = join(directory, part);
     try {
       const stat = lstatSync(directory);

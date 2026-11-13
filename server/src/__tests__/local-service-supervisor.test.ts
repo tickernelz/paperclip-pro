@@ -142,7 +142,7 @@ describe("local service supervision", () => {
     expect(doesLocalServiceCommandLineMatch({
       commandLine: "/usr/bin/node /opt/pnpm/pnpm.cjs dev -- --bind custom --bind-host 127.0.0.1",
       recordedCommand: "pnpm dev -- --bind custom --bind-host 127.0.0.1",
-      serviceName: "paperclip-dev",
+      serviceName: "wardmote-dev",
     })).toBe(true);
   });
 
@@ -159,7 +159,7 @@ describe("local service supervision", () => {
     expect(doesLocalServiceCommandLineMatch({
       commandLine: "/usr/bin/node /workspace/server/dist/index.js",
       recordedCommand: "pnpm dev -- --bind custom --bind-host 127.0.0.1",
-      serviceName: "paperclip-dev",
+      serviceName: "wardmote-dev",
     })).toBe(false);
   });
 

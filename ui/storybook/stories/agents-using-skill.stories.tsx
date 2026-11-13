@@ -63,7 +63,7 @@ function makeSkill(overrides: Partial<CompanySkillDetail> = {}): CompanySkillDet
   return {
     id: SKILL_ID,
     companyId: COMPANY_ID,
-    key: "paperclip/code-review",
+    key: "wardmote/code-review",
     slug: "code-review",
     name: "Code Review",
     description: "Structured pull-request review with actionable findings.",

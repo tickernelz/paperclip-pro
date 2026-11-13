@@ -28,6 +28,10 @@ describe("host ACPX qualification admission", () => {
         expect(resolveWardmoteRunnerNativeProviderInput({ backend: "acpx_runtime", adapterConfig: { ...config, acpxPermissionMode } }))
           .toMatchObject({ ...config, acpxPermissionMode: acpxPermissionMode ?? "approve-all" });
       }
+      for (const acpxPermissionMode of [["approve", "paperclip"].join("-"), "approve-everything"]) {
+        expect(() => resolveWardmoteRunnerProviderProfile({ ...config, acpxPermissionMode }))
+          .toThrow(expect.objectContaining({ code: "runner_permission_mode_invalid" }));
+      }
       for (const model of [undefined, ""]) {
         expect(() => resolveWardmoteRunnerProviderProfile({ ...config, model }))
           .toThrow(expect.objectContaining({ code: "wardmote_runner_acpx_model_required" }));

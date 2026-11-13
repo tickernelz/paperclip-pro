@@ -44,7 +44,7 @@ export const Receiving: Story = { play: async ({ canvasElement }) => {
   const copyAddress = await canvas.findByRole("button", { name: "Copy email address" });
   await expect(copyAddress).toHaveTextContent("ralph@wardmote.example");
   await expect(canvas.getByRole("link", { name: "View inbox" })).toHaveAttribute(
-    "href", "https://console.agentmail.to/dashboard/inboxes/ralph%40paperclip.example");
+    "href", "https://console.agentmail.to/dashboard/inboxes/ralph%40wardmote.example");
 } };
 export const Paused: Story = { parameters: { inbox: { status: "paused" } }, play: async ({ canvasElement }) => {
   const canvas = within(canvasElement);

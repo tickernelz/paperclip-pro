@@ -81,7 +81,7 @@ describe("workspace command helpers", () => {
   it("matches an exposed dev runtime whose bind command was hardened to loopback", () => {
     const workspaceRuntime = {
       commands: [
-        { id: "web", name: "paperclip-dev", kind: "service", command: "pnpm dev --bind lan" },
+        { id: "web", name: "wardmote-dev", kind: "service", command: "pnpm dev --bind lan" },
       ],
     };
     const command = findWorkspaceCommandDefinition(workspaceRuntime, "web");
@@ -90,15 +90,15 @@ describe("workspace command helpers", () => {
     const match = matchWorkspaceRuntimeServiceToCommand(command!, [
       {
         id: "runtime-web",
-        serviceName: "paperclip-dev",
+        serviceName: "wardmote-dev",
         command: "pnpm dev --bind loopback",
         cwd: "/repo",
         configIndex: null,
         exposure: {
           provider: "tailscale_https",
           state: "ready",
-          publicUrl: "https://paperclip-dev.example.ts.net:42012",
-          hostname: "paperclip-dev.example.ts.net",
+          publicUrl: "https://wardmote-dev.example.ts.net:42012",
+          hostname: "wardmote-dev.example.ts.net",
           listeners: [],
           brokerRef: "broker-1",
           lastError: null,
@@ -112,13 +112,13 @@ describe("workspace command helpers", () => {
 
   it("does not equate a loopback command with a lan command without managed exposure", () => {
     const command = findWorkspaceCommandDefinition({
-      services: [{ name: "paperclip-dev", command: "pnpm dev --bind lan" }],
-    }, "service:paperclip-dev");
+      services: [{ name: "wardmote-dev", command: "pnpm dev --bind lan" }],
+    }, "service:wardmote-dev");
 
     const match = matchWorkspaceRuntimeServiceToCommand(command!, [
       {
         id: "runtime-web",
-        serviceName: "paperclip-dev",
+        serviceName: "wardmote-dev",
         command: "pnpm dev --bind loopback",
         cwd: "/repo",
         configIndex: null,

@@ -99,11 +99,11 @@ try {
   // Prove lifecycle execution is real even if npm changes its script defaults.
   const sentinelSource = join(root, 'lifecycle-sentinel'); mkdirSync(sentinelSource);
   writeFileSync(join(sentinelSource, 'package.json'), JSON.stringify({
-    name: 'paperclip-verification-lifecycle-sentinel', version: '1.0.0', private: true,
+    name: 'wardmote-verification-lifecycle-sentinel', version: '1.0.0', private: true,
     scripts: { postinstall: 'node -e "require(\'node:fs\').writeFileSync(\'lifecycle-ran\', \'ok\')"' },
   }));
   run('npm', ['pack', '--ignore-scripts', '--pack-destination', assets], sentinelSource);
-  const sentinel = join(consumer, 'node_modules/paperclip-verification-lifecycle-sentinel/lifecycle-ran');
+  const sentinel = join(consumer, 'node_modules/wardmote-verification-lifecycle-sentinel/lifecycle-ran');
   const consumerUid = process.getuid();
   const isolated = (command, options = {}) => run('docker', grokConsumerDockerArgs({ assets, consumer, cache, uid: consumerUid, gid: process.getgid(), command, ...options }));
   phase('stage_packages');

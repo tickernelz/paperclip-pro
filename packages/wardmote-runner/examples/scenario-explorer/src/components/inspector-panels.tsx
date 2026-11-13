@@ -8,7 +8,7 @@ import type {
   CapabilityRunArtifact,
   CapabilityScenarioIndexEntry,
   CapabilityStateDiff,
-} from "@paperclip-runner-local/capability";
+} from "@wardmote-runner-local/capability";
 
 import {
   ASSERTION_CLASS_LABEL,

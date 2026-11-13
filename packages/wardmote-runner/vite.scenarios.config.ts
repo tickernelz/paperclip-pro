@@ -23,7 +23,7 @@ export default defineConfig({
         replacement: resolve(packageRoot, "styles.css"),
       },
       {
-        find: "@paperclip-runner-local/capability",
+        find: "@wardmote-runner-local/capability",
         replacement: resolve(packageRoot, "src/scenarios/index.ts"),
       },
     ],

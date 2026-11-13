@@ -4,7 +4,7 @@ import type {
   CapabilityChatSessionArtifact,
   CapabilityChatTurn,
   CapabilityTimelineEntry,
-} from "@paperclip-runner-local/capability";
+} from "@wardmote-runner-local/capability";
 
 import { TimelineEntryBody } from "./scenario-transcript.js";
 import { TurnStrip } from "./chat-turn-strip.js";

@@ -22,8 +22,8 @@ const SESSION_LIFETIME_MS = 30 * 60_000;
 const MAX_SESSION_EVENTS = 1_024;
 const MAX_SERIALIZED_STATE_BYTES = 1024 * 1024;
 const TURN_DEADLINE_MS = 30_000;
-const SECURE_CAPABILITY_COOKIE = "__Host-paperclip_scenario-chat";
-const TAILNET_HTTP_CAPABILITY_COOKIE = "paperclip_scenario-chat";
+const SECURE_CAPABILITY_COOKIE = "__Host-wardmote_scenario-chat";
+const TAILNET_HTTP_CAPABILITY_COOKIE = "wardmote_scenario-chat";
 
 const FORBIDDEN_ENV_NAME = /^(?:WARDMOTE_|GITHUB_|AWS_|GOOGLE_|AZURE_)|(?:API_KEY|TOKEN|SECRET|PASSWORD|DATABASE_URL|CODEX_HOME)$/i;
 

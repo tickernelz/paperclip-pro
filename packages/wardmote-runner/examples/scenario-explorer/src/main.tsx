@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import {
   buildCapabilityScenarioIndex,
   capabilityEvalSuiteLookup,
-} from "@paperclip-runner-local/capability";
+} from "@wardmote-runner-local/capability";
 
 import "@tickernelz/wardmote-runner/styles.css";
 import "./explorer.css";

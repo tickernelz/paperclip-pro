@@ -158,12 +158,12 @@ async function loginWardmoteBoard(page, context, config) {
       page,
       loginUrl,
       () => page.getByLabel(/^email$/i),
-      "A.paperclip-login",
+      "A.wardmote-login",
       "email_field_missing",
     );
     const wardmoteEmailInput = page.getByLabel(/^email$/i);
     const wardmotePasswordInput = page.getByLabel(/^password$/i);
-    await expectVisible(wardmotePasswordInput, "A.paperclip-login", "password_field_missing");
+    await expectVisible(wardmotePasswordInput, "A.wardmote-login", "password_field_missing");
     await wardmoteEmailInput.fill(config.wardmoteEmail);
     await wardmotePasswordInput.fill(config.wardmotePassword);
     const loginResponsePromise = page.waitForResponse((response) =>
@@ -171,7 +171,7 @@ async function loginWardmoteBoard(page, context, config) {
     );
     await page.getByRole("button", { name: /^sign in$/i }).click();
     const loginResponse = await loginResponsePromise;
-    if (!loginResponse.ok()) fail("A.paperclip-login", `http_${loginResponse.status()}`);
+    if (!loginResponse.ok()) fail("A.wardmote-login", `http_${loginResponse.status()}`);
 
     // A redirect is a UI implementation detail; the authenticated session is
     // the prerequisite the smoke actually needs. A successful sign-in response
@@ -183,7 +183,7 @@ async function loginWardmoteBoard(page, context, config) {
     if (session.ok()) return;
     if (attempt < 2) await page.waitForTimeout(500);
   }
-  fail("A.paperclip-login", "session_cookie_missing");
+  fail("A.wardmote-login", "session_cookie_missing");
 }
 
 async function clickVisibleButton(page, names) {
@@ -345,7 +345,7 @@ async function completeNotionAuthorization(page, config, credential, connectionI
 
 async function safeScreenshot(page, outputPath, config, credential, checkpoint) {
   const current = new URL(page.url());
-  if (current.origin !== new URL(config.baseUrl).origin) fail(checkpoint, "screenshot_not_on_paperclip");
+  if (current.origin !== new URL(config.baseUrl).origin) fail(checkpoint, "screenshot_not_on_wardmote");
   for (const queryKey of ["code", "state", "token", "access_token", "refresh_token"]) {
     if (current.searchParams.has(queryKey)) fail(checkpoint, "credential_query_in_screenshot_url");
   }
@@ -575,7 +575,7 @@ async function runSmoke({ config, chromium }) {
   let companyId = null;
   let cleanupComplete = false;
   let caughtFailure = null;
-  let activeCheckpoint = "A.paperclip-login";
+  let activeCheckpoint = "A.wardmote-login";
 
   try {
     browser = await chromium.launch({ headless: process.env.NOTION_SMOKE_HEADED !== "1" });

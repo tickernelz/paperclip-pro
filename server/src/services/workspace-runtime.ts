@@ -5254,8 +5254,8 @@ function isWardmoteDevRuntimeService(input: { serviceName?: string | null; comma
   const serviceName = (input.serviceName ?? "").trim().toLowerCase();
   const command = (input.command ?? "").trim().toLowerCase();
   return (
-    serviceName === "paperclip-dev"
-    || serviceName === "paperclip-dev-once"
+    serviceName === "wardmote-dev"
+    || serviceName === "wardmote-dev-once"
     || (command.includes("dev:once") && command.includes("tailscale-auth"))
   );
 }

@@ -12,7 +12,7 @@ function root() { const path = mkdtempSync(join(tmpdir(), "cursor-runtime-cache-
 it("uses the OS account instead of provider-controlled HOME or XDG paths", () => {
   vi.stubEnv("HOME", "/untrusted/workspace");
   vi.stubEnv("XDG_DATA_HOME", "/untrusted/data");
-  expect(cursorRuntimeCachePath(pin, "linux", "x64")).toBe(join(userInfo().homedir, ".paperclip/runtimes/cursor/linux-x64", pin));
+  expect(cursorRuntimeCachePath(pin, "linux", "x64")).toBe(join(userInfo().homedir, ".wardmote/runtimes/cursor/linux-x64", pin));
 });
 
 it("finds user assets when the npm installation is read-only, without writing into it", () => {
@@ -37,6 +37,6 @@ it("keeps packaged image assets authoritative and rejects broken assets without 
 it("separates closure versions and refuses linked cache parents", () => {
   const home = root();
   expect(cursorRuntimeCachePath(pin, "darwin", "arm64", home)).not.toBe(cursorRuntimeCachePath("b".repeat(64), "darwin", "arm64", home));
-  symlinkSync(root(), join(home, ".paperclip"));
+  symlinkSync(root(), join(home, ".wardmote"));
   expect(() => cursorRuntimeCachePath(pin, "darwin", "arm64", home)).toThrow("real directories");
 });

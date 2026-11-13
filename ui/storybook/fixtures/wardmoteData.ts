@@ -26,9 +26,9 @@ import type { LiveRunForIssue } from "@/api/heartbeats";
 
 const now = new Date("2026-04-20T12:00:00.000Z");
 const recent = (minutesAgo: number) => new Date(now.getTime() - minutesAgo * 60_000);
-const storybookRepoRoot = "~/paperclip";
-const storybookWorkspaceRoot = `${storybookRepoRoot}/.paperclip/workspaces`;
-const storybookWorktreeRoot = `${storybookRepoRoot}/.paperclip/worktrees`;
+const storybookRepoRoot = "~/wardmote";
+const storybookWorkspaceRoot = `${storybookRepoRoot}/.wardmote/workspaces`;
+const storybookWorktreeRoot = `${storybookRepoRoot}/.wardmote/worktrees`;
 
 export const storybookCompanies: Company[] = [
   {
@@ -405,7 +405,7 @@ export const storybookProjectWorkspaces: Project["workspaces"] = [
     name: "Board UI",
     sourceType: "local_path" as const,
     cwd: `${storybookRepoRoot}/ui`,
-    repoUrl: "https://github.com/paperclipai/paperclip",
+    repoUrl: "https://github.com/tickernelz/wardmote",
     repoRef: "master",
     defaultRef: "master",
     visibility: "default" as const,
@@ -432,7 +432,7 @@ export const storybookProjectWorkspaces: Project["workspaces"] = [
     name: "Docs preview sandbox",
     sourceType: "remote_managed",
     cwd: null,
-    repoUrl: "https://github.com/paperclipai/paperclip",
+    repoUrl: "https://github.com/tickernelz/wardmote",
     repoRef: "preview/docs-workspaces",
     defaultRef: "master",
     visibility: "advanced",
@@ -474,7 +474,7 @@ export const storybookProjectWorkspaces: Project["workspaces"] = [
         command: "pnpm docs:dev",
         cwd: null,
         port: 4173,
-        url: "https://paperclip-docs-preview.vercel.app",
+        url: "https://wardmote-docs-preview.vercel.app",
         healthStatus: "unknown",
         lastUsedAt: recent(48),
         startedAt: recent(72),
@@ -493,7 +493,7 @@ export const storybookProjectWorkspaces: Project["workspaces"] = [
     name: "Release smoke local checkout",
     sourceType: "local_path",
     cwd: `${storybookWorkspaceRoot}/release-smoke`,
-    repoUrl: "https://github.com/paperclipai/paperclip",
+    repoUrl: "https://github.com/tickernelz/wardmote",
     repoRef: "release/smoke-2026-04-20",
     defaultRef: "master",
     visibility: "advanced",
@@ -538,7 +538,7 @@ export const storybookExecutionWorkspaces: ExecutionWorkspace[] = [
     status: "active",
     deliveryState: "unknown",
     cwd: `${storybookWorktreeRoot}/PAP-1641-create-super-detailed-storybooks-for-our-project`,
-    repoUrl: "https://github.com/paperclipai/paperclip",
+    repoUrl: "https://github.com/tickernelz/wardmote",
     baseRef: "master",
     branchName: "PAP-1641-create-super-detailed-storybooks-for-our-project",
     providerType: "git_worktree",
@@ -567,7 +567,7 @@ export const storybookExecutionWorkspaces: ExecutionWorkspace[] = [
     status: "cleanup_failed",
     deliveryState: "unknown",
     cwd: `${storybookWorktreeRoot}/PAP-1608-release-smoke-cleanup`,
-    repoUrl: "https://github.com/paperclipai/paperclip",
+    repoUrl: "https://github.com/tickernelz/wardmote",
     baseRef: "master",
     branchName: "PAP-1608-release-smoke-cleanup",
     providerType: "git_worktree",
@@ -652,12 +652,12 @@ function createProject(overrides: Partial<Project> = {}): Project {
     },
     codebase: {
       workspaceId: "workspace-board-ui",
-      repoUrl: "https://github.com/paperclipai/paperclip",
+      repoUrl: "https://github.com/tickernelz/wardmote",
       repoRef: "master",
       defaultRef: "master",
       repoName: "wardmote",
       localFolder: storybookRepoRoot,
-      managedFolder: ".paperclip/worktrees/storybook",
+      managedFolder: ".wardmote/worktrees/storybook",
       effectiveLocalFolder: storybookRepoRoot,
       origin: "local_folder",
     },

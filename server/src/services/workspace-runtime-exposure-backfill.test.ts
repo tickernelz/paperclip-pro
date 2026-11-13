@@ -18,7 +18,7 @@ function httpOnlyRunningRow(overrides: Partial<Parameters<typeof decideManagedRu
     mode: "auto" as const,
     brokerAvailable: true,
     provider: "local_process",
-    serviceName: "paperclip-dev",
+    serviceName: "wardmote-dev",
     command: "pnpm dev --bind lan",
     status: "running",
     hasExposure: false,

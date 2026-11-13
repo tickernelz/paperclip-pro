@@ -5,7 +5,7 @@ import { PUBLIC_CHAT_SCHEMA, SECRET_TEXT } from "./public-eval-chat.mjs";
 export const PUBLIC_VIEWER_CSP =
   "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'none'; connect-src 'none'; form-action 'none'; base-uri 'none'";
 export const PUBLIC_VIEWER_DATA =
-  /<script type="application\/json" id="paperclip-eval-report">([^<]*)<\/script>/u;
+  /<script type="application\/json" id="wardmote-eval-report">([^<]*)<\/script>/u;
 const ASSET = /^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:js|css|woff2)$/;
 
 export function publicViewerShell(index, encodedPayload) {
@@ -17,7 +17,7 @@ export function publicViewerShell(index, encodedPayload) {
     )
     .replace(
       '<script type="module"',
-      `<script type="application/json" id="paperclip-eval-report">${encodedPayload}</script>\n    <script type="module"`,
+      `<script type="application/json" id="wardmote-eval-report">${encodedPayload}</script>\n    <script type="module"`,
     );
 }
 

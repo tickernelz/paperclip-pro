@@ -990,7 +990,7 @@ export function GitHubChatPreview({
                         </p>
                         <a
                           className="mt-2 inline-block underline"
-                          href="https://paperclip.ing/docs"
+                          href="https://wardmote.ing/docs"
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -1001,7 +1001,7 @@ export function GitHubChatPreview({
                     ) : (
                       <Notice>
                         GitHub will send events to{" "}
-                        <strong>acme.staging.paperclip.app</strong>. Signed
+                        <strong>acme.staging.wardmote.app</strong>. Signed
                         delivery is checked after installation.
                       </Notice>
                     )}
@@ -1139,7 +1139,7 @@ export function GitHubChatPreview({
                           <summary className="cursor-pointer">
                             Configure the existing App on GitHub
                           </summary>
-                          <CopyValue value="https://acme.staging.paperclip.app/api/chat-webhooks/example-public-id/github" />
+                          <CopyValue value="https://acme.staging.wardmote.app/api/chat-webhooks/example-public-id/github" />
                           <p>
                             Set this webhook URL on your App. Enable Contents
                             read, Issues write, Pull requests write, and Checks
@@ -1306,7 +1306,7 @@ export function GitHubChatPreview({
                       <summary className="cursor-pointer text-ink-3">
                         Connection details & troubleshooting
                       </summary>
-                      <CopyValue value="https://acme.staging.paperclip.app/api/chat-webhooks/example-public-id/github" />
+                      <CopyValue value="https://acme.staging.wardmote.app/api/chat-webhooks/example-public-id/github" />
                       <p className="text-xs text-ink-3">
                         Webhook verification does not prove a complete agent
                         review. Try a real PR after setup.
@@ -1583,13 +1583,13 @@ export function GitHubChatPreview({
                 {
                   name: bot,
                   public: false,
-                  url: "https://acme.staging.paperclip.app",
+                  url: "https://acme.staging.wardmote.app",
                   hook_attributes: {
-                    url: "https://acme.staging.paperclip.app/api/chat-webhooks/example-public-id/github",
+                    url: "https://acme.staging.wardmote.app/api/chat-webhooks/example-public-id/github",
                     active: true,
                   },
                   redirect_url:
-                    "https://acme.staging.paperclip.app/api/chat-github/manifest/callback",
+                    "https://acme.staging.wardmote.app/api/chat-github/manifest/callback",
                   default_permissions: {
                     contents: "read",
                     issues: "write",

@@ -89,13 +89,13 @@ describe("selectConfiguredRuntimeServiceRows", () => {
 
   it("keeps an exposed dev runtime tracked after its bind command is hardened", () => {
     const exposedWeb = runtimeServiceRow({
-      serviceName: "paperclip-dev",
+      serviceName: "wardmote-dev",
       command: "pnpm dev --bind loopback",
       exposure: {
         provider: "tailscale_https",
         state: "ready",
-        publicUrl: "https://paperclip-dev.example.ts.net:42012",
-        hostname: "paperclip-dev.example.ts.net",
+        publicUrl: "https://wardmote-dev.example.ts.net:42012",
+        hostname: "wardmote-dev.example.ts.net",
         listeners: [],
         brokerRef: "broker-1",
         lastError: null,
@@ -105,7 +105,7 @@ describe("selectConfiguredRuntimeServiceRows", () => {
 
     const selected = selectConfiguredRuntimeServiceRows(
       [exposedWeb],
-      { services: [{ name: "paperclip-dev", command: "pnpm dev --bind lan" }] },
+      { services: [{ name: "wardmote-dev", command: "pnpm dev --bind lan" }] },
     );
 
     expect(selected).toEqual([

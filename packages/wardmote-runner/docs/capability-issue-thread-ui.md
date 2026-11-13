@@ -89,8 +89,8 @@ there would make two tabs of one surface revoke each other on every load while
 protecting nothing: one browser is one principal, and cross-browser denial rests
 on the binding rather than on how often the value changes.
 
-The two surfaces use separate cookie names (`paperclip_capability_issue`,
-`paperclip_capability_chat`) because they are separate pages of one origin: a single
+The two surfaces use separate cookie names (`wardmote_capability_issue`,
+`wardmote_capability_chat`) because they are separate pages of one origin: a single
 name would make opening the explorer revoke the clean room. A script that drives
 these routes has to behave like one browser — `scripts/capability-cookie-jar.mjs` is
 what the smoke scripts use for that.
