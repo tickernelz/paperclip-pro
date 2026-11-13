@@ -198,7 +198,7 @@ let bundledPluginsCache: Promise<DiscoveredBundledPlugin[]> | null = null;
 function titleCasePluginName(packageName: string): string {
   const localName = packageName.split("/").pop() ?? packageName;
   return localName
-    .replace(/^paperclip-plugin-/, "")
+    .replace(/^wardmote-plugin-/, "")
     .replace(/^plugin-/, "")
     .split("-")
     .filter(Boolean)

@@ -1157,7 +1157,7 @@ describeEmbeddedPostgres("environmentCustomImageService relink", () => {
     });
     await db.insert(plugins).values({
       pluginKey: manifest.id,
-      packageName: `paperclip-plugin-${provider}`,
+      packageName: `wardmote-plugin-${provider}`,
       version: "0.1.0",
       apiVersion: 1,
       categories: ["automation"],

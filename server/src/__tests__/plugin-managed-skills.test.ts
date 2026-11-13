@@ -68,7 +68,7 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-managed-skills-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-plugin-managed-skills-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
