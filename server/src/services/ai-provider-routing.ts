@@ -3,6 +3,7 @@ import {
   aiRoutingModel,
   type AiProviderRouting,
 } from "@tickernelz/wardmote-shared";
+import { MANAGED_CODEX_PROVIDER_ID } from "../vendor/wardmote-runner/index.js";
 
 /** Projects one authoritative connection into an isolated harness environment. */
 export function managedProviderRouting(
@@ -23,7 +24,7 @@ export function managedProviderRouting(
     env.AWS_BEARER_TOKEN_BEDROCK = credential;
   } else if (harness === "codex_local") {
     env.WARDMOTE_AI_PROVIDER_KEY = credential;
-    codexConfig = `model_provider = "wardmote"\n[model_providers.wardmote]\nname = "Wardmote connection"\nbase_url = ${JSON.stringify(baseUrl)}\nwire_api = "responses"\nrequires_openai_auth = false\n${route.auth === "none" ? "" : 'env_key = "WARDMOTE_AI_PROVIDER_KEY"\n'}`;
+    codexConfig = `model_provider = "${MANAGED_CODEX_PROVIDER_ID}"\n[model_providers.${MANAGED_CODEX_PROVIDER_ID}]\nname = "Wardmote connection"\nbase_url = ${JSON.stringify(baseUrl)}\nwire_api = "responses"\nrequires_openai_auth = false\n${route.auth === "none" ? "" : 'env_key = "WARDMOTE_AI_PROVIDER_KEY"\n'}`;
   } else if (harness === "claude_local") {
     env.ANTHROPIC_BASE_URL = baseUrl;
     env[
