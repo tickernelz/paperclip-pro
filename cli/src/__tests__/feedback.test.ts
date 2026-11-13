@@ -27,7 +27,7 @@ function makeTrace(overrides: Partial<FeedbackTrace> = {}): FeedbackTrace {
     targetId: "comment-123",
     vote: "down",
     status: "pending",
-    destination: "paperclip_labs_feedback_v1",
+    destination: "wardmote_feedback_v1",
     exportId: null,
     consentVersion: "feedback-data-sharing-v1",
     schemaVersion: "1",
