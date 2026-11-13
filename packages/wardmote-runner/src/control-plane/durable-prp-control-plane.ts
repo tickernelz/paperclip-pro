@@ -34,6 +34,7 @@ import { ACPX_CREDENTIAL_BINDING_ENV, ACPX_CREDENTIAL_NAMES, CLAUDE_ROUTING_ENV_
 import { piCredentialNames } from "../drivers/acpx/pi-provider-config.js";
 import { githubCredentialEnvironment } from "../github-credential-environment.js";
 import {
+  PRP_PROTOCOL_NAME,
   validatePrpEvent,
   type PrpEvent,
 } from "../protocol/replay-contract.js";
@@ -44,7 +45,7 @@ import {
   type DurableWarmRunTransition,
 } from "./prp-transport-types.js";
 
-const protocol = "paperclip.runner";
+const protocol = PRP_PROTOCOL_NAME;
 const protocolMinVersion = 1;
 const protocolVersion = 3;
 const secureFrameSchema = "wardmote.runner.secure-frame.v1";

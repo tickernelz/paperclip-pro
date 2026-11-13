@@ -48,7 +48,7 @@ function wrapped(raw: ReturnType<typeof event>) {
     eventType: raw.eventType,
     priority: raw.priority,
     envelope: {
-      protocol: "paperclip.runner",
+      protocol: "wardmote.runner",
       version: 1,
       kind: "event",
       ...identity,

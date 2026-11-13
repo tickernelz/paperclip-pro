@@ -297,7 +297,7 @@ it.each([
           payload: { provider: "codex", delta: `maintenance-runner-${index}` },
         };
         const envelope = {
-          protocol: "paperclip.runner",
+          protocol: "wardmote.runner",
           version: 1,
           kind: "event",
           ...identity,

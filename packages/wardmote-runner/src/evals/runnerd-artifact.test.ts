@@ -20,7 +20,7 @@ const valid = {
   binaryContractVersion: 2,
   nativeExecutionVersion: 1,
   harnessDriverVersion: 1,
-  prp: { name: "paperclip.runner", minimumVersion: 1, maximumVersion: 1 },
+  prp: { name: "wardmote.runner", minimumVersion: 1, maximumVersion: 1 },
 };
 
 describe("runnerd artifact metadata", () => {
