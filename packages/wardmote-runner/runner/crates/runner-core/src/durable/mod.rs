@@ -25,7 +25,7 @@ pub use state::{
 };
 pub(crate) use transport::current_unix_ms;
 
-pub const PROTOCOL: &str = "paperclip.runner";
+pub const PROTOCOL: &str = "wardmote.runner";
 pub const PROTOCOL_MIN_VERSION: u64 = 1;
 pub const PROTOCOL_VERSION: u64 = 3;
 pub const BOOTSTRAP_TICKET_ENV: &str = "WARDMOTE_RUNNER_BOOTSTRAP_TICKET";

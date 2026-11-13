@@ -928,7 +928,7 @@ const recoveryFakeCodex = resolve(
         },
       };
       const envelope = {
-        protocol: "paperclip.runner",
+        protocol: "wardmote.runner",
         version: 1,
         kind: "event",
         runnerInstanceId: runner.runnerInstanceId,

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { validatePrpEvent } from "../../vendor/wardmote-runner/index.js";
+import { PRP_PROTOCOL_NAME, validatePrpEvent } from "../../vendor/wardmote-runner/index.js";
 import { canonicalNativeJson, nativeSha256 } from "./canonical.js";
 
 export interface RetainedMaintenanceSnapshot {
@@ -431,7 +431,7 @@ export function verifyRetainedMaintenanceNoLaunch(
       const raw = record(envelope.payload);
       requireProof(
         same(envelope, {
-          protocol: "paperclip.runner",
+          protocol: PRP_PROTOCOL_NAME,
           version: 1,
           kind: "event",
           ...identity,

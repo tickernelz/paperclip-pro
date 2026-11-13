@@ -48,7 +48,7 @@ const expectedRunnerDigest = `sha256:${"a".repeat(64)}`;
 
 function renewalRequest(client: AuthenticatedClient, expiresAt: number): Record<string, unknown> {
   return {
-    protocol: "paperclip.runner", version: client.welcome.version,
+    protocol: "wardmote.runner", version: client.welcome.version,
     kind: "lease_renew", ...identity,
     connectionId: client.welcome.connectionId,
     connectionLeaseId: client.welcome.connectionLeaseId,
@@ -869,7 +869,7 @@ function authHello(
   selectedIdentity: DurableRecoveryIdentity = identity,
 ): Record<string, unknown> {
   return {
-    protocol: "paperclip.runner",
+    protocol: "wardmote.runner",
     version: 1,
     kind: "auth_hello",
     payload: {
@@ -925,7 +925,7 @@ async function authenticate(
     [Buffer.from(canonicalChallenge), Buffer.from(serverProof)],
   ).toString("hex");
   sendMaskedJson(socket, {
-    protocol: "paperclip.runner",
+    protocol: "wardmote.runner",
     version: challengePayload.selectedVersion,
     kind: "auth_response",
     payload: {
@@ -1198,7 +1198,7 @@ function rawSemanticInputDigest(input: unknown): string {
 
 function semanticInputEvent(sourceSeq = 1, input: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    protocol: "paperclip.runner",
+    protocol: "wardmote.runner",
     version: 1,
     kind: "event",
     runnerInstanceId: identity.runnerInstanceId,
@@ -1914,7 +1914,7 @@ describe("DurablePrpControlPlane", () => {
         ],
       });
       sendSecure(cleanup, {
-        protocol: "paperclip.runner",
+        protocol: "wardmote.runner",
         version: 1,
         kind: "command_result",
         payload: {
@@ -2410,7 +2410,7 @@ describe("DurablePrpControlPlane", () => {
       expect(wire.payload.input).toBeUndefined();
       expect(wire.payload.inputDigest).toBe(rawSemanticInputDigest(args).slice("sha256:".length));
       expect(Buffer.byteLength(JSON.stringify(wire))).toBeLessThan(1024 * 1024);
-      sendSecure(client, { protocol: "paperclip.runner", version: 1, kind: "command_result", payload: {
+      sendSecure(client, { protocol: "wardmote.runner", version: 1, kind: "command_result", payload: {
         commandId: wire.commandId, controllerSeq: wire.controllerSeq, commandType: wire.type,
         status: "completed", result: { status: "delivered", callId: "call-1" },
       } });
@@ -2638,7 +2638,7 @@ describe("DurablePrpControlPlane", () => {
       // command and confirming its effect. Its durable contract promotes such a
       // command to `indeterminate` so that it is never executed twice.
       const indeterminateResult = {
-        protocol: "paperclip.runner",
+        protocol: "wardmote.runner",
         version: 1,
         kind: "command_result",
         payload: {
@@ -2742,7 +2742,7 @@ describe("DurablePrpControlPlane", () => {
       });
       const leaseToken = client!.leaseToken!;
       const result = {
-        protocol: "paperclip.runner",
+        protocol: "wardmote.runner",
         version: 1,
         kind: "command_result",
         payload: {
@@ -2856,7 +2856,7 @@ describe("DurablePrpControlPlane", () => {
         result: { attached: true },
       };
       sendSecure(peer!, {
-        protocol: "paperclip.runner",
+        protocol: "wardmote.runner",
         version: selectedProtocol,
         kind: "command_result",
         payload: result,
@@ -2877,7 +2877,7 @@ describe("DurablePrpControlPlane", () => {
           core.store.state.warmTransition!.credentialId
         ]!.revokedAt = new Date().toISOString();
         sendSecure(peer!, {
-          protocol: "paperclip.runner",
+          protocol: "wardmote.runner",
           version: selectedProtocol,
           kind: "command_result",
           payload: result,
@@ -2926,7 +2926,7 @@ describe("DurablePrpControlPlane", () => {
           transitionId,
         );
         sendSecure(successor!, {
-          protocol: "paperclip.runner",
+          protocol: "wardmote.runner",
           version: selectedProtocol,
           kind: "event",
           payload: { sourceSeq: 1 },
@@ -3159,7 +3159,7 @@ describe("DurablePrpControlPlane", () => {
           if (mode === "bootstrap-before-result")
             expect(core.getCommand(command.commandId)?.status).toBe("pending");
           sendSecure(successor!, {
-            protocol: "paperclip.runner",
+            protocol: "wardmote.runner",
             version: selectedProtocol,
             kind: "command_result",
             payload: result,
@@ -3203,7 +3203,7 @@ describe("DurablePrpControlPlane", () => {
           core.store.state.commandDeliveryCounts[next.commandId],
         ).toBeUndefined();
         sendSecure(successor!, {
-          protocol: "paperclip.runner",
+          protocol: "wardmote.runner",
           version: selectedProtocol,
           kind: "warm_transition_activated",
           payload: { transitionId },
@@ -3258,7 +3258,7 @@ describe("DurablePrpControlPlane", () => {
             deliveriesBefore,
           );
           sendSecure(successor!, {
-            protocol: "paperclip.runner",
+            protocol: "wardmote.runner",
             version: selectedProtocol,
             kind: "warm_transition_activated",
             payload: { transitionId },
@@ -3335,7 +3335,7 @@ describe("DurablePrpControlPlane", () => {
       );
       await receiveSecure(client!);
       const result = {
-        protocol: "paperclip.runner",
+        protocol: "wardmote.runner",
         version: 1,
         kind: "command_result",
         payload: {
@@ -3471,7 +3471,7 @@ describe("DurablePrpControlPlane", () => {
         );
         await held;
         const result = {
-          protocol: "paperclip.runner",
+          protocol: "wardmote.runner",
           version: 1,
           kind: "command_result",
           payload: {
@@ -3536,7 +3536,7 @@ describe("DurablePrpControlPlane", () => {
         controlPlane.store.state.commandDeliveryCounts[command.commandId],
       ).toBe(1);
       const terminalResult = {
-        protocol: "paperclip.runner",
+        protocol: "wardmote.runner",
         version: 1,
         kind: "command_result",
         payload: {

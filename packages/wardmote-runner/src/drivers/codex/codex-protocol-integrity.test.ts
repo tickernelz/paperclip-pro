@@ -75,7 +75,7 @@ async function authenticatedRunner(
   });
   socket.send(
     JSON.stringify({
-      protocol: "paperclip.runner",
+      protocol: "wardmote.runner",
       version: 1,
       kind: "auth_hello",
       payload: {
@@ -106,7 +106,7 @@ async function authenticatedRunner(
   ]).toString("hex");
   socket.send(
     JSON.stringify({
-      protocol: "paperclip.runner",
+      protocol: "wardmote.runner",
       version: 1,
       kind: "auth_response",
       payload: {
@@ -596,7 +596,7 @@ describe("Codex protocol integrity propagation", () => {
             (candidate) => candidate.type === type,
           )!;
           client!.send({
-            protocol: "paperclip.runner",
+            protocol: "wardmote.runner",
             version: 1,
             kind: "command_result",
             payload: {
@@ -616,7 +616,7 @@ describe("Codex protocol integrity propagation", () => {
           eventType: PrpEvent["eventType"],
           payload: Record<string, unknown>,
         ) => ({
-          protocol: "paperclip.runner",
+          protocol: "wardmote.runner",
           version: 1,
           kind: "event",
           ...identity,
@@ -780,7 +780,7 @@ describe("Codex protocol integrity propagation", () => {
               (command) => command.type === "turn.start",
             )) {
               client.send({
-                protocol: "paperclip.runner",
+                protocol: "wardmote.runner",
                 version: 1,
                 kind: "command_result",
                 payload: {
@@ -802,7 +802,7 @@ describe("Codex protocol integrity propagation", () => {
                 .close("Close during pending admission")
                 .catch(() => undefined);
             client.send({
-              protocol: "paperclip.runner",
+              protocol: "wardmote.runner",
               version: 1,
               kind: "command_result",
               payload: {
