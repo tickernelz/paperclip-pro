@@ -26,7 +26,7 @@ describe("Codex value and workspace boundaries", () => {
     try {
       const hostRoot = join(fixture, "host");
       const hostHome = join(hostRoot, "home");
-      const workspaceRoot = join(hostHome, ".paperclip", "workspaces");
+      const workspaceRoot = join(hostHome, ".wardmote", "workspaces");
       const workspace = join(workspaceRoot, "run-1");
       const ordinaryHomeWorkspace = join(hostHome, "projects", "app");
       const outside = join(fixture, "outside");
