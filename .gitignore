@@ -53,6 +53,7 @@ diagnostics/
 .vscode/
 **/.claude/settings.local.json
 .wardmote-local/
+.paperclip-local/
 .wardmote-runtime/
 .paperclip-runtime/
 /.idea/

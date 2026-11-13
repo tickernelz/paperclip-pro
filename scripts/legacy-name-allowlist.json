@@ -80,7 +80,7 @@
     [".devin/wiki.json",1,"artefak-eksternal"],
     [".env.runner-e2e.example",2,"artefak-eksternal"],
     [".github/ISSUE_TEMPLATE/config.yml",1,"artefak-eksternal"],
-    [".gitignore",3,"belum-diganti"],
+    [".gitignore",4,"migrasi-otomatis"],
     ["LICENSE",1,"lisensi"],
     ["README.md",8,"repo-eksternal"],
     ["SECURITY.md",4,"repo-eksternal"],
