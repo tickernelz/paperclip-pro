@@ -17,7 +17,6 @@
 # to mutate refs on GitHub while the test runs.
 #
 # Env knobs:
-#   E2E_REPO                  GitHub repo (default: paperclipai/paperclip)
 #   E2E_UPDATE_BASE_REF       ref to install first (required; e.g. test/e2e-update-base)
 #   E2E_UPDATE_NEXT_REF       ref to update to (required; BASE + one probe migration)
 #   E2E_BOOTSTRAP_CLI         path to an already-built bootstrap CLI entry point
@@ -25,7 +24,7 @@
 #   E2E_SERVICE_TIMEOUT_SECS  service active/health wait (default 300)
 set -uo pipefail
 
-E2E_REPO="${E2E_REPO:-paperclipai/paperclip}"
+E2E_REPO="${E2E_REPO:-tickernelz/wardmote}"
 BASE_REF="${E2E_UPDATE_BASE_REF:?E2E_UPDATE_BASE_REF is required}"
 NEXT_REF="${E2E_UPDATE_NEXT_REF:?E2E_UPDATE_NEXT_REF is required}"
 E2E_SERVICE_TIMEOUT_SECS="${E2E_SERVICE_TIMEOUT_SECS:-300}"
@@ -36,7 +35,7 @@ for var in $(env | grep -o '^WARDMOTE_[A-Z_]*' || true); do unset "$var"; done
 unset NODE_ENV npm_config_prefix 2>/dev/null || true
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 export CI="${CI:-1}"
-export WARDMOTE_HOME="$HOME/.paperclip-e2e-update"
+export WARDMOTE_HOME="$HOME/.wardmote-e2e-update"
 
 SHIM="$HOME/.local/bin/wardmote"
 STORE="$WARDMOTE_HOME/cli"
@@ -83,7 +82,7 @@ command -v corepack >/dev/null || npm install -g corepack
 if [ "$(uname -s)" = "Linux" ] && [ ! -S "/run/user/$(id -u)/bus" ]; then
   echo "no systemd user bus at /run/user/$(id -u)/bus — this test needs a real service"; exit 2
 fi
-echo "repo=$E2E_REPO base=$BASE_REF next=$NEXT_REF paperclip_home=$WARDMOTE_HOME"
+echo "repo=$E2E_REPO base=$BASE_REF next=$NEXT_REF wardmote_home=$WARDMOTE_HOME"
 
 if [ -n "${E2E_BOOTSTRAP_CLI:-}" ] && [ -f "$E2E_BOOTSTRAP_CLI" ]; then
   BOOTSTRAP_CLI="$E2E_BOOTSTRAP_CLI"

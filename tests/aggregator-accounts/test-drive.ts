@@ -12,7 +12,7 @@ const startup = setInterval(() => undefined, 1000);
 async function startAcceptanceDatabase() {
   let failure: unknown;
   for (let attempt = 0; attempt < 30; attempt++) {
-    try { return await startEmbeddedPostgresTestDatabase("paperclip-aggregator-browser-"); }
+    try { return await startEmbeddedPostgresTestDatabase("wardmote-aggregator-browser-"); }
     catch (error) { failure = error; await new Promise(resolve => setTimeout(resolve, 2000)); }
   }
   throw failure;

@@ -18,6 +18,19 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_PARENT="$(dirname "$REPO_ROOT")"
 
+dev_roots=("$REPO_ROOT")
+for sibling_root in "$REPO_PARENT"/wardmote*; do
+  [[ -d "$sibling_root" && "$sibling_root" != "$REPO_ROOT" ]] && dev_roots+=("$sibling_root")
+done
+
+in_dev_root() {
+  local line="$1" root
+  for root in "${dev_roots[@]}"; do
+    [[ "$line" == *"$root/"* ]] && return 0
+  done
+  return 1
+}
+
 node_pids=()
 node_lines=()
 pg_pids=()
@@ -83,10 +96,11 @@ wait_for_pid_exit() {
 while IFS= read -r line; do
   [[ -z "$line" ]] && continue
   [[ "$line" == *postgres* ]] && continue
+  in_dev_root "$line" || continue
   pid=$(echo "$line" | awk '{print $2}')
   node_pids+=("$pid")
   node_lines+=("$line")
-done < <(ps aux | grep -E '/wardmote(-[^/]+)?/' | grep node | grep -v grep || true)
+done < <(ps aux | grep node | grep -v grep || true)
 
 # --- Agent browser processes (headless Chrome from ~/.agent-browser) ---
 while IFS= read -r line; do
@@ -98,13 +112,11 @@ done < <(ps aux | grep -E 'agent-browser/browsers/chrome-.*/Google Chrome for Te
 
 candidate_pidfiles=()
 candidate_pidfiles+=(
-  "$HOME"/.wardmote/instances/*/db/postmaster.pid
   "$REPO_ROOT"/.wardmote/instances/*/db/postmaster.pid
   "$REPO_ROOT"/.wardmote/runtime-services/instances/*/db/postmaster.pid
 )
 
-for sibling_root in "$REPO_PARENT"/wardmote*; do
-  [[ -d "$sibling_root" ]] || continue
+for sibling_root in "${dev_roots[@]:1}"; do
   candidate_pidfiles+=(
     "$sibling_root"/.wardmote/instances/*/db/postmaster.pid
     "$sibling_root"/.wardmote/runtime-services/instances/*/db/postmaster.pid
@@ -125,7 +137,7 @@ if [[ ${#node_pids[@]} -gt 0 ]]; then
   echo "Found ${#node_pids[@]} Wardmote dev node process(es):"
   echo ""
 
-  for i in "${!node_pids[@]:-}"; do
+  for i in "${!node_pids[@]}"; do
     line="${node_lines[$i]}"
     pid=$(echo "$line" | awk '{print $2}')
     start=$(echo "$line" | awk '{print $9}')
@@ -141,7 +153,7 @@ if [[ ${#pg_pids[@]} -gt 0 ]]; then
   echo "Found ${#pg_pids[@]} embedded PostgreSQL master process(es):"
   echo ""
 
-  for i in "${!pg_pids[@]:-}"; do
+  for i in "${!pg_pids[@]}"; do
     pid="${pg_pids[$i]}"
     data_dir="${pg_data_dirs[$i]}"
     pidfile="${pg_pidfiles[$i]}"
@@ -157,7 +169,7 @@ if [[ ${#browser_pids[@]} -gt 0 ]]; then
   echo "Found ${#browser_pids[@]} agent browser process(es):"
   echo ""
 
-  for i in "${!browser_pids[@]:-}"; do
+  for i in "${!browser_pids[@]}"; do
     line="${browser_lines[$i]}"
     pid=$(echo "$line" | awk '{print $2}')
     start=$(echo "$line" | awk '{print $9}')
@@ -192,7 +204,7 @@ fi
 
 leftover_pg_pids=()
 leftover_pg_data_dirs=()
-for i in "${!pg_pids[@]:-}"; do
+for i in "${!pg_pids[@]}"; do
   pid="${pg_pids[$i]}"
   if is_pid_running "$pid"; then
     leftover_pg_pids+=("$pid")
@@ -202,7 +214,7 @@ done
 
 if [[ ${#leftover_pg_pids[@]} -gt 0 ]]; then
   echo "Sending SIGTERM to leftover embedded PostgreSQL processes..."
-  for i in "${!leftover_pg_pids[@]:-}"; do
+  for i in "${!leftover_pg_pids[@]}"; do
     pid="${leftover_pg_pids[$i]}"
     data_dir="${leftover_pg_data_dirs[$i]}"
     kill -TERM "$pid" 2>/dev/null \

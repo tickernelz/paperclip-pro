@@ -130,7 +130,7 @@ describe("wardmote runner transcript projection", () => {
       kind: "usage",
       usage: { total: { inputTokens: 120, outputTokens: 30, cachedInputTokens: 80 } },
     })).toEqual([
-      expect.objectContaining({ kind: "result", subtype: "paperclip.usage", inputTokens: 120, outputTokens: 30 }),
+      expect.objectContaining({ kind: "result", subtype: "wardmote.usage", inputTokens: 120, outputTokens: 30 }),
     ]);
   });
 

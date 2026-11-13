@@ -328,7 +328,7 @@ function usageEntry(payload: JsonRecord, ts: string): TranscriptEntry {
     outputTokens: number(reported.outputTokens ?? reported.output_tokens),
     cachedTokens: number(reported.cachedInputTokens ?? reported.cached_input_tokens ?? reported.cacheReadTokens),
     costUsd: number(usage.costUsd ?? usage.cost_usd),
-    subtype: "paperclip.usage",
+    subtype: "wardmote.usage",
     isError: false,
     errors: [],
   };

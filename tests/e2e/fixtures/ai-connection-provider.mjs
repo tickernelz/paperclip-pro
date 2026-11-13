@@ -4,7 +4,7 @@ if (process.env.NODE_ENV === "test") {
     const url = new URL(typeof input === "string" || input instanceof URL ? input : input.url);
     const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
     if (url.hostname === "api.anthropic.com"
-      && headers.get("x-api-key") === "paperclip-e2e-personal-claude-key") {
+      && headers.get("x-api-key") === "wardmote-e2e-personal-claude-key") {
       return url.pathname === "/v1/models"
         ? Response.json({ data: [], has_more: false })
         : Response.json({ error: "Unsupported fixture Anthropic request" }, { status: 422 });
