@@ -71,7 +71,7 @@ Key fields:
 |-------|---------|
 | `exports["."]` | Entry point — must export `createServerAdapter` |
 | `exports["./ui-parser"]` | Self-contained UI parser module (optional but recommended) |
-| `paperclip.adapterUiParser` | Contract version for the UI parser (`"1.0.0"`) |
+| `wardmote.adapterUiParser` | Contract version for the UI parser (`"1.0.0"`) |
 | `files` | Limits what gets published — only `dist/` |
 
 ### tsconfig.json
