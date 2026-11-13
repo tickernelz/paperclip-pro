@@ -1374,7 +1374,7 @@ mod tests {
         impl Fixture {
             fn new() -> Self {
                 let directory = std::env::temp_dir().join(format!(
-                    "paperclip-darwin-snapshot-{}",
+                    "wardmote-darwin-snapshot-{}",
                     Uuid::new_v4().simple()
                 ));
                 fs::create_dir(&directory).unwrap();
@@ -1633,7 +1633,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-commonjs-launch-{}-{nonce}",
+            "wardmote-commonjs-launch-{}-{nonce}",
             std::process::id()
         ));
         fs::create_dir_all(&directory).unwrap();
@@ -1663,7 +1663,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-executable-argument-launch-{}-{nonce}",
+            "wardmote-executable-argument-launch-{}-{nonce}",
             std::process::id()
         ));
         fs::create_dir_all(&directory).unwrap();

@@ -825,9 +825,9 @@ const CODEX_PROVIDER_ENVIRONMENT_KEYS: &[&str] = &[
 
 fn codex_permission_profile(provider: &str, external_sandbox: bool) -> &'static str {
     if provider == "codex" && external_sandbox {
-        "paperclip-runner-external-sandbox"
+        "wardmote-runner-external-sandbox"
     } else {
-        "paperclip-runner-workspace-only"
+        "wardmote-runner-workspace-only"
     }
 }
 
@@ -1076,7 +1076,7 @@ impl CodexProvider {
                 "baseInstructions"
             };
             params_object.insert(instruction_field.to_owned(), json!(config.instructions));
-            if provider.permission_profile == "paperclip-runner-external-sandbox" {
+            if provider.permission_profile == "wardmote-runner-external-sandbox" {
                 // The execution target (for example Daytona) is the OS sandbox.
                 // Codex must not try to create nested user/network namespaces,
                 // which correctly fail inside an unprivileged container.
@@ -1748,7 +1748,7 @@ impl CodexProvider {
         if let Some(mode) = reasoning_mode {
             turn_params_object.insert("reasoningMode".to_owned(), json!(mode));
         }
-        if self.permission_profile == "paperclip-runner-external-sandbox" {
+        if self.permission_profile == "wardmote-runner-external-sandbox" {
             turn_params_object.insert(
                 "sandboxPolicy".to_owned(),
                 json!({"type": "externalSandbox", "networkAccess": "enabled"}),
@@ -4533,7 +4533,7 @@ done
             .unwrap()
             .as_nanos();
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-opencode-launch-{}-{nonce}",
+            "wardmote-opencode-launch-{}-{nonce}",
             std::process::id()
         ));
         fs::create_dir_all(&directory).unwrap();
@@ -4668,15 +4668,15 @@ done
         assert!(!CODEX_PROVIDER_ENVIRONMENT_KEYS.contains(&"WARDMOTE_SANDBOX_MODE"));
         assert_eq!(
             codex_permission_profile("codex", true),
-            "paperclip-runner-external-sandbox"
+            "wardmote-runner-external-sandbox"
         );
         assert_eq!(
             codex_permission_profile("codex", false),
-            "paperclip-runner-workspace-only"
+            "wardmote-runner-workspace-only"
         );
         assert_eq!(
             codex_permission_profile("opencode", true),
-            "paperclip-runner-workspace-only"
+            "wardmote-runner-workspace-only"
         );
     }
 

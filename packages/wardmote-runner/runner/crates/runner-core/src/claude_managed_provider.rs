@@ -2915,7 +2915,7 @@ mod tests {
 
     fn runtime_config_with_one_skill() -> (PathBuf, ClaudeManagedProviderConfig) {
         let root = std::env::temp_dir().join(format!(
-            "paperclip-claude-managed-failure-test-{}",
+            "wardmote-claude-managed-failure-test-{}",
             Uuid::new_v4()
         ));
         let instruction_root = root.join("instructions");
@@ -3080,7 +3080,7 @@ mod tests {
     fn managed_skill_uploads_include_instruction_siblings_and_complete_assigned_skill_trees() {
         let service = FakeAnthropicService::start(vec![], vec![]);
         let root = std::env::temp_dir().join(format!(
-            "paperclip-claude-managed-context-{}",
+            "wardmote-claude-managed-context-{}",
             uuid::Uuid::new_v4()
         ));
         let instruction_root = root.join("instructions");
@@ -3233,7 +3233,7 @@ mod tests {
     fn managed_skill_count_is_rejected_before_any_remote_upload() {
         let service = FakeAnthropicService::start(vec![], vec![]);
         let root = std::env::temp_dir().join(format!(
-            "paperclip-claude-managed-context-count-{}",
+            "wardmote-claude-managed-context-count-{}",
             uuid::Uuid::new_v4()
         ));
         fs::create_dir_all(&root).unwrap();
@@ -3643,7 +3643,7 @@ mod tests {
     fn managed_skills_upload_once_reuse_on_cold_recovery_and_delete_with_session() {
         let create_service = FakeAnthropicService::start(vec![], vec![]);
         let root = std::env::temp_dir().join(format!(
-            "paperclip-claude-managed-lifecycle-{}",
+            "wardmote-claude-managed-lifecycle-{}",
             uuid::Uuid::new_v4()
         ));
         let instruction_root = root.join("instructions");

@@ -2054,7 +2054,7 @@ mod tests {
         }
 
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-response-persistence-failure-{}",
+            "wardmote-response-persistence-failure-{}",
             uuid::Uuid::new_v4()
         ));
         let config = config(directory.clone());
@@ -2166,7 +2166,7 @@ mod tests {
             "outbox_full",
         ] {
             let directory = std::env::temp_dir().join(format!(
-                "paperclip-startup-facts-{mode}-{}",
+                "wardmote-startup-facts-{mode}-{}",
                 uuid::Uuid::new_v4()
             ));
             let mut config = config(directory.clone());
@@ -2452,7 +2452,7 @@ mod tests {
             ("runner.shutdown", "stopped"),
         ] {
             let directory = std::env::temp_dir().join(format!(
-                "paperclip-runner-terminal-deadline-{}-{lifecycle}",
+                "wardmote-runner-terminal-deadline-{}-{lifecycle}",
                 std::process::id()
             ));
             let _ = fs::remove_dir_all(&directory);
@@ -2522,7 +2522,7 @@ mod tests {
     fn pending_provider_cleanup_blocks_new_work_and_preserves_failed_terminal() {
         for kind in ["run.attach", "turn.start", "runner.drain", "runner.suspend"] {
             let directory = std::env::temp_dir().join(format!(
-                "paperclip-runner-cleanup-gate-{}-{kind}",
+                "wardmote-runner-cleanup-gate-{}-{kind}",
                 std::process::id()
             ));
             let _ = fs::remove_dir_all(&directory);
@@ -2602,7 +2602,7 @@ mod tests {
             }
         }
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-delivery-only-{}",
+            "wardmote-runner-delivery-only-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -2716,7 +2716,7 @@ mod tests {
     #[test]
     fn pending_provider_cleanup_rejects_forged_terminal_identity_on_reload() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-cleanup-marker-{}",
+            "wardmote-runner-cleanup-marker-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -2761,7 +2761,7 @@ mod tests {
     #[test]
     fn warm_rotation_preserves_unobserved_v2_session_state_until_native_ack() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-warm-v2-observation-{}",
+            "wardmote-runner-warm-v2-observation-{}",
             std::process::id()
         ));
         let mut current = config(directory.clone());
@@ -2828,7 +2828,7 @@ mod tests {
     #[test]
     fn warm_run_attachment_rotates_only_the_run_authority() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-warm-authority-{}",
+            "wardmote-runner-warm-authority-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -2925,7 +2925,7 @@ mod tests {
             }
         }
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-explicit-drain-prefix-{}",
+            "wardmote-explicit-drain-prefix-{}",
             uuid::Uuid::new_v4()
         ));
         let mut config = config(directory.clone());
@@ -3050,7 +3050,7 @@ mod tests {
         }
         for mode in ["disk", "ack", "oversized"] {
             let directory = std::env::temp_dir()
-                .join(format!("paperclip-drain-{mode}-{}", uuid::Uuid::new_v4()));
+                .join(format!("wardmote-drain-{mode}-{}", uuid::Uuid::new_v4()));
             let mut config = config(directory.clone());
             config.max_frame_bytes = 4096;
             config.max_outbox_bytes = 1_048_576;
@@ -3128,7 +3128,7 @@ mod tests {
         }
         for kind in ["turn.stop", "runner.suspend", "session.snapshot"] {
             let directory = std::env::temp_dir().join(format!(
-                "paperclip-control-first-retained-{}",
+                "wardmote-control-first-retained-{}",
                 uuid::Uuid::new_v4()
             ));
             let mut config = config(directory.clone());
@@ -3193,7 +3193,7 @@ mod tests {
             }
         }
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-warm-readiness-prefix-{}",
+            "wardmote-warm-readiness-prefix-{}",
             uuid::Uuid::new_v4()
         ));
         let mut config = config(directory.clone());
@@ -3311,10 +3311,8 @@ mod tests {
             }
         }
         for fail_ack in [false, true] {
-            let directory = std::env::temp_dir().join(format!(
-                "paperclip-attach-evidence-{}",
-                uuid::Uuid::new_v4()
-            ));
+            let directory = std::env::temp_dir()
+                .join(format!("wardmote-attach-evidence-{}", uuid::Uuid::new_v4()));
             let config = config(directory.clone());
             let store = DurableStateStore::new(&directory).unwrap();
             let (mut state, _) = store.load_or_create(&config).unwrap();
@@ -3390,7 +3388,7 @@ mod tests {
     #[test]
     fn warm_run_attachment_reuses_the_provider_ingress_listener() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-warm-listener-authority-{}",
+            "wardmote-runner-warm-listener-authority-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -3424,7 +3422,7 @@ mod tests {
     #[test]
     fn terminal_lifecycle_is_durable_before_fallible_cleanup() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-terminal-before-cleanup-{}",
+            "wardmote-runner-terminal-before-cleanup-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -3446,7 +3444,7 @@ mod tests {
     #[test]
     fn terminal_result_delivery_failure_stops_without_reopening_lifecycle() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-terminal-result-delivery-{}",
+            "wardmote-runner-terminal-result-delivery-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -3495,7 +3493,7 @@ mod tests {
     #[test]
     fn successful_terminal_cleanup_clears_the_recovery_fence() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-terminal-result-delivered-{}",
+            "wardmote-runner-terminal-result-delivered-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -3527,7 +3525,7 @@ mod tests {
     #[test]
     fn failed_terminal_cleanup_keeps_the_recovery_fence() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-terminal-cleanup-failed-{}",
+            "wardmote-runner-terminal-cleanup-failed-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -3576,7 +3574,7 @@ mod tests {
         }
 
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-ack-checkpoint-{}",
+            "wardmote-runner-ack-checkpoint-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -3659,7 +3657,7 @@ mod tests {
     #[test]
     fn provider_poll_yields_until_the_sent_controller_ack_prefix_is_consumed() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-controller-ack-fairness-{}",
+            "wardmote-runner-controller-ack-fairness-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -3750,7 +3748,7 @@ mod tests {
             }
         }
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-controller-ack-maintenance-{}",
+            "wardmote-runner-controller-ack-maintenance-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -3794,7 +3792,7 @@ mod tests {
     #[test]
     fn controller_commands_progress_while_provider_poll_waits_for_ack() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-controller-command-fairness-{}",
+            "wardmote-runner-controller-command-fairness-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -3851,7 +3849,7 @@ mod tests {
     #[test]
     fn queued_suspend_precedes_provider_tail_after_last_controller_ack() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-control-before-provider-tail-{}",
+            "wardmote-runner-control-before-provider-tail-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -3943,7 +3941,7 @@ mod tests {
             }
         }
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-control-first-maintenance-{}",
+            "wardmote-runner-control-first-maintenance-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -3998,7 +3996,7 @@ mod tests {
     #[test]
     fn idle_control_poll_admits_only_durable_provider_events_and_keeps_ack_debt_gate() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-control-idle-events-{}",
+            "wardmote-runner-control-idle-events-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -4072,7 +4070,7 @@ mod tests {
     #[test]
     fn controller_ack_flow_control_preserves_replay_and_unsent_events() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-controller-ack-replay-{}",
+            "wardmote-runner-controller-ack-replay-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -4153,7 +4151,7 @@ mod tests {
     #[test]
     fn event_batch_acknowledges_only_bounded_durable_prefixes() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-bounded-event-prefix-{}",
+            "wardmote-runner-bounded-event-prefix-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -4206,7 +4204,7 @@ mod tests {
     #[test]
     fn event_batch_never_acknowledges_a_failed_durable_save() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-event-save-failure-{}",
+            "wardmote-runner-event-save-failure-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -4253,7 +4251,7 @@ mod tests {
     #[test]
     fn event_batch_preserves_original_error_when_prefix_ack_also_fails() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-event-prefix-double-failure-{}",
+            "wardmote-runner-event-prefix-double-failure-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -4301,7 +4299,7 @@ mod tests {
     #[test]
     fn event_batch_keeps_accepted_prefix_and_unacknowledged_suffix() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-event-batch-failure-{}",
+            "wardmote-runner-event-batch-failure-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -4355,7 +4353,7 @@ mod tests {
     #[test]
     fn receipt_survives_outbox_ack_and_prevents_duplicate_delivery() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-event-ack-crash-{}",
+            "wardmote-runner-event-ack-crash-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -4411,7 +4409,7 @@ mod tests {
     #[test]
     fn duplicate_delivery_replays_the_durable_result() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-command-replay-{}",
+            "wardmote-runner-command-replay-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -4434,7 +4432,7 @@ mod tests {
     #[test]
     fn executor_failure_is_durable_and_does_not_become_indeterminate() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-command-failure-{}",
+            "wardmote-runner-command-failure-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -4479,7 +4477,7 @@ mod tests {
             ("runner.shutdown", CommandLifecycle::Shutdown),
         ] {
             let directory = std::env::temp_dir().join(format!(
-                "paperclip-runner-failed-lifecycle-{}-{}",
+                "wardmote-runner-failed-lifecycle-{}-{}",
                 command_type.replace('.', "-"),
                 std::process::id()
             ));
@@ -4652,7 +4650,7 @@ mod tests {
     #[test]
     fn process_death_after_journaling_remains_indeterminate_without_reexecution() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-command-indeterminate-{}",
+            "wardmote-runner-command-indeterminate-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -4683,7 +4681,7 @@ mod tests {
     #[test]
     fn indeterminate_lifecycle_command_still_stops_after_recovery_delivery() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-lifecycle-indeterminate-{}",
+            "wardmote-runner-lifecycle-indeterminate-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -4712,7 +4710,7 @@ mod tests {
     #[test]
     fn completed_shutdown_replay_still_stops_after_delivery() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-shutdown-replay-{}",
+            "wardmote-runner-shutdown-replay-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);
@@ -4736,7 +4734,7 @@ mod tests {
     #[test]
     fn completed_suspend_replay_remains_restartable() {
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-runner-suspend-replay-{}",
+            "wardmote-runner-suspend-replay-{}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&directory);

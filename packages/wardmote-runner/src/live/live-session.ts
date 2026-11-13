@@ -77,7 +77,7 @@ const LIVE_BASE_INSTRUCTIONS = [
   "The user conversation and provider are real, but all Wardmote records are mock records.",
   "Do not discover skills, credentials, endpoints, or hidden control-plane capabilities.",
 ].join(" ");
-const CODEX_PERMISSION_PROFILE = "paperclip-runner-workspace-only";
+const CODEX_PERMISSION_PROFILE = "wardmote-runner-workspace-only";
 const DISCOVER_TOOL = "discover_capabilities";
 const INVOKE_DISCOVERED_TOOL = "invoke_discovered_capability";
 

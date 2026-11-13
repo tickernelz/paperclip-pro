@@ -119,7 +119,7 @@ describe("Codex app-server Codex driver", () => {
         include_collaboration_mode_instructions: true,
         "features.image_generation": false,
       },
-      permissions: "paperclip-runner-workspace-only",
+      permissions: "wardmote-runner-workspace-only",
       runtimeWorkspaceRoots: [WORKSPACE],
       dynamicTools: [{ name: "wardmote_finish" }, { name: "wardmote_block" }],
     });
@@ -138,12 +138,12 @@ describe("Codex app-server Codex driver", () => {
     expect(appServerArgs).toEqual(
       expect.arrayContaining([
         expect.stringContaining(
-          'default_permissions="paperclip-runner-workspace-only"',
+          'default_permissions="wardmote-runner-workspace-only"',
         ),
         expect.stringContaining(
-          "permissions.paperclip-runner-workspace-only.filesystem=",
+          "permissions.wardmote-runner-workspace-only.filesystem=",
         ),
-        "permissions.paperclip-runner-workspace-only.network.enabled=false",
+        "permissions.wardmote-runner-workspace-only.network.enabled=false",
         'shell_environment_policy.inherit="none"',
         expect.stringContaining(
           'shell_environment_policy.set={PATH="/bin",LANG="C.UTF-8"}',
@@ -232,7 +232,7 @@ describe("Codex app-server Codex driver", () => {
     expect(
       transport.calls.find((call) => call.method === "thread/start")?.params,
     ).toMatchObject({
-      permissions: "paperclip-runner-workspace-read-only",
+      permissions: "wardmote-runner-workspace-read-only",
       config: { include_collaboration_mode_instructions: true },
     });
     expect(
@@ -258,7 +258,7 @@ describe("Codex app-server Codex driver", () => {
           developer_instructions: null,
         },
       },
-      permissions: "paperclip-runner-workspace-read-only",
+      permissions: "wardmote-runner-workspace-read-only",
     });
   });
 

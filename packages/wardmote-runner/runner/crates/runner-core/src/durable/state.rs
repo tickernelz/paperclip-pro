@@ -2756,7 +2756,7 @@ mod tests {
 
     fn temporary_directory(label: &str) -> PathBuf {
         std::env::temp_dir().join(format!(
-            "paperclip-runner-durable-{label}-{}",
+            "wardmote-runner-durable-{label}-{}",
             std::process::id()
         ))
     }

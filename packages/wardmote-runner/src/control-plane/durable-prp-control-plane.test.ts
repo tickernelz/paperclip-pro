@@ -700,9 +700,9 @@ function credentialMaterial(token: string): {
   authKey: Buffer;
 } {
   const bytes = Buffer.from(token);
-  const authKey = domainDigest("paperclip-runner-auth-key-v1", [bytes]);
+  const authKey = domainDigest("wardmote-runner-auth-key-v1", [bytes]);
   return {
-    credentialId: `sha256:${domainDigest("paperclip-runner-credential-id-v1", [bytes]).toString("hex")}`,
+    credentialId: `sha256:${domainDigest("wardmote-runner-credential-id-v1", [bytes]).toString("hex")}`,
     authKey,
   };
 }
@@ -915,13 +915,13 @@ async function authenticate(
   const canonicalChallenge = canonicalJson(canonicalPayload);
   const expectedServerProof = domainHmac(
     material.authKey,
-    "paperclip-runner-server-proof-v1",
+    "wardmote-runner-server-proof-v1",
     [Buffer.from(canonicalChallenge)],
   ).toString("hex");
   expect(serverProof).toBe(expectedServerProof);
   const clientProof = domainHmac(
     material.authKey,
-    "paperclip-runner-client-proof-v1",
+    "wardmote-runner-client-proof-v1",
     [Buffer.from(canonicalChallenge), Buffer.from(serverProof)],
   ).toString("hex");
   sendMaskedJson(socket, {
@@ -935,7 +935,7 @@ async function authenticate(
       clientProof,
     },
   });
-  const binding = domainDigest("paperclip-runner-session-binding-v1", [
+  const binding = domainDigest("wardmote-runner-session-binding-v1", [
     Buffer.from(canonicalChallenge),
     Buffer.from(serverProof),
     Buffer.from(clientProof),
@@ -1132,7 +1132,7 @@ function sendSecure(
   const binding = Buffer.from(client.sessionId.slice("sha256:".length), "hex");
   const key = domainHmac(
     client.authKey,
-    "paperclip-runner-client-to-core-key-v1",
+    "wardmote-runner-client-to-core-key-v1",
     [binding],
   );
   const counter = client.sendCounter;

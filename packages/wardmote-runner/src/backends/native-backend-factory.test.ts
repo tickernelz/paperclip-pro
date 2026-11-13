@@ -388,7 +388,7 @@ describe("native backend factory", () => {
       ).resolves.toMatchObject({ effectiveCollaborationMode: "plan" });
       expect(
         transport.calls.find((call) => call.method === "thread/start")?.params,
-      ).toMatchObject({ permissions: "paperclip-runner-workspace-read-only" });
+      ).toMatchObject({ permissions: "wardmote-runner-workspace-read-only" });
       expect(
         transport.calls.find((call) => call.method === "turn/start")?.params,
       ).toMatchObject({ collaborationMode: { mode: "plan" } });

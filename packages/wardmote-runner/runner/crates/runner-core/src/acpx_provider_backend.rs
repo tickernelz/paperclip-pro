@@ -2407,7 +2407,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let directory = std::env::temp_dir().join(format!(
-            "paperclip-acpx-backend-{label}-{}-{nonce}",
+            "wardmote-acpx-backend-{label}-{}-{nonce}",
             std::process::id()
         ));
         fs::create_dir_all(&directory).unwrap();
