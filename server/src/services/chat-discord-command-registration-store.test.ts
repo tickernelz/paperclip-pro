@@ -22,6 +22,7 @@ import {
   toolConnections,
 } from "@tickernelz/wardmote-db";
 import { discordWardmoteCommandDefinition } from "./chat-discord-command-registration.js";
+import { RETIRED_DISCORD_COMMAND_NAME } from "./retired-discord-command-name.js";
 import {
   readRegisteredDiscordCommandRegistration,
   reconcileStoredDiscordCommandRegistration,
@@ -247,6 +248,7 @@ suite("Discord command ownership store (real PostgreSQL, no network)", () => {
       receipt: Record<string, unknown>;
     };
     const prior = discordWardmoteCommandDefinition(registration.ownerId);
+    prior.name = RETIRED_DISCORD_COMMAND_NAME;
     prior.options[2]!.description = "Close the current Wardmote task";
     const remote = f.remote[0]!;
     f.remote[0] = {

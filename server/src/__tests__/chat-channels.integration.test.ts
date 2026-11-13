@@ -1,4 +1,5 @@
 import { registerChatActionWork, dueChatAction } from "../services/chat-action-work.js";
+import { RETIRED_DISCORD_COMMAND_NAME } from "../services/retired-discord-command-name.js";
 import { createDeliveryWorkCoordinator } from "../services/delivery-work-coordinator.js";
 import { registerChatDeliveryWork } from "../services/chat-delivery-work.js";
 import { notifyChatPublicationWork, notifyChatActionWork, CHAT_ACTION_QUEUES } from "../services/chat-work-notifications.js";
@@ -4822,7 +4823,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         expect(f.calls).toEqual(["GET", "POST"]);
         expect(f.commandRows().map((row) => row.name)).toEqual([
           "other",
-          "paperclip",
+          "wardmote",
         ]);
         const [registration] = await db
           .select()
@@ -4966,7 +4967,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           f
             .commandRows()
             .map((command) =>
-              command.name === "paperclip"
+              command.name === "wardmote"
                 ? { ...command, description: "Owned by another integration" }
                 : command,
             ),
@@ -49057,7 +49058,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         ).toString(),
         applicationId,
         commandId: registeredCommandId,
-        commandName: "paperclip",
+        commandName: "wardmote",
         commandType: 1,
         type: 2,
         version: 1,
@@ -49143,6 +49144,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           let priorRegistration = registration.payload.registration;
           if (legacyCopy) {
             const prior = structuredClone(remoteCommands[0]!);
+            prior.name = RETIRED_DISCORD_COMMAND_NAME;
             (prior.options as Array<{ description: string }>)[2]!.description =
               "Close the current Wardmote task";
             remoteCommands[0] = prior;
