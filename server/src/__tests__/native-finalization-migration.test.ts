@@ -35,7 +35,9 @@ describe("P6-18 / MIG-01..04 native finalization migration", () => {
       await rawDb.execute(sql.raw(`
         DROP TABLE IF EXISTS status_decision_effects, status_decisions, work_assessments,
           native_run_finalizations, native_run_results, completion_contracts CASCADE;
+        DROP TRIGGER IF EXISTS wardmote_issue_status_version_trigger ON issues;
         DROP TRIGGER IF EXISTS paperclip_issue_status_version_trigger ON issues;
+        DROP FUNCTION IF EXISTS wardmote_bump_issue_status_version();
         DROP FUNCTION IF EXISTS paperclip_bump_issue_status_version();
         DROP INDEX IF EXISTS heartbeat_run_events_run_seq_uq;
         CREATE INDEX IF NOT EXISTS heartbeat_run_events_run_seq_idx
