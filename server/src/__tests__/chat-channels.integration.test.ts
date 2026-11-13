@@ -434,7 +434,7 @@ class FakeEndpointRuntime {
     control: TelegramDraftControl,
   ) {
     if (!(await control.beforeDraft()) || !(await control.beforeFinal()))
-      return { paperclipDraftStopped: true as const };
+      return { wardmoteDraftStopped: true as const };
     return this.thread(threadId).post(stream);
   }
 
