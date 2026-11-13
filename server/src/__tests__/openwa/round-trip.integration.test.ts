@@ -1,7 +1,5 @@
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
-import { createServer, type Server } from "node:http";
-import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
@@ -38,6 +36,7 @@ import { applyOpenwaRunContext, resolveOpenwaRunContext } from "../../services/o
 import { OPENWA_WAKE_CONTEXT_KEY, buildOpenwaRunGuidance, type OpenwaWakeEvent } from "../../services/openwa/guidance.js";
 import type { OpenwaLateTranscriptEvent } from "../../services/openwa/late-transcripts.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
+import { FakeSpeechToTextServer } from "./fake-speech-to-text.js";
 
 const SESSION_ID = "31111111-2222-4333-8444-555555555555";
 const OWN_PHONE = "628111000321";
@@ -45,6 +44,7 @@ const OWNER_PHONE = "628333000321";
 const MEMBER_PHONE = "628666000321";
 const GROUP = "120363000000000321@g.us";
 const STT_ENV = "OPENWA_ROUND_TRIP_STT_KEY";
+const GOOGLE_STT_ENV = "OPENWA_ROUND_TRIP_GOOGLE_SA";
 const PNG = Buffer.concat([Buffer.from("89504e470d0a1a0a", "hex"), Buffer.alloc(64, 7)]);
 const VOICE = Buffer.concat([Buffer.from("OggS"), Buffer.alloc(200, 3)]);
 
@@ -58,41 +58,13 @@ async function until(predicate: () => boolean | Promise<boolean>, timeoutMs = 15
   }
 }
 
-class FakeSttServer {
-  text = "tolong cek invoice nomor 42";
-  hold: Promise<void> | null = null;
-  calls = 0;
-  private server: Server | null = null;
-
-  get baseUrl(): string {
-    return "http://127.0.0.1:" + (this.server!.address() as AddressInfo).port + "/v1";
-  }
-
-  async start(): Promise<void> {
-    this.server = createServer(async (req, res) => {
-      for await (const _chunk of req);
-      this.calls++;
-      if (this.hold) await this.hold;
-      if (res.destroyed) return;
-      res.writeHead(200, { "content-type": "application/json" });
-      res.end(JSON.stringify({ text: this.text }));
-    });
-    await new Promise<void>((resolve) => this.server!.listen(0, "127.0.0.1", resolve));
-  }
-
-  async close(): Promise<void> {
-    this.server?.closeAllConnections();
-    await new Promise<void>((resolve) => (this.server ? this.server.close(() => resolve()) : resolve()));
-  }
-}
-
 type WakeupOptions = Parameters<ChatChannelServiceOptions["heartbeat"]["wakeup"]>[1];
 
 describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let scratch: string;
-  let stt: FakeSttServer;
+  let stt: FakeSpeechToTextServer;
   const oldKey = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   const services: ChatChannelService[] = [];
   const gateways: FakeOpenwaGateway[] = [];
@@ -104,8 +76,9 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
     scratch = await mkdtemp(path.join(tmpdir(), "openwa-round-trip-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");
     process.env[STT_ENV] = "sk-round-trip-stt";
-    stt = new FakeSttServer();
+    stt = new FakeSpeechToTextServer();
     await stt.start();
+    process.env[GOOGLE_STT_ENV] = stt.serviceAccountJson();
   }, 60_000);
   afterEach(async () => {
     await Promise.all(services.splice(0).map((service) => service.shutdown()));
@@ -114,12 +87,16 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
     await instanceSettingsService(db).updateGeneral({ speechToText: { ...SPEECH_TO_TEXT_DEFAULTS } });
     stt.hold = null;
     stt.calls = 0;
+    stt.status = 200;
+    stt.text = "tolong cek invoice nomor 42";
+    stt.paths.length = 0;
     vi.restoreAllMocks();
   });
   afterAll(async () => {
     await stt?.close();
     await database?.cleanup();
     delete process.env[STT_ENV];
+    delete process.env[GOOGLE_STT_ENV];
     if (scratch) await rm(scratch, { recursive: true, force: true });
     if (oldKey === undefined) delete process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
     else process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = oldKey;
@@ -396,7 +373,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
   it("carries a voice note transcript from the fake speech-to-text service into the wake payload", async () => {
     const t = await setup();
     await instanceSettingsService(db).updateGeneral({
-      speechToText: { enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 5 },
+      speechToText: { ...SPEECH_TO_TEXT_DEFAULTS, enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 5 },
     });
     await goLive(t);
     const waMessageId = t.gateway.nextWaMessageId(false, jid(OWNER_PHONE));
@@ -418,7 +395,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
   it("records a transcript that lands after the wake for the active run and carries it in the next wake", async () => {
     const t = await setup();
     await instanceSettingsService(db).updateGeneral({
-      speechToText: { enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 1 },
+      speechToText: { ...SPEECH_TO_TEXT_DEFAULTS, enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 1 },
     });
     let release!: () => void;
     stt.hold = new Promise<void>((resolve) => (release = resolve));
@@ -464,7 +441,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
   it("ignores a late transcript when no run of the conversation is active", async () => {
     const t = await setup();
     await instanceSettingsService(db).updateGeneral({
-      speechToText: { enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 1 },
+      speechToText: { ...SPEECH_TO_TEXT_DEFAULTS, enabled: true, baseUrl: stt.baseUrl, model: "whisper-test", apiKeyEnvVar: STT_ENV, maxAudioSeconds: 600, sttWaitSeconds: 1 },
     });
     let release!: () => void;
     stt.hold = new Promise<void>((resolve) => (release = resolve));
@@ -497,4 +474,59 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
     expect(await db.select({ id: heartbeatRuns.id }).from(heartbeatRuns).where(eq(heartbeatRuns.companyId, t.companyId))).toEqual([]);
     expect(issueId).toMatch(/^[0-9a-f-]{36}$/);
   }, 120_000);
+
+  describe.each(["openai_compatible", "deepgram", "elevenlabs", "google"] as const)("voice notes with %s", (provider) => {
+    const keyEnv = () => (provider === "google" ? GOOGLE_STT_ENV : STT_ENV);
+    const voiceTrigger = (t: Awaited<ReturnType<typeof setup>>) => {
+      const waMessageId = t.gateway.nextWaMessageId(false, jid(OWNER_PHONE));
+      t.gateway.setMedia(jid(OWNER_PHONE), waMessageId, { body: VOICE, contentType: "audio/ogg" });
+      return {
+        waMessageId,
+        trigger: { chatId: jid(OWNER_PHONE), waMessageId, body: "", extra: { type: "ptt", media: { mimetype: "audio/ogg; codecs=opus", sizeBytes: VOICE.length, omitted: true } } },
+      };
+    };
+
+    it("puts the transcript into the wake media", async () => {
+      const t = await setup();
+      await instanceSettingsService(db).updateGeneral({ speechToText: stt.settings(provider, keyEnv(), { sttWaitSeconds: 5 }) });
+      stt.text = "pesan suara lewat " + provider;
+      await goLive(t);
+      const { trigger } = voiceTrigger(t);
+      const run = await runStart(t, await admitted(t, trigger));
+      expect(stt.calls).toBe(1);
+      expect(stt.paths[0]).toMatch(provider === "google" ? /\/recognizers\/_:recognize$/ : provider === "deepgram" ? /^\/v1\/listen$/ : provider === "elevenlabs" ? /^\/v1\/speech-to-text$/ : /^\/v1\/audio\/transcriptions$/);
+      expect(run.wakeEvent.messages[0]!.media).toEqual([expect.objectContaining({ kind: "voice", transcript: "pesan suara lewat " + provider })]);
+    }, 120_000);
+
+    it("marks the transcript pending past sttWaitSeconds and carries it as a late transcript", async () => {
+      const t = await setup();
+      await instanceSettingsService(db).updateGeneral({ speechToText: stt.settings(provider, keyEnv(), { sttWaitSeconds: 1 }) });
+      let release!: () => void;
+      stt.hold = new Promise<void>((resolve) => (release = resolve));
+      stt.text = "terlambat lewat " + provider;
+      await goLive(t);
+      const { waMessageId, trigger } = voiceTrigger(t);
+      const first = await runStart(t, await admitted(t, trigger));
+      expect(first.wakeEvent.messages[0]!.media).toEqual([expect.objectContaining({ kind: "voice", transcriptPending: true })]);
+      release();
+      await until(() => t.lateTranscripts.length === 1);
+      expect(t.lateTranscripts[0]).toMatchObject({ transcript: { waMessageId, transcriptStatus: "done", transcript: "terlambat lewat " + provider } });
+      await db.update(heartbeatRuns).set({ status: "succeeded", finishedAt: new Date() }).where(eq(heartbeatRuns.id, first.runId));
+      const second = await runStart(t, await admitted(t, { chatId: jid(OWNER_PHONE), body: "sudah?" }));
+      expect(second.wakeEvent.lateTranscripts).toEqual([{ messageId: waMessageId, attachmentId: expect.any(String), transcript: "terlambat lewat " + provider }]);
+    }, 120_000);
+
+    it("keeps the voice note and shows the error code in the wake when the provider fails", async () => {
+      const t = await setup();
+      await instanceSettingsService(db).updateGeneral({ speechToText: stt.settings(provider, keyEnv(), { sttWaitSeconds: 5 }) });
+      stt.status = 503;
+      await goLive(t);
+      const { trigger } = voiceTrigger(t);
+      const run = await runStart(t, await admitted(t, trigger));
+      expect(run.wakeEvent.messages[0]!.media).toEqual([
+        expect.objectContaining({ kind: "voice", attachmentId: expect.any(String), transcriptUnavailable: "stt_unavailable" }),
+      ]);
+      expect(run.wakeEvent.messages[0]!.media![0]).not.toHaveProperty("transcript");
+    }, 120_000);
+  });
 });

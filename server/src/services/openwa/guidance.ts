@@ -87,6 +87,7 @@ export type OpenwaWakeMedia =
       localPath?: string;
       transcript?: string;
       transcriptPending?: true;
+      transcriptUnavailable?: string;
     }
   | { kind: string; pending: true; filename?: string; mime: string; size: number | null }
   | { kind: string; unavailable: string; limitBytes?: number; filename?: string; mime: string; size: number | null };
@@ -312,6 +313,7 @@ function mediaFrom(item: MediaItem): OpenwaWakeMedia | null {
     const transcript = str(item.transcript);
     if (transcriptStatus === "done" && transcript) media.transcript = truncate(transcript, OPENWA_WAKE_MAX_TEXT).text;
     else if (transcriptStatus === "pending") media.transcriptPending = true;
+    else if (transcriptStatus === "unavailable") media.transcriptUnavailable = str(item.transcriptError) ?? "transcript_unavailable";
     return media;
   }
   if (status === "rejected") {

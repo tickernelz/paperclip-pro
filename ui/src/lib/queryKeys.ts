@@ -671,6 +671,7 @@ export const queryKeys = {
     localRunLimits: ["instance", "local-run-limits"] as const,
     experimentalSettings: ["instance", "experimental-settings"] as const,
     attachmentRetention: ["instance", "attachment-retention"] as const,
+    speechToTextCredentials: ["instance", "speech-to-text-credentials"] as const,
     updates: ["instance", "updates"] as const,
   },
   health: ["health"] as const,

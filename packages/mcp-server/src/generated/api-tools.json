@@ -1579,7 +1579,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:19837",
+    "boardGuard": "assertBoard@issues.ts:19839",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14426,7 +14426,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18560",
+    "boardGuard": "assertBoard@issues.ts:18562",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21040,7 +21040,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:191",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:209",
     "authorityCapability": null,
     "parameters": []
   },
@@ -21066,7 +21066,7 @@
       "assertCanManageInstanceSettings"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:286",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:362",
     "authorityCapability": null,
     "parameters": [
       {
@@ -26643,7 +26643,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17420",
+    "boardGuard": "assertBoard@issues.ts:17422",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30493,7 +30493,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:302",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:378",
     "authorityCapability": null,
     "parameters": []
   },
@@ -30543,7 +30543,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:233",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:309",
     "authorityCapability": null,
     "parameters": []
   },
@@ -30568,7 +30568,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:127",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:145",
     "authorityCapability": null,
     "parameters": []
   },
@@ -33229,6 +33229,71 @@
         }
       }
     ]
+  },
+  {
+    "name": "wardmoteListSpeechToTextModels",
+    "operationId": "POST /api/instance/settings/general/speech-to-text/models",
+    "method": "POST",
+    "path": "/instance/settings/general/speech-to-text/models",
+    "description": "List speech-to-text models for a provider (instance admin only).",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "instance"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertCanManageInstanceSettings",
+      "assertSpeechToTextSettingsVisible"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "apiKeyEnvVar": {
+            "type": "string"
+          },
+          "baseUrl": {
+            "type": "string"
+          },
+          "google": {
+            "type": "object",
+            "properties": {
+              "location": {
+                "type": "string"
+              },
+              "projectId": {
+                "type": "string"
+              }
+            }
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "openai_compatible",
+              "deepgram",
+              "elevenlabs",
+              "google"
+            ]
+          }
+        },
+        "required": [
+          "provider"
+        ]
+      }
+    }
   },
   {
     "name": "wardmoteListStatusCards",
@@ -38781,7 +38846,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10195",
+    "boardGuard": "assertBoard@issues.ts:10197",
     "authorityCapability": null,
     "parameters": [
       {
@@ -41406,7 +41471,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9522",
+    "boardGuard": "assertBoard@issues.ts:9524",
     "authorityCapability": null,
     "parameters": [
       {
@@ -41467,7 +41532,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17390",
+    "boardGuard": "assertBoard@issues.ts:17392",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43605,7 +43670,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:19777",
+    "boardGuard": "assertBoard@issues.ts:19779",
     "authorityCapability": null,
     "parameters": [
       {
@@ -44071,7 +44136,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18512",
+    "boardGuard": "assertBoard@issues.ts:18514",
     "authorityCapability": null,
     "parameters": [
       {
@@ -45087,6 +45152,40 @@
         ]
       }
     }
+  },
+  {
+    "name": "wardmoteTranscribeAttachment",
+    "operationId": "POST /api/attachments/{attachmentId}/transcript",
+    "method": "POST",
+    "path": "/attachments/{attachmentId}/transcript",
+    "description": "Transcribe an audio/video attachment (voice note, recording) you can read. Cached per file.",
+    "toolset": "core",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "assets"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertIssueReadAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "attachmentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
   },
   {
     "name": "wardmoteTransitionCase",
@@ -48106,14 +48205,74 @@
               "baseUrl": {
                 "type": "string"
               },
+              "deepgram": {
+                "type": "object",
+                "properties": {
+                  "smartFormat": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "diarize": {
+                "type": "boolean"
+              },
+              "elevenlabs": {
+                "type": "object",
+                "properties": {
+                  "numSpeakers": {
+                    "type": "integer"
+                  },
+                  "tagAudioEvents": {
+                    "type": "boolean"
+                  }
+                }
+              },
               "enabled": {
                 "type": "boolean"
+              },
+              "google": {
+                "type": "object",
+                "properties": {
+                  "alternativeLanguages": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "autoPunctuation": {
+                    "type": "boolean"
+                  },
+                  "location": {
+                    "type": "string"
+                  },
+                  "projectId": {
+                    "type": "string"
+                  }
+                }
+              },
+              "keyterms": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "language": {
+                "type": "string"
               },
               "maxAudioSeconds": {
                 "type": "integer"
               },
               "model": {
                 "type": "string"
+              },
+              "provider": {
+                "type": "string",
+                "enum": [
+                  "openai_compatible",
+                  "deepgram",
+                  "elevenlabs",
+                  "google"
+                ]
               },
               "sttWaitSeconds": {
                 "type": "integer"
@@ -48146,7 +48305,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10959",
+    "boardGuard": "assertBoard@issues.ts:10961",
     "authorityCapability": null,
     "parameters": [
       {
@@ -48272,7 +48431,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17358",
+    "boardGuard": "assertBoard@issues.ts:17360",
     "authorityCapability": null,
     "parameters": [
       {

@@ -9,6 +9,11 @@ import type {
   PatchInstanceSettings,
   PatchInstanceGeneralSettings,
   PatchInstanceExperimentalSettings,
+  SpeechToTextCredentialStatus,
+  SpeechToTextModelList,
+  SpeechToTextProvider,
+  SpeechToTextSettings,
+  SpeechToTextTestResult,
 } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
@@ -31,6 +36,21 @@ export const instanceSettingsApi = {
     api.get<AttachmentRetentionStatus>("/instance/attachment-retention", { cache: "no-store" }),
   previewAttachmentRetention: (settings?: AttachmentRetentionSettings) =>
     api.post<AttachmentRetentionReport>("/instance/attachment-retention/preview", settings ? { settings } : {}),
+  listSpeechToTextModels: (request: {
+    provider: SpeechToTextProvider;
+    baseUrl: string;
+    apiKeyEnvVar: string;
+    google?: { location: string; projectId: string };
+  }) =>
+    api.post<SpeechToTextModelList>("/instance/settings/general/speech-to-text/models", request),
+  getSpeechToTextCredentials: () =>
+    api.get<SpeechToTextCredentialStatus>("/instance/settings/general/speech-to-text/credentials", { cache: "no-store" }),
+  testSpeechToText: (settings: SpeechToTextSettings, file: File) => {
+    const form = new FormData();
+    form.append("settings", JSON.stringify(settings));
+    form.append("file", file);
+    return api.postForm<SpeechToTextTestResult>("/instance/settings/general/speech-to-text/test", form);
+  },
   runAttachmentRetention: () =>
     api.post<AttachmentRetentionReport>("/instance/attachment-retention/run", {}),
 };

@@ -9,6 +9,11 @@ import {
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_MESSAGE_DELIVERY,
   SPEECH_TO_TEXT_DEFAULTS,
+  SPEECH_TO_TEXT_PROVIDERS,
+  SPEECH_TO_TEXT_KEYTERMS_MAX,
+  SPEECH_TO_TEXT_KEYTERM_MAX_LENGTH,
+  SPEECH_TO_TEXT_MAX_SPEAKERS,
+  SPEECH_TO_TEXT_GOOGLE_MAX_LANGUAGES,
   ATTACHMENT_MAX_MEGABYTES_MIN,
   ATTACHMENT_MAX_MEGABYTES_MAX,
   ATTACHMENT_ORPHAN_AFTER_DAYS_MIN,
@@ -65,33 +70,131 @@ function isSpeechToTextBaseUrl(value: string): boolean {
   return ["/", "/v1", "/v1/"].includes(url.pathname);
 }
 
+const speechToTextProviderSchema = z.enum(SPEECH_TO_TEXT_PROVIDERS);
+
+const speechToTextBaseUrlSchema = z
+  .string()
+  .trim()
+  .max(2048)
+  .refine(isSpeechToTextBaseUrl, {
+    message: "Speech-to-text base URL must be an http(s) origin or end at /v1, without credentials, query or fragment",
+  });
+
+const speechToTextApiKeyEnvVarSchema = z
+  .string()
+  .trim()
+  .max(128)
+  .regex(/^(?:[A-Za-z_][A-Za-z0-9_]*)?$/, {
+    message: "Speech-to-text API key must name a server environment variable, not hold the key itself",
+  });
+
+const speechToTextKeytermSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(SPEECH_TO_TEXT_KEYTERM_MAX_LENGTH)
+  .regex(/^[^<>{}[\]\\]+$/, { message: "Keyterms cannot contain < > { } [ ] or \\" });
+
+const speechToTextGoogleLocationSchema = z
+  .string()
+  .trim()
+  .regex(/^[a-z][a-z0-9-]{1,39}$/, { message: "Google speech-to-text location must be global, us, eu or a region such as asia-southeast1" });
+
+const speechToTextGoogleProjectIdSchema = z
+  .string()
+  .trim()
+  .regex(/^(?:[a-z][a-z0-9-]{4,28}[a-z0-9])?$/, { message: "Google Cloud project id must be 6 to 30 lowercase letters, digits or hyphens" });
+
+const speechToTextLanguageCodeSchema = z
+  .string()
+  .trim()
+  .regex(/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/, { message: "Speech-to-text language must be a code such as en or pt-BR" });
+
+function isGoogleChirpModel(model: string): boolean {
+  return model.startsWith("chirp");
+}
+
 export const speechToTextSettingsSchema = z
   .object({
     enabled: z.boolean().default(SPEECH_TO_TEXT_DEFAULTS.enabled),
-    baseUrl: z
-      .string()
-      .trim()
-      .max(2048)
-      .refine(isSpeechToTextBaseUrl, {
-        message: "Speech-to-text base URL must be an http(s) origin or end at /v1, without credentials, query or fragment",
-      })
-      .default(SPEECH_TO_TEXT_DEFAULTS.baseUrl),
+    provider: speechToTextProviderSchema.default(SPEECH_TO_TEXT_DEFAULTS.provider),
+    baseUrl: speechToTextBaseUrlSchema.default(SPEECH_TO_TEXT_DEFAULTS.baseUrl),
     model: z.string().trim().max(200).default(SPEECH_TO_TEXT_DEFAULTS.model),
-    apiKeyEnvVar: z
+    apiKeyEnvVar: speechToTextApiKeyEnvVarSchema.default(SPEECH_TO_TEXT_DEFAULTS.apiKeyEnvVar),
+    language: z
       .string()
       .trim()
-      .max(128)
-      .regex(/^(?:[A-Za-z_][A-Za-z0-9_]*)?$/, {
-        message: "Speech-to-text API key must name a server environment variable, not hold the key itself",
+      .max(35)
+      .regex(/^(?:multi|[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*)?$/, {
+        message: "Speech-to-text language must be empty for automatic detection, a language code such as en or pt-BR, or multi",
       })
-      .default(SPEECH_TO_TEXT_DEFAULTS.apiKeyEnvVar),
+      .default(SPEECH_TO_TEXT_DEFAULTS.language),
+    diarize: z.boolean().default(SPEECH_TO_TEXT_DEFAULTS.diarize),
+    keyterms: z.array(speechToTextKeytermSchema).max(SPEECH_TO_TEXT_KEYTERMS_MAX).default(SPEECH_TO_TEXT_DEFAULTS.keyterms),
+    deepgram: z
+      .object({ smartFormat: z.boolean().default(SPEECH_TO_TEXT_DEFAULTS.deepgram.smartFormat) })
+      .strict()
+      .default(SPEECH_TO_TEXT_DEFAULTS.deepgram),
+    elevenlabs: z
+      .object({
+        tagAudioEvents: z.boolean().default(SPEECH_TO_TEXT_DEFAULTS.elevenlabs.tagAudioEvents),
+        numSpeakers: z.number().int().min(1).max(SPEECH_TO_TEXT_MAX_SPEAKERS).nullable().default(SPEECH_TO_TEXT_DEFAULTS.elevenlabs.numSpeakers),
+      })
+      .strict()
+      .default(SPEECH_TO_TEXT_DEFAULTS.elevenlabs),
+    google: z
+      .object({
+        location: speechToTextGoogleLocationSchema.default(SPEECH_TO_TEXT_DEFAULTS.google.location),
+        projectId: speechToTextGoogleProjectIdSchema.default(SPEECH_TO_TEXT_DEFAULTS.google.projectId),
+        autoPunctuation: z.boolean().default(SPEECH_TO_TEXT_DEFAULTS.google.autoPunctuation),
+        alternativeLanguages: z
+          .array(speechToTextLanguageCodeSchema)
+          .max(SPEECH_TO_TEXT_GOOGLE_MAX_LANGUAGES - 1)
+          .default(SPEECH_TO_TEXT_DEFAULTS.google.alternativeLanguages),
+      })
+      .strict()
+      .default(SPEECH_TO_TEXT_DEFAULTS.google),
     maxAudioSeconds: z.number().int().min(1).max(7200).default(SPEECH_TO_TEXT_DEFAULTS.maxAudioSeconds),
     sttWaitSeconds: z.number().int().min(1).max(120).default(SPEECH_TO_TEXT_DEFAULTS.sttWaitSeconds),
   })
   .strict()
-  .refine((value) => !value.enabled || (value.baseUrl !== "" && value.model !== "" && value.apiKeyEnvVar !== ""), {
-    message: "Speech-to-text needs a base URL, a model and an API key environment variable before it can be enabled",
+  .refine(
+    (value) =>
+      !value.enabled ||
+      (value.model !== "" && value.apiKeyEnvVar !== "" && (value.provider !== "openai_compatible" || value.baseUrl !== "")),
+    {
+      message: "Speech-to-text needs a model, an API key environment variable and, for OpenAI-compatible endpoints, a base URL before it can be enabled",
+    },
+  )
+  .superRefine((value, ctx) => {
+    if (value.provider !== "google") return;
+    if (value.language === "multi")
+      ctx.addIssue({ code: "custom", path: ["language"], message: "Google speech-to-text has no multi language; leave it empty for Chirp automatic detection or add alternative languages" });
+    const chirp = isGoogleChirpModel(value.model);
+    if (value.model !== "" && !chirp && value.language === "")
+      ctx.addIssue({ code: "custom", path: ["language"], message: "Google models other than Chirp need a language; only Chirp detects it automatically" });
+    if (value.google.alternativeLanguages.length > 0 && (chirp || value.language === ""))
+      ctx.addIssue({
+        code: "custom",
+        path: ["google", "alternativeLanguages"],
+        message: "Google alternative languages need a primary language and the long, short or telephony model",
+      });
   });
+
+export const speechToTextModelListRequestSchema = z
+  .object({
+    provider: speechToTextProviderSchema,
+    baseUrl: speechToTextBaseUrlSchema.default(""),
+    apiKeyEnvVar: speechToTextApiKeyEnvVarSchema.default(""),
+    google: z
+      .object({
+        location: speechToTextGoogleLocationSchema.default(SPEECH_TO_TEXT_DEFAULTS.google.location),
+        projectId: speechToTextGoogleProjectIdSchema.default(SPEECH_TO_TEXT_DEFAULTS.google.projectId),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 export const attachmentMaxMegabytesSchema = z
   .number()
