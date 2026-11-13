@@ -246,7 +246,7 @@ describe("Codex ACPX runtime adapter", () => {
     });
     const turn = port.startTurn({ text: "Initial", requestId: "turn-1" });
     await expect(port.steerActiveTurn!("Update", "turn-1")).rejects.toThrow("supported active turn");
-    created.onAgentInitialize!({ agentCapabilities: { _meta: { paperclipPi: { version: 1, steering: true, queuedFollowUp: true } } } });
+    created.onAgentInitialize!({ agentCapabilities: { _meta: { wardmotePi: { version: 1, steering: true, queuedFollowUp: true } } } });
     expect(port.steeringCapability!()).toEqual({ steering: true, queuedFollowUp: true });
     await expect(port.steerActiveTurn!("Update", "wrong")).rejects.toThrow("supported active turn");
     await port.steerActiveTurn!("Update", "turn-1");
@@ -273,7 +273,7 @@ describe("Codex ACPX runtime adapter", () => {
     const port = await openCodexAcpxRuntime(options, {
       createRegistry: () => registry(), createStore: () => store(),
       createRuntime: (created) => {
-        (created as AcpRuntimeOptions & { onAgentInitialize: (result: unknown) => void }).onAgentInitialize({ agentCapabilities: { _meta: { paperclipPi: { version: 1, steering: true, queuedFollowUp: true } } } });
+        (created as AcpRuntimeOptions & { onAgentInitialize: (result: unknown) => void }).onAgentInitialize({ agentCapabilities: { _meta: { wardmotePi: { version: 1, steering: true, queuedFollowUp: true } } } });
         return runtime;
       },
     });
@@ -443,7 +443,7 @@ describe("Codex ACPX runtime adapter", () => {
 
       expect(runtimeOptions?.spawnEnvironment?.()).toEqual({
         PATH: "/verified/bin",
-        PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1",
+        WARDMOTE_ACPX_ISOLATED_CONTEXT: "1",
         WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL: "",
       });
       expect(runtime.ensureSession).toHaveBeenCalledWith(
@@ -475,7 +475,7 @@ describe("Codex ACPX runtime adapter", () => {
         },
       });
       expect(runtimeOptions?.spawnEnvironment?.()).toEqual({
-        PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1",
+        WARDMOTE_ACPX_ISOLATED_CONTEXT: "1",
         WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL: binding === "runner-owned" ? "http://127.0.0.1:3210/mcp" : "",
       });
     },

@@ -34,7 +34,7 @@ const NATIVE_COPY_CONCURRENCY = 32;
 const NATIVE_DIRECTORY_CONCURRENCY = 32;
 const NATIVE_COPY_BUFFER_BYTES = 32 * 1024 * 1024;
 const BOOTSTRAP = ".paperclip-native-entry.cjs";
-const GUARD = ".paperclip-native-module-guard.cjs";
+const GUARD = ".wardmote-native-module-guard.cjs";
 const COPILOT_ENTRY = ".paperclip-copilot-entry";
 export const NATIVE_ACPX_BOOTSTRAP_NAME = BOOTSTRAP;
 const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");

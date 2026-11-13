@@ -179,7 +179,7 @@ describe("Codex ACPX harness driver", () => {
     const session = await fixture.driver.openSession({ runId: "run-pi-notice", normalizedSessionId: "session-1", workingDirectory: "/workspace" });
     await session.startTurn({ message: { text: "Work" } });
     const input = fixture.host.startTurn.mock.calls[0]![0];
-    await input.onExtensionNotification!("paperclip/pi_notice", { sessionId: "backend-1", category: "auto_retry_end", summary: "Retry did not recover.", severity: "warning", details: { attempt: 2, success: false } });
+    await input.onExtensionNotification!("wardmote/pi_notice", { sessionId: "backend-1", category: "auto_retry_end", summary: "Retry did not recover.", severity: "warning", details: { attempt: 2, success: false } });
     fixture.finishTurn({ status: "completed" });
     const events = await collectUntil(session.events(), "turn.completed");
     expect(events.find(event => event.eventType === "provider.notice.recorded")?.payload).toMatchObject({ severity: "warning", category: "pi.auto_retry_end", scope: "session" });

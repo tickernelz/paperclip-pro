@@ -60,7 +60,7 @@ export const ACPX_CAPABILITY_PROFILES: Readonly<Record<QualifiedAcpxAgent, AcpxC
     displayName: "Pi", qualification: "qualified", models: "explicit-provider-verified",
     permissions: "interactive", questions: "form", plans: "semantic-only", tools: "owned-extension",
     recovery: "session-load", usage: "reported", steering: "owned-extension-pending", followUp: "owned-extension-pending",
-    artifacts: "references-pending", extensionRequests: [], extensionNotifications: ["paperclip/pi_notice"],
+    artifacts: "references-pending", extensionRequests: [], extensionNotifications: ["wardmote/pi_notice"],
   },
 };
 for (const profile of Object.values(ACPX_CAPABILITY_PROFILES)) {

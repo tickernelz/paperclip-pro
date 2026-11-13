@@ -15,9 +15,9 @@ use wardmote_runner_core::native_provider_backend::NativeProviderCommandExecutor
 use wardmote_runner_core::provider_bridge::{authorized_tool_catalog_digest, AuthorizedTool};
 
 const CODEX_ACPX_DIGEST: &str =
-    "sha256:3e88ae296113d4e1ad6a57260d82c3ba97b85794101ae632bfd14f6890e62869";
+    "sha256:7f77704ad58089b4855717bb1fe77db988b7b725fd1823fd2f94f631e6b4f231";
 const PI_ACPX_DIGEST: &str =
-    "sha256:2654ce76ae38c518ad9fa09738a4dbc8fe4c5ed2d646af660c2387c9843a39f7";
+    "sha256:33fb5d42fe74fe1858057671030b41812081be5b79a0e4c752968ad228fcb797";
 
 fn temporary_directory(label: &str) -> PathBuf {
     let nonce = SystemTime::now()

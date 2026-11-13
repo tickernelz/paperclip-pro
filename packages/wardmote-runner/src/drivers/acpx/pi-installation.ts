@@ -13,7 +13,7 @@ const MAX_DISTRIBUTION_METADATA_BYTES = 4 * 1024 * 1024;
 const FIXED_PATHS = Object.freeze({
   node: "node/bin/node",
   piEntrypoint: "node_modules/@earendil-works/pi-coding-agent/dist/cli.js",
-  extension: "extensions/paperclip.js",
+  extension: "extensions/wardmote.js",
   wrapperEntrypoint: "node_modules/pi-acp/dist/index.js",
 });
 function record(value: unknown): Record<string, unknown> {

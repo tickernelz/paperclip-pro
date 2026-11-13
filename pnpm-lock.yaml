@@ -16,10 +16,10 @@ overrides:
 
 patchedDependencies:
   '@agentclientprotocol/claude-agent-acp@0.73.0':
-    hash: 2fyikzdrzm3vsk3izqx3tx3vqm
+    hash: s2s6dyktjardfajouwoykj3ozm
     path: patches/@agentclientprotocol__claude-agent-acp@0.73.0.patch
   '@agentclientprotocol/codex-acp@1.6.2':
-    hash: mqpwagqmnp7tmc7bgcjmlguobm
+    hash: sgkxvcd4tlqmgbhryvdox7qqxq
     path: patches/@agentclientprotocol__codex-acp@1.6.2.patch
   '@chat-adapter/discord@4.39.0':
     hash: hvnjx7wghv4gyoi4fdgddyz3ti
@@ -43,7 +43,7 @@ patchedDependencies:
     hash: 6st5fzvttegjv64llnfegwwpca
     path: patches/acpx@0.12.0.patch
   acpx@0.13.1:
-    hash: j4huaoi2baejrlq7vdcgzlx54m
+    hash: thfcyzebxivl6mompnykodshne
     path: patches/acpx@0.13.1.patch
   embedded-postgres@18.1.0-beta.16:
     hash: 55uhvnotpqyiy37rn3pqpukhei
@@ -616,16 +616,16 @@ importers:
     dependencies:
       '@agentclientprotocol/claude-agent-acp':
         specifier: 0.73.0
-        version: 0.73.0(patch_hash=2fyikzdrzm3vsk3izqx3tx3vqm)(@modelcontextprotocol/sdk@1.31.0(zod@4.6.5))
+        version: 0.73.0(patch_hash=s2s6dyktjardfajouwoykj3ozm)(@modelcontextprotocol/sdk@1.31.0(zod@4.6.5))
       '@agentclientprotocol/codex-acp':
         specifier: 1.6.2
-        version: 1.6.2(patch_hash=mqpwagqmnp7tmc7bgcjmlguobm)
+        version: 1.6.2(patch_hash=sgkxvcd4tlqmgbhryvdox7qqxq)
       '@openai/codex':
         specifier: 0.160.0
         version: 0.160.0
       acpx:
         specifier: 0.13.1
-        version: 0.13.1(patch_hash=j4huaoi2baejrlq7vdcgzlx54m)
+        version: 0.13.1(patch_hash=thfcyzebxivl6mompnykodshne)
       ajv:
         specifier: ^8.20.0
         version: 8.20.0
@@ -699,7 +699,7 @@ importers:
     dependencies:
       '@agentclientprotocol/codex-acp':
         specifier: 1.6.2
-        version: 1.6.2(patch_hash=mqpwagqmnp7tmc7bgcjmlguobm)
+        version: 1.6.2(patch_hash=sgkxvcd4tlqmgbhryvdox7qqxq)
       '@ai-sdk/amazon-bedrock':
         specifier: 5.0.113
         version: 5.0.113(zod@4.4.3)
@@ -792,7 +792,7 @@ importers:
         version: 8.18.0
       acpx:
         specifier: 0.13.1
-        version: 0.13.1(patch_hash=j4huaoi2baejrlq7vdcgzlx54m)
+        version: 0.13.1(patch_hash=thfcyzebxivl6mompnykodshne)
       ai:
         specifier: 7.0.130
         version: 7.0.130(zod@4.4.3)
@@ -7759,6 +7759,7 @@ packages:
 
   opencode-ai@1.18.34:
     resolution: {integrity: sha512-9WUS2T0t4HHDVzXvuwTHF0nvhXvZ9mQ0r+ozCvKdJu0LVoQpOzqAW4qWTC3ygNc5Oedcc7j+Oct24JYlQYnySA==}
+    cpu: [arm64, x64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -9170,7 +9171,7 @@ snapshots:
 
   '@adobe/css-tools@4.5.0': {}
 
-  '@agentclientprotocol/claude-agent-acp@0.73.0(patch_hash=2fyikzdrzm3vsk3izqx3tx3vqm)(@modelcontextprotocol/sdk@1.31.0(zod@4.6.5))':
+  '@agentclientprotocol/claude-agent-acp@0.73.0(patch_hash=s2s6dyktjardfajouwoykj3ozm)(@modelcontextprotocol/sdk@1.31.0(zod@4.6.5))':
     dependencies:
       '@agentclientprotocol/sdk': 1.4.0(zod@4.4.3)
       '@anthropic-ai/claude-agent-sdk': 0.3.286(@modelcontextprotocol/sdk@1.31.0(zod@4.6.5))(zod@4.4.3)
@@ -9179,7 +9180,7 @@ snapshots:
       - '@anthropic-ai/sdk'
       - '@modelcontextprotocol/sdk'
 
-  '@agentclientprotocol/codex-acp@1.6.2(patch_hash=mqpwagqmnp7tmc7bgcjmlguobm)':
+  '@agentclientprotocol/codex-acp@1.6.2(patch_hash=sgkxvcd4tlqmgbhryvdox7qqxq)':
     dependencies:
       '@agentclientprotocol/sdk': 1.4.0(zod@4.4.3)
       '@openai/codex': 0.160.0
@@ -13632,7 +13633,7 @@ snapshots:
       - bare-buffer
       - react-native-b4a
 
-  acpx@0.13.1(patch_hash=j4huaoi2baejrlq7vdcgzlx54m):
+  acpx@0.13.1(patch_hash=thfcyzebxivl6mompnykodshne):
     dependencies:
       '@agentclientprotocol/sdk': 1.4.0(zod@4.4.3)
       commander: 15.0.0
