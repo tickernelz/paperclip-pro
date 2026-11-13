@@ -31,7 +31,7 @@ export function claudeWardmotePermissionRules(
   tools: readonly Readonly<Record<string, unknown>>[],
   mode: NativeAcpxPermissionMode,
 ): string[] {
-  if (mode !== "approve-reads" && mode !== "approve-paperclip") return [];
+  if (mode !== "approve-reads" && mode !== "approve-wardmote") return [];
   const names = tools.flatMap((tool) => {
     if (typeof tool.name !== "string") return [];
     const name = canonicalRunnerToolName(tool.name);
@@ -46,7 +46,7 @@ export function claudeWardmotePermissionRules(
     // authenticated bridge and controller still validate run authority,
     // company scope, claims, task mode, and governed-action approvals.
     return isRead || (action && (
-      mode === "approve-paperclip" && AUTOMATIC_WARDMOTE_WORKFLOW_ACTIONS.has(name)
+      mode === "approve-wardmote" && AUTOMATIC_WARDMOTE_WORKFLOW_ACTIONS.has(name)
     ))
       ? [`mcp__wardmote__${name}`]
       : [];

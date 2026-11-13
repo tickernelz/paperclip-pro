@@ -262,7 +262,7 @@ describe("ACPX runtime host", () => {
 
   it.each([
     ["approve-reads", ["mcp__wardmote__get_task_context"]],
-    ["approve-paperclip", ["mcp__wardmote__create_task", "mcp__wardmote__get_task_context", "mcp__wardmote__reassign_task", "mcp__wardmote__write_document"]],
+    ["approve-wardmote", ["mcp__wardmote__create_task", "mcp__wardmote__get_task_context", "mcp__wardmote__reassign_task", "mcp__wardmote__write_document"]],
     ["deny-all", undefined],
   ] as const)("binds exact assigned Claude tools to %s before provider launch", async (permissionMode, allow) => {
     const fixture = await hostFixture();

@@ -272,7 +272,7 @@ proxy; already-recorded conversation history is not rewritten.
 The runner's authenticated bridge and controller still enforce company access,
 action claims, task modes, and governed approvals. Provider permission defaults
 do not change workspace isolation or grant credentials or connection access.
-`approve-paperclip` remains an optional narrower mode for assigned planning and
+`approve-wardmote` remains an optional narrower mode for assigned planning and
 task tools; `approve-reads` allows assigned reads; `deny-all` rejects requests.
 None of these restrictive modes is the default.
 

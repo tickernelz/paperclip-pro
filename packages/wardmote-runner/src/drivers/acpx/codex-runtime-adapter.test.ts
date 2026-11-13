@@ -280,7 +280,7 @@ describe("Codex ACPX runtime adapter", () => {
     expect(port.steeringCapability!()).toBeNull();
     await port.close({ reason: "test finished" });
   });
-  it.each(["approve-reads", "approve-paperclip"] as const)("%s stops unassigned operations when approval has no handler", async (permissionMode) => {
+  it.each(["approve-reads", "approve-wardmote"] as const)("%s stops unassigned operations when approval has no handler", async (permissionMode) => {
     const runtime = fakeRuntime();
     let runtimeOptions: AcpRuntimeOptions | undefined;
     let signal: AbortSignal | undefined;
@@ -1914,7 +1914,7 @@ describe("Codex ACPX runtime adapter", () => {
     ["codex", "gpt-5.6-sol", "deny-all", { outcome: "reject_once" }],
     ["claude", "claude-sonnet-5", "approve-all", { outcome: "allow_once" }],
     ["claude", "claude-sonnet-5", "approve-reads", { outcome: "reject_once" }],
-    ["claude", "claude-sonnet-5", "approve-paperclip", { outcome: "reject_once" }],
+    ["claude", "claude-sonnet-5", "approve-wardmote", { outcome: "reject_once" }],
     ["claude", "claude-sonnet-5", "deny-all", { outcome: "reject_once" }],
   ] as const)(
     "applies the %s/%s ACPX profile's %s mode without an implicit prompt bridge",

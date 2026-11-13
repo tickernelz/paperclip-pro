@@ -8,7 +8,7 @@ import {
 } from "./permission-policy.js";
 
 describe("ACPX permission policy", () => {
-  it.each(["approve-reads", "approve-paperclip"] as const)("allows assigned canonical live reads, including approval lookup, in %s", mode => {
+  it.each(["approve-reads", "approve-wardmote"] as const)("allows assigned canonical live reads, including approval lookup, in %s", mode => {
     const reads = capabilityCanonicalOperationsForSurface("live").filter(action => action.sideEffectClass === "read");
     expect(reads.some(action => action.operationId === "get_approval")).toBe(true);
     for (const action of reads) {
@@ -32,11 +32,11 @@ describe("ACPX permission policy", () => {
       "write_document", "mcp__other__create_task", "Bash", "unknown_write", "mcp__wardmote__create_task",
       "decide_approval", "control_workspace_service", "call_api", "create_skill", "schedule_wake"]
       .map(name => ({ name, annotations: { readOnlyHint: true } }));
-    expect(claudeWardmotePermissionRules(tools, "approve-paperclip")).toEqual([
+    expect(claudeWardmotePermissionRules(tools, "approve-wardmote")).toEqual([
       "mcp__wardmote__create_task", "mcp__wardmote__reassign_task",
       "mcp__wardmote__request_approval", "mcp__wardmote__write_document",
     ]);
-    expect(claudeWardmotePermissionRules([], "approve-paperclip")).toEqual([]);
+    expect(claudeWardmotePermissionRules([], "approve-wardmote")).toEqual([]);
     expect(claudeWardmotePermissionRules(tools, "deny-all")).toEqual([]);
   });
 
@@ -47,7 +47,7 @@ describe("ACPX permission policy", () => {
     expect(acpxRuntimePermissionPolicy("deny-all")).toEqual({
       defaultAction: "deny",
     });
-    expect(acpxRuntimePermissionPolicy("approve-paperclip")).toEqual({ defaultAction: "escalate" });
+    expect(acpxRuntimePermissionPolicy("approve-wardmote")).toEqual({ defaultAction: "escalate" });
     expect(acpxRuntimePermissionPolicy("approve-reads")).toEqual({
       defaultAction: "escalate",
     });
@@ -58,9 +58,9 @@ describe("ACPX permission policy", () => {
     ["approve-reads", "read", "delegate"],
     ["approve-reads", "search", "delegate"],
     ["approve-reads", "execute", "delegate"],
-    ["approve-paperclip", "read", "delegate"],
-    ["approve-paperclip", "write", "delegate"],
-    ["approve-paperclip", "execute", "delegate"],
+    ["approve-wardmote", "read", "delegate"],
+    ["approve-wardmote", "write", "delegate"],
+    ["approve-wardmote", "execute", "delegate"],
     ["deny-all", "read", "reject_once"],
   ] as const)("%s maps %s to %s", (mode, inferredKind, expected) => {
     expect(
@@ -91,7 +91,7 @@ describe("ACPX permission policy", () => {
     }
   });
 
-  it.each(["approve-reads", "approve-paperclip"] as const)("does not let provider metadata widen %s", (mode) => {
+  it.each(["approve-reads", "approve-wardmote"] as const)("does not let provider metadata widen %s", (mode) => {
     for (const [agent, inferredKind, raw, options] of [
       [
         "codex",

@@ -17,7 +17,7 @@ identity, cancellation, recovery and the authenticated Wardmote MCP bridge.
 ACP permission requests are approved by the runner under the default full-auto
 policy. It does not add `--always-approve`: permission decisions remain under
 the selected ACPX policy. Grok's ACP metadata cannot independently establish
-Wardmote tool authority, so explicitly selecting `approve-paperclip` or
+Wardmote tool authority, so explicitly selecting `approve-wardmote` or
 `approve-reads` returns the approval-required outcome; `deny-all` rejects requests.
 Full auto does not bypass Wardmote's company permissions, governed approvals,
 or execution-environment boundaries. Isolated ask

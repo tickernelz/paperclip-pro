@@ -31,7 +31,7 @@ const MAX_JSON_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 #[serde(rename_all = "kebab-case")]
 pub enum AcpxPermissionMode {
     ApproveAll,
-    ApprovePaperclip,
+    ApproveWardmote,
     ApproveReads,
     DenyAll,
 }
@@ -1712,7 +1712,7 @@ mod permission_mode_tests {
     #[test]
     fn paperclip_permission_mode_round_trips_without_widening_legacy_modes() {
         for (name, mode) in [
-            ("approve-paperclip", AcpxPermissionMode::ApprovePaperclip),
+            ("approve-wardmote", AcpxPermissionMode::ApproveWardmote),
             ("approve-reads", AcpxPermissionMode::ApproveReads),
             ("approve-all", AcpxPermissionMode::ApproveAll),
             ("deny-all", AcpxPermissionMode::DenyAll),

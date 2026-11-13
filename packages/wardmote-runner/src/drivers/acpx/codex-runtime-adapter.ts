@@ -319,7 +319,7 @@ export async function openQualifiedAcpxRuntime(
         ? ["/paperclip-verified/grok", "agent", "stdio"]
         : [options.profile.agent === "claude" ? "/paperclip-verified/claude-agent-acp" : VERIFIED_COMMAND_SENTINEL] },
     }),
-    permissionMode: options.permissionMode === "approve-paperclip"
+    permissionMode: options.permissionMode === "approve-wardmote"
       ? "approve-reads"
       : options.permissionMode,
     elicitationModes: ["form"],

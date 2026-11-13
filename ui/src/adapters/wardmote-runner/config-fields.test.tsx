@@ -60,7 +60,7 @@ describe("Wardmote Runner Codex configuration", () => {
   });
   it.each([
     [undefined, "Full auto (approve all)"],
-    ["approve-paperclip", "Automatic Wardmote actions"],
+    ["approve-wardmote", "Automatic Wardmote actions"],
     ["approve-reads", "Allow Wardmote reads"],
     ["deny-all", "Deny all"],
   ])("displays Grok's default or saved permission mode %s", async (acpxPermissionMode, label) => {

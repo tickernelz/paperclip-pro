@@ -1341,14 +1341,14 @@ function requiredPermissionMode(
 ): AcpxSidecarOpenParams["permissionMode"] {
   if (
     value === "approve-all" ||
-    value === "approve-paperclip" ||
+    value === "approve-wardmote" ||
     value === "approve-reads" ||
     value === "deny-all"
   ) {
     return value;
   }
   throw new Error(
-    "permissionMode must be approve-all, approve-paperclip, approve-reads, or deny-all",
+    "permissionMode must be approve-all, approve-wardmote, approve-reads, or deny-all",
   );
 }
 

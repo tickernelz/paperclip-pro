@@ -24,7 +24,7 @@ describe("host ACPX qualification admission", () => {
     for (const authorization of [undefined, "malformed unrelated candidate authorization"]) {
       vi.stubEnv(ACPX_QUALIFICATION_ENV, authorization);
       expect(resolveWardmoteRunnerProviderProfile(config)).toMatchObject(config);
-      for (const acpxPermissionMode of [undefined, "approve-all", "approve-paperclip", "approve-reads", "deny-all"]) {
+      for (const acpxPermissionMode of [undefined, "approve-all", "approve-wardmote", "approve-reads", "deny-all"]) {
         expect(resolveWardmoteRunnerNativeProviderInput({ backend: "acpx_runtime", adapterConfig: { ...config, acpxPermissionMode } }))
           .toMatchObject({ ...config, acpxPermissionMode: acpxPermissionMode ?? "approve-all" });
       }

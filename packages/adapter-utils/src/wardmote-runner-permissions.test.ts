@@ -1,5 +1,6 @@
 import { resolveWardmoteRunnerPiThinkingLevel } from "./wardmote-runner-permissions.js";
 import { describe, expect, it } from "vitest";
+import { RETIRED_ACPX_PERMISSION_MODE } from "./retired-acpx-permission-mode.js";
 
 import {
   WARDMOTE_RUNNER_DEFAULT_MODELS,
@@ -36,8 +37,13 @@ describe("Wardmote Runner permission defaults", () => {
     );
   });
 
-  it.each(["approve-paperclip", "approve-reads", "deny-all", "approve-all"])("preserves explicit Claude %s settings", (mode) => {
+  it.each(["approve-wardmote", "approve-reads", "deny-all", "approve-all"])("preserves explicit Claude %s settings", (mode) => {
     expect(resolveWardmoteRunnerPermissionMode("acpx", mode)).toBe(mode);
+  });
+
+  it("keeps a config written before the rename on automatic Wardmote actions instead of widening to full auto", () => {
+    expect(resolveWardmoteRunnerPermissionMode("acpx", RETIRED_ACPX_PERMISSION_MODE)).toBe("approve-wardmote");
+    expect(resolveWardmoteRunnerPermissionMode("opencode", RETIRED_ACPX_PERMISSION_MODE)).toBe("allow");
   });
 
   it.each([
