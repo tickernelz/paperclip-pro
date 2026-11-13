@@ -51,7 +51,7 @@ function provider() {
       return success({ process_id: "proc_test" });
     }
     if (path.endsWith("/stdin/close")) return success();
-    if (parsed.pathname.endsWith("/connect")) return ndjson([data(1, "paperclip-createos-ready\n"), { type: "exit", exit_code: 0 }]);
+    if (parsed.pathname.endsWith("/connect")) return ndjson([data(1, "wardmote-createos-ready\n"), { type: "exit", exit_code: 0 }]);
     if (method === "DELETE" && path.includes("/processes/")) return success({ tree_exited: true });
     throw new Error(`Unhandled fixture request ${method} ${path}`);
   });
@@ -75,7 +75,7 @@ describe("CreateOS lifecycle", () => {
     const lease = await hooks.onEnvironmentAcquireLease!({ ...params, runId: "run-a" });
     expect(fake.calls[0].body).toEqual({ shape: "test-shape", rootfs: "tpl_ready", region: "us", ingress_enabled: false });
     expect(JSON.stringify(lease)).not.toContain("test-secret");
-    expect(await hooks.onEnvironmentRealizeWorkspace!({ ...params, lease, workspace: { localPath: "/private/host/path" } })).toMatchObject({ cwd: "/paperclip-workspace" });
+    expect(await hooks.onEnvironmentRealizeWorkspace!({ ...params, lease, workspace: { localPath: "/private/host/path" } })).toMatchObject({ cwd: "/wardmote-workspace" });
     expect(await hooks.onEnvironmentExecute!({ ...params, lease, command: "echo" })).toMatchObject({ exitCode: 0, timedOut: false });
     await hooks.onEnvironmentReleaseLease!({ ...params, providerLeaseId: lease.providerLeaseId, leaseMetadata: lease.metadata });
     expect(fake.calls.some((call) => call.path.endsWith("/pause"))).toBe(true);

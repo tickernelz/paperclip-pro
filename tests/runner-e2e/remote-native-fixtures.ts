@@ -392,9 +392,9 @@ export async function bindRemoteNativeFixture(options: RemoteNativeFixtureOption
     const key = JSON.stringify(current);
     fail(JSON.stringify(listed) === key && (!identityKey || identityKey === key), "lease_identity_drift");
     const sandbox = await daytona.get(authority.sandboxId);
-    fail(sandbox.id === authority.sandboxId && sandbox.labels?.["paperclip-provider"] === "daytona"
-      && sandbox.labels?.["paperclip-company-id"] === authority.companyId && sandbox.labels?.["paperclip-environment-id"] === authority.environmentId
-      && sandbox.labels?.["paperclip-run-id"] === authority.runId && sandbox.labels?.["paperclip-reuse-lease"] === "false", "sandbox_labels");
+    fail(sandbox.id === authority.sandboxId && sandbox.labels?.["wardmote-provider"] === "daytona"
+      && sandbox.labels?.["wardmote-company-id"] === authority.companyId && sandbox.labels?.["wardmote-environment-id"] === authority.environmentId
+      && sandbox.labels?.["wardmote-run-id"] === authority.runId && sandbox.labels?.["wardmote-reuse-lease"] === "false", "sandbox_labels");
     binding = current.binding; sentinel = current.sentinel; identityKey = key;
     return sandbox;
   }

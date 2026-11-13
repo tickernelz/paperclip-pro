@@ -60,7 +60,7 @@ const manifest: WardmotePluginManifestV1 = {
           },
           requestedCwd: {
             type: "string",
-            default: "/workspace/paperclip",
+            default: "/workspace/wardmote",
             description: "Workspace directory to create inside the sandbox lease.",
           },
           sessionStrategy: {
@@ -71,7 +71,7 @@ const manifest: WardmotePluginManifestV1 = {
           },
           sessionId: {
             type: "string",
-            default: "paperclip",
+            default: "wardmote",
             description: "Named Cloudflare session ID used when sessionStrategy is named.",
           },
           timeoutMs: {

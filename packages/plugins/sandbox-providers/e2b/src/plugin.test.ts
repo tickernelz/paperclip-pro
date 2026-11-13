@@ -189,11 +189,11 @@ describe("E2B sandbox provider plugin", () => {
       providerLeaseId: "sandbox-123",
       metadata: {
         provider: "e2b",
-        remoteCwd: "/home/user/paperclip-workspace",
+        remoteCwd: "/home/user/wardmote-workspace",
       },
     });
     expect(sandbox.commands.run).toHaveBeenNthCalledWith(1, "pwd");
-    expect(sandbox.commands.run).toHaveBeenNthCalledWith(2, "mkdir -p '/home/user/paperclip-workspace'");
+    expect(sandbox.commands.run).toHaveBeenNthCalledWith(2, "mkdir -p '/home/user/wardmote-workspace'");
   });
 
   it("kills the sandbox if acquire setup fails after creation", async () => {
@@ -630,21 +630,21 @@ describe("E2B sandbox provider plugin", () => {
       },
       lease: {
         providerLeaseId: "sandbox-realize",
-        metadata: { remoteCwd: "/home/user/paperclip-workspace" },
+        metadata: { remoteCwd: "/home/user/wardmote-workspace" },
       },
       workspace: {
         localPath: "/tmp/wardmote-workspace",
       },
     })).resolves.toEqual({
-      cwd: "/home/user/paperclip-workspace",
+      cwd: "/home/user/wardmote-workspace",
       metadata: {
         provider: "e2b",
-        remoteCwd: "/home/user/paperclip-workspace",
+        remoteCwd: "/home/user/wardmote-workspace",
       },
     });
 
     expect(mockConnect).toHaveBeenCalledWith("sandbox-realize", expect.objectContaining({ apiKey: "resolved-key" }));
-    expect(sandbox.commands.run).toHaveBeenCalledWith("mkdir -p '/home/user/paperclip-workspace'");
+    expect(sandbox.commands.run).toHaveBeenCalledWith("mkdir -p '/home/user/wardmote-workspace'");
   });
 
   it("swallows destroy kill errors after logging them", async () => {

@@ -33,7 +33,7 @@ Pasted auth tokens are stored by Wardmote as company secrets because the manifes
 
 ## Bridge template
 
-The package includes an operator-facing Cloudflare Worker scaffold under [bridge-template](./bridge-template). That template uses `@cloudflare/sandbox`, a `Sandbox` Durable Object binding, and a small JSON HTTP surface under `/api/paperclip-sandbox/v1`.
+The package includes an operator-facing Cloudflare Worker scaffold under [bridge-template](./bridge-template). That template uses `@cloudflare/sandbox`, a `Sandbox` Durable Object binding, and a small JSON HTTP surface under `/api/wardmote-sandbox/v1`.
 
 ## Local development
 

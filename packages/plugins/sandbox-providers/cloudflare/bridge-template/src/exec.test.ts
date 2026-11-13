@@ -23,10 +23,10 @@ describe("bridge exec", () => {
       sandbox: sandbox as never,
       command: "claude",
       args: ["--version"],
-      cwd: "/workspace/paperclip",
+      cwd: "/workspace/wardmote",
       env: { WARDMOTE_TEST_FLAG: "1" },
       sessionStrategy: "named",
-      sessionId: "paperclip",
+      sessionId: "wardmote",
       timeoutMs: 12_345,
     });
 
@@ -42,7 +42,7 @@ describe("bridge exec", () => {
     expect(commandArg).not.toContain("nvm.sh");
     expect(commandArg).not.toContain("NVM_DIR");
     expect(commandArg).toContain("cd ");
-    expect(commandArg).toContain("/workspace/paperclip");
+    expect(commandArg).toContain("/workspace/wardmote");
     expect(commandArg).toContain("WARDMOTE_TEST_FLAG");
     expect(commandArg).toContain("claude");
     expect(commandArg).toContain("--version");
@@ -69,7 +69,7 @@ describe("bridge exec", () => {
       command: "echo",
       args: ["hello"],
       sessionStrategy: "named",
-      sessionId: "paperclip",
+      sessionId: "wardmote",
       timeoutMs: 5_000,
       onOutput,
     });
@@ -133,7 +133,7 @@ describe("bridge exec", () => {
       sandbox: sandbox as never,
       command: "pwd",
       sessionStrategy: "named",
-      sessionId: "paperclip",
+      sessionId: "wardmote",
       timeoutMs: 5_000,
       stdin: null,
     });

@@ -8400,7 +8400,7 @@ describe("native warm session supervision", () => {
               kind: "remote" as const,
               transport: "sandbox" as const,
               environmentId: "environment-runnerd-warm-authority",
-              remoteCwd: "/home/daytona/paperclip-workspace",
+              remoteCwd: "/home/daytona/wardmote-workspace",
               runner: { execute: vi.fn() },
             }
       ) as never;
@@ -10022,7 +10022,7 @@ describe("runnerd provider runtime wiring", () => {
         executionWorkspaceId: "run-projectless-next",
       },
     } as NativeExecutionInputV1;
-    const remoteCwd = "/home/daytona/paperclip-workspace";
+    const remoteCwd = "/home/daytona/wardmote-workspace";
     try {
       state.createBackend.mockClear();
       state.createTransport.mockClear();
@@ -10148,7 +10148,7 @@ describe("runnerd provider runtime wiring", () => {
       db: leaseDb(execution), execution, runnerInstanceId: "runner-partial-mcp", runnerEnvironment,
       runnerExecutionTarget: {
         kind: "remote", transport: "sandbox", providerKey: "daytona",
-        leaseId: "lease-partial-mcp", remoteCwd: "/home/daytona/paperclip-workspace",
+        leaseId: "lease-partial-mcp", remoteCwd: "/home/daytona/wardmote-workspace",
         runner: { execute: vi.fn() },
       } as never,
     })).rejects.toThrow("assigned native MCP launch binding is incomplete");
@@ -10170,7 +10170,7 @@ describe("runnerd provider runtime wiring", () => {
       },
       runnerExecutionTarget: {
         kind: "remote", transport: "sandbox", providerKey: "daytona",
-        leaseId: "lease-assigned-mcp", remoteCwd: "/home/daytona/paperclip-workspace",
+        leaseId: "lease-assigned-mcp", remoteCwd: "/home/daytona/wardmote-workspace",
         runner: { execute: vi.fn() },
       } as never,
     });
@@ -10192,7 +10192,7 @@ describe("runnerd provider runtime wiring", () => {
       transport: "sandbox" as const,
       providerKey: "daytona",
       leaseId: "lease-authority-archive",
-      remoteCwd: "/home/daytona/paperclip-workspace",
+      remoteCwd: "/home/daytona/wardmote-workspace",
       runner: { execute: remoteExecute },
     } as never;
     const normalizedSessionId = execution.session.normalizedSessionId;
@@ -10723,7 +10723,7 @@ describe("runnerd provider runtime wiring", () => {
         transport: "sandbox" as const,
         providerKey: "daytona",
         leaseId: "environment-lease-remote-prior-scope",
-        remoteCwd: "/home/daytona/paperclip-workspace",
+        remoteCwd: "/home/daytona/wardmote-workspace",
         runner: {
           execute: vi.fn(),
         },
@@ -12541,7 +12541,7 @@ describe("runnerd provider runtime wiring", () => {
   });
 
   it("uses the remote workspace for both the runner backend and native session", async () => {
-    const remoteCwd = "/home/daytona/paperclip-workspace";
+    const remoteCwd = "/home/daytona/wardmote-workspace";
     const remoteExecution = {
       ...execution,
       binding: { ...execution.binding, runId: "run-remote-workspace-test" },
@@ -12553,7 +12553,7 @@ describe("runnerd provider runtime wiring", () => {
         workMode: "standard",
       },
       workspace: {
-        cwd: "/host/paperclip-workspace",
+        cwd: "/host/wardmote-workspace",
         repoUrl: null,
         repoRef: null,
         branchName: null,
@@ -13058,12 +13058,12 @@ describe("runnerd provider runtime wiring", () => {
   });
 
   it("binds a remote launch to the configured controller-owned runner artifact", async () => {
-    const remoteCwd = "/home/daytona/paperclip-workspace";
+    const remoteCwd = "/home/daytona/wardmote-workspace";
     const controllerArtifact = "/controller/artifacts/wardmote-runnerd";
     const remoteExecution = {
       ...execution,
       binding: { ...execution.binding, runId: "run-remote-runner-artifact" },
-      workspace: { ...execution.workspace, cwd: "/host/paperclip-workspace" },
+      workspace: { ...execution.workspace, cwd: "/host/wardmote-workspace" },
     } as NativeExecutionInputV1;
 
     await createRunnerdBackend({
@@ -13102,7 +13102,7 @@ describe("runnerd provider runtime wiring", () => {
     "requires a build-owned provider pack identity before launching remote %s",
     async (providerKind, provider, driverKind) => {
       state.bundledPackManifestPath = join(tmpdir(), randomUUID(), "provider-pack.json");
-      const remoteCwd = "/home/daytona/paperclip-workspace";
+      const remoteCwd = "/home/daytona/wardmote-workspace";
       const remoteProviderExecution = {
         ...execution,
         binding: {

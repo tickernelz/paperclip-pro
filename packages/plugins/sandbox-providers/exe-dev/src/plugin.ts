@@ -697,7 +697,7 @@ async function buildLease(
   resumedLease: boolean,
 ): Promise<PluginEnvironmentLease> {
   const remote = await detectRemoteContext(config, vm);
-  const remoteCwd = requestedCwd?.trim() || path.posix.join(remote.homeDir, "paperclip-workspace");
+  const remoteCwd = requestedCwd?.trim() || path.posix.join(remote.homeDir, "wardmote-workspace");
   await ensureRemoteWorkspace(config, vm, remoteCwd);
 
   return {

@@ -25,7 +25,7 @@ import type {
   PluginEnvironmentValidationResult,
 } from "@tickernelz/wardmote-plugin-sdk";
 
-const DEFAULT_WORKDIR = "/workspace/paperclip";
+const DEFAULT_WORKDIR = "/workspace/wardmote";
 const DEFAULT_SANDBOX_TIMEOUT_MS = 3_600_000;
 const DEFAULT_EXEC_TIMEOUT_MS = 300_000;
 const MAX_SANDBOX_TIMEOUT_MS = 86_400_000;
@@ -149,11 +149,11 @@ function buildSandboxTags(input: {
   reuseLease: boolean;
 }): Record<string, string> {
   return {
-    "paperclip-provider": "modal",
-    "paperclip-company-id": input.companyId,
-    "paperclip-environment-id": input.environmentId,
-    "paperclip-reuse-lease": input.reuseLease ? "true" : "false",
-    ...(input.runId ? { "paperclip-run-id": input.runId } : {}),
+    "wardmote-provider": "modal",
+    "wardmote-company-id": input.companyId,
+    "wardmote-environment-id": input.environmentId,
+    "wardmote-reuse-lease": input.reuseLease ? "true" : "false",
+    ...(input.runId ? { "wardmote-run-id": input.runId } : {}),
   };
 }
 
@@ -399,9 +399,9 @@ const plugin = definePlugin({
       const sandbox = await createSandboxFor(client, app, config, tags);
       try {
         await ensureRemoteWorkspace(sandbox, config.workdir);
-        const proc = await sandbox.exec(["sh", "-lc", "printf paperclip-probe"]);
+        const proc = await sandbox.exec(["sh", "-lc", "printf wardmote-probe"]);
         const { stdout, exitCode } = await readProcessStreams(proc);
-        if (exitCode !== 0 || stdout.trim() !== "paperclip-probe") {
+        if (exitCode !== 0 || stdout.trim() !== "wardmote-probe") {
           return {
             ok: false,
             summary: `Modal sandbox probe failed: exit ${exitCode}, stdout=${JSON.stringify(stdout)}`,

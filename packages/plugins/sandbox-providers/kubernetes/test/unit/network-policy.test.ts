@@ -4,7 +4,7 @@ import { buildNetworkPolicyManifests } from "../../src/network-policy.js";
 describe("buildNetworkPolicyManifests", () => {
   const baseInput = {
     namespace: "wardmote-acme",
-    wardmoteServerNamespace: "paperclip",
+    wardmoteServerNamespace: "wardmote",
     egressAllowCidrs: [] as string[],
   };
 
@@ -23,7 +23,7 @@ describe("buildNetworkPolicyManifests", () => {
     expect(denyAll.spec.egress).toBeUndefined();
   });
 
-  it("egress allow includes kube-dns and paperclip-server callback", () => {
+  it("egress allow includes kube-dns and wardmote-server callback", () => {
     const [, egress] = buildNetworkPolicyManifests(baseInput);
     const rules = egress.spec.egress;
     const dnsRule = rules.find((r: { ports?: { protocol: string; port: number }[] }) =>
@@ -31,7 +31,7 @@ describe("buildNetworkPolicyManifests", () => {
     );
     expect(dnsRule).toBeDefined();
     const wardmoteRule = rules.find((r: { to: { namespaceSelector?: { matchLabels?: Record<string, string> } }[] }) =>
-      r.to.some((t) => t.namespaceSelector?.matchLabels?.["kubernetes.io/metadata.name"] === "paperclip"),
+      r.to.some((t) => t.namespaceSelector?.matchLabels?.["kubernetes.io/metadata.name"] === "wardmote"),
     );
     expect(wardmoteRule).toBeDefined();
   });
@@ -44,10 +44,10 @@ describe("buildNetworkPolicyManifests", () => {
     expect(cidrRule).toBeDefined();
   });
 
-  it("uses paperclip-server pod label selector for callback ingress to paperclip ns", () => {
+  it("uses wardmote-server pod label selector for callback ingress to wardmote ns", () => {
     const [, egress] = buildNetworkPolicyManifests(baseInput);
     const callbackRule = egress.spec.egress.find((r: { to: { podSelector?: { matchLabels?: Record<string, string> } }[] }) =>
-      r.to.some((t) => t.podSelector?.matchLabels?.app === "paperclip-server"),
+      r.to.some((t) => t.podSelector?.matchLabels?.app === "wardmote-server"),
     );
     expect(callbackRule).toBeDefined();
     expect(callbackRule.ports[0].port).toBe(3100);

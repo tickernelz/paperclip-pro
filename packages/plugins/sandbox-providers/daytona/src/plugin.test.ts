@@ -66,7 +66,7 @@ function createMockSandbox(overrides: {
 } = {}) {
   return {
     id: overrides.id ?? "sandbox-123",
-    name: overrides.name ?? "paperclip-sandbox",
+    name: overrides.name ?? "wardmote-sandbox",
     state: overrides.state ?? "started",
     recoverable: overrides.recoverable ?? false,
     target: "us",
@@ -335,7 +335,7 @@ describe("Daytona sandbox provider plugin", () => {
         companyId: "company-1",
         environmentId: "env-1",
         providerLeaseId: "sandbox-123",
-        command: ["node", "/paperclip/gateway.mjs"],
+        command: ["node", "/wardmote/gateway.mjs"],
       });
       expect(open?.workerSessionId).toMatch(/^duplex-/);
       // The open reply echoes the host route id, so the host binds the exact pair.
@@ -345,7 +345,7 @@ describe("Daytona sandbox provider plugin", () => {
       // The launch wrapper sets raw mode with echo off and redirects diagnostics.
       // It quotes each command argument and the diagnostics path as a shell word.
       expect(inputs[0]).toContain("stty raw -echo");
-      expect(inputs[0]).toContain("exec 'node' '/paperclip/gateway.mjs'");
+      expect(inputs[0]).toContain("exec 'node' '/wardmote/gateway.mjs'");
       expect(inputs[0]).toMatch(/2>'\/tmp\/wardmote-duplex-.+\.log'/);
 
       // A host write on the exact pair reaches the process on the same channel.
@@ -783,7 +783,7 @@ describe("Daytona sandbox provider plugin", () => {
     it.each(["company", "account", "labels"])("fences failed-creation retries by %s", async (mismatch) => {
       const { cleanup } = await unresolvedCreation();
       const orphan = ownedSandbox(); mockGet.mockResolvedValue(orphan);
-      if (mismatch === "labels") orphan.labels["paperclip-run-id"] = "foreign-run";
+      if (mismatch === "labels") orphan.labels["wardmote-run-id"] = "foreign-run";
       const retry = { ...params, providerLeaseId: cleanup.providerLeaseId, leaseMetadata: { failedCreateCleanup: cleanup } };
       if (mismatch === "company") retry.companyId = "foreign-company";
       if (mismatch === "account") process.env.DAYTONA_API_KEY = "another-account-key";
@@ -795,13 +795,13 @@ describe("Daytona sandbox provider plugin", () => {
       let orphan: ReturnType<typeof ownedSandbox>;
       mockGet.mockImplementation(async () => (orphan = ownedSandbox()));
       await expect(plugin.definition.onEnvironmentAcquireLease?.(params)).rejects.toBe(createError);
-      expect(mockCreate.mock.calls[0][0].name).toMatch(/^paperclip-create-[0-9a-f-]{36}$/);
+      expect(mockCreate.mock.calls[0][0].name).toMatch(/^wardmote-create-[0-9a-f-]{36}$/);
       expect(mockGet).toHaveBeenCalledWith(mockCreate.mock.calls[0][0].name);
       expect(orphan!.delete).toHaveBeenCalledWith(10, true);
       expect(orphan!.process.executeCommand).not.toHaveBeenCalled();
     });
 
-    it.each(["paperclip-company-id", "paperclip-environment-id", "paperclip-run-id", "paperclip-create-attempt", "paperclip-provider"])("never deletes a sandbox with a mismatched %s", async (label) => {
+    it.each(["wardmote-company-id", "wardmote-environment-id", "wardmote-run-id", "wardmote-create-attempt", "wardmote-provider"])("never deletes a sandbox with a mismatched %s", async (label) => {
       let orphan: ReturnType<typeof ownedSandbox>;
       mockGet.mockImplementation(async () => {
         orphan = ownedSandbox(); orphan.labels[label] = "different-owner"; return orphan;
@@ -869,7 +869,7 @@ describe("Daytona sandbox provider plugin", () => {
       const requests = mockCreate.mock.calls.map(([request]) => request);
       expect(requests).toHaveLength(2);
       expect(new Set(requests.map((r) => r.name)).size).toBe(2);
-      expect(new Set(requests.map((r) => r.labels["paperclip-create-attempt"])).size).toBe(2);
+      expect(new Set(requests.map((r) => r.labels["wardmote-create-attempt"])).size).toBe(2);
     });
   });
 
@@ -910,7 +910,7 @@ describe("Daytona sandbox provider plugin", () => {
     });
 
     expect(mockCreate).toHaveBeenCalled();
-    expect(sandbox.fs.createFolder).toHaveBeenCalledWith("/home/daytona/paperclip-workspace", "755");
+    expect(sandbox.fs.createFolder).toHaveBeenCalledWith("/home/daytona/wardmote-workspace", "755");
     expect(sandbox.delete).toHaveBeenCalledWith(300);
     expect(result).toMatchObject({
       ok: true,
@@ -918,7 +918,7 @@ describe("Daytona sandbox provider plugin", () => {
         provider: "daytona",
         shellCommand: "bash",
         sandboxId: "sandbox-123",
-        remoteCwd: "/home/daytona/paperclip-workspace",
+        remoteCwd: "/home/daytona/wardmote-workspace",
       },
     });
   });
@@ -949,21 +949,21 @@ describe("Daytona sandbox provider plugin", () => {
         provider: "daytona",
         shellCommand: "bash",
         sandboxId: "sandbox-123",
-        remoteCwd: "/home/daytona/paperclip-workspace",
+        remoteCwd: "/home/daytona/wardmote-workspace",
         reuseLease: true,
         workspaceSentinel: {
-          path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
+          path: "/home/daytona/wardmote-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
           result: "written",
         },
       },
     });
     expect(sandbox.fs.createFolder).toHaveBeenCalledWith(
-      "/home/daytona/paperclip-workspace/.wardmote-runtime",
+      "/home/daytona/wardmote-workspace/.wardmote-runtime",
       "755",
     );
     expect(sandbox.fs.uploadFile).toHaveBeenCalledWith(
       expect.any(Buffer),
-      "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
+      "/home/daytona/wardmote-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
       300,
     );
   });
@@ -1057,9 +1057,9 @@ describe("Daytona sandbox provider plugin", () => {
     expect(createParams).toMatchObject({
       snapshot: "existing-secret-snapshot",
       labels: {
-        "paperclip-provider": "daytona",
-        "paperclip-setup-session-id": "setup-1",
-        "paperclip-purpose": "interactive_setup",
+        "wardmote-provider": "daytona",
+        "wardmote-setup-session-id": "setup-1",
+        "wardmote-purpose": "interactive_setup",
       },
     });
     expect(createParams).not.toHaveProperty("image");
@@ -1114,9 +1114,9 @@ describe("Daytona sandbox provider plugin", () => {
     expect(createParams).toMatchObject({
       image: "node:20",
       labels: {
-        "paperclip-provider": "daytona",
-        "paperclip-setup-session-id": "setup-image-1",
-        "paperclip-purpose": "interactive_setup",
+        "wardmote-provider": "daytona",
+        "wardmote-setup-session-id": "setup-image-1",
+        "wardmote-purpose": "interactive_setup",
       },
     });
     expect(createParams).not.toHaveProperty("snapshot");
@@ -1211,7 +1211,7 @@ describe("Daytona sandbox provider plugin", () => {
       companyId: "company-1",
       environmentId: "env-1",
       providerLeaseId: "sandbox-setup",
-      templateLabel: " Paperclip Env 1 ",
+      templateLabel: " Wardmote Env 1 ",
       sourceTemplateRef: "source-secret-snapshot",
       previousTemplateRef: "previous-secret-snapshot",
       timeoutMs: 120000,
@@ -1222,10 +1222,10 @@ describe("Daytona sandbox provider plugin", () => {
       },
     });
 
-    expect(sandbox._experimental_createSnapshot).toHaveBeenCalledWith("paperclip-env-1", 120);
+    expect(sandbox._experimental_createSnapshot).toHaveBeenCalledWith("wardmote-env-1", 120);
     expect(result).toMatchObject({
       templateKind: "snapshot",
-      templateRef: "paperclip-env-1",
+      templateRef: "wardmote-env-1",
       metadata: {
         provider: "daytona",
         sandboxId: "sandbox-setup",
@@ -1618,7 +1618,7 @@ describe("Daytona sandbox provider plugin", () => {
       },
       leaseMetadata: {
         workspaceSentinel: {
-          path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
+          path: "/home/daytona/wardmote-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
           token: "sentinel-token",
           result: "written",
         },
@@ -1646,7 +1646,7 @@ describe("Daytona sandbox provider plugin", () => {
     const params = {
       driverKey: "daytona", companyId: "company-1", environmentId: "env-1", providerLeaseId: sandboxId,
       config: { apiKey: "host-key", timeoutMs: 300000, livenessTimeoutMs: 100, reuseLease: true },
-      leaseMetadata: { workspaceSentinel: { path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json", token: "sentinel-token" } },
+      leaseMetadata: { workspaceSentinel: { path: "/home/daytona/wardmote-workspace/.wardmote-runtime/reusable-sandbox-lease.json", token: "sentinel-token" } },
     };
     const resume = () => plugin.definition.onEnvironmentResumeLease!(params);
     function missingSandbox() {
@@ -1787,7 +1787,7 @@ describe("Daytona sandbox provider plugin", () => {
       },
       leaseMetadata: {
         workspaceSentinel: {
-          path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
+          path: "/home/daytona/wardmote-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
           token: "sentinel-token",
           result: "written",
         },
@@ -1797,7 +1797,7 @@ describe("Daytona sandbox provider plugin", () => {
       metadata: {
         expired: true,
         workspaceSentinel: {
-          path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
+          path: "/home/daytona/wardmote-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
           token: "sentinel-token",
           result: "mismatch",
         },
@@ -2078,7 +2078,7 @@ describe("Daytona sandbox provider plugin", () => {
 
       expect(sandbox.process.createSession).toHaveBeenCalledTimes(1);
       const sessionId = sandbox.process.createSession.mock.calls[0]![0] as string;
-      expect(sessionId).toMatch(/^paperclip-/);
+      expect(sessionId).toMatch(/^wardmote-/);
     });
 
     it("opens one session when two first commands overlap", async () => {
@@ -2151,7 +2151,7 @@ describe("Daytona sandbox provider plugin", () => {
 
       expect(sandbox.process.createSession).toHaveBeenCalledTimes(1);
       const sessionId = sandbox.process.createSession.mock.calls[0]![0] as string;
-      expect(sessionId).toMatch(/^paperclip-/);
+      expect(sessionId).toMatch(/^wardmote-/);
     });
 
     it("deletes the session and clears the store on release", async () => {
@@ -2292,9 +2292,9 @@ describe("Daytona sandbox provider plugin", () => {
         providerLeaseId: "sandbox-123",
         config: { timeoutMs: 300000, reuseLease: false },
         leaseMetadata: {
-          remoteCwd: "/home/daytona/paperclip-workspace",
+          remoteCwd: "/home/daytona/wardmote-workspace",
           workspaceSentinel: {
-            path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
+            path: "/home/daytona/wardmote-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
             token: "token-1",
           },
         },
@@ -2323,9 +2323,9 @@ describe("Daytona sandbox provider plugin", () => {
         providerLeaseId: "sandbox-123",
         config: { timeoutMs: 300000, reuseLease: false },
         leaseMetadata: {
-          remoteCwd: "/home/daytona/paperclip-workspace",
+          remoteCwd: "/home/daytona/wardmote-workspace",
           workspaceSentinel: {
-            path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
+            path: "/home/daytona/wardmote-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
             token: "token-1",
           },
         },
@@ -2425,7 +2425,7 @@ describe("Daytona sandbox provider plugin", () => {
         { command: string; runAsync?: boolean },
         number,
       ];
-      expect(sid).toMatch(/^paperclip-/);
+      expect(sid).toMatch(/^wardmote-/);
       expect(req.runAsync).toBe(true);
       expect(timeoutArg).toBe(1);
       // The built command carries the login-shell script and the user command.
@@ -3346,7 +3346,7 @@ describe("Daytona sandbox provider plugin", () => {
       environmentId: "env-1",
       config: { timeoutMs: 300000, reuseLease: false },
       bypassSession: true,
-      lease: { providerLeaseId: "sandbox-123", metadata: { remoteCwd: "/home/daytona/paperclip-workspace" } },
+      lease: { providerLeaseId: "sandbox-123", metadata: { remoteCwd: "/home/daytona/wardmote-workspace" } },
       command: "printf",
       args: ["hello"],
       cwd: "/workspace",
@@ -3985,7 +3985,7 @@ describe("Daytona sandbox provider plugin", () => {
       const hostDir = await fs.mkdtemp(path.join(os.tmpdir(), "daytona-cancel-sync-"));
       const source = path.join(hostDir, "payload.txt");
       await fs.writeFile(source, "payload");
-      const remoteDir = "/home/daytona/paperclip-workspace";
+      const remoteDir = "/home/daytona/wardmote-workspace";
 
       const sandbox = createMockSandbox({ id: "lease-a" });
       let resolveUpload!: () => void;
@@ -4215,7 +4215,7 @@ describe("Daytona sandbox provider plugin", () => {
         config: { timeoutMs: 300000, reuseLease: true },
         leaseMetadata: {
           workspaceSentinel: {
-            path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
+            path: "/home/daytona/wardmote-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
             token: "expected-token",
             result: "written",
           },
@@ -4448,7 +4448,7 @@ describe("Daytona sandbox provider plugin", () => {
       expect(realizedConfig).toMatchObject({ target: "us" });
       await plugin.definition.onEnvironmentRealizeWorkspace!({
         ...base, config: realizedConfig, lease,
-        workspace: { remotePath: "/home/daytona/paperclip-workspace" },
+        workspace: { remotePath: "/home/daytona/wardmote-workspace" },
       });
       expect(mockGet).not.toHaveBeenCalled();
       await plugin.definition.onEnvironmentReleaseLease!({
@@ -4456,11 +4456,11 @@ describe("Daytona sandbox provider plugin", () => {
       });
       await expect(plugin.definition.onEnvironmentRealizeWorkspace!({
         ...base, config, lease,
-        workspace: { remotePath: "/home/daytona/paperclip-workspace" },
+        workspace: { remotePath: "/home/daytona/wardmote-workspace" },
       })).rejects.toThrow(/no longer active/);
       await expect(plugin.definition.onEnvironmentRealizeWorkspace!({
         ...base, config: realizedConfig, lease,
-        workspace: { remotePath: "/home/daytona/paperclip-workspace" },
+        workspace: { remotePath: "/home/daytona/wardmote-workspace" },
       })).rejects.toThrow(/no longer active/);
 
       sandbox.state = "stopped";
@@ -4478,8 +4478,8 @@ describe("Daytona sandbox provider plugin", () => {
       });
       await expect(plugin.definition.onEnvironmentRealizeWorkspace!({
         ...base, config: { ...config, ...resumed.metadata }, lease: resumed,
-        workspace: { remotePath: "/home/daytona/paperclip-workspace" },
-      })).resolves.toMatchObject({ cwd: "/home/daytona/paperclip-workspace" });
+        workspace: { remotePath: "/home/daytona/wardmote-workspace" },
+      })).resolves.toMatchObject({ cwd: "/home/daytona/wardmote-workspace" });
     });
 
     it("realizes the workspace from the acquire-seeded handle without a client.get", async () => {
@@ -4500,21 +4500,21 @@ describe("Daytona sandbox provider plugin", () => {
       const realize = await plugin.definition.onEnvironmentRealizeWorkspace?.({
         ...base,
         lease: { providerLeaseId: lease!.providerLeaseId, metadata: lease!.metadata },
-        workspace: { remotePath: "/home/daytona/paperclip-workspace" },
+        workspace: { remotePath: "/home/daytona/wardmote-workspace" },
         config,
       });
 
       // Acquire seeded the handle under the exact scope realize reads, so realize
       // reuses it and never pays a real REST re-fetch.
       expect(mockGet).not.toHaveBeenCalled();
-      expect(sandbox.fs.createFolder).toHaveBeenCalledWith("/home/daytona/paperclip-workspace", "755");
-      expect(realize?.cwd).toBe("/home/daytona/paperclip-workspace");
+      expect(sandbox.fs.createFolder).toHaveBeenCalledWith("/home/daytona/wardmote-workspace", "755");
+      expect(realize?.cwd).toBe("/home/daytona/wardmote-workspace");
     });
   });
 });
 
 describe("daytona native file-sync hooks", () => {
-  const REMOTE_DIR = "/home/daytona/paperclip-workspace";
+  const REMOTE_DIR = "/home/daytona/wardmote-workspace";
   const tempDirs: string[] = [];
 
   async function makeHostDir(): Promise<string> {
