@@ -44,10 +44,10 @@ import {
 import { getRunLogStore } from "./run-log-store.js";
 import { getOperatorSettingDefaults } from "./setting-defaults.js";
 
-const FEEDBACK_SCHEMA_VERSION = "paperclip-feedback-envelope-v2";
-const FEEDBACK_BUNDLE_VERSION = "paperclip-feedback-bundle-v2";
-const FEEDBACK_PAYLOAD_VERSION = "paperclip-feedback-v1";
-const FEEDBACK_DESTINATION = "paperclip_labs_feedback_v1";
+const FEEDBACK_SCHEMA_VERSION = "wardmote-feedback-envelope-v2";
+const FEEDBACK_BUNDLE_VERSION = "wardmote-feedback-bundle-v2";
+const FEEDBACK_PAYLOAD_VERSION = "wardmote-feedback-v1";
+const FEEDBACK_DESTINATION = "wardmote_feedback_v1";
 const FEEDBACK_CONTEXT_WINDOW = 3;
 const MAX_EXCERPT_CHARS = 200;
 const MAX_PRIMARY_CONTENT_CHARS = 8_000;
@@ -276,9 +276,9 @@ function captureStatusFromFiles(files: FeedbackTraceBundleFile[]): FeedbackTrace
   }
 
   const hasAdapterFiles = files.some((file) =>
-    file.source !== "paperclip_run" &&
-    file.source !== "paperclip_run_events" &&
-    file.source !== "paperclip_run_log",
+    file.source !== "wardmote_run" &&
+    file.source !== "wardmote_run_events" &&
+    file.source !== "wardmote_run_log",
   );
   if (hasAdapterFiles) return "partial";
   return files.length > 0 ? "partial" : "unavailable";
@@ -881,7 +881,7 @@ async function buildAgentContext(
         entryBody,
       }
       : null,
-    paperclip: {
+    wardmote: {
       schemaVersion: FEEDBACK_SCHEMA_VERSION,
       bundleVersion: FEEDBACK_BUNDLE_VERSION,
     },
@@ -939,7 +939,7 @@ async function buildPayloadArtifacts(
   const basePayload = {
     schemaVersion: FEEDBACK_SCHEMA_VERSION,
     bundleVersion: FEEDBACK_BUNDLE_VERSION,
-    sourceApp: "paperclip",
+    sourceApp: "wardmote",
     capturedAt: input.now.toISOString(),
     consentVersion: input.consentVersion,
     vote: {
@@ -1105,9 +1105,9 @@ async function buildFeedbackTraceBundleFromRow(
       ) as Record<string, unknown>;
 
       files.push(makeBundleFile({
-        path: "paperclip/run.json",
+        path: "wardmote/run.json",
         contentType: "application/json",
-        source: "paperclip_run",
+        source: "wardmote_run",
         contents: `${JSON.stringify(wardmoteRun, null, 2)}\n`,
       }));
 
@@ -1118,17 +1118,17 @@ async function buildFeedbackTraceBundleFromRow(
         MAX_TRACE_FILE_CHARS,
       );
       files.push(makeBundleFile({
-        path: "paperclip/run-events.json",
+        path: "wardmote/run-events.json",
         contentType: "application/json",
-        source: "paperclip_run_events",
+        source: "wardmote_run_events",
         contents: `${JSON.stringify(sanitizedEvents, null, 2)}\n`,
       }));
 
       if (logText) {
         files.push(makeBundleFile({
-          path: "paperclip/run-log.ndjson",
+          path: "wardmote/run-log.ndjson",
           contentType: "application/x-ndjson",
-          source: "paperclip_run_log",
+          source: "wardmote_run_log",
           contents: `${sanitizeFeedbackText(logText, state, "bundle.wardmoteRun.log", MAX_TRACE_FILE_CHARS)}\n`,
         }));
       } else {
