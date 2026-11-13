@@ -78,7 +78,7 @@ describe("ACP form question adapter", () => {
     const response = normalized!.accept({
       schema: "wardmote.question_response.v1",
       answers: {
-        [name!.id]: { text: "paperclip" },
+        [name!.id]: { text: "wardmote" },
         [region!.id]: {
           selectedOptionIds: [region!.options![1]!.id],
         },
@@ -94,7 +94,7 @@ describe("ACP form question adapter", () => {
     expect(response).toEqual({
       action: "accept",
       content: {
-        name: "paperclip",
+        name: "wardmote",
         region: "eu-west-1",
         features: ["tracing", "backups"],
         confirmed: true,

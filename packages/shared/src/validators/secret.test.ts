@@ -136,7 +136,7 @@ describe("secret validators", () => {
         config: {
           region: "us-east-1",
           namespace: "production",
-          secretNamePrefix: "paperclip",
+          secretNamePrefix: "wardmote",
         },
       }),
     ).not.toThrow();
@@ -237,9 +237,9 @@ describe("secret validators", () => {
         config: {
           region: "us-east-1",
           namespace: "production",
-          secretNamePrefix: "paperclip",
+          secretNamePrefix: "wardmote",
         },
-        query: "paperclip",
+        query: "wardmote",
         pageSize: 50,
       }),
     ).toEqual({
@@ -247,9 +247,9 @@ describe("secret validators", () => {
       config: {
         region: "us-east-1",
         namespace: "production",
-        secretNamePrefix: "paperclip",
+        secretNamePrefix: "wardmote",
       },
-      query: "paperclip",
+      query: "wardmote",
       pageSize: 50,
     });
 

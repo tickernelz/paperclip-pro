@@ -89,7 +89,7 @@ function makeSite(overrides: Partial<SandboxRunSiteOptions> = {}) {
     publishStagedProjectHints: () => {},
     onReuseLog: async () => {},
     startWardmoteBridge: async () => {
-      bridgeCalls.push("paperclip:start");
+      bridgeCalls.push("wardmote:start");
       return { env: { WARDMOTE_API_KEY: "run-token" }, stop: async () => {} } as never;
     },
     startProcessSessionBridge: async ({ launchEnv }) => {
@@ -125,8 +125,8 @@ function makeReady(stagedRuntime: PreparedAdapterExecutionTargetRuntime): ReadyR
 describe("sandbox run site", () => {
   it("test_sandbox_site_registers_staging_bridges_and_lease_in_ledger", async () => {
     const { site, registered } = makeSite();
-    await site.placeWorkspace(makeContext("paperclip:c:a:t:fp"));
-    await site.startTransport(makeContext("paperclip:c:a:t:fp"));
+    await site.placeWorkspace(makeContext("wardmote:c:a:t:fp"));
+    await site.startTransport(makeContext("wardmote:c:a:t:fp"));
 
     const byId = new Set(registered.map((entry) => entry.id));
     // Staging registers the staged runtime, the managed-home copy-back, and the
@@ -170,9 +170,9 @@ describe("sandbox run site", () => {
     let processLaunchEnv: Record<string, string> | null = null;
     const { site } = makeSite({
       startWardmoteBridge: async () => {
-        events.push("paperclip:start");
+        events.push("wardmote:start");
         await wardmoteGate;
-        events.push("paperclip:env-ready");
+        events.push("wardmote:env-ready");
         return { env: { WARDMOTE_API_KEY: "run-token" }, stop: async () => {} } as never;
       },
       startProcessSessionBridge: async ({ launchEnv }) => {
@@ -188,13 +188,13 @@ describe("sandbox run site", () => {
     const transportPromise = site.startTransport(makeContext("s"));
     await Promise.resolve();
     await Promise.resolve();
-    expect(events).toContain("paperclip:start");
+    expect(events).toContain("wardmote:start");
     expect(events).toContain("process-session:start");
     expect(events).not.toContain("process-session:launch");
 
     releaseWardmote();
     const transport = await transportPromise;
-    expect(events.indexOf("paperclip:env-ready")).toBeLessThan(events.indexOf("process-session:launch"));
+    expect(events.indexOf("wardmote:env-ready")).toBeLessThan(events.indexOf("process-session:launch"));
     expect(processLaunchEnv).toEqual({ BASE: "1", CODEX_HOME: "/remote/home", WARDMOTE_API_KEY: "run-token" });
     expect(transport.launchEnv).toEqual(processLaunchEnv);
   });
@@ -243,7 +243,7 @@ describe("sandbox run site", () => {
     const cachedRuntime = makeStagedRuntime("cached");
     const stagedRuntimes = new Map<string, StagedRuntimeStoreEntry>([
       [
-        "paperclip:c:a:t:fp",
+        "wardmote:c:a:t:fp",
         {
           stagedRuntime: cachedRuntime,
           envDelta: { CODEX_HOME: "/remote/home" },
@@ -257,15 +257,15 @@ describe("sandbox run site", () => {
 
     // A borrow reads the staged entry without removal, so an overlapping run of
     // the same session still reads it.
-    const borrowed = site.reuse().borrow("paperclip:c:a:t:fp");
+    const borrowed = site.reuse().borrow("wardmote:c:a:t:fp");
     expect(borrowed?.stagedRuntime).toBe(cachedRuntime);
-    expect(stagedRuntimes.has("paperclip:c:a:t:fp")).toBe(true);
+    expect(stagedRuntimes.has("wardmote:c:a:t:fp")).toBe(true);
 
     // A reuse hit yields the staged FILES (not a live runtime): `placeWorkspace`
     // reports `reused` and re-applies the seam env delta, and the reuse candidate
     // names the staged files only. So the run still creates the runtime and runs
     // the handshake against the reused files.
-    await site.placeWorkspace(makeContext("paperclip:c:a:t:fp"));
+    await site.placeWorkspace(makeContext("wardmote:c:a:t:fp"));
     expect(site.staged?.reused).toBe(true);
     expect(site.staged?.stagedRuntime).toBe(cachedRuntime);
     expect(env.CODEX_HOME).toBe("/remote/home");

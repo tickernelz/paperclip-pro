@@ -254,7 +254,7 @@ describe("secrets CLI helpers", () => {
     process.env.WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID = "prod-us-1";
     process.env.WARDMOTE_SECRETS_AWS_KMS_KEY_ID =
       "arn:aws:kms:us-east-1:123456789012:key/test";
-    process.env.AWS_PROFILE = "paperclip-prod";
+    process.env.AWS_PROFILE = "wardmote-prod";
 
     const result = secretsCheck(configWithSecretsProvider("aws_secrets_manager"));
 

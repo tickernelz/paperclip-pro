@@ -308,7 +308,7 @@ describe("NativeExecutionInputV1", () => {
           harnessArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:harness/harness-1",
           harnessVersion: "3",
           endpointArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:harness-endpoint/harness-1/wardmote",
-          endpointQualifier: "paperclip",
+          endpointQualifier: "wardmote",
           agentRuntimeArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/runtime-1",
           memoryArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:memory/memory-1",
           memoryId: "memory-1",

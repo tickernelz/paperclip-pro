@@ -290,7 +290,7 @@ describe("JsonSchemaForm secret-ref rendering", () => {
               },
             },
           }}
-          values={{ apiKey: "", sshPort: 22, namePrefix: "paperclip" }}
+          values={{ apiKey: "", sshPort: 22, namePrefix: "wardmote" }}
           onChange={() => {}}
         />,
       );

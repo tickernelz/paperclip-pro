@@ -35,7 +35,7 @@ describe("chat publication projection", () => {
     const input = [
       `token: ${slackTokenCanary}`,
       `key ${openAiKeyCanary}`,
-      "database postgresql://paperclip:hunter2@example.com/db",
+      "database postgresql://wardmote:hunter2@example.com/db",
       "-----BEGIN PRIVATE KEY-----",
       "definitely-private",
       "-----END PRIVATE KEY-----",

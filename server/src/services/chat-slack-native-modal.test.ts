@@ -279,7 +279,7 @@ describe("Slack native multi-question modal adapter-to-runtime boundary", () => 
           ok: true,
           user: {
             id: params.get("user"),
-            name: "paperclip-agent",
+            name: "wardmote-agent",
             real_name: "Wardmote Agent",
             is_bot: true,
             profile: { display_name: "Wardmote Agent" },
@@ -337,7 +337,7 @@ describe("Slack native multi-question modal adapter-to-runtime boundary", () => 
       persistence: options.persistence ?? memoryPersistence(),
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           apiUrl,
           botToken: "xoxb-synthetic",

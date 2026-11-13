@@ -54,7 +54,7 @@ describe("agent session wake messages", () => {
         wardmoteAgentMessage: {
           text: "hello",
           source: "plugin_session",
-          pluginKey: "paperclip.gateway",
+          pluginKey: "wardmote.gateway",
           sessionId: "session-1",
         },
       },
@@ -66,7 +66,7 @@ describe("agent session wake messages", () => {
       agentMessage: {
         text: "hello",
         source: "plugin_session",
-        pluginKey: "paperclip.gateway",
+        pluginKey: "wardmote.gateway",
         sessionId: "session-1",
       },
     });
@@ -95,7 +95,7 @@ describe("agent session wake messages", () => {
         wardmoteAgentMessage: {
           text: `OPENAI_API_KEY=${secret}\n${"x".repeat(13_000)}`,
           source: "plugin_session",
-          pluginKey: "paperclip.gateway",
+          pluginKey: "wardmote.gateway",
           sessionId: "session-1",
         },
       },

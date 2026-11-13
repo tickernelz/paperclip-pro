@@ -20,7 +20,7 @@ const AWS_CONFIGURATION = {
   harnessArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:harness/example",
   harnessVersion: "1",
   endpointArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:endpoint/example",
-  endpointQualifier: "paperclip",
+  endpointQualifier: "wardmote",
   agentRuntimeArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/example",
   memoryArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:memory/example",
   memoryId: "memory-example",

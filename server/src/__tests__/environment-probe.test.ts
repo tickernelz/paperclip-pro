@@ -204,7 +204,7 @@ describe("probeEnvironment", () => {
         cleanupStatus: "pending",
         metadata: {
           provider: "daytona",
-          sandboxName: "paperclip-probe",
+          sandboxName: "wardmote-probe",
           reuseLease: false,
         },
         createdAt: new Date(),
@@ -239,7 +239,7 @@ describe("probeEnvironment", () => {
     expect(result).toMatchObject({
       ok: true,
       driver: "sandbox",
-      summary: "Connected to daytona sandbox paperclip-probe.",
+      summary: "Connected to daytona sandbox wardmote-probe.",
     });
     expect(mockProbePluginSandboxProviderDriver).not.toHaveBeenCalled();
     expect(mockRuntimeAcquireRunLease).toHaveBeenCalledWith(expect.objectContaining({

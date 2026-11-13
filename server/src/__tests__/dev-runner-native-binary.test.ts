@@ -40,7 +40,7 @@ function createRunnerCheckout(): { root: string; source: string; binary: string 
   return { root, source, binary };
 }
 
-describe("paperclip runner native dev prerequisite", () => {
+describe("wardmote runner native dev prerequisite", () => {
   it("uses an explicit status response and fails safe when status is unknown", () => {
     expect(
       resolveNativeRunnerRequirement({

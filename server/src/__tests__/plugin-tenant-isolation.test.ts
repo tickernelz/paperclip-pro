@@ -70,13 +70,13 @@ describeEmbeddedPostgres("plugin tenant isolation (company_id FK)", () => {
     const pluginId = randomUUID();
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.tenant-isolation-test",
+      pluginKey: "wardmote.tenant-isolation-test",
       packageName: "@tickernelz/wardmote-plugin-tenant-isolation-test",
       version: "0.0.1",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.tenant-isolation-test",
+        id: "wardmote.tenant-isolation-test",
         apiVersion: 1,
         version: "0.0.1",
         displayName: "Tenant Isolation Test",

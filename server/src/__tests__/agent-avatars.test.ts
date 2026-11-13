@@ -84,7 +84,7 @@ describe("on-demand agent avatars", () => {
     const send = vi.spyOn(S3Client.prototype, "send").mockImplementation(async (command: any) => {
       const key = command.input.Key as string;
       expect(command.input.Bucket).toBe("avatar-test");
-      expect(key).toMatch(/^paperclip\/generated-agent-avatars\/cap-v1\//);
+      expect(key).toMatch(/^wardmote\/generated-agent-avatars\/cap-v1\//);
       if (command instanceof PutObjectCommand) { objects.set(key, Buffer.from(command.input.Body as Uint8Array)); return {}; }
       if (command instanceof DeleteObjectCommand) { objects.delete(key); return {}; }
       const bytes = objects.get(key);
@@ -94,7 +94,7 @@ describe("on-demand agent avatars", () => {
       throw new Error("Unexpected S3 command");
     });
     try {
-      const provider = createS3StorageProvider({ bucket: "avatar-test", region: "us-east-1", prefix: "paperclip" });
+      const provider = createS3StorageProvider({ bucket: "avatar-test", region: "us-east-1", prefix: "wardmote" });
       const render = vi.fn(async () => Buffer.from("s3-avatar"));
       const first = await createAgentAvatarService(provider, render).get(request);
       const second = await createAgentAvatarService(provider, render).get(request);

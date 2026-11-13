@@ -31,7 +31,7 @@ function ingress(): RunnerIngressEndpoint {
   return endpoint;
 }
 
-describe("paperclip runner transport routing", () => {
+describe("wardmote runner transport routing", () => {
   it("keeps same-host runnerd on plaintext loopback", async () => {
     const result = await resolveWardmoteRunnerTransport({
       target: { kind: "local" },

@@ -107,12 +107,12 @@ describe("runtime context materialization", () => {
   it("validates native MCP launch bindings before they reach Codex", () => {
     expect(nativeMcpLaunchBinding({})).toBeNull();
     expect(() => nativeMcpLaunchBinding({
-      WARDMOTE_NATIVE_MCP_NAME: "paperclip",
+      WARDMOTE_NATIVE_MCP_NAME: "wardmote",
       WARDMOTE_NATIVE_MCP_URL: "http://wardmote.example/mcp",
       WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40),
     })).toThrow("requires HTTPS or loopback HTTP");
     expect(() => nativeMcpLaunchBinding({
-      WARDMOTE_NATIVE_MCP_NAME: "paperclip",
+      WARDMOTE_NATIVE_MCP_NAME: "wardmote",
       WARDMOTE_NATIVE_MCP_URL: "https://user:pass@wardmote.example/mcp#secret",
       WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40),
     })).toThrow("contains forbidden URL data");

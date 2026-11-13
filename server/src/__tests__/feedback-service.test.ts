@@ -159,7 +159,7 @@ describeEmbeddedPostgres("feedbackService.saveIssueVote", () => {
         id: randomUUID(),
         companyId,
         key: "tickernelz/wardmote/wardmote",
-        slug: "paperclip",
+        slug: "wardmote",
         name: "Wardmote",
         markdown: "# Wardmote",
         sourceType: "catalog",

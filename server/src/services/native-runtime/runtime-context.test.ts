@@ -357,7 +357,7 @@ describe("buildNativeRuntimeContext", () => {
       runtimeSkillEntries: [
         {
           key: WARDMOTE_OPERATIONAL_SKILL_KEY,
-          runtimeName: "paperclip",
+          runtimeName: "wardmote",
           source: "/unused",
         },
         {

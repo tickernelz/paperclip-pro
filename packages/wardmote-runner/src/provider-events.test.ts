@@ -680,7 +680,7 @@ describe("provider-neutral events", () => {
         type: "tool_call",
         tag: "tool_call",
         toolCallId: "mcp-1",
-        title: "mcp.paperclip.get_task_context",
+        title: "mcp.wardmote.get_task_context",
         kind: "other",
         status: "pending",
         text: "Starting",
@@ -714,7 +714,7 @@ describe("provider-neutral events", () => {
 
     expect(dotted.payload).toMatchObject({
       transport: "mcp",
-      namespace: "paperclip",
+      namespace: "wardmote",
       name: "get_task_context",
       operation: "read",
     });
@@ -733,7 +733,7 @@ describe("provider-neutral events", () => {
         type: "tool_call",
         tag: "tool_call_update",
         toolCallId: "acpx-input-1",
-        title: "paperclip.search_tasks",
+        title: "wardmote.search_tasks",
         kind: "other",
         status: "pending",
         rawInput: { query: "private value" },
@@ -745,7 +745,7 @@ describe("provider-neutral events", () => {
         type: "tool_call",
         tag: "tool_call_update",
         toolCallId: "acpx-input-1",
-        title: "paperclip.search_tasks",
+        title: "wardmote.search_tasks",
         kind: "other",
         status: "pending",
       },

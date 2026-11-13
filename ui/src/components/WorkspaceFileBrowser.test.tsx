@@ -148,7 +148,7 @@ function createProject(overrides: Partial<Project> = {}): Project {
   return {
     id: "project-content",
     companyId: "company-1",
-    urlKey: "paperclip-content",
+    urlKey: "wardmote-content",
     goalId: null,
     goalIds: [],
     goals: [],

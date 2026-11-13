@@ -118,10 +118,10 @@ describe("isWardmoteDevRunnerCommand", () => {
 
 describe("rewriteUrlHostToLoopback", () => {
   it("redirects a MagicDNS probe target to loopback, keeping port and path", () => {
-    expect(rewriteUrlHostToLoopback("http://paperclip-dev:42003/api/health")).toBe(
+    expect(rewriteUrlHostToLoopback("http://wardmote-dev:42003/api/health")).toBe(
       "http://127.0.0.1:42003/api/health",
     );
-    expect(rewriteUrlHostToLoopback("http://paperclip-dev:42003")).toBe("http://127.0.0.1:42003/");
+    expect(rewriteUrlHostToLoopback("http://wardmote-dev:42003")).toBe("http://127.0.0.1:42003/");
   });
 
   it("leaves an already-loopback target alone", () => {

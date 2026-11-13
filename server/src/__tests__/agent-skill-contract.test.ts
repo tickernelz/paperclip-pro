@@ -32,7 +32,7 @@ describe("agent skill contract", () => {
       desiredSkills: [],
       entries: [{
         key: "tickernelz/wardmote/wardmote",
-        runtimeName: "paperclip",
+        runtimeName: "wardmote",
         desired: true,
         managed: true,
         state: "configured",

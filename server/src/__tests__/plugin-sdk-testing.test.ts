@@ -5,7 +5,7 @@ import { createTestHarness } from "@tickernelz/wardmote-plugin-sdk/testing";
 describe("plugin SDK test harness", () => {
   it("returns scoped execution workspace metadata with the read capability", async () => {
     const manifest: WardmotePluginManifestV1 = {
-      id: "paperclip.test-execution-workspace-metadata",
+      id: "wardmote.test-execution-workspace-metadata",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Execution Workspace Metadata",
@@ -43,7 +43,7 @@ describe("plugin SDK test harness", () => {
 
   it("requires execution.workspaces.read before returning workspace metadata", async () => {
     const manifest: WardmotePluginManifestV1 = {
-      id: "paperclip.test-missing-execution-workspace-read",
+      id: "wardmote.test-missing-execution-workspace-read",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Missing Workspace Read Capability",
@@ -62,7 +62,7 @@ describe("plugin SDK test harness", () => {
 
   it("requires skills.managed capability before resetting a missing declaration", async () => {
     const manifest: WardmotePluginManifestV1 = {
-      id: "paperclip.test-missing-managed-skill-capability",
+      id: "wardmote.test-missing-managed-skill-capability",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Missing Managed Skill Capability",
@@ -85,7 +85,7 @@ describe("plugin SDK test harness", () => {
 
   it("requires access and authorization capabilities for permission SDK calls", async () => {
     const manifest: WardmotePluginManifestV1 = {
-      id: "paperclip.test-missing-access-authz-capability",
+      id: "wardmote.test-missing-access-authz-capability",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Missing Access Capability",
@@ -110,7 +110,7 @@ describe("plugin SDK test harness", () => {
 
   it("returns tombstone-safe deleted comments from the in-memory issue helper", async () => {
     const manifest: WardmotePluginManifestV1 = {
-      id: "paperclip.test-comment-redaction",
+      id: "wardmote.test-comment-redaction",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Comment Redaction",
@@ -163,7 +163,7 @@ describe("plugin SDK test harness", () => {
 
   it("rejects a human-attributed comment when the actorUserId is not an active member", async () => {
     const manifest: WardmotePluginManifestV1 = {
-      id: "paperclip.test-human-attributed-comment-unverified",
+      id: "wardmote.test-human-attributed-comment-unverified",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Human-Attributed Comment (unverified)",
@@ -208,7 +208,7 @@ describe("plugin SDK test harness", () => {
     // own test suite cannot pass an attribution production rejects. A viewer is
     // an active member but read-only in the web app.
     const manifest: WardmotePluginManifestV1 = {
-      id: "paperclip.test-human-attributed-comment-viewer",
+      id: "wardmote.test-human-attributed-comment-viewer",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Human-Attributed Comment (viewer)",
@@ -247,7 +247,7 @@ describe("plugin SDK test harness", () => {
 
   it("attributes a comment to an active human member for a verified actorUserId", async () => {
     const manifest: WardmotePluginManifestV1 = {
-      id: "paperclip.test-human-attributed-comment-verified",
+      id: "wardmote.test-human-attributed-comment-verified",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Human-Attributed Comment (verified)",

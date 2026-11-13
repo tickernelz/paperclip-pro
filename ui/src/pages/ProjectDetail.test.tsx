@@ -165,7 +165,7 @@ function project(overrides: Partial<Project> = {}): Project {
     managedByPlugin: {
       id: "managed-1",
       pluginId: "plugin-1",
-      pluginKey: "paperclip.missions",
+      pluginKey: "wardmote.missions",
       pluginDisplayName: "Missions",
       resourceKind: "project",
       resourceKey: "operations",
@@ -294,7 +294,7 @@ describe("ProjectDetail", () => {
     expect(container.textContent).toContain("Plugin operations");
     expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", {
       projectId: "project-1",
-      originKindPrefix: "plugin:paperclip.missions",
+      originKindPrefix: "plugin:wardmote.missions",
     });
   });
 

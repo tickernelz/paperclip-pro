@@ -150,7 +150,7 @@ describe("buildAgentUpdatePatch", () => {
     });
   });
 
-  it("preserves paperclip skill-sync selections when changing adapter types", () => {
+  it("preserves wardmote skill-sync selections when changing adapter types", () => {
     const agent = makeAgent();
     agent.adapterConfig = {
       ...agent.adapterConfig,

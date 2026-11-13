@@ -121,7 +121,7 @@ describe("readZipArchive", () => {
     const blobBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x00, 0xff, 0x13, 0x37]);
     // A text body large and repetitive enough that DEFLATE actually shrinks it,
     // so the DEFLATE decode path is exercised, not just written.
-    const deflated = `# Weekly report\n${"paperclip ".repeat(512)}\n`;
+    const deflated = `# Weekly report\n${"wardmote ".repeat(512)}\n`;
 
     const archive = buildZip(
       [

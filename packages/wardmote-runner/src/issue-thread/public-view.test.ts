@@ -289,7 +289,7 @@ describe("Capability evidence redaction", () => {
         item: {
           type: "dynamicToolCall",
           tool: "wardmote_finish",
-          namespace: "paperclip",
+          namespace: "wardmote",
           status: "completed",
           arguments: { summary: "Done", apiKey: CANARY },
           result: { ok: true, note: "Recorded" },
@@ -300,7 +300,7 @@ describe("Capability evidence redaction", () => {
     expect(redacted).toMatchObject({
       event: "tool_completed",
       tool: "wardmote_finish",
-      namespace: "paperclip",
+      namespace: "wardmote",
       status: "completed",
       arguments: { summary: "Done", apiKey: "[redacted]" },
       result: { ok: true, note: "Recorded" },

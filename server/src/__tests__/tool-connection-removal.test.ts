@@ -673,7 +673,7 @@ describeEmbeddedPostgres("tool connection removal", () => {
     await expect(service.reconnectGalleryApp(connectionId, company.id, { credentialValues: {} }))
       .rejects.toMatchObject({ status: 409 });
     await expect(service.startOAuth(company.id, connectionId, {
-      redirectUri: "https://paperclip.fixture.test/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.fixture.test/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board-user" },
     })).rejects.toMatchObject({ status: 409 });
 

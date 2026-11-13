@@ -46,7 +46,7 @@ async function connectedClient() {
   return client;
 }
 
-describe("paperclip MCP tools", () => {
+describe("wardmote MCP tools", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });

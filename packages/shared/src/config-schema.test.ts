@@ -5,7 +5,7 @@ import {
   wardmoteConfigSchema,
 } from "./config-schema.js";
 
-describe("paperclip config schema", () => {
+describe("wardmote config schema", () => {
   it("defaults omitted runtime paths to legacy instance-root locations", () => {
     const parsed = wardmoteConfigSchema.parse({
       $meta: {

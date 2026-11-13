@@ -2061,7 +2061,7 @@ describeEmbeddedPostgres(
         expect(run).not.toBeNull();
         await waitFor(() => gateway.getAgentPayloads().length === 1, 30_000);
         const payload = gateway.getAgentPayloads()[0] ?? {};
-        expect(payload.paperclip).toBeUndefined();
+        expect(payload.wardmote).toBeUndefined();
         const wake = await readGatewayWakePayload(payload);
         // Security-critical: low-trust quarantined output is redacted to the sanitized
         // stub before it reaches the higher-trust wake/continuation context. The raw

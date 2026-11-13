@@ -63,7 +63,7 @@ const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : 
  * deterministic and needs no network or vendor credentials.
  */
 
-const PUBLIC_BASE_URL = "https://paperclip.fixture.test";
+const PUBLIC_BASE_URL = "https://wardmote.fixture.test";
 const REDIRECT_URI = `${PUBLIC_BASE_URL}/api/tools/oauth/callback`;
 const CLIENT_METADATA_DOCUMENT_URL = `${PUBLIC_BASE_URL}/api/tools/oauth/client-metadata`;
 
@@ -1545,7 +1545,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
 
     const connected = await service.connectGalleryApp(company.id, { link: MCP_URL, name: "Fixture private CIMD" });
     const firstStart = await service.startOAuth(company.id, connected.connectionId, {
-      redirectUri: "https://paperclip.tailnet.test:42001/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.tailnet.test:42001/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board-user" },
     });
     expect(firstStart.registrationSource).toBe("cimd");
@@ -1555,7 +1555,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
     // CIMD client id must not keep presenting it forever.
     metadataAddress = "100.100.100.100";
     const retry = await service.startOAuth(company.id, connected.connectionId, {
-      redirectUri: "https://paperclip.tailnet.test:42001/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.tailnet.test:42001/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board-user" },
     });
 

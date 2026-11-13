@@ -126,7 +126,7 @@ describe("resolveChunkedImportZip", () => {
     // ~64 MB of repetitive text DEFLATEs to a tiny file: far under the raw
     // 48 MB threshold, but the inline body would carry the inflated entries,
     // so the estimated request size sends the zip down the chunked path.
-    const zipBytes = buildDeflateZip("dense-package/NOTES.md", "paperclip agent docs\n".repeat(3_200_000));
+    const zipBytes = buildDeflateZip("dense-package/NOTES.md", "wardmote agent docs\n".repeat(3_200_000));
     await writeFile(zipPath, zipBytes);
 
     const resolved = await resolveChunkedImportZip(zipPath);

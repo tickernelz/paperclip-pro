@@ -20,12 +20,12 @@ describe("applyDataDirOverride", () => {
 
   it("sets WARDMOTE_HOME and isolated default config/context paths", () => {
     const home = applyDataDirOverride({
-      dataDir: "~/paperclip-data",
+      dataDir: "~/wardmote-data",
       config: undefined,
       context: undefined,
     }, { hasConfigOption: true, hasContextOption: true });
 
-    const expectedHome = path.resolve(os.homedir(), "paperclip-data");
+    const expectedHome = path.resolve(os.homedir(), "wardmote-data");
     expect(home).toBe(expectedHome);
     expect(process.env.WARDMOTE_HOME).toBe(expectedHome);
     expect(process.env.WARDMOTE_CONFIG).toBe(

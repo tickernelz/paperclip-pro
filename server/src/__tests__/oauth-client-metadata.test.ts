@@ -17,7 +17,7 @@ describe("OAuth Client ID Metadata Document selection", () => {
 
   it("rejects a Tailscale-range hostname so OAuth can fall back to DCR", async () => {
     await expect(resolveOAuthClientIdMetadataDocumentUrl(
-      "https://paperclip.tailnet.example:42001/api/tools/oauth/callback",
+      "https://wardmote.tailnet.example:42001/api/tools/oauth/callback",
       async () => [{ address: "100.100.100.100", family: 4 }],
     )).resolves.toBeNull();
   });

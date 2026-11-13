@@ -858,7 +858,7 @@ describe("issue attachment routes", () => {
     expect(storage.getObject).not.toHaveBeenCalled();
   });
 
-  it("canonicalizes paperclip artifact metadata before creating a work product", async () => {
+  it("canonicalizes wardmote artifact metadata before creating a work product", async () => {
     const storage = createStorageService();
     const issue = {
       id: "11111111-1111-4111-8111-111111111111",
@@ -921,7 +921,7 @@ describe("issue attachment routes", () => {
     );
   });
 
-  it("rejects paperclip artifact metadata that references another issue's attachment", async () => {
+  it("rejects wardmote artifact metadata that references another issue's attachment", async () => {
     const storage = createStorageService();
     const issue = {
       id: "11111111-1111-4111-8111-111111111111",
@@ -953,7 +953,7 @@ describe("issue attachment routes", () => {
     expect(mockWorkProductService.createForIssue).not.toHaveBeenCalled();
   });
 
-  it("canonicalizes paperclip artifact metadata on work product updates", async () => {
+  it("canonicalizes wardmote artifact metadata on work product updates", async () => {
     const storage = createStorageService();
     const issue = {
       id: "11111111-1111-4111-8111-111111111111",

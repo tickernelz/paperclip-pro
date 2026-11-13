@@ -51,7 +51,7 @@ describe("configured GitHub instruction skills", () => {
     expect(githubConfiguredInstructionSources({ message: "untrusted /skill", raw: { policy } })).toEqual([]);
   });
   it.each(["opened", "synchronize", "reopened", "ready_for_review", "mention", "comment"] as const)("carries the configured %s skill into its task prompt only", (event) => {
-    const skill = "[/review](paperclip://skills/11111111-1111-4111-8111-111111111111?slug=review)";
+    const skill = "[/review](wardmote://skills/11111111-1111-4111-8111-111111111111?slug=review)";
     const policy = defaultGitHubReviewPolicy();
     policy.prompts[event] = `Use ${skill}.`;
     const manual = event === "mention" || event === "comment";
@@ -65,7 +65,7 @@ describe("configured GitHub instruction skills", () => {
     expect(githubConfiguredInstructionSources({ githubAutomatic: { context: { ...context, event: other }, policy } }).join("\n")).not.toContain(skill);
   });
   it("includes skill guidance and saved skill links before provider context in both prompt paths", () => {
-    const policy = { ...defaultGitHubReviewPolicy(), instructions: "Use [/review](paperclip://skills/11111111-1111-4111-8111-111111111111?slug=review)." };
+    const policy = { ...defaultGitHubReviewPolicy(), instructions: "Use [/review](wardmote://skills/11111111-1111-4111-8111-111111111111?slug=review)." };
     const manual = githubManualMessagePrompt({ event: "mention", policy, repository: "test/repo", thread: "thread", sender: context.sender, message: "untrusted text" });
     const automatic = githubReviewPrompt(context, policy, 1);
     for (const prompt of [manual, automatic]) {

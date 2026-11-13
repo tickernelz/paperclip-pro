@@ -135,7 +135,7 @@ const exportRequest = {
 
 function createExportResult() {
   return {
-    rootPath: "paperclip",
+    rootPath: "wardmote",
     manifest: {
       agents: [],
       skills: [],
@@ -327,7 +327,7 @@ describe("company portability routes", () => {
     mockAgentService.list.mockResolvedValue([]);
     mockCompanyPortabilityService.exportBundle.mockResolvedValue(createExportResult());
     mockCompanyPortabilityService.previewExport.mockResolvedValue({
-      rootPath: "paperclip",
+      rootPath: "wardmote",
       manifest: { agents: [], skills: [], projects: [], issues: [], envInputs: [], includes: { company: true, agents: true, projects: true, issues: false, skills: false }, company: null, schemaVersion: 1, generatedAt: new Date().toISOString(), source: null },
       files: {},
       fileInventory: [],
@@ -399,7 +399,7 @@ describe("company portability routes", () => {
 
   it("allows CEO agents to use company-scoped export preview routes", async () => {
     mockCompanyPortabilityService.previewExport.mockResolvedValue({
-      rootPath: "paperclip",
+      rootPath: "wardmote",
       manifest: { agents: [], skills: [], projects: [], issues: [], envInputs: [], includes: { company: true, agents: true, projects: true, issues: false, skills: false }, company: null, schemaVersion: 1, generatedAt: new Date().toISOString(), source: null },
       files: {},
       fileInventory: [],
@@ -422,7 +422,7 @@ describe("company portability routes", () => {
       .send(exportRequest);
 
     expect(res.status).toBe(200);
-    expect(res.body.rootPath).toBe("paperclip");
+    expect(res.body.rootPath).toBe("wardmote");
   });
 
   it("allows CEO agents to export through legacy and CEO-safe bundle routes", async () => {
@@ -441,7 +441,7 @@ describe("company portability routes", () => {
       const res = await request(app).post(path).send(exportRequest);
 
       expect(res.status).toBe(200);
-      expect(res.body.rootPath).toBe("paperclip");
+      expect(res.body.rootPath).toBe("wardmote");
     }
     expect(mockCompanyPortabilityService.exportBundle).toHaveBeenCalledTimes(2);
     expect(mockCompanyPortabilityService.exportBundle).toHaveBeenNthCalledWith(
@@ -472,7 +472,7 @@ describe("company portability routes", () => {
       const res = await request(app).post(path).send(exportRequest);
 
       expect(res.status).toBe(200);
-      expect(res.body.rootPath).toBe("paperclip");
+      expect(res.body.rootPath).toBe("wardmote");
     }
     expect(mockCompanyPortabilityService.exportBundle).toHaveBeenCalledTimes(2);
   });
@@ -1153,7 +1153,7 @@ describe("company portability routes", () => {
   it("imports a company from a multipart zip upload, unzipping into the same inline bundle", async () => {
     const app = await createBoardApp();
     const files = { "COMPANY.md": "---\nname: Test\n---\n", "agents/ceo/AGENTS.md": "---\nname: CEO\n---\n" };
-    const zip = buildStoreZip(files, "paperclip");
+    const zip = buildStoreZip(files, "wardmote");
 
     const res = await request(app)
       .post("/api/companies/import")
@@ -1166,7 +1166,7 @@ describe("company portability routes", () => {
     const call = mockCompanyPortabilityService.importBundle.mock.calls[0]!;
     // The uploaded zip is unzipped into the exact inline source the importer
     // consumes; the other import fields ride along from the JSON meta field.
-    expect(call[0]).toEqual({ ...importMeta, source: { type: "inline", rootPath: "paperclip", files } });
+    expect(call[0]).toEqual({ ...importMeta, source: { type: "inline", rootPath: "wardmote", files } });
     expect(call[1]).toBe("board-user-a");
     expect(call[2]).toEqual({ pauseAutomations: false });
   });
@@ -1174,7 +1174,7 @@ describe("company portability routes", () => {
   it("previews a company from a multipart zip upload", async () => {
     const app = await createBoardApp();
     const files = { "COMPANY.md": "---\nname: Test\n---\n" };
-    const zip = buildStoreZip(files, "paperclip");
+    const zip = buildStoreZip(files, "wardmote");
 
     const res = await request(app)
       .post("/api/companies/import/preview")
@@ -1185,7 +1185,7 @@ describe("company portability routes", () => {
     expect(res.status).toBe(200);
     expect(mockCompanyPortabilityService.previewImport).toHaveBeenCalledTimes(1);
     const call = mockCompanyPortabilityService.previewImport.mock.calls[0]!;
-    expect(call[0]).toEqual({ ...importMeta, source: { type: "inline", rootPath: "paperclip", files } });
+    expect(call[0]).toEqual({ ...importMeta, source: { type: "inline", rootPath: "wardmote", files } });
   });
 
   it("runs a multipart zip import as an async board job via ?async=1", async () => {
@@ -1196,7 +1196,7 @@ describe("company portability routes", () => {
     mockCompanyPortabilityService.importBundle.mockReturnValueOnce(pendingImport);
     const app = await createBoardApp();
     const files = { "COMPANY.md": "---\nname: Test\n---\n" };
-    const zip = buildStoreZip(files, "paperclip");
+    const zip = buildStoreZip(files, "wardmote");
 
     const accepted = await request(app)
       .post("/api/companies/import?async=1")
@@ -1213,7 +1213,7 @@ describe("company portability routes", () => {
     );
     expect(mockCompanyPortabilityService.importBundle.mock.calls[0]![0]).toEqual({
       ...importMeta,
-      source: { type: "inline", rootPath: "paperclip", files },
+      source: { type: "inline", rootPath: "wardmote", files },
     });
 
     const fullResult = createImportResult("created");
@@ -1252,7 +1252,7 @@ describe("company portability routes", () => {
 
   it("rejects a truncated zip upload without importing anything", async () => {
     const app = await createBoardApp();
-    const zip = buildStoreZip({ "COMPANY.md": "---\nname: Test\n---\n" }, "paperclip");
+    const zip = buildStoreZip({ "COMPANY.md": "---\nname: Test\n---\n" }, "wardmote");
     const truncated = zip.subarray(0, 40);
 
     const res = await request(app)

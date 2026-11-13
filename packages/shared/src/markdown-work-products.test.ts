@@ -105,7 +105,7 @@ describe("isMarkdownAttachmentContent", () => {
 });
 
 describe("getAttachmentArtifactWorkProductMetadata", () => {
-  it("returns canonical metadata for a valid paperclip artifact work product", () => {
+  it("returns canonical metadata for a valid wardmote artifact work product", () => {
     const metadata = getAttachmentArtifactWorkProductMetadata(workProduct());
     expect(metadata?.attachmentId).toBe(ATTACHMENT_ID);
   });

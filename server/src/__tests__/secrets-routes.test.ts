@@ -464,7 +464,7 @@ describe("secret routes", () => {
           config: {
             region: "us-east-1",
             namespace: "prod-use1",
-            secretNamePrefix: "paperclip",
+            secretNamePrefix: "wardmote",
             environmentTag: "production",
             ownerTag: "platform",
             kmsKeyId: null,
@@ -475,7 +475,7 @@ describe("secret routes", () => {
           ],
           signals: {
             namespace: "prod-use1",
-            secretNamePrefix: "paperclip",
+            secretNamePrefix: "wardmote",
             environmentTag: "production",
             ownerTag: "platform",
             kmsKeyId: null,
@@ -495,7 +495,7 @@ describe("secret routes", () => {
       .send({
         provider: "aws_secrets_manager",
         config: { region: "us-east-1" },
-        query: "paperclip",
+        query: "wardmote",
         pageSize: 25,
       });
 
@@ -503,7 +503,7 @@ describe("secret routes", () => {
     expect(mockSecretService.previewProviderConfigDiscovery).toHaveBeenCalledWith("company-1", {
       provider: "aws_secrets_manager",
       config: { region: "us-east-1" },
-      query: "paperclip",
+      query: "wardmote",
       nextToken: undefined,
       pageSize: 25,
     });

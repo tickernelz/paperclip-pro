@@ -186,7 +186,7 @@ function buildFixtureZip(): Buffer {
       "COMPANY.md": `---\nname: Chunked Import ${zipSeq}\n---\n`,
       "agents/ceo/AGENTS.md": "---\nname: CEO\n---\n",
     },
-    "paperclip",
+    "wardmote",
   );
 }
 

@@ -52,10 +52,10 @@ describe("plugin agent sessions", () => {
         id: sessionId,
         companyId,
         agentId,
-        taskKey: "plugin:paperclip.gateway:session:session-1",
+        taskKey: "plugin:wardmote.gateway:session:session-1",
       }),
       "plugin-record-id",
-      "paperclip.gateway",
+      "wardmote.gateway",
       createEventBusStub(),
       notifyWorker,
     );
@@ -74,14 +74,14 @@ describe("plugin agent sessions", () => {
       expect.objectContaining({
         payload: { prompt: "hello" },
         contextSnapshot: {
-          taskKey: "plugin:paperclip.gateway:session:session-1",
+          taskKey: "plugin:wardmote.gateway:session:session-1",
           wakeReason: "gateway_chat_message",
           wakeSource: "automation",
           wakeTriggerDetail: "system",
           wardmoteAgentMessage: {
             text: "hello",
             source: "plugin_session",
-            pluginKey: "paperclip.gateway",
+            pluginKey: "wardmote.gateway",
             sessionId,
           },
         },

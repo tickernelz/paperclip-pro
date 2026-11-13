@@ -810,7 +810,7 @@ describeEmbeddedPostgres("externalObjectService", () => {
       .where(eq(issues.id, issueId));
 
     const manifest: WardmotePluginManifestV1 = {
-      id: "paperclip.mock-object-provider",
+      id: "wardmote.mock-object-provider",
       apiVersion: 1,
       version: "1.0.0",
       displayName: "Mock Object Provider",

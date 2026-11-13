@@ -123,13 +123,13 @@ describeEmbeddedPostgres("createPluginSecretsHandler shared vault integration", 
   async function seedPlugin() {
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.plugin-secrets-test",
+      pluginKey: "wardmote.plugin-secrets-test",
       packageName: "@tickernelz/wardmote-plugin-secrets-test",
       version: "0.0.1",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.plugin-secrets-test",
+        id: "wardmote.plugin-secrets-test",
         apiVersion: 1,
         version: "0.0.1",
         displayName: "Plugin Secrets Test",

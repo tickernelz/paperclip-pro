@@ -55,7 +55,7 @@ describe("wardmote_runner operational skill normalization", () => {
     const normalized = normalizeWardmoteOperationalSkillPreference("wardmote_runner", legacyConfig);
     expect(resolveLegacyWardmoteDesiredSkillNames(normalized, [{
       key: WARDMOTE_OPERATIONAL_SKILL_KEY,
-      runtimeName: "paperclip",
+      runtimeName: "wardmote",
     }])).toEqual([WARDMOTE_OPERATIONAL_SKILL_KEY]);
   });
 

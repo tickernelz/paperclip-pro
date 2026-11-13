@@ -10,7 +10,7 @@ const envelope = (description: unknown, prompt = "Write the welcome note now.") 
 describe("Claude native task skill invocation", () => {
   it.each(["Use the `first-task` skill (/first-task).", "$first-task"])("invokes %s before the unchanged current request", (description) => {
     const text = envelope(description);
-    expect(claudeNativeSkillPrompt(text, ["first-task", "paperclip"])).toBe(`/first-task ${text}`);
+    expect(claudeNativeSkillPrompt(text, ["first-task", "wardmote"])).toBe(`/first-task ${text}`);
   });
   it.each([
     envelope("Ordinary task", "Please mention /first-task in the output."),
