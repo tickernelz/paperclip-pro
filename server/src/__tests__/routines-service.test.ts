@@ -1698,7 +1698,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
     const run = await svc.runRoutine(variableRoutine.id, {
       source: "manual",
-      variables: { repo: "paperclip" },
+      variables: { repo: "wardmote" },
     });
 
     const storedIssue = await db
@@ -1712,11 +1712,11 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       .where(eq(routineRuns.id, run.id))
       .then((rows) => rows[0] ?? null);
 
-    expect(storedIssue?.title).toBe("repo triage for paperclip");
-    expect(storedIssue?.description).toBe("Review paperclip for high bugs");
+    expect(storedIssue?.title).toBe("repo triage for wardmote");
+    expect(storedIssue?.description).toBe("Review wardmote for high bugs");
     expect(storedRun?.triggerPayload).toEqual({
       variables: {
-        repo: "paperclip",
+        repo: "wardmote",
         priority: "high",
       },
     });
