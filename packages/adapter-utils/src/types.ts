@@ -95,6 +95,7 @@ export type AdapterExecutionErrorFamily =
   | "transient_upstream"
   | "provider_quota"
   | "model_refusal"
+  | "provider_request_rejected"
   | "refresh_token_reused"
   | "refresh_token_expired"
   | "refresh_token_invalidated";

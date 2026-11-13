@@ -36,6 +36,28 @@ describe("classifyOmpFailure", () => {
     });
   });
 
+  it("classifies a provider 4xx invalid_request_error as a rejected request", () => {
+    expect(
+      classify(
+        "400 The request contains image input, but this combo has no confirmed vision-capable target (type=invalid_request_error)\nraw-http-request=/tmp/x.json",
+      ),
+    ).toEqual({
+      errorCode: "omp_provider_request_rejected",
+      errorFamily: "provider_request_rejected",
+      retryNotBefore: null,
+    });
+  });
+
+  it("treats a 401 invalid_api_key as a rejected request so the issue blocks after one fresh retry", () => {
+    expect(
+      classify("401 Incorrect API key provided: sk-***. (type=invalid_request_error, code=invalid_api_key)").errorFamily,
+    ).toBe("provider_request_rejected");
+  });
+
+  it("keeps a 429 invalid_request_error on the quota path", () => {
+    expect(classify("429 Too many requests (type=invalid_request_error)").errorFamily).toBe("provider_quota");
+  });
+
   it("keeps an unrelated exit as a plain exit code", () => {
     expect(classify("tool crashed unexpectedly")).toEqual({
       errorCode: "omp_exit_1",
