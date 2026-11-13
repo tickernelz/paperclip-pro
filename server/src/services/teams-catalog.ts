@@ -275,8 +275,8 @@ export function readCatalogTeamProvenance(
   metadata: Record<string, unknown> | null | undefined,
 ): CatalogTeamProvenance | null {
   if (!isPlainRecord(metadata)) return null;
-  const paperclip = isPlainRecord(metadata.paperclip) ? metadata.paperclip : null;
-  const catalogTeam = paperclip && isPlainRecord(paperclip.catalogTeam) ? paperclip.catalogTeam : null;
+  const wardmote = isPlainRecord(metadata.wardmote) ? metadata.wardmote : null;
+  const catalogTeam = wardmote && isPlainRecord(wardmote.catalogTeam) ? wardmote.catalogTeam : null;
   if (!catalogTeam) return null;
   const catalogId = readNonEmptyString(catalogTeam.catalogId);
   if (!catalogId) return null;
@@ -494,7 +494,7 @@ async function renderCatalogProvenanceYaml(team: CatalogTeam, targetManager: Cat
         }
       : {}),
     metadata: {
-      paperclip: {
+      wardmote: {
         catalogTeam: {
           catalogId: provenance.catalogId,
           catalogKey: provenance.catalogKey,

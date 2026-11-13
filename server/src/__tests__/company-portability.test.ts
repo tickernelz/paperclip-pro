@@ -6,6 +6,7 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CompanyPortabilityFileEntry } from "@tickernelz/wardmote-shared";
+import { RETIRED_PACKAGE_METADATA_KEY } from "../services/retired-package-metadata-key.js";
 
 const companySvc = {
   getById: vi.fn(),
@@ -959,7 +960,7 @@ describe("company portability", () => {
       path: relativePath,
       kind: relativePath === "SKILL.md" ? "skill" : "reference",
       content: relativePath === "SKILL.md"
-        ? "---\nname: review\ndescription: Catalog review skill\n---\n\n# Review\n"
+        ? `---\nname: review\ndescription: Catalog review skill\nmetadata:\n  ${RETIRED_PACKAGE_METADATA_KEY}:\n    reviewNote: kept\n---\n\n# Review\n`
         : "# Checklist\n",
       language: "markdown",
       markdown: true,
@@ -978,7 +979,9 @@ describe("company portability", () => {
     });
 
     const skillMarkdown = asTextFile(exported.files["skills/tickernelz/bundled/software-development/review/SKILL.md"]);
-    expect(skillMarkdown).toContain("paperclip:");
+    expect(skillMarkdown).toContain("wardmote:");
+    expect(skillMarkdown).not.toContain(`${RETIRED_PACKAGE_METADATA_KEY}:`);
+    expect(skillMarkdown).toContain('reviewNote: "kept"');
     expect(skillMarkdown).toContain("catalog:");
     expect(skillMarkdown).toContain(`sourceRef: "${originHash}"`);
     expect(skillMarkdown).toContain('catalogId: "tickernelz:bundled:software-development:review"');

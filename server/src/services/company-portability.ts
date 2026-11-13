@@ -1,4 +1,5 @@
 import { createAgentLifecycle } from "./agent-lifecycle.js";
+import { RETIRED_PACKAGE_METADATA_KEY, readPackageMetadataBlock } from "./retired-package-metadata-key.js";
 import { agentAppearanceSchema } from "@tickernelz/wardmote-shared";
 import {
   COMPANY_PACKAGE_EXTENSION_FILE,
@@ -331,15 +332,15 @@ function normalizeSkillKey(value: string | null | undefined) {
 
 function readSkillKey(frontmatter: Record<string, unknown>) {
   const metadata = isPlainRecord(frontmatter.metadata) ? frontmatter.metadata : null;
-  const paperclip = isPlainRecord(metadata?.paperclip) ? metadata?.paperclip as Record<string, unknown> : null;
+  const block = readPackageMetadataBlock(metadata);
   return normalizeSkillKey(
     asString(frontmatter.key)
     ?? asString(frontmatter.skillKey)
     ?? asString(metadata?.skillKey)
     ?? asString(metadata?.canonicalKey)
     ?? asString(metadata?.wardmoteSkillKey)
-    ?? asString(paperclip?.skillKey)
-    ?? asString(paperclip?.key),
+    ?? asString(block?.skillKey)
+    ?? asString(block?.key),
   );
 }
 
@@ -2655,8 +2656,10 @@ async function withSkillSourceMetadata(skill: CompanySkill, markdown: string) {
   const catalogProvenance = buildPortableCatalogProvenance(skill);
   metadata.skillKey = skill.key;
   metadata.wardmoteSkillKey = skill.key;
-  metadata.paperclip = {
-    ...(isPlainRecord(metadata.paperclip) ? metadata.paperclip : {}),
+  const previousBlock = readPackageMetadataBlock(metadata);
+  delete metadata[RETIRED_PACKAGE_METADATA_KEY];
+  metadata.wardmote = {
+    ...(previousBlock ?? {}),
     skillKey: skill.key,
     slug: skill.slug,
     ...(catalogProvenance ? { catalog: catalogProvenance } : {}),

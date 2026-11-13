@@ -49,7 +49,7 @@ function agentWithCatalogTeam(originHash: string | null, extra: Record<string, u
     id: `agent-${Math.random().toString(36).slice(2)}`,
     companyId: "company-1",
     metadata: {
-      paperclip: {
+      wardmote: {
         catalogTeam: {
           catalogId: CORE_EXEC_TEAM_ID,
           catalogKey: "tickernelz/bundled/company-defaults/core-exec-team",
@@ -410,7 +410,7 @@ describe("teamsCatalogService", () => {
     it("reads catalogTeam provenance from agent metadata", () => {
       expect(
         readCatalogTeamProvenance({
-          paperclip: { catalogTeam: { catalogId: "team-x", catalogKey: "k", originHash: "sha256:1" } },
+          wardmote: { catalogTeam: { catalogId: "team-x", catalogKey: "k", originHash: "sha256:1" } },
         }),
       ).toEqual({ catalogId: "team-x", catalogKey: "k", originHash: "sha256:1" });
     });
@@ -418,8 +418,8 @@ describe("teamsCatalogService", () => {
     it("returns null when there is no catalogTeam provenance", () => {
       expect(readCatalogTeamProvenance(null)).toBeNull();
       expect(readCatalogTeamProvenance({})).toBeNull();
-      expect(readCatalogTeamProvenance({ paperclip: { catalog: { skillKey: "s" } } })).toBeNull();
-      expect(readCatalogTeamProvenance({ paperclip: { catalogTeam: { originHash: "h" } } })).toBeNull();
+      expect(readCatalogTeamProvenance({ wardmote: { catalog: { skillKey: "s" } } })).toBeNull();
+      expect(readCatalogTeamProvenance({ wardmote: { catalogTeam: { originHash: "h" } } })).toBeNull();
     });
   });
 
@@ -462,7 +462,7 @@ describe("teamsCatalogService", () => {
         {
           id: "removed",
           companyId: "company-1",
-          metadata: { paperclip: { catalogTeam: { catalogId: "tickernelz:bundled:gone:removed", originHash: "sha256:x" } } },
+          metadata: { wardmote: { catalogTeam: { catalogId: "tickernelz:bundled:gone:removed", originHash: "sha256:x" } } },
         },
       ]);
       const svc = teamsCatalogService({} as any);
