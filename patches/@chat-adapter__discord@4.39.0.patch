@@ -5,7 +5,7 @@ index 8cd0ed50d..c01277fbe 100644
 @@ -1,4 +1,7 @@
  import { AsyncLocalStorage } from 'node:async_hooks';
 +import type { ModalElement } from 'chat';
-+/** Closed Paperclip native modal renderer; unsupported shapes throw. */
++/** Closed Wardmote native modal renderer; unsupported shapes throw. */
 +export declare function modalToDiscordPayload(modal: ModalElement, contextId: string): Record<string, unknown>;
  import { BaseFormatConverter, AdapterPostableMessage, Root, Logger, CardElement, Adapter, ChatInstance, UserInfo, WebhookOptions, RawMessage, EmojiValue, FetchOptions, FetchResult, ThreadInfo, Message, Attachment, FormattedContent, ListThreadsOptions, ListThreadsResult, ChannelInfo } from 'chat';
  import { Interaction, ChatInputCommandInteraction, MessageComponentInteraction, User, Client, Message as Message$1 } from 'discord.js';
@@ -86,7 +86,7 @@ index 8cd0ed50d..c01277fbe 100644
  }
  declare class DiscordAdapter implements Adapter<DiscordThreadId, unknown> {
      readonly name = "discord";
-+    readonly paperclipCompatibilityRevision = "paperclip-discord-v5";
++    readonly wardmoteCompatibilityRevision = "wardmote-discord-v5";
      readonly userName: string;
      protected readonly apiBaseUrl: string;
      protected readonly botTokenProvider: () => Promise<string>;
@@ -174,7 +174,7 @@ index a42b61d58..a56ddef52 100644
      value: customId.slice(idx + 1)
    };
  }
-+// Paperclip modal v1: a durable opaque submit token plus Chat SDK's ephemeral
++// Wardmote modal v1: a durable opaque submit token plus Chat SDK's ephemeral
 +// context key. Neither the Discord interaction token nor user input is encoded.
 +function decodeDiscordModalId(value) {
 +  if (typeof value !== "string") return null;
@@ -430,7 +430,7 @@ index a42b61d58..a56ddef52 100644
  }
  var DiscordAdapter = class _DiscordAdapter {
    name = "discord";
-+  paperclipCompatibilityRevision = "paperclip-discord-v6";
++  wardmoteCompatibilityRevision = "wardmote-discord-v6";
    userName;
    apiBaseUrl;
    botTokenProvider;
@@ -1034,7 +1034,7 @@ index a42b61d58..a56ddef52 100644
 +    if (Date.now() >= deadlineAt) return;
 +    const correction =
 +      response?.action === "errors"
-+        ? response.paperclipDiscordCorrection
++        ? response.wardmoteDiscordCorrection
 +        : null;
 +    const safeCorrection =
 +      correction &&
@@ -1696,7 +1696,7 @@ index a42b61d58..a56ddef52 100644
    }
 +  /**
 +   * Idempotently create or recover the public thread rooted at a guild
-+   * message. Paperclip uses this after a process interruption between its
++   * message. Wardmote uses this after a process interruption between its
 +   * durable admission receipt and Discord's thread-creation response.
 +   */
 +  async ensureRootThread(channelId, messageId, content) {

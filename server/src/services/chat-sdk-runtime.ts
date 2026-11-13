@@ -630,10 +630,10 @@ export interface SlackFileUploadAcceptedReceipt {
 }
 
 interface SlackAdapterInternals {
-  paperclipFileUploadReceiptContext?: AsyncLocalStorage<
+  wardmoteFileUploadReceiptContext?: AsyncLocalStorage<
     (receipt: SlackFileUploadAcceptedReceipt) => Promise<void>
   >;
-  paperclipResolveFileUploadReceipt?: (
+  wardmoteResolveFileUploadReceipt?: (
     fileIds: string[],
     threadId: string,
   ) => Promise<string | null>;
@@ -641,7 +641,7 @@ interface SlackAdapterInternals {
 
 interface DiscordAdapterInternals {
   ensureRootThread?: unknown;
-  paperclipCompatibilityRevision?: unknown;
+  wardmoteCompatibilityRevision?: unknown;
   startGatewayListener?: unknown;
 }
 
@@ -884,9 +884,9 @@ function installDiscordNativeCommands(
 
 function assertDiscordAdapterCompatibility(adapter: Adapter, chat: Chat): void {
   const discord = adapter as unknown as DiscordAdapterInternals;
-  if (discord.paperclipCompatibilityRevision !== "paperclip-discord-v6") {
+  if (discord.wardmoteCompatibilityRevision !== "wardmote-discord-v6") {
     throw new DiscordAdapterCompatibilityError(
-      "Wardmote patch revision paperclip-discord-v6 is unavailable",
+      "Wardmote patch revision wardmote-discord-v6 is unavailable",
     );
   }
   if (typeof discord.startGatewayListener !== "function") {
@@ -1374,7 +1374,7 @@ function createProviderAdapter(
       const adapter = createSlackAdapter(adapterConfig);
       (
         adapter as unknown as SlackAdapterInternals
-      ).paperclipFileUploadReceiptContext = new AsyncLocalStorage<
+      ).wardmoteFileUploadReceiptContext = new AsyncLocalStorage<
         (receipt: SlackFileUploadAcceptedReceipt) => Promise<void>
       >();
       return adapter;
@@ -2485,7 +2485,7 @@ export class ChatSdkEndpointRuntime {
     control: TelegramDraftControl,
   ): Promise<{ id: string } | TelegramDraftStopped> {
     const adapter = this.adapter as unknown as {
-      paperclipDraftStopVersion?: number;
+      wardmoteDraftStopVersion?: number;
       stream(
         threadId: string,
         stream: AsyncIterable<string>,
@@ -2495,12 +2495,12 @@ export class ChatSdkEndpointRuntime {
     if (
       this.provider !== "telegram" ||
       !telegramPrivateDraftDestination(threadId) ||
-      adapter.paperclipDraftStopVersion !== 1
+      adapter.wardmoteDraftStopVersion !== 1
     ) {
       throw new Error("Telegram durable draft transport is unavailable");
     }
     return adapter.stream(threadId, textStream, {
-      paperclipDraftControl: control,
+      wardmoteDraftControl: control,
     });
   }
 
@@ -2524,14 +2524,14 @@ export class ChatSdkEndpointRuntime {
     }
     const slack = this.adapter as unknown as SlackAdapterInternals;
     if (
-      !slack.paperclipFileUploadReceiptContext ||
-      typeof slack.paperclipResolveFileUploadReceipt !== "function"
+      !slack.wardmoteFileUploadReceiptContext ||
+      typeof slack.wardmoteResolveFileUploadReceipt !== "function"
     ) {
       throw new SlackAdapterCompatibilityError(
         "file publication receipt capture is unavailable",
       );
     }
-    return await slack.paperclipFileUploadReceiptContext.run(
+    return await slack.wardmoteFileUploadReceiptContext.run(
       onUploadAccepted,
       async () => await this.chat.thread(threadId).post(message),
     );
@@ -2548,12 +2548,12 @@ export class ChatSdkEndpointRuntime {
       );
     }
     const slack = this.adapter as unknown as SlackAdapterInternals;
-    if (typeof slack.paperclipResolveFileUploadReceipt !== "function") {
+    if (typeof slack.wardmoteResolveFileUploadReceipt !== "function") {
       throw new SlackAdapterCompatibilityError(
         "file publication receipt lookup is unavailable",
       );
     }
-    return await slack.paperclipResolveFileUploadReceipt.call(
+    return await slack.wardmoteResolveFileUploadReceipt.call(
       this.adapter,
       fileIds,
       threadId,
