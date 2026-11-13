@@ -37,7 +37,7 @@ them.
 
 ## Task detail loading
 
-`GET /api/issues/:id` returns `Server-Timing` with `paperclip_issue` for the
+`GET /api/issues/:id` returns `Server-Timing` with `wardmote_issue` for the
 whole handler and `issue_<phase>` for its reads. The total includes the final
 execution-blocker read after recovery revalidation. Concurrent phases overlap;
 do not sum them to obtain request duration.
