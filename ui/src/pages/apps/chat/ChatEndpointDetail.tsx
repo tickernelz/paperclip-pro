@@ -677,7 +677,7 @@ function Access({
   const [joinCommandCopied, setJoinCommandCopied] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
   const [confirmationFor, setConfirmationFor] = useState<string | null>(null);
-  const joinCommand = `${endpoint.setup?.slackApp?.command ?? endpoint.setup?.command ?? "/paperclip"} connect`;
+  const joinCommand = `${endpoint.setup?.slackApp?.command ?? endpoint.setup?.command ?? "/wardmote"} connect`;
   const linksQuery = useQuery({
     queryKey: queryKeys.chatEndpoints.principals(endpointId),
     queryFn: () => chatEndpointsApi.listPrincipals(endpointId),

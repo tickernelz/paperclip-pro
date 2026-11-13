@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
 import type { DiscordBotIdentity } from "./chat-discord.js";
+import { RETIRED_DISCORD_COMMAND_NAME } from "./retired-discord-command-name.js";
 
 // https://docs.discord.com/developers/interactions/application-commands
 // Global commands are required for BOT_DM. Never bulk overwrite an app's
@@ -96,13 +97,15 @@ function freezeState(
   return Object.freeze(state);
 }
 
+export const DISCORD_COMMAND_NAME = "wardmote";
+
 /** The public marker is an identifier, never a credential or standalone proof. */
 export function discordWardmoteCommandDefinition(publicOwnerId: string) {
   if (!ownerId.safeParse(publicOwnerId).success)
     throw new Error("Invalid Discord command owner identifier");
   return {
     type: 1,
-    name: "paperclip",
+    name: DISCORD_COMMAND_NAME as string,
     description: `Wardmote session controls [pc:${publicOwnerId}]`,
     options: [
       {
@@ -128,24 +131,29 @@ export function discordWardmoteCommandDefinition(publicOwnerId: string) {
   };
 }
 
-// One explicitly shipped prior definition. This is maintenance evidence only:
+type CommandDefinition = ReturnType<typeof discordWardmoteCommandDefinition>;
+
+// Explicitly shipped prior definitions. This is maintenance evidence only:
 // it never enables command handling before a current definition is confirmed.
-function priorCloseCopyDefinition(id: string) {
-  const definition = discordWardmoteCommandDefinition(id);
-  definition.options[2]!.description = "Close the current Wardmote task";
-  return definition;
+function priorDefinitions(id: string): CommandDefinition[] {
+  const renamed = discordWardmoteCommandDefinition(id);
+  renamed.name = RETIRED_DISCORD_COMMAND_NAME;
+  const closeCopy = discordWardmoteCommandDefinition(id);
+  closeCopy.name = RETIRED_DISCORD_COMMAND_NAME;
+  closeCopy.options[2]!.description = "Close the current Wardmote task";
+  return [renamed, closeCopy];
 }
 
-function definitionDigest(id: string, priorCloseCopy = false): string {
-  return createHash("sha256")
-    .update(
-      JSON.stringify(
-        priorCloseCopy
-          ? priorCloseCopyDefinition(id)
-          : discordWardmoteCommandDefinition(id),
-      ),
-    )
-    .digest("hex");
+function digestOf(definition: CommandDefinition): string {
+  return createHash("sha256").update(JSON.stringify(definition)).digest("hex");
+}
+
+function definitionDigest(id: string): string {
+  return digestOf(discordWardmoteCommandDefinition(id));
+}
+
+function isOwnedCommandName(name: string): boolean {
+  return name === DISCORD_COMMAND_NAME || name === RETIRED_DISCORD_COMMAND_NAME;
 }
 
 /** Persist this prepared descriptor before calling reconcile; its CAS must
@@ -189,7 +197,7 @@ export function parseDiscordCommandRegistration(
     storedDigest === definitionDigest(state.ownerId) ||
     (allowKnownPriorDefinition &&
       state.phase === "registered" &&
-      storedDigest === definitionDigest(state.ownerId, true))
+      priorDefinitions(state.ownerId).some((definition) => digestOf(definition) === storedDigest))
     ? freezeState(state)
     : null;
 }
@@ -242,10 +250,17 @@ const optionSchema = z
   })
   .strict();
 
-function exactDefinition(
+function exactDefinition(command: RemoteCommand, id: string): boolean {
+  return matchesDefinition(command, discordWardmoteCommandDefinition(id));
+}
+
+function matchesPriorDefinition(command: RemoteCommand, id: string): boolean {
+  return priorDefinitions(id).some((definition) => matchesDefinition(command, definition));
+}
+
+function matchesDefinition(
   command: RemoteCommand,
-  id: string,
-  priorCloseCopy = false,
+  expected: CommandDefinition,
 ): boolean {
   const options = z.array(optionSchema).length(3).safeParse(command.options);
   if (
@@ -269,14 +284,7 @@ function exactDefinition(
     contexts: command.contexts,
     nsfw: command.nsfw ?? false,
   };
-  return (
-    JSON.stringify(normalized) ===
-    JSON.stringify(
-      priorCloseCopy
-        ? priorCloseCopyDefinition(id)
-        : discordWardmoteCommandDefinition(id),
-    )
-  );
+  return JSON.stringify(normalized) === JSON.stringify(expected);
 }
 
 function markedOwner(
@@ -285,7 +293,7 @@ function markedOwner(
 ): boolean {
   return (
     command.type === 1 &&
-    command.name === "paperclip" &&
+    isOwnedCommandName(command.name) &&
     command.application_id === state.scope.applicationId &&
     command.guild_id === undefined &&
     command.description.endsWith(`[pc:${state.ownerId}]`)
@@ -510,11 +518,26 @@ export async function reconcileDiscordCommandRegistration(
         };
   }
   const namespace = commands.filter(
-    (command) => command.type === 1 && command.name === "paperclip",
+    (command) => command.type === 1 && command.name === DISCORD_COMMAND_NAME,
   );
   if (namespace.length > 1)
     return { kind: "unavailable", reason: "invalid_response" };
-  const existing = namespace[0];
+  const ownedId =
+    state.phase === "registered"
+      ? state.receipt.commandId
+      : state.phase === "attempted"
+        ? state.attempt.commandId
+        : null;
+  const owned =
+    ownedId === null
+      ? undefined
+      : commands.find(
+          (command) =>
+            command.type === 1 && command.id === ownedId && isOwnedCommandName(command.name),
+        );
+  if (owned && namespace[0] && namespace[0].id !== owned.id)
+    return { kind: "conflict", reason: "owned_command_changed" };
+  const existing = owned ?? namespace[0];
   if (state.phase === "attempted") {
     if (!existing) return { kind: "unknown", state };
     if (
@@ -542,7 +565,7 @@ export async function reconcileDiscordCommandRegistration(
     if (
       state.receipt.definitionDigest !== definitionDigest(state.ownerId) &&
       (existing.version !== state.receipt.version ||
-        !exactDefinition(existing, state.ownerId, true))
+        !matchesPriorDefinition(existing, state.ownerId))
     ) {
       // A software copy migration must not overwrite an operator's intervening
       // remote edit. Require the exact prior receipt and complete prior shape.

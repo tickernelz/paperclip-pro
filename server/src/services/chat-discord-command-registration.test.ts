@@ -8,6 +8,7 @@ import {
   type DiscordCommandRegistration,
   type ReconcileDiscordCommandRegistrationOptions,
 } from "./chat-discord-command-registration.js";
+import { RETIRED_DISCORD_COMMAND_NAME } from "./retired-discord-command-name.js";
 
 const scope = {
   companyId: "11111111-1111-4111-8111-111111111111",
@@ -110,11 +111,12 @@ function fixture() {
 }
 
 describe("Discord owned native-command registration", () => {
-  async function priorCopyFixture() {
+  async function priorCopyFixture(closeCopy = true) {
     const f = fixture();
     await reconcileDiscordCommandRegistration(f.options());
     const prior = discordWardmoteCommandDefinition(f.stored.ownerId);
-    prior.options[2]!.description = "Close the current Wardmote task";
+    prior.name = RETIRED_DISCORD_COMMAND_NAME;
+    if (closeCopy) prior.options[2]!.description = "Close the current Wardmote task";
     if (f.stored.phase !== "registered") throw new Error("Missing receipt");
     f.stored = {
       ...f.stored,
@@ -156,6 +158,37 @@ describe("Discord owned native-command registration", () => {
       id: commandId,
       ...discordWardmoteCommandDefinition(f.stored.ownerId),
     });
+  });
+
+  it("renames the registered command from the retired name in place, keeping its id", async () => {
+    const f = await priorCopyFixture(false);
+    expect(f.commands[1]!.name).toBe(RETIRED_DISCORD_COMMAND_NAME);
+    expect(parseDiscordCommandRegistration(f.stored, scope)).toBeNull();
+    await expect(
+      reconcileDiscordCommandRegistration(f.options()),
+    ).resolves.toMatchObject({ kind: "registered" });
+    expect(f.order).toEqual(["GET", "persist:attempted", "PATCH", "persist:registered"]);
+    expect(f.commands).toHaveLength(2);
+    expect(f.commands[1]).toMatchObject({ id: commandId, name: "wardmote" });
+    expect(parseDiscordCommandRegistration(f.stored, scope)).toEqual(f.stored);
+  });
+
+  it("does not adopt a retired-name command that another owner registered", async () => {
+    const f = fixture();
+    f.commands = [
+      f.unrelated,
+      {
+        ...discordWardmoteCommandDefinition("b".repeat(32)),
+        name: RETIRED_DISCORD_COMMAND_NAME,
+        id: commandId,
+        application_id: scope.applicationId,
+        version,
+      },
+    ];
+    await expect(
+      reconcileDiscordCommandRegistration(f.options()),
+    ).resolves.toMatchObject({ kind: "registered" });
+    expect(f.order).toEqual(["GET", "persist:attempted", "POST", "persist:registered"]);
   });
 
   it.each(["version", "custom", "foreign"])(
@@ -299,7 +332,7 @@ describe("Discord owned native-command registration", () => {
       reconcileDiscordCommandRegistration(f.options()),
     ).resolves.toMatchObject({ kind: "registered" });
     expect(f.commands.slice(0, 4)).toEqual([f.unrelated, ...generic]);
-    expect(f.commands[4]!.name).toBe("paperclip");
+    expect(f.commands[4]!.name).toBe("wardmote");
   });
 
   it("reconciles a committed create after lost response without sending another POST", async () => {
