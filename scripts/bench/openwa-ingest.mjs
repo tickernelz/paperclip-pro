@@ -7,7 +7,7 @@ import { mkdirSync } from "node:fs";
 import v8 from "node:v8";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const scratch = path.join(os.homedir(), ".cache", "paperclip-openwa-bench");
+const scratch = path.join(os.homedir(), ".cache", "wardmote-openwa-bench");
 mkdirSync(path.join(scratch, "tmp"), { recursive: true });
 process.env.TMPDIR = path.join(scratch, "tmp");
 process.env.WARDMOTE_HOME = path.join(scratch, "home");

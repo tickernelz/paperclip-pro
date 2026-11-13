@@ -28,7 +28,7 @@ beforeEach(() => {
   previousHome = process.env.HOME;
   previousWardmoteHome = process.env.WARDMOTE_HOME;
   process.env.HOME = path.join(root, "home");
-  process.env.WARDMOTE_HOME = path.join(root, "paperclip");
+  process.env.WARDMOTE_HOME = path.join(root, "wardmote");
 });
 afterEach(() => {
   vi.restoreAllMocks();

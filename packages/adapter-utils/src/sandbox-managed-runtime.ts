@@ -800,7 +800,7 @@ export async function createTarballFromDirectory(input: {
   // entries avoids the self-entry entirely and is portable across GNU/BSD/busybox
   // tar (no GNU-only --no-overwrite-dir needed). --exclude still filters nested
   // matches and any named entry it matches.
-  await withTempDir("paperclip-tar-list-", async (directory) => {
+  await withTempDir("wardmote-tar-list-", async (directory) => {
     const list = path.join(directory, "entries.nul");
     const file = await fs.open(list, "wx", 0o600);
     try {
@@ -1261,7 +1261,7 @@ export async function prepareSandboxManagedRuntime(input: {
       timeoutMs: command.timeoutMs ?? input.spec.timeoutMs,
     }));
 
-  await withTempDir("paperclip-sandbox-sync-", async (tempDir) => {
+  await withTempDir("wardmote-sandbox-sync-", async (tempDir) => {
     const preservedNames = new Set([
       ".wardmote-runtime",
       ...(gitSnapshot ? [".git"] : []),

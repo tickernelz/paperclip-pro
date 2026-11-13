@@ -495,7 +495,7 @@ export async function writePluginLocalFolderTextAtomic(
   await assertPathInsideRoot(rootRealPath, path.dirname(resolved.absolutePath));
   const tempPath = path.join(
     path.dirname(resolved.absolutePath),
-    `.paperclip-${path.basename(resolved.absolutePath)}-${process.pid}-${randomUUID()}.tmp`,
+    `.wardmote-${path.basename(resolved.absolutePath)}-${process.pid}-${randomUUID()}.tmp`,
   );
   let tempCreated = false;
   try {

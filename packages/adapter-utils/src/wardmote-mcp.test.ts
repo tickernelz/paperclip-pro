@@ -106,7 +106,7 @@ describe("wardmoteAccessGuidance", () => {
   });
 });
 
-describe("paperclip MCP endpoint", () => {
+describe("wardmote MCP endpoint", () => {
   it("normalizes the API base and encodes the toolsets", () => {
     expect(wardmoteMcpEndpoint("https://wardmote.test/", "core")).toBe(
       "https://wardmote.test/api/mcp/wardmote?toolsets=core",

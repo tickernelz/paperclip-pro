@@ -254,7 +254,7 @@ async function expectPersistedBranchMismatchRejected(input: {
 async function createClonedRepoWithRemote() {
   const sourceRepo = await createTempRepo("master");
   const remoteDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-remote-"));
-  const remotePath = path.join(remoteDir, "paperclip.git");
+  const remotePath = path.join(remoteDir, "wardmote.git");
   await execFileAsync("git", ["clone", "--bare", sourceRepo, remotePath]);
 
   const cloneRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-clone-"));
@@ -890,7 +890,7 @@ describe("realizeExecutionWorkspace", () => {
   it("defaults new git worktrees to freshly fetched origin/master", async () => {
     const sourceRepo = await createTempRepo("master");
     const remoteDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-remote-"));
-    const remotePath = path.join(remoteDir, "paperclip.git");
+    const remotePath = path.join(remoteDir, "wardmote.git");
     await execFileAsync("git", ["clone", "--bare", sourceRepo, remotePath]);
 
     const cloneRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-clone-"));

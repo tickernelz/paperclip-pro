@@ -2084,7 +2084,7 @@ describe("settledRunChildren (PAP-361)", () => {
   });
 });
 
-describe("paperclip runner semantic channels", () => {
+describe("wardmote runner semantic channels", () => {
   it("concatenates fragmented reasoning deltas into logical lines", () => {
     const parsed = transcriptToTaskChatItems(
       [

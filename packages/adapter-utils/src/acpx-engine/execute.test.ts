@@ -3610,7 +3610,7 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
     },
   );
 
-  it("hands the merged paperclip env to the process-session launch when the setups overlap", async () => {
+  it("hands the merged wardmote env to the process-session launch when the setups overlap", async () => {
     const { stateDir, localCwd, remoteCwd, executionTarget } = await setupRemoteSandbox();
     // Decode the process-session LAUNCH payload (the base64 command blob) — the
     // in-sandbox process env is carried there, NOT in the exec's own `env`.
@@ -3720,11 +3720,11 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
     expect(referencedHint!.cwd).not.toBe(referencedProjectDir);
   });
 
-  it("stops the process-session bridge when the paperclip bridge fails under concurrency", async () => {
+  it("stops the process-session bridge when the wardmote bridge fails under concurrency", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const stop = vi.fn(async () => {});
     vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(async () => {
-      throw new Error("paperclip bridge boom");
+      throw new Error("wardmote bridge boom");
     });
     vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(
       async () => ({ agentCommand: null, stop }) as never,
@@ -3747,7 +3747,7 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
         onMeta: async () => {},
         onEvent: async () => {},
       } as never),
-    ).rejects.toThrow("paperclip bridge boom");
+    ).rejects.toThrow("wardmote bridge boom");
 
     // The concurrently-started process-session bridge was stopped exactly once.
     expect(stop).toHaveBeenCalledTimes(1);
@@ -4961,11 +4961,11 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
     // Run B resumes the same session and borrows the cached staged runtime, but a
     // bridge fails during bring-up.
     vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(async () => {
-      throw new Error("paperclip bridge boom");
+      throw new Error("wardmote bridge boom");
     });
     await expect(
       execute({ runId: "run-b", runtime: { sessionParams: first.sessionParams }, ...base } as never),
-    ).rejects.toThrow("paperclip bridge boom");
+    ).rejects.toThrow("wardmote bridge boom");
 
     // The rollback removed the borrowed cache entry through the identity guard, so a
     // later resume can never reuse an entry whose host staged-temp was disposed...
@@ -5219,8 +5219,8 @@ describe("ACPX engine sandbox-start spans (opt-in root + child parenting)", () =
     expect(childNames).toEqual(
       [
         "acp.handshake",
-        "bridge.paperclip",
         "bridge.process-session",
+        "bridge.wardmote",
         "codex-home.seed",
         "pack",
         "skills.reconcile",
@@ -5696,15 +5696,15 @@ describe("ACPX engine sandbox-start spans (opt-in root + child parenting)", () =
 
     const rootSpan = spans.find((span) => span.name === "sandbox.startup");
     expect(rootSpan).toBeTruthy();
-    const paperclip = spans.find((span) => span.name === "bridge.paperclip");
+    const wardmote = spans.find((span) => span.name === "bridge.wardmote");
     const processSession = spans.find((span) => span.name === "bridge.process-session");
-    expect(paperclip?.parent).toBe(rootSpan);
+    expect(wardmote?.parent).toBe(rootSpan);
     expect(processSession?.parent).toBe(rootSpan);
     // Both bridge spans carry the same batch tag, so the trace marks them as one
     // parallel batch.
-    expect(paperclip?.attributes[A.batch]).toBe("bridge");
+    expect(wardmote?.attributes[A.batch]).toBe("bridge");
     expect(processSession?.attributes[A.batch]).toBe("bridge");
-    expect(paperclip?.attributes[A.batch]).toBe(processSession?.attributes[A.batch]);
+    expect(wardmote?.attributes[A.batch]).toBe(processSession?.attributes[A.batch]);
   });
 
   it("records the handshake create-runtime and ensure-session sub-times on the acp.handshake span", async () => {
@@ -6242,7 +6242,7 @@ describe("ACPX engine per-step startup timing (run.startup.step events)", () => 
       "codex-home.seed",
       "skills.reconcile",
       "stage.sync",
-      "bridge.paperclip",
+      "bridge.wardmote",
       "bridge.process-session",
       "acp.handshake",
     ]) {
@@ -6284,7 +6284,7 @@ describe("ACPX engine per-step startup timing (run.startup.step events)", () => 
     for (const step of [
       "workspace.resolve",
       "stage.sync",
-      "bridge.paperclip",
+      "bridge.wardmote",
       "bridge.process-session",
       "acp.handshake",
     ]) {
@@ -6396,7 +6396,7 @@ describe("ACPX engine per-step startup timing (run.startup.step events)", () => 
     expect(emitted.has("workspace.resolve")).toBe(true);
     expect(emitted.has("acp.handshake")).toBe(true);
     expect(emitted.has("stage.sync")).toBe(false);
-    expect(emitted.has("bridge.paperclip")).toBe(false);
+    expect(emitted.has("bridge.wardmote")).toBe(false);
     expect(emitted.has("bridge.process-session")).toBe(false);
   });
 });

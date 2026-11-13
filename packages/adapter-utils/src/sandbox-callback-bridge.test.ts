@@ -162,7 +162,7 @@ describe("sandbox callback bridge", () => {
       ],
     });
 
-    const queueDir = path.posix.join(prepared.runtimeRootDir, "paperclip-bridge");
+    const queueDir = path.posix.join(prepared.runtimeRootDir, "wardmote-bridge");
     const directories = sandboxCallbackBridgeDirectories(queueDir);
     const bridgeToken = createSandboxCallbackBridgeToken();
     const seenRequests: Array<{
@@ -704,7 +704,7 @@ describe("sandbox callback bridge", () => {
     const worker = await measureStartupStep(
       {},
       () => 0,
-      "bridge.paperclip",
+      "bridge.wardmote",
       () =>
         startSandboxCallbackBridgeWorker({
           client: {
@@ -767,7 +767,7 @@ describe("sandbox callback bridge", () => {
     const worker = await measureStartupStep(
       {},
       () => 0,
-      "bridge.paperclip",
+      "bridge.wardmote",
       () =>
         startSandboxCallbackBridgeWorker({
           client: {
@@ -880,7 +880,7 @@ describe("sandbox callback bridge", () => {
     const worker = await measureStartupStep(
       {},
       () => 0,
-      "bridge.paperclip",
+      "bridge.wardmote",
       () =>
         startSandboxCallbackBridgeWorker({
           client: {
@@ -935,7 +935,7 @@ describe("sandbox callback bridge", () => {
       assets: [{ key: "bridge", localDir: bridgeAsset.localDir }],
     });
 
-    const queueDir = path.posix.join(prepared.runtimeRootDir, "paperclip-bridge");
+    const queueDir = path.posix.join(prepared.runtimeRootDir, "wardmote-bridge");
     const directories = sandboxCallbackBridgeDirectories(queueDir);
     const bridgeToken = createSandboxCallbackBridgeToken();
     const seenRequestIds: string[] = [];
@@ -1028,7 +1028,7 @@ describe("sandbox callback bridge", () => {
       assets: [{ key: "bridge", localDir: bridgeAsset.localDir }],
     });
 
-    const queueDir = path.posix.join(prepared.runtimeRootDir, "paperclip-bridge");
+    const queueDir = path.posix.join(prepared.runtimeRootDir, "wardmote-bridge");
     const directories = sandboxCallbackBridgeDirectories(queueDir);
     const bridgeToken = createSandboxCallbackBridgeToken();
 
@@ -1127,7 +1127,7 @@ describe("sandbox callback bridge", () => {
       assets: [{ key: "bridge", localDir: bridgeAsset.localDir }],
     });
 
-    const queueDir = path.posix.join(prepared.runtimeRootDir, "paperclip-bridge");
+    const queueDir = path.posix.join(prepared.runtimeRootDir, "wardmote-bridge");
     const bridgeToken = createSandboxCallbackBridgeToken();
     const bridge = await startSandboxCallbackBridgeServer({
       runner,
@@ -1179,7 +1179,7 @@ describe("sandbox callback bridge", () => {
       assets: [{ key: "bridge", localDir: bridgeAsset.localDir }],
     });
 
-    const queueDir = path.posix.join(prepared.runtimeRootDir, "paperclip-bridge");
+    const queueDir = path.posix.join(prepared.runtimeRootDir, "wardmote-bridge");
     const directories = sandboxCallbackBridgeDirectories(queueDir);
     const bridgeToken = createSandboxCallbackBridgeToken();
     const bridge = await startSandboxCallbackBridgeServer({
@@ -1225,7 +1225,7 @@ describe("sandbox callback bridge", () => {
       remoteWorkspaceDir,
       ".wardmote-runtime",
       "codex",
-      "paperclip-bridge",
+      "wardmote-bridge",
       "server",
     );
     await mkdir(remoteWorkspaceDir, { recursive: true });
@@ -1277,7 +1277,7 @@ describe("sandbox callback bridge", () => {
       remoteWorkspaceDir,
       ".wardmote-runtime",
       "codex",
-      "paperclip-bridge",
+      "wardmote-bridge",
       "server",
     );
     await mkdir(remoteWorkspaceDir, { recursive: true });
@@ -3026,7 +3026,7 @@ describe("sandbox callback bridge", () => {
       workspaceLocalDir: localWorkspaceDir,
       assets: [{ key: "bridge", localDir: bridgeAsset.localDir }],
     });
-    const queueDir = path.posix.join(prepared.runtimeRootDir, "paperclip-bridge");
+    const queueDir = path.posix.join(prepared.runtimeRootDir, "wardmote-bridge");
     return {
       runner,
       remoteWorkspaceDir,
@@ -3844,7 +3844,7 @@ describe("sandbox callback bridge", () => {
       assets: [{ key: "bridge", localDir: bridgeAsset.localDir }],
     });
 
-    const queueDir = path.posix.join(prepared.runtimeRootDir, "paperclip-bridge");
+    const queueDir = path.posix.join(prepared.runtimeRootDir, "wardmote-bridge");
     const directories = sandboxCallbackBridgeDirectories(queueDir);
     const bridgeToken = createSandboxCallbackBridgeToken();
     const maxBodyBytes = 32;
@@ -3900,7 +3900,7 @@ describe("sandbox callback bridge", () => {
       assets: [{ key: "bridge", localDir: bridgeAsset.localDir }],
     });
 
-    const queueDir = path.posix.join(prepared.runtimeRootDir, "paperclip-bridge");
+    const queueDir = path.posix.join(prepared.runtimeRootDir, "wardmote-bridge");
     const bridgeToken = createSandboxCallbackBridgeToken();
     const requestBodyText = JSON.stringify({ note: "café" });
 

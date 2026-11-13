@@ -134,7 +134,7 @@ configure_npm_auth() {
     return
   fi
 
-  NPM_USERCONFIG_FILE="$(mktemp "${TMPDIR:-/tmp}/paperclip-npmrc.XXXXXX")"
+  NPM_USERCONFIG_FILE="$(mktemp "${TMPDIR:-/tmp}/wardmote-npmrc.XXXXXX")"
   printf '//registry.npmjs.org/:_authToken=%s\n' "$NODE_AUTH_TOKEN" > "$NPM_USERCONFIG_FILE"
   chmod 600 "$NPM_USERCONFIG_FILE"
   export NPM_CONFIG_USERCONFIG="$NPM_USERCONFIG_FILE"

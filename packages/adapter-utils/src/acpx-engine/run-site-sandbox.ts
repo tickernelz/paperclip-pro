@@ -139,7 +139,7 @@ export interface SandboxRunSiteOptions {
     launchEnv: () => Promise<Record<string, string>>;
   }) => Promise<AdapterExecutionTargetProcessSessionBridgeHandle | null>;
   /** Wrap each concurrent bridge start in the run's startup step timer. */
-  readonly measureBridgeStep: <T>(step: "bridge.paperclip" | "bridge.process-session", run: () => Promise<T>) => Promise<T>;
+  readonly measureBridgeStep: <T>(step: "bridge.wardmote" | "bridge.process-session", run: () => Promise<T>) => Promise<T>;
   /**
    * Finalize the run's branded launch environment from the bridge contribution.
    * The engine owns `finalizeLaunchEnvironment`, so it stays the sole consumer of
@@ -321,17 +321,17 @@ export function createSandboxRunSite(options: SandboxRunSiteOptions): SandboxRun
 
     async startTransport(): Promise<SandboxRunSiteTransport> {
       const stagedRootDir = staged?.stagedRuntime.runtimeRootDir ?? null;
-      const wardmoteStart = options.measureBridgeStep("bridge.paperclip", () =>
+      const wardmoteStart = options.measureBridgeStep("bridge.wardmote", () =>
         options.startWardmoteBridge(stagedRootDir),
       );
       let launchEnvPromise: Promise<Record<string, string>> | null = null;
       let launchEnv: Record<string, string> = {};
       const finalizeLaunchEnv = (): Promise<Record<string, string>> =>
         (launchEnvPromise ??= (async () => {
-          const paperclip = await wardmoteStart;
+          const wardmote = await wardmoteStart;
           const contributions: LaunchEnvironmentContribution[] = [];
-          if (paperclip) {
-            contributions.push({ scope: "run", env: paperclip.env } as unknown as RunScopedContribution);
+          if (wardmote) {
+            contributions.push({ scope: "run", env: wardmote.env } as unknown as RunScopedContribution);
             await options.onWardmoteBridgeLog();
           }
           launchEnv = options.finalizeLaunchEnv(contributions);
@@ -341,12 +341,12 @@ export function createSandboxRunSite(options: SandboxRunSiteOptions): SandboxRun
         options.startProcessSessionBridge({ runtimeRootDir: stagedRootDir, launchEnv: finalizeLaunchEnv }),
       );
       // Settle BOTH starts, so a partial failure can stop whichever bridge started.
-      const [paperclip, processSession] = await Promise.allSettled([wardmoteStart, processSessionStart]);
-      controlBridge = paperclip.status === "fulfilled" ? paperclip.value : null;
+      const [wardmoteBridge, processSession] = await Promise.allSettled([wardmoteStart, processSessionStart]);
+      controlBridge = wardmoteBridge.status === "fulfilled" ? wardmoteBridge.value : null;
       agentBridge = processSession.status === "fulfilled" ? processSession.value : null;
       const failure =
-        paperclip.status === "rejected"
-          ? paperclip.reason
+        wardmoteBridge.status === "rejected"
+          ? wardmoteBridge.reason
           : processSession.status === "rejected"
             ? processSession.reason
             : null;

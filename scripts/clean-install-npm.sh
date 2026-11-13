@@ -4,7 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PC_INSTALL_DRIVER="${PC_INSTALL_DRIVER:-source}"
 
-PC_TEST_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-clean-install.XXXXXX")"
+PC_TEST_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-clean-install.XXXXXX")"
 PC_HOME="$PC_TEST_ROOT/home"
 PC_CACHE="$PC_TEST_ROOT/npm-cache"
 mkdir -p "$PC_HOME" "$PC_CACHE"

@@ -2472,7 +2472,7 @@ describe("sandbox adapter execution targets", () => {
       spec: {
         host: "ssh.example.test",
         port: 22,
-        username: "paperclip",
+        username: "wardmote",
         remoteWorkspacePath: "/workspace",
         remoteCwd: "/workspace",
         privateKey: null,
@@ -2486,7 +2486,7 @@ describe("sandbox adapter execution targets", () => {
       transport: "ssh",
       host: "ssh.example.test",
       port: 22,
-      username: "paperclip",
+      username: "wardmote",
       remoteCwd: "/workspace",
     });
   });

@@ -2894,7 +2894,7 @@ describe("Chat SDK published adapter integration", () => {
       repository: {
         id: 202,
         name: "chat-e2e",
-        owner: { id: 303, login: "paperclipai", type: "Organization" },
+        owner: { id: 303, login: "tickernelz", type: "Organization" },
       },
       sender: { id: 101, login: "operator", type: "User" },
     };

@@ -44,7 +44,7 @@ if [[ ! -f "$rootless_marker" ]]; then
     "$(select_available_package libgbm1)"
     "$(select_available_package libasound2t64 libasound2)"
   )
-  download_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-runner-browser-deps.XXXXXX")"
+  download_dir="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-runner-browser-deps.XXXXXX")"
   trap 'rm -rf "$download_dir"' EXIT
   mkdir -p "$rootless_deps_dir"
 

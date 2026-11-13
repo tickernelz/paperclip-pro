@@ -32,7 +32,7 @@ describe("announcement contract", () => {
   });
   it("rejects unknown fields throughout the remotely authored manifest", () => {
     const image = { path: `assets/${"0".repeat(64)}.png`, alt: "Preview" };
-    const external = { kind: "external", label: "Learn more", url: "https://paperclip.ing" };
+    const external = { kind: "external", label: "Learn more", url: "https://example.com" };
     for (const value of [
       { schemaVersion: 1, announcement, extra: true },
       { schemaVersion: 1, announcement: { ...announcement, secondaryLinks: external } },

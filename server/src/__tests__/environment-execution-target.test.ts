@@ -1361,8 +1361,8 @@ describe("resolveEnvironmentExecutionTarget", () => {
     expect(execSpan!.parent).toBeNull();
   });
 
-  it("opens an unparented exec span for a paperclip bridge continuation", async () => {
-    const execSpan = await runContinuationExec("bridge.paperclip", { wrap: true });
+  it("opens an unparented exec span for a wardmote bridge continuation", async () => {
+    const execSpan = await runContinuationExec("bridge.wardmote", { wrap: true });
     expect(execSpan).toBeTruthy();
     expect(execSpan!.parent).toBeNull();
   });

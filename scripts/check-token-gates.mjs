@@ -257,7 +257,7 @@ function findLegacyHslVarWrapperIssues(content) {
 }
 
 const PAINT_PROP_RE = /^(color|background|background-color|font-size|font|fill|stroke|border-color|-webkit-text-fill-color)$/;
-const PROSE_SELECTOR_RE = /mdxeditor|markdown|prose|paperclip-doc|\.cm-|xterm|mermaid|katex|hljs|shiki|ProseMirror|contenteditable/i;
+const PROSE_SELECTOR_RE = /mdxeditor|markdown|prose|wardmote-doc|\.cm-|xterm|mermaid|katex|hljs|shiki|ProseMirror|contenteditable/i;
 const STATEFUL_RE = /:hover|:focus|:active|:checked|:disabled|\[data-state|\[aria-(?!label|hidden|live)|\[data-active|\[data-selected/;
 const LAYERLESS_AT_RULES = new Set(["theme", "utility", "keyframes", "font-face", "property", "custom-variant"]);
 

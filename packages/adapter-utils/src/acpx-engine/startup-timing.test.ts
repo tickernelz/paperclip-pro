@@ -154,7 +154,7 @@ describe("measureStartupStep", () => {
       throw new Error("sink failed");
     });
 
-    const result = await measureStartupStep({ onEvent }, now, "bridge.paperclip", async () => {
+    const result = await measureStartupStep({ onEvent }, now, "bridge.wardmote", async () => {
       t = 17;
       return "value";
     });
@@ -185,7 +185,7 @@ describe("measureStartupStep", () => {
     const now = () => 0;
 
     await expect(
-      measureStartupStep({}, now, "bridge.paperclip", async () => "value"),
+      measureStartupStep({}, now, "bridge.wardmote", async () => "value"),
     ).resolves.toBe("value");
   });
 
@@ -325,7 +325,7 @@ describe("measureStartupStep", () => {
 
   it("sets a batch tag on the span from the batch option", async () => {
     const { tracer, spans } = makeMockTracer();
-    await measureStartupStep({ onEvent: vi.fn(async () => {}) }, () => 0, "bridge.paperclip", async () => "ok", {
+    await measureStartupStep({ onEvent: vi.fn(async () => {}) }, () => 0, "bridge.wardmote", async () => "ok", {
       tracer,
       batch: "bridge",
     });
@@ -498,7 +498,7 @@ describe("getActiveStepContext", () => {
 
   it("carries criticalPath = false when the step opts out (parallel steps)", async () => {
     let seen: ReturnType<typeof getActiveStepContext> = null;
-    await measureStartupStep({ onEvent: vi.fn(async () => {}) }, () => 0, "bridge.paperclip", async () => {
+    await measureStartupStep({ onEvent: vi.fn(async () => {}) }, () => 0, "bridge.wardmote", async () => {
       seen = getActiveStepContext();
     }, { criticalPath: false });
     expect(seen!.criticalPath).toBe(false);

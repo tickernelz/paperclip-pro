@@ -160,18 +160,18 @@ export async function writeWardmoteClaudeMcpConfig(input: {
   stateDir: string;
   runId: string;
   servers: AdapterRuntimeMcpServer[];
-  paperclip?: WardmoteMcpHttpTarget | null;
+  wardmote?: WardmoteMcpHttpTarget | null;
 }): Promise<string> {
   const configDir = path.join(input.stateDir, "runs", input.runId, "mcp");
   const configPath = path.join(configDir, "mcp-config.json");
   const usedNames = new Set<string>();
   const mcpServers: Record<string, unknown> = {};
-  if (input.paperclip) {
+  if (input.wardmote) {
     usedNames.add(WARDMOTE_MCP_SERVER_NAME);
     mcpServers[WARDMOTE_MCP_SERVER_NAME] = {
       type: "http",
-      url: input.paperclip.url,
-      headers: input.paperclip.headers,
+      url: input.wardmote.url,
+      headers: input.wardmote.headers,
     };
   }
   for (const server of input.servers) {

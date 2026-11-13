@@ -28,7 +28,7 @@ describe("stampServiceWorkerBuildId", () => {
   });
 
   it("throws when the placeholder is missing so a drifted worker fails the build", () => {
-    expect(() => stampServiceWorkerBuildId("const CACHE_NAME = 'paperclip';", "x")).toThrow(
+    expect(() => stampServiceWorkerBuildId("const CACHE_NAME = 'wardmote';", "x")).toThrow(
       /placeholder/,
     );
   });

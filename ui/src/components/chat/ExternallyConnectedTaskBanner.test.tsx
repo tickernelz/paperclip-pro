@@ -139,7 +139,7 @@ describe("ExternallyConnectedTaskBanner publication truth", () => {
       endpointId: "endpoint-1",
       provider: "slack",
       botLabel: "Maya",
-      externalLabel: "#paperclip",
+      externalLabel: "#wardmote",
       externalUrl: "https://example.slack.com/archives/channel-1",
       conversationId: "conversation-1",
       publicationState: null,

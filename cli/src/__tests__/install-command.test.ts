@@ -81,20 +81,20 @@ describe("managed install commands", () => {
     const sha = "a".repeat(40);
     const runCommand = vi.fn(async (_file: string, _args: string[]) => ({ stdout: JSON.stringify({ sha }), stderr: "" }));
     for (const ref of ["master", "v1.2.3", sha, sha.slice(0, 12)]) {
-      await expect(resolveGitHubRef("paperclipai/paperclip", ref, runCommand)).resolves.toBe(sha);
+      await expect(resolveGitHubRef("tickernelz/wardmote", ref, runCommand)).resolves.toBe(sha);
     }
     expect(runCommand.mock.calls.map((call) => call[1].at(-1))).toEqual([
-      "https://api.github.com/repos/paperclipai/paperclip/commits/master",
-      "https://api.github.com/repos/paperclipai/paperclip/commits/v1.2.3",
-      `https://api.github.com/repos/paperclipai/paperclip/commits/${sha}`,
-      `https://api.github.com/repos/paperclipai/paperclip/commits/${sha.slice(0, 12)}`,
+      "https://api.github.com/repos/tickernelz/wardmote/commits/master",
+      "https://api.github.com/repos/tickernelz/wardmote/commits/v1.2.3",
+      `https://api.github.com/repos/tickernelz/wardmote/commits/${sha}`,
+      `https://api.github.com/repos/tickernelz/wardmote/commits/${sha.slice(0, 12)}`,
     ]);
   });
 
   it("supports fork overrides, defaults to this fork, and classifies SHA refs as pinned", () => {
-    expect(resolveGitInstallRequest({ ref: "feature/test", repo: "HenkDz/paperclip" })).toEqual({ repo: "HenkDz/paperclip", ref: "feature/test", pinned: false });
+    expect(resolveGitInstallRequest({ ref: "feature/test", repo: "example-fork/wardmote" })).toEqual({ repo: "example-fork/wardmote", ref: "feature/test", pinned: false });
     expect(resolveGitInstallRequest({ ref: "abcdef1" })).toEqual({ repo: "tickernelz/wardmote", ref: "abcdef1", pinned: true });
-    expect(() => resolveGitInstallRequest({ repo: "HenkDz/paperclip" })).toThrow("requires --ref");
+    expect(() => resolveGitInstallRequest({ repo: "example-fork/wardmote" })).toThrow("requires --ref");
   });
 
   it("reads the version npm 12 reports as a single-element array and npm 11 reports as a string", async () => {
@@ -201,7 +201,7 @@ describe("managed install commands", () => {
   it("requires explicit non-interactive consent before resolving git refs", async () => {
     const runCommand = vi.fn();
 
-    await expect(installCommand({ ref: "master", repo: "HenkDz/paperclip" }, { runCommand }))
+    await expect(installCommand({ ref: "master", repo: "example-fork/wardmote" }, { runCommand }))
       .rejects.toThrow("Re-run with --yes");
 
     expect(runCommand).not.toHaveBeenCalled();
@@ -216,7 +216,7 @@ describe("managed install commands", () => {
     fs.writeFileSync(path.join(packageRoot, "package.json"), JSON.stringify({ version: "0.3.1" }));
     fs.writeFileSync(path.join(packageRoot, "dist", "index.js"), "#!/usr/bin/env node\n");
     const runCommand = vi.fn(async (_file: string, _args: string[]) => ({ stdout: "0.3.1\n", stderr: "" }));
-    await expect(installGitPayload("paperclipai/paperclip", sha, runCommand, paths)).resolves.toEqual({ payloadPath, reused: true, version: "0.3.1" });
+    await expect(installGitPayload("tickernelz/wardmote", sha, runCommand, paths)).resolves.toEqual({ payloadPath, reused: true, version: "0.3.1" });
     expect(runCommand).toHaveBeenCalledOnce();
     expect(runCommand.mock.calls[0]?.[0]).toBe(process.execPath);
   });
@@ -270,10 +270,10 @@ describe("managed install commands", () => {
   it("installs a GitHub branch through codeload and reuses the resolved SHA", async () => {
     const sha = "c".repeat(40);
     const runCommand = createGitCheckoutRunCommand(sha);
-    await installCommand({ ref: "master", repo: "HenkDz/paperclip", yes: true }, { runCommand });
-    await installCommand({ ref: "master", repo: "HenkDz/paperclip", yes: true }, { runCommand });
+    await installCommand({ ref: "master", repo: "example-fork/wardmote", yes: true }, { runCommand });
+    await installCommand({ ref: "master", repo: "example-fork/wardmote", yes: true }, { runCommand });
     const manifest = readInstallManifest(resolveInstallStorePaths());
-    expect(manifest).toMatchObject({ source: "git", repo: "HenkDz/paperclip", ref: "master", sha });
+    expect(manifest).toMatchObject({ source: "git", repo: "example-fork/wardmote", ref: "master", sha });
     expect(manifest?.payloadPath).toContain(path.join("git", sha.slice(0, 12)));
     expect(runCommand.mock.calls.filter(([command, args]) => command === "curl" && args.includes("--output"))).toHaveLength(1);
     expect(runCommand.mock.calls.filter(([command, args]) => command === "corepack" && args[1] === "install")).toHaveLength(1);
@@ -288,7 +288,7 @@ describe("managed install commands", () => {
     process.env.NODE_ENV = "production";
     const sha = "d".repeat(40);
     const runCommand = createGitCheckoutRunCommand(sha);
-    await expect(installGitPayload("paperclipai/paperclip", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ version: "0.3.1", reused: false });
+    await expect(installGitPayload("tickernelz/wardmote", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ version: "0.3.1", reused: false });
     const buildCalls = runCommand.mock.calls.filter(([file, args]) =>
       file === "bash" ||
       file === "corepack" ||
@@ -307,7 +307,7 @@ describe("managed install commands", () => {
   it("stamps the resolved SHA into the build so /api/health reports a commit", async () => {
     const sha = "a".repeat(40);
     const runCommand = createGitCheckoutRunCommand(sha);
-    await expect(installGitPayload("paperclipai/paperclip", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ reused: false });
+    await expect(installGitPayload("tickernelz/wardmote", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ reused: false });
     const serverBuild = runCommand.mock.calls.find(([file, args]) => file === "corepack" && args.includes("@tickernelz/wardmote-server..."));
     expect(serverBuild?.[2]?.env?.WARDMOTE_BUILD_COMMIT).toBe(sha);
   });
@@ -315,7 +315,7 @@ describe("managed install commands", () => {
   it("stages the release package assets before packaging so the server tarball carries ui-dist", async () => {
     const sha = "e".repeat(40);
     const runCommand = createGitCheckoutRunCommand(sha);
-    await expect(installGitPayload("paperclipai/paperclip", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ reused: false });
+    await expect(installGitPayload("tickernelz/wardmote", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ reused: false });
     const assetCallIndex = runCommand.mock.calls.findIndex(([file, args]) => file === "bash" && args[0] === "scripts/prepare-release-package-assets.sh");
     const firstPackIndex = runCommand.mock.calls.findIndex(([file, args]) => args.includes("pack"));
     expect(assetCallIndex).toBeGreaterThanOrEqual(0);
@@ -325,7 +325,7 @@ describe("managed install commands", () => {
   it("packs prepared bundles without lifecycle scripts so prepack cannot rebuild or delete staged files", async () => {
     const sha = "f".repeat(40);
     const runCommand = createGitCheckoutRunCommand(sha);
-    await expect(installGitPayload("paperclipai/paperclip", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ reused: false });
+    await expect(installGitPayload("tickernelz/wardmote", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ reused: false });
     const bundlePack = runCommand.mock.calls.find(([file, args]) => file === "npm" && args[0] === "pack" && args[1]?.includes("workspace-package-"));
     expect(bundlePack?.[1]).toContain("--ignore-scripts");
   });
@@ -559,7 +559,7 @@ describe("managed install commands", () => {
     const outside = path.join(root, "outside-git"); fs.mkdirSync(outside);
     fs.symlinkSync(outside, path.join(paths.installsRoot, "git"));
     const runCommand = vi.fn(async () => ({ stdout: "", stderr: "" }));
-    await expect(installGitPayload("paperclipai/paperclip", "4".repeat(40), runCommand, paths)).rejects.toThrow("unsafe payload root");
+    await expect(installGitPayload("tickernelz/wardmote", "4".repeat(40), runCommand, paths)).rejects.toThrow("unsafe payload root");
     expect(runCommand).not.toHaveBeenCalled();
   });
 

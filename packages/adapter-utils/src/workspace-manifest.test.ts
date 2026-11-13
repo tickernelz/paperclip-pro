@@ -109,7 +109,7 @@ it("settles a late producer before removing shared storage after another scan fa
   const removed: string[] = [];
   const originalRm = fs.rm.bind(fs);
   vi.spyOn(fs, "rm").mockImplementation(async (target, options) => {
-    if (String(target).includes("paperclip-workspace-manifest-")) {
+    if (String(target).includes("wardmote-workspace-manifest-")) {
       expect(lateFinished).toBe(true);
       removed.push(String(target));
     }

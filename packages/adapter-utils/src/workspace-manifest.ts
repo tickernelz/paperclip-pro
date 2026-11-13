@@ -123,7 +123,7 @@ export class WorkspaceManifestMap<T> {
   close(): void { this.db?.close(); this.db = null; this.lookup = null; }
 }
 
-export async function createWorkspaceManifest(prefix = "paperclip-workspace-manifest-"): Promise<WorkspaceManifestWriter> {
+export async function createWorkspaceManifest(prefix = "wardmote-workspace-manifest-"): Promise<WorkspaceManifestWriter> {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
   try { return new WorkspaceManifestWriter(path.join(directory, "paths.sqlite")); }
   catch (error) { await fs.rm(directory, { recursive: true, force: true }); throw error; }
