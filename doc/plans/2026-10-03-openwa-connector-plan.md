@@ -6,11 +6,11 @@ Tracking: this file. The repo uses no `tasks/` directory; plan documents live in
 
 ## Gate commands
 
-Every gate uses the PATH shim from the `run-paperclip-pro-gates-safely` skill: `bash /tmp/pb/go.sh <pnpm args>` (Node 24 through fnm, corepack pnpm, cargo on `PATH`). Never run `pnpm test:run`: its chat-shards preflight runs `pnpm install` and destroys `node_modules`. Never run the `cli` install/uninstall tests: they act on the real `paperclip-pro.service`. Targeted tests: `bash /tmp/pb/go.sh vitest run <paths>`. The broad run `bash /tmp/pb/go.sh vitest run --exclude '**/vitest-chat-shards.test.ts' --exclude '**/dist/**'` takes over an hour and runs once, at Checkpoint E, against a `main` baseline.
+Every gate uses the PATH shim from the `run-wardmote-gates-safely` skill: `bash /tmp/pb/go.sh <pnpm args>` (Node 24 through fnm, corepack pnpm, cargo on `PATH`). Never run `pnpm test:run`: its chat-shards preflight runs `pnpm install` and destroys `node_modules`. Never run the `cli` install/uninstall tests: they act on the real `wardmote.service`. Targeted tests: `bash /tmp/pb/go.sh vitest run <paths>`. The broad run `bash /tmp/pb/go.sh vitest run --exclude '**/vitest-chat-shards.test.ts' --exclude '**/dist/**'` takes over an hour and runs once, at Checkpoint E, against a `main` baseline.
 
 ## Overview
 
-New chat provider `openwa` on the existing chat subsystem (Photon is the structural template: in-repo `Adapter`, lease-elected stream receiver, provider-specific inspect route). New provider-neutral policy layer (owners, sender rules, scheduled wakes, approvals, grants, outbound registry, audit) enabled only for `openwa`. New per-run authority (`run profile`) enforced at a closed list of seams. Agent tools exposed through the native runner, an HTTP route, and a Paperclip MCP toolset. One Socket.IO dependency.
+New chat provider `openwa` on the existing chat subsystem (Photon is the structural template: in-repo `Adapter`, lease-elected stream receiver, provider-specific inspect route). New provider-neutral policy layer (owners, sender rules, scheduled wakes, approvals, grants, outbound registry, audit) enabled only for `openwa`. New per-run authority (`run profile`) enforced at a closed list of seams. Agent tools exposed through the native runner, an HTTP route, and a Wardmote MCP toolset. One Socket.IO dependency.
 
 ## Architecture decisions
 
@@ -177,14 +177,14 @@ Ask-first boundary (spec §20). Alternative if refused: a minimal Engine.IO v4 +
 **Description:** `server/src/services/openwa/authority.ts`: profile resolution at run start (fail-closed for OpenWA conversation issues), `assertOpenwaRunMay`, read-only REST allowlist. Wire every seam in spec §13 except runtime tools: JWT REST middleware, persistent agent-key deny, issue create/assign/delegate/project create, native runner tools, tool-gateway connector writes, email/agentmail, GitHub credential export and `connection_request` (pre-middleware routes), mention-wake suppression for `read_only` comments.
 
 **Acceptance criteria:**
-- [ ] Spec AC5 (Paperclip-side parts) and AC19 pass.
+- [ ] Spec AC5 (Wardmote-side parts) and AC19 pass.
 - [ ] Each seam has a negative-control test that fails when its `assertOpenwaRunMay` call is removed.
 - [ ] Runs on non-OpenWA issues are unaffected (existing suites green).
 - [ ] Spec AC18: another company's board users, agents and endpoints cannot read or use this endpoint's grants, chats or tools (route and service tests).
 
 **Verification:** route/service tests per seam; `bash /tmp/pb/go.sh vitest run` over the existing suites that own every touched module.
 
-**Dependencies:** T5. **Files:** `server/src/services/openwa/authority.ts`, `server/src/middleware/auth.ts`, `server/src/routes/connection-intents.ts`, `server/src/services/github-operation-credentials.ts`, `server/src/services/native-runtime/paperclip-runner-tool-authority.ts`, `server/src/services/tool-gateway.ts`, `server/src/services/project-tool-context.ts`, `server/src/services/email-channels.ts`, `server/src/services/connectors/agentmail.ts`, `server/src/routes/issues.ts` (mention wakes), `server/src/services/heartbeat.ts` (profile at run start), tests. **Scope:** L (split: T7a profile + REST seams, T7b service seams + mention suppression).
+**Dependencies:** T5. **Files:** `server/src/services/openwa/authority.ts`, `server/src/middleware/auth.ts`, `server/src/routes/connection-intents.ts`, `server/src/services/github-operation-credentials.ts`, `server/src/services/native-runtime/wardmote-runner-tool-authority.ts`, `server/src/services/tool-gateway.ts`, `server/src/services/project-tool-context.ts`, `server/src/services/email-channels.ts`, `server/src/services/connectors/agentmail.ts`, `server/src/routes/issues.ts` (mention wakes), `server/src/services/heartbeat.ts` (profile at run start), tests. **Scope:** L (split: T7a profile + REST seams, T7b service seams + mention suppression).
 
 ### T8: Runtime read-only profiles
 
@@ -207,7 +207,7 @@ Ask-first boundary (spec §20). Alternative if refused: a minimal Engine.IO v4 +
 
 ### T9: First-class agent tools and exposure
 
-**Description:** `openwa_send`, `openwa_read_chat`, `openwa_get_media`, `openwa_find`, `openwa_stay_silent`, `openwa_handoff`; tool authority resolving context from the run; exposure via native runner tools, `POST /api/companies/:companyId/openwa/tasks/:issueId/tools`, and Paperclip MCP toolset `openwa`; idempotency keys and action receipts; 16 KB result cap with cursors.
+**Description:** `openwa_send`, `openwa_read_chat`, `openwa_get_media`, `openwa_find`, `openwa_stay_silent`, `openwa_handoff`; tool authority resolving context from the run; exposure via native runner tools, `POST /api/companies/:companyId/openwa/tasks/:issueId/tools`, and Wardmote MCP toolset `openwa`; idempotency keys and action receipts; 16 KB result cap with cursors.
 
 **Acceptance criteria:**
 - [ ] Mentions render (array + `@n`), quotes resolve, `quote_unresolvable` typed; `number_not_on_whatsapp` precheck.
@@ -216,11 +216,11 @@ Ask-first boundary (spec §20). Alternative if refused: a minimal Engine.IO v4 +
 
 **Verification:** tool tests with the fake gateway; MCP server toolset test.
 
-**Dependencies:** T7, T2. **Files:** `packages/shared/src/openwa-tools.ts`, `server/src/services/openwa/tools.ts`, `server/src/routes/openwa-tools.ts`, `server/src/services/native-runtime/paperclip-runner-tool-authority.ts`, `packages/mcp-server/src/*` (toolset), tests. **Scope:** L (split: T9a send/read/find, T9b media/silent/handoff + exposure).
+**Dependencies:** T7, T2. **Files:** `packages/shared/src/openwa-tools.ts`, `server/src/services/openwa/tools.ts`, `server/src/routes/openwa-tools.ts`, `server/src/services/native-runtime/wardmote-runner-tool-authority.ts`, `packages/mcp-server/src/*` (toolset), tests. **Scope:** L (split: T9a send/read/find, T9b media/silent/handoff + exposure).
 
 ### T10: Catalog, describe, call, gateway admin
 
-**Description:** `openwa_catalog`, `openwa_describe`, `openwa_call` over the manifest; per-operation category gating; `gatewayAdminTools` levels; `adminApiKey`; self-session protection; 501 learning cache per engine; Paperclip-side operation `paperclip.audit.list` (owner-only).
+**Description:** `openwa_catalog`, `openwa_describe`, `openwa_call` over the manifest; per-operation category gating; `gatewayAdminTools` levels; `adminApiKey`; self-session protection; 501 learning cache per engine; Wardmote-side operation `wardmote.audit.list` (owner-only).
 
 **Acceptance criteria:**
 - [ ] Spec AC12 passes.
@@ -232,7 +232,7 @@ Ask-first boundary (spec §20). Alternative if refused: a minimal Engine.IO v4 +
 
 ### T11: Approvals and grants
 
-**Description:** `openwa_request_approval` (create, remind), `openwa_approval_resolve`; request + interaction (`chat_endpoint_owner`, `continuationPolicy: none`) + outbound bubbles; approval-reply detection before activation; WhatsApp and Paperclip resolution with row lock; grants (`one_action`, `requester`) resolved at run start; revocation on owner loss; `approval_resolved` wakes; generic resolve routes enforce the new resolver policy.
+**Description:** `openwa_request_approval` (create, remind), `openwa_approval_resolve`; request + interaction (`chat_endpoint_owner`, `continuationPolicy: none`) + outbound bubbles; approval-reply detection before activation; WhatsApp and Wardmote resolution with row lock; grants (`one_action`, `requester`) resolved at run start; revocation on owner loss; `approval_resolved` wakes; generic resolve routes enforce the new resolver policy.
 
 **Acceptance criteria:**
 - [ ] Spec AC6 and AC7 pass, including every negative control.

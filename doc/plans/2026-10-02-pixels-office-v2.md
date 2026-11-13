@@ -1,7 +1,7 @@
 # Plan: Pixels Office v2 — dashboard visual yang hidup
 
 Tanggal: 2026-10-02
-Repo: `/home/zhafron/Projects/paperclip-pro` (main `d7ecc97d2`)
+Repo: `/home/zhafron/Projects/wardmote` (main `d7ecc97d2`)
 Pendahulu: `doc/plans/2026-10-01-pixels-office.md` (v1, sudah rilis 2026.1002.1)
 
 Status: **DIIMPLEMENTASIKAN** di branch `feat/pixels-office-v2`. Hasil pengukuran ada di §11.
@@ -15,7 +15,7 @@ Status: **DIIMPLEMENTASIKAN** di branch `feat/pixels-office-v2`. Hasil pengukura
 | Bubble | Satu baris "aksi terakhir" dari run live. Ikon kecil selalu tampil; teks penuh muncul saat hover/klik |
 | Klik karakter | Panel samping di dalam office |
 | Aksi dari office | Wake, pause/resume, jawab interaction card, drag issue ke karakter (assign) |
-| Fitur Paperclip | Status agent & issue, cases/pipelines, kolaborasi antar agent, approvals & interaction pending, budget/cost, routines |
+| Fitur Wardmote | Status agent & issue, cases/pipelines, kolaborasi antar agent, approvals & interaction pending, budget/cost, routines |
 | Posisi | Lanjut dari posisi terakhir (state sesi browser) |
 | Peran | Dashboard alternatif lengkap, tetap divisualkan sebagai pixel |
 | Skala | Sampai ~30 agent |

@@ -7,7 +7,7 @@ Base: `b19307758`
 Zapier, Arcade, Composio and Executor each have their own connection, credentials,
 catalog, agent access, permissions, sessions and lifecycle. Their setup shares the
 same structure: **Access → Connect**. Underlying apps remain managed
-in the provider; Paperclip does not create child connections for every app.
+in the provider; Wardmote does not create child connections for every app.
 
 ## Delivery checkpoints
 
@@ -205,7 +205,7 @@ journeys, actual results, useful screenshots, defects/fixes/retests and gaps:
 2. Assign agent access and exercise Allowed, Ask first and Off.
 3. Run a useful action in Test and verify its external result; use disposable
    data for writes.
-4. Have a real Paperclip agent call through the Paperclip gateway. Verify an
+4. Have a real Wardmote agent call through the Wardmote gateway. Verify an
    ungranted agent and disabled tool are denied.
 5. Exercise applicable provider authorization/approval, including Executor resume
    without starting a second execution.

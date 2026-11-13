@@ -4,7 +4,7 @@ Date: 2026-10-03. Roadmap item: 2.3. Status: implementation and provider-free ca
 
 ## Change and comparison axis
 
-The first slice replaces the repeated final-response procedure in native task constraints with a short requirement to obtain an accepted `paperclip_finish` or `paperclip_block` result and follow that tool's reporting instructions. It removes the extra completion sentence in the Codex/runnerd and direct OpenCode backends. The existing finish/block tool descriptions still own rejection, retry, approval, link/action, explicit wait, and final-response behavior.
+The first slice replaces the repeated final-response procedure in native task constraints with a short requirement to obtain an accepted `wardmote_finish` or `wardmote_block` result and follow that tool's reporting instructions. It removes the extra completion sentence in the Codex/runnerd and direct OpenCode backends. The existing finish/block tool descriptions still own rejection, retry, approval, link/action, explicit wait, and final-response behavior.
 
 The production comparison axis is exactly these three files:
 
@@ -21,10 +21,10 @@ Both variants start from master `2a8a99e4a5f69aa803b3f10b982f583e75a87042`. The 
 Run from `packages/wardmote-runner`:
 
 ```sh
-PAPERCLIP_NATIVE_INSTRUCTION_REPORT=/absolute/path/measurement.json pnpm exec vitest run src/backends/native-instruction-measurement.test.ts
+WARDMOTE_NATIVE_INSTRUCTION_REPORT=/absolute/path/measurement.json pnpm exec vitest run src/backends/native-instruction-measurement.test.ts
 ```
 
-The receipt declares its source SHA, source file hashes, fixture hash and dirty state. A dirty overlay can aid diagnosis but is rejected for live admission. Temporary workspace paths are normalized to a fixed path for comparison. This is the complete declared Paperclip projection at that boundary, not the production server's full granted catalog or a capture of provider-owned stock prompts. Token counts, billing, provider preprocessing and cognitive consumption remain unknown. The capture distinguishes a resumed full task from the compact user-follow-up continuation envelope. Input v5 sends only new events and contract references for that continuation; its projection must remain identical between variants. Input v4 still wraps the compact message in a task envelope. Scripted resume and continuation capture do not qualify live resume behavior.
+The receipt declares its source SHA, source file hashes, fixture hash and dirty state. A dirty overlay can aid diagnosis but is rejected for live admission. Temporary workspace paths are normalized to a fixed path for comparison. This is the complete declared Wardmote projection at that boundary, not the production server's full granted catalog or a capture of provider-owned stock prompts. Token counts, billing, provider preprocessing and cognitive consumption remain unknown. The capture distinguishes a resumed full task from the compact user-follow-up continuation envelope. Input v5 sends only new events and contract references for that continuation; its projection must remain identical between variants. Input v4 still wraps the compact message in a task envelope. Scripted resume and continuation capture do not qualify live resume behavior.
 
 ## Bounded live comparison
 
@@ -42,7 +42,7 @@ Each source variant declares these original tasks on the same local native profi
 | ACPX Claude | `claude-sonnet-5` | assigned-skill document completion; whole-task blocker |
 | OpenCode | `openrouter/deepseek/deepseek-v4-flash-0731` | assigned-skill document completion; whole-task blocker |
 
-Six cells per variant means twelve actual runs for the pair, each with one attempt. Use exact IDs with parallelism one and no automatic retry. Each cell uses the original task deadline and 1,000-cent company and agent hard stops. These budgets bound recorded Paperclip spend; they do not guarantee final provider invoice amounts. Do not run providers until the human authorizes the live scope. Stop to inspect a usable behavior failure; do not reroll it to obtain a pass.
+Six cells per variant means twelve actual runs for the pair, each with one attempt. Use exact IDs with parallelism one and no automatic retry. Each cell uses the original task deadline and 1,000-cent company and agent hard stops. These budgets bound recorded Wardmote spend; they do not guarantee final provider invoice amounts. Do not run providers until the human authorizes the live scope. Stop to inspect a usable behavior failure; do not reroll it to obtain a pass.
 
 The source gate requires clean committed sources, the declared base ancestry, one complete known source variant, no unrelated paths, the current fixture digest and all eighteen provider-free capture receipts. It rejects missing, duplicated, dirty, stale or paid capture evidence. It verifies the requested immutable source SHA when supplied. A hosted shallow checkout may fetch its exact immutable SHA from the public repository at bounded depths 8, 32 and 128, without provider keys or Git credentials. It verifies exact HEAD after each fetch. The original base-ancestry and changed-path checks must then pass. No immediate-parent substitute is used. The only admitted untracked files are the exact same-run build archive and checksum, after the existing strict hydration verifier checks them.
 

@@ -6,7 +6,7 @@ Scope: adapter `omp_local` (all 16 production agents). Other adapters ignore the
 ## Why
 
 Over seven days production runs failed with `omp_transient_upstream` 74 times, `omp_provider_quota` 5 times and
-`omp_model_refusal` 5 times. Paperclip retried each one on the same model. OMP already knows how to move a session to
+`omp_model_refusal` 5 times. Wardmote retried each one on the same model. OMP already knows how to move a session to
 another model when a turn hits a retryable provider error, but no agent had a fallback chain configured.
 
 ## Decisions
@@ -27,9 +27,9 @@ another model when a turn hits a retryable provider error, but no agent had a fa
    `retry.fallbackRevertPolicy: cooldown-expiry`. OMP suppresses the failing selector for its retry-after (else its
    backoff, 5 min for unknown reasons), switches mid-turn, emits `retry_fallback_applied` and restores the primary
    when the suppression expires.
-5. **Refusal is Paperclip's.** OMP does not fall back on refusals, so a run failing with `omp_model_refusal` is retried
-   by Paperclip on the next candidate. The refused selector is excluded only for that retry chain
-   (`contextSnapshot.paperclipModelFallbackExcluded`); no company cooldown is written because refusals depend on content.
+5. **Refusal is Wardmote's.** OMP does not fall back on refusals, so a run failing with `omp_model_refusal` is retried
+   by Wardmote on the next candidate. The refused selector is excluded only for that retry chain
+   (`contextSnapshot.wardmoteModelFallbackExcluded`); no company cooldown is written because refusals depend on content.
 6. **Cross-run cooldown.** Table `model_cooldowns` (company_id, selector, cooldown_until, reason, source_run_id),
    unique per company and selector, because provider limits are shared by every agent using a selector. Writes keep the
    later expiry. A cooldown is recorded when OMP reports an in-run fallback (retry-after parsed from the preceding
@@ -58,7 +58,7 @@ user chain keyed by the same selector is replaced by the agent's list.
 ## Limitation
 
 OMP's restore-to-primary only applies after a switch OMP made inside the same process; there is no setting or flag to
-seed a suppression or an active fallback at startup. A run that Paperclip starts on a fallback because the primary is
+seed a suppression or an active fallback at startup. A run that Wardmote starts on a fallback because the primary is
 cooling stays on that fallback (or moves further down the chain) for the rest of that run; the next run starts on the
 primary once its cooldown has expired.
 
@@ -68,7 +68,7 @@ primary once its cooldown has expired.
   `{ phase: "run_start" | "in_run", from, to, primary, reason, retryAfterMs }`, reason `rate_limit | upstream | refusal`.
   The adapter emits the `in_run` event; the server writes the `run_start` event when a run starts off-primary.
 - `model.fallback_restored` when OMP returns to the primary inside the run.
-- `contextSnapshot.paperclipModelFallback: RunModelFallbackState | null` (`primaryModel, activeModel, reason, switchedAt`)
+- `contextSnapshot.wardmoteModelFallback: RunModelFallbackState | null` (`primaryModel, activeModel, reason, switchedAt`)
   is kept current during the run and exposed as `modelFallback` on the live-runs payloads (`LiveRunForIssue`).
 - The Live now card shows `Fallback: <name> · <provider> (primary: rate limit)`; the run transcript shows a line per
   switch.

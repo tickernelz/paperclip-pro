@@ -10,7 +10,7 @@ Date: 2026-10-24. Status: planned, awaiting approval. Both features ship in one 
 | Open depth | Full: thought text, tool code, and tool output, with no click |
 | Older rows | One "+N earlier" button above the open rows; clicking it shows the existing one-line list |
 | Finished runs | Collapse to the summary and final reply automatically |
-| Shell backend | Both: local shell on the paperclip-pro host by default, SSH to a registered environment as a choice |
+| Shell backend | Both: local shell on the wardmote host by default, SSH to a registered environment as a choice |
 | Access | Human board session only; agent API keys refused, including company-owner agents |
 | Exposure | Available in private and public deployments, login only |
 | Features (v1) | Inline images, persistent sessions, multi-tab and split, clickable links with copy/paste and search, WebGL rendering, file upload and download |
@@ -54,7 +54,7 @@ Public exposure with login-only access means any valid board session is a shell 
 - xterm v6 client pattern: `ui/src/pages/CompanyEnvironments.tsx:474-712`.
 - Token-mint then auth-over-socket handshake: `server/src/routes/environments.ts:825-888`, store `server/src/services/environment-custom-image-terminal-sessions.ts`.
 - SSH shell: `server/src/realtime/environment-custom-image-terminal-ws.ts:364-481` (`ssh2`).
-- Cooperative upgrade chain via `req.paperclipWebSocketHandled`, registered in `server/src/index.ts:998-1010`.
+- Cooperative upgrade chain via `req.wardmoteWebSocketHandled`, registered in `server/src/index.ts:998-1010`.
 - Strict board gate: `assertCanAccessInstanceEnvironments` pattern at `environments.ts:353-357`.
 - Task cwd: `execution_workspaces.providerRef ?? cwd` (`execution-workspaces.ts:535`), never `row.cwd` alone for `git_worktree`.
 
@@ -68,7 +68,7 @@ Public exposure with login-only access means any valid board session is a shell 
    - `DELETE /api/companies/:companyId/terminal/sessions/:id`
    - `POST /api/companies/:companyId/terminal/sessions/:id/token` (short-lived attach token)
    - `POST /api/companies/:companyId/terminal/sessions/:id/upload` and `GET .../download?path=`
-4. WebSocket `/api/terminal/ws`: path match, then `{type:"auth", token}` within 10 s, then `input` / `resize` / `output` frames. Honour `paperclipWebSocketHandled`.
+4. WebSocket `/api/terminal/ws`: path match, then `{type:"auth", token}` within 10 s, then `input` / `resize` / `output` frames. Honour `wardmoteWebSocketHandled`.
 5. Add the new token path to the runner/agent metadata denylist (`runner-api-policy.ts:19`).
 6. Contracts: shared types and validators in `packages/shared`, OpenAPI regenerated, server routes, UI client, per AGENTS.md.
 
