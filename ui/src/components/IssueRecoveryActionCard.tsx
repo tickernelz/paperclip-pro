@@ -337,7 +337,7 @@ function sanitizeBranchComponent(value: string): string {
 }
 
 function buildRescueBranchPreview(sourceIdentifier: string | null): string {
-  return `paperclip/rescue/${sanitizeBranchComponent(sourceIdentifier ?? "issue")}/`;
+  return `wardmote/rescue/${sanitizeBranchComponent(sourceIdentifier ?? "issue")}/`;
 }
 
 function asStringArray(value: unknown): string[] {

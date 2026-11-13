@@ -141,9 +141,9 @@ export function isSupportedCodexNotificationMethod(method: string): boolean {
     method === "model/verification" ||
     method === "model/safetyBuffering/updated" ||
     method.startsWith("item/") ||
-    method === "paperclip/canonicalProviderEvent" ||
-    method === "paperclip/workspaceChange/updated" ||
-    method === "paperclip/runResult" ||
+    method === "wardmote/canonicalProviderEvent" ||
+    method === "wardmote/workspaceChange/updated" ||
+    method === "wardmote/runResult" ||
     method === "turn/diff/updated" ||
     method === "turn/plan/updated"
   );

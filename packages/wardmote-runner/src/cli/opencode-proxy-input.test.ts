@@ -136,7 +136,7 @@ it.each([true, false])("settles a real proxy interrupt with controller feedback 
     }
     await expect.poll(() => exited, { timeout: 5_000 }).toBe(true);
     await exit;
-    expect(messages.filter(message => message.method === "paperclip/runResult")).toHaveLength(respond ? 1 : 0);
+    expect(messages.filter(message => message.method === "wardmote/runResult")).toHaveLength(respond ? 1 : 0);
   } finally {
     child.kill("SIGTERM");
     if (!exited) {

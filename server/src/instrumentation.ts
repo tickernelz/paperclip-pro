@@ -469,7 +469,7 @@ async function bootstrapOtel(endpoint: string): Promise<void> {
 
     const sdk = new NodeSDK({
       resource: resourceFromAttributes({
-        [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || "paperclip",
+        [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || "wardmote",
         [ATTR_SERVICE_VERSION]: serviceVersion,
       }),
       // For the HTTP protocols OTEL_EXPORTER_OTLP_ENDPOINT is a *base* URL

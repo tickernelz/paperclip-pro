@@ -255,7 +255,7 @@ describe("Codex app-server Codex driver", () => {
         },
       }),
     ).toMatchObject({ success: true });
-    transport.push("paperclip/runResult", {
+    transport.push("wardmote/runResult", {
       threadId: "thread-1",
       turnId: "turn-1",
       itemId: "tool-result",
