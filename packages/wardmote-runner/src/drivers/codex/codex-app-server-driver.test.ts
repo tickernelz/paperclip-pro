@@ -856,7 +856,7 @@ describe("Codex app-server Codex driver", () => {
       threadId: "thread-1",
       turn: { id: turn.turnId, status: "inProgress" },
     });
-    transport.push("paperclip/runResult", {
+    transport.push("wardmote/runResult", {
       threadId: "thread-1",
       turnId: turn.turnId,
       itemId: "semantic-result-1",
@@ -991,23 +991,23 @@ describe("Codex app-server Codex driver", () => {
       totals: { files: 3, additions: null, deletions: null },
     };
     transport.pushTraced(
-      "paperclip/workspaceChange/updated",
+      "wardmote/workspaceChange/updated",
       { threadId: "thread-1", turnId: turn.turnId, workspaceChange: first },
       "event_workspace_1",
       "workspace.change.updated",
     );
     transport.pushTraced(
-      "paperclip/workspaceChange/updated",
+      "wardmote/workspaceChange/updated",
       { threadId: "thread-1", turnId: turn.turnId, workspaceChange: second },
       "event_workspace_2",
       "workspace.change.updated",
     );
-    transport.push("paperclip/workspaceChange/updated", {
+    transport.push("wardmote/workspaceChange/updated", {
       threadId: "thread-1",
       turnId: turn.turnId,
       workspaceChange: second,
     });
-    transport.push("paperclip/workspaceChange/updated", {
+    transport.push("wardmote/workspaceChange/updated", {
       threadId: "thread-1",
       turnId: turn.turnId,
       workspaceChange: {
@@ -1044,7 +1044,7 @@ describe("Codex app-server Codex driver", () => {
     });
     expect(
       transport.traceInterpretations.filter((entry) =>
-        entry.providerMethod === "paperclip/workspaceChange/updated"
+        entry.providerMethod === "wardmote/workspaceChange/updated"
       ).map((entry) => entry.disposition),
     ).toEqual(["mapped", "mapped"]);
   });
@@ -1063,7 +1063,7 @@ describe("Codex app-server Codex driver", () => {
       threadId: "thread-1",
       turn: { id: turn.turnId, status: "inProgress" },
     });
-    transport.push("paperclip/workspaceChange/updated", {
+    transport.push("wardmote/workspaceChange/updated", {
       threadId: "thread-1",
       turnId: turn.turnId,
       workspaceChange: {
@@ -2898,7 +2898,7 @@ describe("Codex app-server Codex driver", () => {
         },
       }),
     ).toMatchObject({ success: true });
-    transport.push("paperclip/runResult", {
+    transport.push("wardmote/runResult", {
       threadId: "thread-1",
       turnId: "turn-1",
       itemId: "tool-result",
