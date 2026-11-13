@@ -345,18 +345,18 @@ fn matches_typescript_mcp_display_identity_across_tool_lifecycle() {
             "write_document",
         ),
         (
-            "mcp.paperclip.write_document",
-            "paperclip",
+            "mcp.acme.write_document",
+            "acme",
             "write_document",
         ),
         (
-            "  MCP__Paperclip__write_document  ",
-            "Paperclip",
+            "  MCP__Acme__write_document  ",
+            "Acme",
             "write_document",
         ),
         ("McP.other.read_document", "other", "read_document"),
         ("mcp__wardmote__nested__tool", "wardmote", "nested__tool"),
-        ("mcp.paperclip.nested.tool", "paperclip", "nested.tool"),
+        ("mcp.acme.nested.tool", "acme", "nested.tool"),
         ("mcp_____write_document", "_", "write_document"),
         ("mcp__é__write_document", "é", "write_document"),
     ] {
@@ -419,16 +419,16 @@ fn bounds_mcp_namespace_and_name_independently_after_parsing() {
     );
     let events = normalize(
         AcpxRuntimeEventKind::ToolCall,
-        json!({"type": "tool_call", "title": format!("mcp.paperclip.{}", "雪".repeat(300))}),
+        json!({"type": "tool_call", "title": format!("mcp.acme.{}", "雪".repeat(300))}),
     );
-    assert_eq!(events[0].payload["namespace"], "paperclip");
+    assert_eq!(events[0].payload["namespace"], "acme");
     assert_eq!(
         events[0].payload["name"].as_str().unwrap().chars().count(),
         240
     );
     for title in [
         "mcp__Authorization: Bearer namespace-secret__write_document",
-        "mcp.paperclip.Authorization: Bearer tool-secret",
+        "mcp.acme.Authorization: Bearer tool-secret",
     ] {
         let events = normalize(
             AcpxRuntimeEventKind::ToolCall,
@@ -448,7 +448,7 @@ fn leaves_builtin_and_malformed_mcp_titles_as_display_only_builtin_names() {
         "mcp____write_document",
         "mcp__wardmote__",
         "mcp..write_document",
-        "mcp.paperclip.",
+        "mcp.acme.",
         "mcp__wardmote__write\ndocument",
     ] {
         let events = normalize(

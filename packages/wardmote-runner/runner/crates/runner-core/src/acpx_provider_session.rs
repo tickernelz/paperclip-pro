@@ -1710,7 +1710,7 @@ mod permission_mode_tests {
     use super::AcpxPermissionMode;
 
     #[test]
-    fn paperclip_permission_mode_round_trips_without_widening_legacy_modes() {
+    fn wardmote_permission_mode_round_trips_without_widening_legacy_modes() {
         for (name, mode) in [
             ("approve-wardmote", AcpxPermissionMode::ApproveWardmote),
             ("approve-reads", AcpxPermissionMode::ApproveReads),

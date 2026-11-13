@@ -1520,7 +1520,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                     // Real Codex announces a child's MCP startup before its
                     // thread/started notification establishes parent lineage.
                     send(json!({"method":"mcpServer/startupStatus/updated","params":{
-                        "threadId":"descendant-0", "name":"paperclip", "status":"starting", "error":null
+                        "threadId":"descendant-0", "name":"wardmote", "status":"starting", "error":null
                     }}))?;
                     // Codex can announce a helper through the root's spawn receipt
                     // before emitting any thread/started notification for that helper.

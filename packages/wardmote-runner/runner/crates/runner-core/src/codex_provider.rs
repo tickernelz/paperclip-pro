@@ -5156,7 +5156,7 @@ mod notification_identity_tests {
     #[test]
     fn child_mcp_startup_before_lineage_has_no_execution_authority() {
         let params =
-            json!({"threadId": "not-yet-known-child", "name": "paperclip", "status": "starting"});
+            json!({"threadId": "not-yet-known-child", "name": "wardmote", "status": "starting"});
         assert_eq!(
             classify_notification_thread(
                 "mcpServer/startupStatus/updated",

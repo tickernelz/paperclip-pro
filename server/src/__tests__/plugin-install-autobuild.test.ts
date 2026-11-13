@@ -62,7 +62,7 @@ async function createBundledPluginFixture(
 ): Promise<FixturePlugin> {
   const slug = `plugin-autobuild-${nameSuffix}-${randomUUID().slice(0, 8)}`;
   const packageName = `@tickernelz/wardmote-${slug}`;
-  const pluginKey = `paperclip.${slug.replace(/^plugin-/, "").replace(/-/g, "_")}`;
+  const pluginKey = `wardmote.${slug.replace(/^plugin-/, "").replace(/-/g, "_")}`;
   const packageRoot = path.join(options.rootDir ?? repoPluginRoot, slug);
   const distDir = path.join(packageRoot, "dist");
   const isStandaloneFixture = (options.rootDir ?? repoPluginRoot) === standaloneRepoPluginRoot;

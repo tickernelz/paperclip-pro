@@ -2112,7 +2112,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       id: skillId,
       companyId,
       key: "tickernelz/wardmote/wardmote",
-      slug: "paperclip",
+      slug: "wardmote",
       name: "Wardmote",
       description: "Official coordination skill.",
       markdown: "---\nname: Wardmote\n---\n\n# Official Wardmote\n",
