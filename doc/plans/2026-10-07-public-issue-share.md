@@ -5,7 +5,7 @@ Owner: Zhafron
 
 ## Problem
 
-External requesters (for example client members of a WhatsApp group served by the Wira agent) ask for work over chat and then have to ask again over chat to learn its progress. They have no Paperclip account and should not get one. They need a read-only view of the issue that tracks their request.
+External requesters (for example client members of a WhatsApp group served by the Wira agent) ask for work over chat and then have to ask again over chat to learn its progress. They have no Wardmote account and should not get one. They need a read-only view of the issue that tracks their request.
 
 ## Outcome
 
@@ -108,7 +108,7 @@ Create and revoke check company access and issue read (`assertIssueReadAllowed`)
 
 ### Agent instructions
 
-- `skills/paperclip/SKILL.md`: share-link tools in Hot Routes; rule: share a link when an external requester asked for work tracked in an issue; anything written in a shared issue's agent comments is public.
+- `skills/wardmote/SKILL.md`: share-link tools in Hot Routes; rule: share a link when an external requester asked for work tracked in an issue; anything written in a shared issue's agent comments is public.
 - OpenWA conversation instructions: after creating an issue for a chat request, the agent may send its share link to the requester.
 
 ## Acceptance criteria

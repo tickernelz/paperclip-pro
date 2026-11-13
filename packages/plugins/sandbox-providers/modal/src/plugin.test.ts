@@ -60,7 +60,7 @@ function makeFakeProcess(input: {
 function createFakeSandbox(overrides: FakeSandboxOverrides = {}) {
   const execCalls: Array<{ argv: string[]; params?: unknown }> = [];
   const defaultExec = async (_argv: string[], _params?: unknown): Promise<FakeProcess> =>
-    makeFakeProcess({ exitCode: 0, stdout: "paperclip-probe" });
+    makeFakeProcess({ exitCode: 0, stdout: "wardmote-probe" });
   const exec = vi.fn().mockImplementation(async (argv: string[], params?: unknown) => {
     execCalls.push({ argv, params });
     return overrides.execImpl ? overrides.execImpl(argv, params) : defaultExec(argv, params);
@@ -252,8 +252,8 @@ describe("Modal sandbox provider plugin", () => {
     });
     expect(mockImageFromRegistry).toHaveBeenCalledWith("node:20");
     expect(sandbox.setTags).toHaveBeenCalledWith(expect.objectContaining({
-      "paperclip-provider": "modal",
-      "paperclip-company-id": "c-1",
+      "wardmote-provider": "modal",
+      "wardmote-company-id": "c-1",
     }));
     // First exec is the mkdir for the workspace, second is the probe command.
     expect(sandbox.execCalls[0]?.argv).toEqual([
@@ -264,7 +264,7 @@ describe("Modal sandbox provider plugin", () => {
     expect(sandbox.execCalls[1]?.argv).toEqual([
       "sh",
       "-lc",
-      "printf paperclip-probe",
+      "printf wardmote-probe",
     ]);
     expect(sandbox.terminate).toHaveBeenCalled();
     expect(mockClientClose).toHaveBeenCalled();
@@ -282,7 +282,7 @@ describe("Modal sandbox provider plugin", () => {
   it("returns a failure probe result when the probe command exits non-zero", async () => {
     const sandbox = createFakeSandbox({
       execImpl: async (argv: string[]) => {
-        if (argv[2] === "printf paperclip-probe") {
+        if (argv[2] === "printf wardmote-probe") {
           return makeFakeProcess({ exitCode: 7, stdout: "boom" });
         }
         return makeFakeProcess({ exitCode: 0 });
@@ -343,8 +343,8 @@ describe("Modal sandbox provider plugin", () => {
       }),
     });
     expect(sandbox.setTags).toHaveBeenCalledWith(expect.objectContaining({
-      "paperclip-run-id": "run-1",
-      "paperclip-reuse-lease": "true",
+      "wardmote-run-id": "run-1",
+      "wardmote-reuse-lease": "true",
     }));
     expect(sandbox.execCalls[0]?.argv).toEqual(["sh", "-lc", "mkdir -p '/srv/work'"]);
   });
@@ -388,7 +388,7 @@ describe("Modal sandbox provider plugin", () => {
         config: baseConfig,
       }),
     ).rejects.toThrow(
-      "Failed to create remote workspace directory '/workspace/paperclip': mkdir exited with code 17",
+      "Failed to create remote workspace directory '/workspace/wardmote': mkdir exited with code 17",
     );
     expect(sandbox.terminate).toHaveBeenCalledTimes(1);
   });
@@ -716,7 +716,7 @@ describe("modal manifest form defaults", () => {
   const properties = configSchema.properties ?? {};
 
   it("pre-fills the required app name and image so the form works out of the box", () => {
-    expect(properties.appName?.default).toBe("paperclip");
+    expect(properties.appName?.default).toBe("wardmote");
     expect(properties.image?.default).toBe("node:24");
   });
 

@@ -295,7 +295,7 @@ export function buildWorktreeConfig(input: {
         baseDir: paths.storageDir,
       },
       s3: {
-        bucket: source?.storage.s3.bucket ?? "paperclip",
+        bucket: source?.storage.s3.bucket ?? "wardmote",
         region: source?.storage.s3.region ?? "us-east-1",
         endpoint: source?.storage.s3.endpoint,
         prefix: source?.storage.s3.prefix ?? "",

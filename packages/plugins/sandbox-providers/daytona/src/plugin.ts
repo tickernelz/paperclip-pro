@@ -389,13 +389,13 @@ function buildSandboxLabels(input: {
   reuseLease: boolean;
 }): Record<string, string> {
   return {
-    "paperclip-provider": "daytona",
-    "paperclip-company-id": input.companyId,
-    "paperclip-environment-id": input.environmentId,
-    "paperclip-reuse-lease": input.reuseLease ? "true" : "false",
-    ...(input.runId ? { "paperclip-run-id": input.runId } : {}),
-    ...(input.setupSessionId ? { "paperclip-setup-session-id": input.setupSessionId } : {}),
-    ...(input.purpose ? { "paperclip-purpose": input.purpose } : {}),
+    "wardmote-provider": "daytona",
+    "wardmote-company-id": input.companyId,
+    "wardmote-environment-id": input.environmentId,
+    "wardmote-reuse-lease": input.reuseLease ? "true" : "false",
+    ...(input.runId ? { "wardmote-run-id": input.runId } : {}),
+    ...(input.setupSessionId ? { "wardmote-setup-session-id": input.setupSessionId } : {}),
+    ...(input.purpose ? { "wardmote-purpose": input.purpose } : {}),
   };
 }
 
@@ -523,7 +523,7 @@ async function resolveSandboxWorkingDirectory(sandbox: Sandbox, create = true): 
   const root = (await sandbox.getWorkDir())?.trim()
     || (await sandbox.getUserHomeDir())?.trim()
     || "/home/daytona";
-  const remoteCwd = path.posix.join(root, "paperclip-workspace");
+  const remoteCwd = path.posix.join(root, "wardmote-workspace");
   if (create) await sandbox.fs.createFolder(remoteCwd, "755");
   return remoteCwd;
 }
@@ -954,7 +954,7 @@ async function createSandbox(
   // The SDK can create a sandbox and then throw while waiting for it to start.
   // Keep an attempt-specific provider name so that failure cannot lose ownership.
   const attemptId = randomUUID();
-  const name = `paperclip-create-${attemptId}`;
+  const name = `wardmote-create-${attemptId}`;
   const labels = { ...buildSandboxLabels({
     companyId: params.companyId,
     environmentId: params.environmentId,
@@ -962,7 +962,7 @@ async function createSandbox(
     setupSessionId: "sessionId" in params ? params.sessionId : undefined,
     purpose: options.purpose,
     reuseLease: config.reuseLease,
-  }), "paperclip-create-attempt": attemptId };
+  }), "wardmote-create-attempt": attemptId };
   // The SDK mutates params.labels (for example, code-toolbox-language).
   // Preserve our immutable ownership snapshot for validation and retry.
   const createParams = { ...buildCreateParams(config, { ...labels }), name };
@@ -1000,13 +1000,13 @@ async function destroyFailedCreation(
   config: DaytonaDriverConfig, cleanup: PluginEnvironmentCreationCleanup,
   requireDurableObservation = false,
 ): Promise<void> {
-  if (cleanup.providerLeaseId !== `paperclip-create-${cleanup.attemptId}` ||
+  if (cleanup.providerLeaseId !== `wardmote-create-${cleanup.attemptId}` ||
       cleanup.accountFingerprint !== sandboxAccountDiscriminator(config) ||
-      cleanup.labels["paperclip-provider"] !== "daytona" ||
-      cleanup.labels["paperclip-create-attempt"] !== cleanup.attemptId ||
-      cleanup.labels["paperclip-company-id"] !== cleanup.companyId ||
-      cleanup.labels["paperclip-environment-id"] !== cleanup.environmentId ||
-      (cleanup.runId !== undefined && cleanup.labels["paperclip-run-id"] !== cleanup.runId)) {
+      cleanup.labels["wardmote-provider"] !== "daytona" ||
+      cleanup.labels["wardmote-create-attempt"] !== cleanup.attemptId ||
+      cleanup.labels["wardmote-company-id"] !== cleanup.companyId ||
+      cleanup.labels["wardmote-environment-id"] !== cleanup.environmentId ||
+      (cleanup.runId !== undefined && cleanup.labels["wardmote-run-id"] !== cleanup.runId)) {
     throw new Error("Failed-create sandbox ownership does not match");
   }
   const client = createDaytonaClient(config);
@@ -1641,7 +1641,7 @@ async function getOrCreateSession(sandbox: Sandbox, scope: SandboxScope): Promis
   // session. The guard checks and starts the create in one synchronous step, so
   // no second command can slip in between the store read and the create start.
   return sandboxHandleSessionStore.runSingle(scope, async () => {
-    const sessionId = `paperclip-${randomUUID()}`;
+    const sessionId = `wardmote-${randomUUID()}`;
     // Wrap the session create in a short `session.open` provider span. The span
     // carries no session id and no command text, only the provider family. The
     // host maps the name to `sandbox.daytona.session.open`.
@@ -2757,7 +2757,7 @@ const plugin = definePlugin({
     const config = parseDriverConfig(params.config);
     if (params.leaseMetadata?.failedCreateCleanup !== undefined) {
       const cleanup = readEnvironmentCreationCleanupError({ data: {
-        schema: "paperclip/environment-creation-cleanup/v1", cleanup: params.leaseMetadata.failedCreateCleanup,
+        schema: "wardmote/environment-creation-cleanup/v1", cleanup: params.leaseMetadata.failedCreateCleanup,
       } });
       if (!cleanup || cleanup.companyId !== params.companyId || cleanup.environmentId !== params.environmentId ||
           cleanup.providerLeaseId !== params.providerLeaseId) {
@@ -2799,7 +2799,7 @@ const plugin = definePlugin({
       typeof params.lease.metadata?.remoteCwd === "string" &&
       params.lease.metadata.remoteCwd.trim().length > 0
         ? params.lease.metadata.remoteCwd.trim()
-        : params.workspace.remotePath ?? params.workspace.localPath ?? "/paperclip-workspace";
+        : params.workspace.remotePath ?? params.workspace.localPath ?? "/wardmote-workspace";
 
     if (params.lease.providerLeaseId) {
       const scope: SandboxScope = {
@@ -2959,7 +2959,7 @@ const plugin = definePlugin({
     }
     const templateRef = sanitizeSnapshotName(
       params.templateLabel,
-      `paperclip-${params.environmentId}-${randomUUID().slice(0, 8)}`,
+      `wardmote-${params.environmentId}-${randomUUID().slice(0, 8)}`,
     );
     const timeoutMs = typeof params.timeoutMs === "number" && Number.isFinite(params.timeoutMs) && params.timeoutMs > 0
       ? Math.trunc(params.timeoutMs)

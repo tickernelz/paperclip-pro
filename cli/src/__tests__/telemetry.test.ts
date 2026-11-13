@@ -51,7 +51,7 @@ function makeConfigPath(root: string, enabled: boolean): string {
         baseDir: path.join(root, "runtime", "storage"),
       },
       s3: {
-        bucket: "paperclip",
+        bucket: "wardmote",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,

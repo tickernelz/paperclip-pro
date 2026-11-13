@@ -4,12 +4,12 @@ import path from "node:path";
 import type { AdapterExecutionContext } from "@tickernelz/wardmote-adapter-utils";
 import { resolveWardmoteInstanceRootForAdapter } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { isCodexAuthCachePath, readSubscriptionAccountId } from "./codex-auth-cache.js";
+import { RETIRED_CODEX_MANAGED_MCP_BLOCK } from "../../retired-marker-names.js";
 
 const TRUTHY_ENV_RE = /^(1|true|yes|on)$/i;
 const COPIED_SHARED_FILES = ["config.json", "config.toml", "instructions.md"] as const;
 const SYMLINKED_SHARED_FILES = ["auth.json"] as const;
-const MANAGED_MCP_BLOCK_START = "# BEGIN PAPERCLIP MANAGED MCP";
-const MANAGED_MCP_BLOCK_END = "# END PAPERCLIP MANAGED MCP";
+const MANAGED_MCP_BLOCK = { start: "# BEGIN WARDMOTE MANAGED MCP", end: "# END WARDMOTE MANAGED MCP" } as const;
 const TOML_BARE_KEY_RE = /^[A-Za-z0-9_-]+$/;
 
 /**
@@ -253,12 +253,16 @@ function sanitizeMcpServerName(value: string, fallback: string): string {
     .slice(0, 80) || fallback;
 }
 
-function stripManagedMcpBlock(config: string): string {
-  const start = config.indexOf(MANAGED_MCP_BLOCK_START);
+function stripBlock(config: string, markers: { start: string; end: string }): string {
+  const start = config.indexOf(markers.start);
   if (start < 0) return config.trimEnd();
-  const end = config.indexOf(MANAGED_MCP_BLOCK_END, start);
+  const end = config.indexOf(markers.end, start);
   if (end < 0) return config.slice(0, start).trimEnd();
-  return `${config.slice(0, start)}${config.slice(end + MANAGED_MCP_BLOCK_END.length)}`.trimEnd();
+  return `${config.slice(0, start)}${config.slice(end + markers.end.length)}`.trimEnd();
+}
+
+function stripManagedMcpBlock(config: string): string {
+  return stripBlock(stripBlock(config, RETIRED_CODEX_MANAGED_MCP_BLOCK), MANAGED_MCP_BLOCK);
 }
 
 function readCodexMcpServerNames(config: string): Set<string> {
@@ -278,16 +282,16 @@ function buildManagedMcpBlock(input: {
   const warnings: string[] = [];
   const usedNames = new Set<string>();
   const lines = [
-    MANAGED_MCP_BLOCK_START,
+    MANAGED_MCP_BLOCK.start,
     "# Written by Wardmote for governed MCP gateway access. Do not edit this block by hand.",
   ];
   input.gateways.forEach((gateway, index) => {
     const baseName = sanitizeMcpServerName(gateway.name, `gateway-${index + 1}`);
     const directOverlap = input.existingNames.has(gateway.name) || input.existingNames.has(baseName);
-    let managedName = directOverlap ? `paperclip-${baseName}` : baseName;
+    let managedName = directOverlap ? `wardmote-${baseName}` : baseName;
     let suffix = 2;
     while (usedNames.has(managedName) || input.existingNames.has(managedName)) {
-      managedName = `paperclip-${baseName}-${suffix}`;
+      managedName = `wardmote-${baseName}-${suffix}`;
       suffix += 1;
     }
     usedNames.add(managedName);
@@ -310,7 +314,7 @@ function buildManagedMcpBlock(input: {
       `http_headers = { ${headers} }`,
     );
   });
-  lines.push(MANAGED_MCP_BLOCK_END);
+  lines.push(MANAGED_MCP_BLOCK.end);
   return { block: lines.join("\n"), warnings };
 }
 

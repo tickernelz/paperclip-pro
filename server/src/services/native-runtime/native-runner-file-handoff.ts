@@ -35,6 +35,7 @@ import type { StorageService } from "../../storage/types.js";
 import { readProcessStartedAt } from "../hot-restart.js";
 import { issueService } from "../issues.js";
 import { getNativeReviewAssignment, readNativeReviewAssignmentContext } from "./native-review-participant.js";
+import { RETIRED_STAGING_ROOT } from "./retired-staging-root.js";
 
 export type RemoteWorkspaceFileReader = (input: Pick<NativeRunnerFileHandoffInput, "contentRef" | "byteSize" | "sha256">) => Promise<Buffer>;
 
@@ -92,6 +93,7 @@ export interface NativeRunnerAttachmentStage {
   cleanup(): Promise<void>;
 }
 
+const STAGING_ROOT = ".wardmote-inbound";
 const activeStagingPathsByWorkspace = new Map<string, Set<string>>();
 const stagingRegistryTails = new Map<string, Promise<void>>();
 const scrubbedForeignStagingDirectoriesByWorkspace = new Map<
@@ -460,7 +462,7 @@ async function ensurePrivateStagingDirectory(
   processDirectoryName: string,
 ): Promise<string> {
   let cursor = workspaceRoot;
-  for (const segment of [".paperclip-inbound", processDirectoryName]) {
+  for (const segment of [STAGING_ROOT, processDirectoryName]) {
     cursor = path.join(cursor, segment);
     try {
       await mkdir(cursor, { mode: 0o700 });
@@ -484,7 +486,17 @@ async function scrubNativeRunnerStagingResidue(
   activePaths: ReadonlySet<string>,
   processDirectoryName: string,
 ): Promise<string[]> {
-  const stagingRootPath = path.join(workspaceRoot, ".paperclip-inbound");
+  await scrubStagingRoot(workspaceRoot, new Set(), processDirectoryName, RETIRED_STAGING_ROOT);
+  return scrubStagingRoot(workspaceRoot, activePaths, processDirectoryName, STAGING_ROOT);
+}
+
+async function scrubStagingRoot(
+  workspaceRoot: string,
+  activePaths: ReadonlySet<string>,
+  processDirectoryName: string,
+  rootName: string,
+): Promise<string[]> {
+  const stagingRootPath = path.join(workspaceRoot, rootName);
   let stagingRootStat: Stats;
   try {
     stagingRootStat = await lstat(stagingRootPath);

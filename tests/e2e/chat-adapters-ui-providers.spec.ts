@@ -200,7 +200,7 @@ test.describe.serial("native chat adapter UI", () => {
     await page.getByRole("button", { name: "Choose an active agent" }).click();
     await page.getByRole("button", { name: "Select Maya", exact: true }).click();
     await page.locator("summary:visible").filter({ hasText: "Advanced" }).click();
-    await expect(page.getByLabel("Slack app name", { exact: true })).toHaveValue("maya-paperclip");
+    await expect(page.getByLabel("Slack app name", { exact: true })).toHaveValue("maya-wardmote");
     await expect(page.getByLabel("Bot display name", { exact: true })).toHaveValue("maya");
     await expect(page.getByLabel("Slash command", { exact: true })).toHaveValue("/maya");
     await page.getByRole("button", { name: "Continue", exact: true }).click();
@@ -574,7 +574,7 @@ test.describe.serial("native chat adapter UI", () => {
       ).toBeVisible();
       if (provider.provider === "slack") {
         await page.locator("summary").filter({ hasText: "Message in a channel" }).click();
-        await expect(page.getByText("@maya-paperclip you there?", { exact: true })).toBeVisible();
+        await expect(page.getByText("@maya-wardmote you there?", { exact: true })).toBeVisible();
         await expect(page.getByRole("button", { name: "Copy message" })).toBeVisible();
         await expect(page.getByRole("heading", { name: "Allowed Channels" })).toBeVisible();
         await page.locator("summary").filter({ hasText: /^Agent avatar$/ }).click();
@@ -584,7 +584,7 @@ test.describe.serial("native chat adapter UI", () => {
         await expect(avatarSection.getByRole("link", { name: "Open Slack app Settings" })).toBeVisible();
         const settingsDownloadEvent = page.waitForEvent("download");
         await avatarSection.getByRole("link", { name: "Download avatar" }).click();
-        expect((await settingsDownloadEvent).suggestedFilename()).toBe("maya-paperclip-avatar.png");
+        expect((await settingsDownloadEvent).suggestedFilename()).toBe("maya-wardmote-avatar.png");
       }
 
       await expect(

@@ -598,14 +598,14 @@ describe("CompanyEnvironments — test provider button", () => {
     mockEnvironmentsApi.probe.mockResolvedValue({
       ok: true,
       driver: "sandbox",
-      summary: "Connected to Daytona sandbox paperclip-probe.",
+      summary: "Connected to Daytona sandbox wardmote-probe.",
       details: {
         provider: "daytona",
         diagnostics: [],
         metadata: {
           provider: "daytona",
           sandboxId: "473167E9",
-          sandboxName: "paperclip-probe",
+          sandboxName: "wardmote-probe",
         },
       },
     });
@@ -621,7 +621,7 @@ describe("CompanyEnvironments — test provider button", () => {
     await flushReact();
 
     expect(mockEnvironmentsApi.probe).toHaveBeenCalledExactlyOnceWith("env-1", "company-1");
-    expect(container.textContent).toContain("Connected to Daytona sandbox paperclip-probe.");
+    expect(container.textContent).toContain("Connected to Daytona sandbox wardmote-probe.");
     expect(container.textContent).not.toContain("Verified temporary daytona sandbox");
     expect(container.textContent).not.toContain("Test probes clean up the validation sandbox after the check");
     expect(container.textContent).not.toContain("provider dashboard");
@@ -644,7 +644,7 @@ describe("CompanyEnvironments — test provider button", () => {
         metadata: {
           provider: "daytona",
           sandboxId: "473167E9",
-          sandboxName: "paperclip-probe",
+          sandboxName: "wardmote-probe",
         },
       },
     });

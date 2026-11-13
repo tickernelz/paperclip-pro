@@ -574,7 +574,7 @@ async function main() {
         baseDir: path.resolve(instanceRoot, "data", "storage"),
       },
       s3: {
-        bucket: sourceConfig?.storage?.s3?.bucket ?? "paperclip",
+        bucket: sourceConfig?.storage?.s3?.bucket ?? "wardmote",
         region: sourceConfig?.storage?.s3?.region ?? "us-east-1",
         endpoint: sourceConfig?.storage?.s3?.endpoint,
         prefix: sourceConfig?.storage?.s3?.prefix ?? "",

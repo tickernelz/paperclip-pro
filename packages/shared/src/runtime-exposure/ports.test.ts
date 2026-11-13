@@ -58,11 +58,11 @@ describe("runtime exposure port policy", () => {
   });
 
   it("builds https URLs on the non-standard port", () => {
-    expect(buildRuntimeExposureUrl("paperclip-dev.tail29c1aa.ts.net", 42010)).toBe(
-      "https://paperclip-dev.tail29c1aa.ts.net:42010",
+    expect(buildRuntimeExposureUrl("wardmote-dev.tail29c1aa.ts.net", 42010)).toBe(
+      "https://wardmote-dev.tail29c1aa.ts.net:42010",
     );
-    expect(buildRuntimeExposureHealthUrl("paperclip-dev.tail29c1aa.ts.net", 42010)).toBe(
-      "https://paperclip-dev.tail29c1aa.ts.net:42010/api/health",
+    expect(buildRuntimeExposureHealthUrl("wardmote-dev.tail29c1aa.ts.net", 42010)).toBe(
+      "https://wardmote-dev.tail29c1aa.ts.net:42010/api/health",
     );
   });
 

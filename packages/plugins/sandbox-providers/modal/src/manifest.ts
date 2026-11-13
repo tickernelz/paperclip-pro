@@ -31,7 +31,7 @@ const manifest: WardmotePluginManifestV1 = {
             type: "string",
             description:
               "Modal App name used as the parent for sandboxes. The plugin calls `modal.apps.fromName(appName, { createIfMissing: true })`, so the App is created on first acquire if it does not already exist.",
-            default: "paperclip",
+            default: "wardmote",
           },
           image: {
             type: "string",
@@ -58,7 +58,7 @@ const manifest: WardmotePluginManifestV1 = {
           workdir: {
             type: "string",
             description: "Remote working directory inside the sandbox.",
-            default: "/workspace/paperclip",
+            default: "/workspace/wardmote",
           },
           sandboxTimeoutMs: {
             type: "number",

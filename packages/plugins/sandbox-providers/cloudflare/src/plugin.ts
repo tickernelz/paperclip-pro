@@ -91,7 +91,7 @@ function resolveExecuteSession(
     } as const;
   }
 
-  const baseSessionId = config.sessionId.trim().length > 0 ? config.sessionId : "paperclip";
+  const baseSessionId = config.sessionId.trim().length > 0 ? config.sessionId : "wardmote";
   return {
     sessionStrategy: "named" as const,
     sessionId: `${baseSessionId}-bridge`,

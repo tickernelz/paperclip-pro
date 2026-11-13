@@ -271,7 +271,7 @@ async function consumeExecuteEventStream(
 
 export function createCloudflareBridgeClient(options: BridgeClientOptions) {
   const { config } = options;
-  const apiPrefix = "/api/paperclip-sandbox/v1";
+  const apiPrefix = "/api/wardmote-sandbox/v1";
 
   return {
     health(extraHeaders?: BridgeClientHeaders): Promise<CloudflareBridgeHealthResponse> {

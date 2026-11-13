@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.native-procedure-public-comparison.v1",
+  "schema": "wardmote.native-procedure-public-comparison.v1",
   "disposition": "hold_draft_no_regression_gate_failed",
   "originalGradesPreserved": true,
   "sources": {
@@ -24,8 +24,8 @@
       "packages/wardmote-runner/src/protocol-actions/hire-agent.ts",
       "packages/wardmote-runner/src/protocol-actions/set-dependencies.ts",
       "server/src/services/native-runtime/native-session-resume.ts",
-      "server/src/services/native-runtime/paperclip-runner-tool-authority.test.ts",
-      "server/src/services/native-runtime/paperclip-runner-tool-authority.ts"
+      "server/src/services/native-runtime/wardmote-runner-tool-authority.test.ts",
+      "server/src/services/native-runtime/wardmote-runner-tool-authority.ts"
     ],
     "cellsPerVariant": 6,
     "maximumAttemptsPerCell": 1,
@@ -3587,7 +3587,7 @@
   },
   "measurement": {
     "corrected-baseline": {
-      "schema": "paperclip.native-procedure-measurement.v2",
+      "schema": "wardmote.native-procedure-measurement.v2",
       "sourceSha": "aecfa3b6a5cab110a9b926e93705311bbcf4db47",
       "sourceDirty": false,
       "measuredInputsDirty": false,
@@ -3604,7 +3604,7 @@
         "packages/wardmote-runner/protocol/manifest.json": "9cebc584dce7b42ed6800bef9b3e1c83880a67798a7bdceb9d9482b246f66a18",
         "packages/wardmote-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
         "packages/wardmote-runner/src/drivers/opencode/mcp-bridge.ts": "ec1cd94c17be22d0556d4586fa6407b28e2309ed7c2437d95a32beeb0755cc4f",
-        "server/src/services/native-runtime/paperclip-runner-tool-authority.ts": "d2360cdaa63902cbf0c6a6109da452ba7e0b2a5aaa76ee5cab9c63b4bf12e584",
+        "server/src/services/native-runtime/wardmote-runner-tool-authority.ts": "d2360cdaa63902cbf0c6a6109da452ba7e0b2a5aaa76ee5cab9c63b4bf12e584",
         "server/src/services/native-runtime/native-session-resume.ts": "5b27465e1a328412770fc27c4bc637e88b62022adc6a67709bb74187eadc465b",
         "server/src/__tests__/native-procedure-measurement.test.ts": "4e5725c0d86442c0214d96e6ab489547b919d45f8f237d9ec14d02437965268d"
       },
@@ -4039,7 +4039,7 @@
       "originalReceiptSha256": "2158cc185b2d7c5dd6082737836a7d1c5d3e20bf4539a897e41ed4e99080aadd"
     },
     "corrected-candidate": {
-      "schema": "paperclip.native-procedure-measurement.v2",
+      "schema": "wardmote.native-procedure-measurement.v2",
       "sourceSha": "ffe847fabaebbf24bc93924a4b6c8922d46a1fb6",
       "sourceDirty": true,
       "measuredInputsDirty": false,
@@ -4056,7 +4056,7 @@
         "packages/wardmote-runner/protocol/manifest.json": "420055c0f98b46f57096ac32bdfb6a0d53ae40ac2c3345dc1fea7cfdab2addb0",
         "packages/wardmote-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
         "packages/wardmote-runner/src/drivers/opencode/mcp-bridge.ts": "ec1cd94c17be22d0556d4586fa6407b28e2309ed7c2437d95a32beeb0755cc4f",
-        "server/src/services/native-runtime/paperclip-runner-tool-authority.ts": "ae5cd9c6d076cf44471b42c583f69eea9776aaad41ccbc8319d416aa88f78b44",
+        "server/src/services/native-runtime/wardmote-runner-tool-authority.ts": "ae5cd9c6d076cf44471b42c583f69eea9776aaad41ccbc8319d416aa88f78b44",
         "server/src/services/native-runtime/native-session-resume.ts": "d9d4d7fde805c150e8278fd26f36d5e27d77c49690a0371f20e83b542f9cb2db",
         "server/src/__tests__/native-procedure-measurement.test.ts": "4e5725c0d86442c0214d96e6ab489547b919d45f8f237d9ec14d02437965268d"
       },
@@ -4491,7 +4491,7 @@
       "originalReceiptSha256": "8486d4c2897ceca5124500899e83eb9754230e80b992c971e586354253ec547e"
     },
     "integrated-baseline": {
-      "schema": "paperclip.native-procedure-measurement.v2",
+      "schema": "wardmote.native-procedure-measurement.v2",
       "sourceSha": "ce31f5efd0d416205c3994c55dd02b645f8b8423",
       "sourceDirty": false,
       "measuredInputsDirty": false,
@@ -4508,7 +4508,7 @@
         "packages/wardmote-runner/protocol/manifest.json": "9cd783f47dd2b950a89404421a3e76446249693e61c934a91d6f4e529ec18f9b",
         "packages/wardmote-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
         "packages/wardmote-runner/src/drivers/opencode/mcp-bridge.ts": "ec1cd94c17be22d0556d4586fa6407b28e2309ed7c2437d95a32beeb0755cc4f",
-        "server/src/services/native-runtime/paperclip-runner-tool-authority.ts": "d2360cdaa63902cbf0c6a6109da452ba7e0b2a5aaa76ee5cab9c63b4bf12e584",
+        "server/src/services/native-runtime/wardmote-runner-tool-authority.ts": "d2360cdaa63902cbf0c6a6109da452ba7e0b2a5aaa76ee5cab9c63b4bf12e584",
         "server/src/services/native-runtime/native-session-resume.ts": "5b27465e1a328412770fc27c4bc637e88b62022adc6a67709bb74187eadc465b",
         "server/src/__tests__/native-procedure-measurement.test.ts": "4e5725c0d86442c0214d96e6ab489547b919d45f8f237d9ec14d02437965268d"
       },
@@ -4943,7 +4943,7 @@
       "originalReceiptSha256": "356693e0c75a86b7e53b397822399b0f4a09652b3d88be280b7a4569fd40efb6"
     },
     "integrated-candidate": {
-      "schema": "paperclip.native-procedure-measurement.v2",
+      "schema": "wardmote.native-procedure-measurement.v2",
       "sourceSha": "ee096aa23fc88a001e7666215bcd338b5863f377",
       "sourceDirty": true,
       "measuredInputsDirty": false,
@@ -4960,7 +4960,7 @@
         "packages/wardmote-runner/protocol/manifest.json": "4c6e1bd289db4be0d669fe79439d7adf3c1a56fc1c762e663299bcd431557597",
         "packages/wardmote-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
         "packages/wardmote-runner/src/drivers/opencode/mcp-bridge.ts": "ec1cd94c17be22d0556d4586fa6407b28e2309ed7c2437d95a32beeb0755cc4f",
-        "server/src/services/native-runtime/paperclip-runner-tool-authority.ts": "ae5cd9c6d076cf44471b42c583f69eea9776aaad41ccbc8319d416aa88f78b44",
+        "server/src/services/native-runtime/wardmote-runner-tool-authority.ts": "ae5cd9c6d076cf44471b42c583f69eea9776aaad41ccbc8319d416aa88f78b44",
         "server/src/services/native-runtime/native-session-resume.ts": "d9d4d7fde805c150e8278fd26f36d5e27d77c49690a0371f20e83b542f9cb2db",
         "server/src/__tests__/native-procedure-measurement.test.ts": "4e5725c0d86442c0214d96e6ab489547b919d45f8f237d9ec14d02437965268d"
       },
@@ -5416,8 +5416,8 @@
       "packages/wardmote-runner/src/protocol-actions/hire-agent.ts",
       "packages/wardmote-runner/src/protocol-actions/set-dependencies.ts",
       "server/src/services/native-runtime/native-session-resume.ts",
-      "server/src/services/native-runtime/paperclip-runner-tool-authority.test.ts",
-      "server/src/services/native-runtime/paperclip-runner-tool-authority.ts"
+      "server/src/services/native-runtime/wardmote-runner-tool-authority.test.ts",
+      "server/src/services/native-runtime/wardmote-runner-tool-authority.ts"
     ]
   },
   "limitations": [

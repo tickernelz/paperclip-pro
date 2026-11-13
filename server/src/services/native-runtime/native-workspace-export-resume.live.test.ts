@@ -140,7 +140,7 @@ describeLive("live Daytona export-resume failure recovery", () => {
   afterAll(async () => {
     try {
       if (sandbox) {
-        if (sandbox.labels?.["paperclip-company-id"] !== ids.company || sandbox.labels?.["paperclip-environment-id"] !== ids.environment || sandbox.labels?.["paperclip-run-id"] !== ids.run) throw new Error("Fixture cleanup ownership mismatch");
+        if (sandbox.labels?.["wardmote-company-id"] !== ids.company || sandbox.labels?.["wardmote-environment-id"] !== ids.environment || sandbox.labels?.["wardmote-run-id"] !== ids.run) throw new Error("Fixture cleanup ownership mismatch");
         await sandbox.delete(60);
         evidence.cleanupPassed = true;
       }

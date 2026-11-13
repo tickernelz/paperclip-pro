@@ -1,4 +1,5 @@
 import { registerChatActionWork, dueChatAction } from "../services/chat-action-work.js";
+import { RETIRED_GITHUB_MARKER_PREFIX } from "../services/retired-github-marker.js";
 import { RETIRED_DISCORD_COMMAND_NAME } from "../services/retired-discord-command-name.js";
 import { createDeliveryWorkCoordinator } from "../services/delivery-work-coordinator.js";
 import { registerChatDeliveryWork } from "../services/chat-delivery-work.js";
@@ -2578,8 +2579,26 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       await db.update(heartbeatRuns).set({ contextSnapshot: { ...latest, wakeCommentIds: links.map(link => link.commentId) } }).where(eq(heartbeatRuns.id, f.run.id));
       await githubChatReviewService(db, f.providerFetch).execute(f.session, "comment", { body: "Both requests answered", idempotencyKey: "final-coalesced" });
       expect(f.responseComments.size).toBe(2);
-      expect([...f.responseComments.values()].every(comment => comment.body.includes("paperclip-response-state:final"))).toBe(true);
+      expect([...f.responseComments.values()].every(comment => comment.body.includes("wardmote-response-state:final"))).toBe(true);
       expect([...f.responseComments.values()].some(comment => comment.body.includes("response to this request"))).toBe(true);
+    });
+    it("finalizes working comments written under the retired marker in place", async () => {
+      const f = await toolReplyFixture();
+      const thread = makeThread({ channelId: "acmeai/wardmote", id: f.conversation.externalThreadId }).thread;
+      await deliverMessage({ callbacks: f.callbacks, endpointId: f.endpoint.id, provider: "github", thread,
+        trigger: "mention", message: makeMessage({ id: "41802", text: "And this too", userId: "42", userName: "octocat", mentioned: true }) });
+      await expect.poll(async () => {
+        await githubResponseCommentService(db, f.providerFetch).processPending();
+        return f.responseComments.size;
+      }, { timeout: 10_000 }).toBe(2);
+      for (const comment of f.responseComments.values()) comment.body = comment.body.replaceAll("<!-- wardmote-", RETIRED_GITHUB_MARKER_PREFIX);
+      const links = await db.select().from(chatMessageLinks).where(and(eq(chatMessageLinks.endpointId, f.endpoint.id), eq(chatMessageLinks.direction, "inbound")));
+      const latest = await chatWakeContext({ endpointId: f.endpoint.id, issueId: f.conversation.issueId, provider: "github", providerMessageId: "41802" });
+      await db.update(heartbeatRuns).set({ contextSnapshot: { ...latest, wakeCommentIds: links.map(link => link.commentId) } }).where(eq(heartbeatRuns.id, f.run.id));
+      await githubChatReviewService(db, f.providerFetch).execute(f.session, "comment", { body: "Both requests answered", idempotencyKey: "final-coalesced" });
+      expect(f.responseComments.size).toBe(2);
+      expect([...f.responseComments.values()].every(comment => comment.body.includes("wardmote-response-state:final"))).toBe(true);
+      expect([...f.responseComments.values()].some(comment => comment.body.includes(RETIRED_GITHUB_MARKER_PREFIX))).toBe(false);
     });
     it("settles a deleted coalesced working comment without blocking the current GitHub response", async () => {
       const f = await toolReplyFixture();
@@ -2611,7 +2630,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       await githubResponseCommentService(db, f.providerFetch).processPending();
       expect(f.responseComments.size).toBe(1);
       expect([...f.responseComments.values()][0].body).toContain("without publishing a final response");
-      expect([...f.responseComments.values()][0].body).toContain("paperclip-response-state:final");
+      expect([...f.responseComments.values()][0].body).toContain("wardmote-response-state:final");
       expect(f.responseWrites.map(write => write.method)).toEqual(["POST", "PATCH"]);
     });
     it("does not let an unsettled GitHub fallback block a later board message", async () => {
@@ -2781,7 +2800,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       expect(comment.body).toContain("Review complete.");
       expect(comment.body).toContain("https://github.com/acmeai/wardmote/pull/418");
       expect(comment.body).not.toContain("Disabled summary");
-      expect(comment.body).toContain("paperclip-response-state:final");
+      expect(comment.body).toContain("wardmote-response-state:final");
       await expect(githubRunReplyState(db, { ...f.session, endpointId: f.endpoint.id })).resolves.toBe("confirmed");
     });
     it.each(["during_summary", "after_summary"] as const)("keeps partial review delivery authoritative when the head changes %s", async phase => {
@@ -5407,7 +5426,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       assignedAgentName: "Maya",
       status: "draft",
       allowUnlinkedPeople: false,
-      setup: { command: "/maya", slackApp: { appName: "maya-paperclip", botName: "maya", command: "/maya" } },
+      setup: { command: "/maya", slackApp: { appName: "maya-wardmote", botName: "maya", command: "/maya" } },
     });
     const createdCommand = createResponse.body.setup.command as string;
     const [connection] = await db
@@ -7987,7 +8006,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           return new Response(
             JSON.stringify({
               id: appRegistrationId,
-              slug: "maya-paperclip",
+              slug: "maya-wardmote",
               name: "Maya Wardmote",
               owner: { login: "acmeai" },
               permissions: {
@@ -8131,7 +8150,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       status: "verifying",
       providerAccountId: "acmeai",
       botExternalId: "789",
-      botUsername: "maya-paperclip[bot]",
+      botUsername: "maya-wardmote[bot]",
       setup: { step: "test", webhookVerifiedAt: expect.any(String) },
     });
     expect(
@@ -9246,7 +9265,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       thread: setupThread.thread,
       message: makeMessage({
         id: "github-setup-root-811",
-        text: "@maya-paperclip[bot] verify setup state",
+        text: "@maya-wardmote[bot] verify setup state",
         mentioned: true,
       }),
       trigger: "mention",
@@ -17191,7 +17210,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     );
 
     const slashBody = new URLSearchParams({
-      command: "/maya-paperclip",
+      command: "/maya-wardmote",
       team_id: "T-PAPERCLIP",
     }).toString();
     await service.handleWebhook(

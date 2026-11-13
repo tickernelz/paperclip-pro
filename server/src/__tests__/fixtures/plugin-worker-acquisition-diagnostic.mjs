@@ -2,9 +2,9 @@ import { definePlugin, PluginEnvironmentCreationCleanupError, runWorker } from "
 
 function failure(params) {
   const cleanup = {
-    providerLeaseId: "paperclip-create-fixture", attemptId: "fixture", companyId: params.companyId,
+    providerLeaseId: "wardmote-create-fixture", attemptId: "fixture", companyId: params.companyId,
     environmentId: params.environmentId, runId: params.runId, accountFingerprint: "a".repeat(64),
-    labels: { "paperclip-provider": "daytona" },
+    labels: { "wardmote-provider": "daytona" },
   };
   const diagnostic = { phase: params.config.phase ?? "create", elapsedMs: 2_000, budgetMs: 2_000,
     output: "private-provider-output", command: "private-provider-command", url: "private-provider-url" };

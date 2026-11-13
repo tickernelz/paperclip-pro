@@ -44,7 +44,7 @@ export function parseNovitaDriverConfig(raw: Record<string, unknown>): NovitaDri
     apiKey: parseOptionalString(raw.apiKey),
     domain: parseOptionalString(raw.domain),
     template: parseOptionalString(raw.template),
-    requestedCwd: parseOptionalString(raw.requestedCwd) ?? "/home/user/paperclip-workspace",
+    requestedCwd: parseOptionalString(raw.requestedCwd) ?? "/home/user/wardmote-workspace",
     timeoutMs: parsePositiveInteger(raw.timeoutMs, 300_000),
     requestTimeoutMs: parsePositiveInteger(raw.requestTimeoutMs, 30_000),
     secure: typeof raw.secure === "boolean" ? raw.secure : null,
@@ -147,11 +147,11 @@ export function buildShellCommand(input: {
 
 async function createSandbox(params: PluginEnvironmentAcquireLeaseParams | PluginEnvironmentProbeParams, config: NovitaDriverConfig) {
   const metadata = {
-    "paperclip-provider": "novita",
-    "paperclip-company-id": params.companyId,
-    "paperclip-environment-id": params.environmentId,
-    ...(params.issueId ? { "paperclip-issue-id": params.issueId } : {}),
-    ...("runId" in params ? { "paperclip-run-id": params.runId } : {}),
+    "wardmote-provider": "novita",
+    "wardmote-company-id": params.companyId,
+    "wardmote-environment-id": params.environmentId,
+    ...(params.issueId ? { "wardmote-issue-id": params.issueId } : {}),
+    ...("runId" in params ? { "wardmote-run-id": params.runId } : {}),
   };
   const opts = {
     ...sandboxOpts(config),

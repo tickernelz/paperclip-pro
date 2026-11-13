@@ -427,7 +427,7 @@ describe("resolveHeartbeatRuntimeMode compatibility", () => {
         adapterType,
       })).toEqual({
         kind: "legacy",
-        resolverVersion: "paperclip-runner-v1",
+        resolverVersion: "wardmote-runner-v1",
         reason: "direct_adapter",
       });
     }
@@ -439,7 +439,7 @@ describe("resolveHeartbeatRuntimeMode compatibility", () => {
       adapterType: "wardmote_runner",
     })).toEqual({
       kind: "native",
-      resolverVersion: "paperclip-runner-v1",
+      resolverVersion: "wardmote-runner-v1",
       reason: "explicit_wardmote_runner",
       provider: "codex",
     });
@@ -450,7 +450,7 @@ describe("resolveHeartbeatRuntimeMode compatibility", () => {
       persisted: { runtimeMode: "native", runtimeModeResolvedAt: new Date() },
     })).toEqual({
       kind: "native",
-      resolverVersion: "paperclip-runner-v1",
+      resolverVersion: "wardmote-runner-v1",
       reason: "persisted_native_selection",
       provider: "codex",
     });

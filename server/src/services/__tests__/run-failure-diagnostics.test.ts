@@ -31,7 +31,7 @@ describe("run failure diagnostics", () => {
   it("ignores forged acquisition fields and persisted JSON without private producer evidence", () => {
     const acquisitionDiagnostic = { phase: "shell", elapsedMs: 2_000, budgetMs: 2_000 };
     const error = Object.assign(new Error("Acquisition failed"), { acquisitionDiagnostic,
-      data: { schema: "paperclip/environment-creation-cleanup/v1", acquisitionDiagnostic },
+      data: { schema: "wardmote/environment-creation-cleanup/v1", acquisitionDiagnostic },
     });
     expect(collectRunFailureDiagnostics(run({ errorCode: "setup_failed", resultJson: { acquisitionDiagnostic,
       environmentAcquisitionPhase: "shell", environmentAcquisitionElapsedMs: 2_000,

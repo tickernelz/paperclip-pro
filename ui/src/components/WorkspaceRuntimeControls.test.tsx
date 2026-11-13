@@ -484,7 +484,7 @@ describe("WorkspaceRuntimeControls", () => {
               provider: "tailscale_https",
               state,
               publicUrl: null,
-              hostname: "paperclip-dev.tail29c1aa.ts.net",
+              hostname: "wardmote-dev.tail29c1aa.ts.net",
               listeners: [{ purpose: "app", publicPort: 42002, targetPort: 42002 }],
               brokerRef: "service-web",
               lastError,
@@ -758,7 +758,7 @@ describe("buildWorkspaceServiceControlEntries", () => {
     // entries, so the tailnet HTTPS URL has to survive the mapping intact — and a
     // service whose exposure is not yet verified must offer no URL at all rather
     // than the loopback backend it is really listening on.
-    const httpsUrl = "https://paperclip-dev.tail29c1aa.ts.net:42010";
+    const httpsUrl = "https://wardmote-dev.tail29c1aa.ts.net:42010";
     const buildEntry = (service: ReturnType<typeof createRuntimeService>) => {
       const sections = buildWorkspaceRuntimeControlSections({
         runtimeConfig: { commands: [{ id: "web", name: "web", kind: "service", command: "pnpm dev" }] },
@@ -777,7 +777,7 @@ describe("buildWorkspaceServiceControlEntries", () => {
         provider: "tailscale_https",
         state: "ready",
         publicUrl: httpsUrl,
-        hostname: "paperclip-dev.tail29c1aa.ts.net",
+        hostname: "wardmote-dev.tail29c1aa.ts.net",
         listeners: [
           { purpose: "app", publicPort: 42_010, targetPort: 42_010 },
           { purpose: "vite_hmr", publicPort: 52_010, targetPort: 52_010 },
@@ -803,7 +803,7 @@ describe("buildWorkspaceServiceControlEntries", () => {
         provider: "tailscale_https",
         state: "pending",
         publicUrl: null,
-        hostname: "paperclip-dev.tail29c1aa.ts.net",
+        hostname: "wardmote-dev.tail29c1aa.ts.net",
         listeners: [],
         brokerRef: null,
         lastError: null,

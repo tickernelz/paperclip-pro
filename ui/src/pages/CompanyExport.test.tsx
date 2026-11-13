@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ExportFidelityReport } from "@tickernelz/wardmote-shared/portability-fidelity";
+import { EXPORT_FIDELITY_REPORT_SCHEMA, type ExportFidelityReport } from "@tickernelz/wardmote-shared/portability-fidelity";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CompanyExport, resolveExportPreviewImageSrc } from "./CompanyExport";
 
@@ -81,7 +81,7 @@ async function flushReact() {
 
 function buildExportPreviewResult() {
   return {
-    rootPath: "paperclip",
+    rootPath: "wardmote",
     manifest: {
       agents: [],
       skills: [],
@@ -149,7 +149,7 @@ function buildRichExportPreviewResult() {
 
 function buildFidelityReport(warnings: ExportFidelityReport["warnings"]): ExportFidelityReport {
   return {
-    schema: "paperclip-export-fidelity-v1",
+    schema: EXPORT_FIDELITY_REPORT_SCHEMA,
     companyId: "company-1",
     counts: {
       labelDefinitions: 0,
@@ -179,7 +179,7 @@ describe("CompanyExport", () => {
     mockAgentsApi.list.mockResolvedValue([]);
     mockProjectsApi.list.mockResolvedValue([]);
     mockCompaniesApi.exportPreview.mockResolvedValue(buildExportPreviewResult());
-    mockCompaniesApi.exportBundle.mockResolvedValue({ rootPath: "paperclip", files: {} });
+    mockCompaniesApi.exportBundle.mockResolvedValue({ rootPath: "wardmote", files: {} });
     mockCompaniesApi.exportFidelity.mockResolvedValue(buildFidelityReport([]));
     Object.assign(URL, {
       createObjectURL: vi.fn(() => "blob:mock"),

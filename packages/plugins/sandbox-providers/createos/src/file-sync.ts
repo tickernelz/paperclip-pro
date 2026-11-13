@@ -9,7 +9,7 @@ import type { PluginEnvironmentSyncInParams, PluginEnvironmentSyncResult } from 
 import { CreateosClient, identifier } from "./client.js";
 import { execute, shellQuote } from "./execute.js";
 
-const ROOT = "/paperclip-workspace";
+const ROOT = "/wardmote-workspace";
 
 export function assertRemotePath(value: string): void {
   if (!path.posix.isAbsolute(value) || value.includes("\0") || value.split("/").includes("..")) {

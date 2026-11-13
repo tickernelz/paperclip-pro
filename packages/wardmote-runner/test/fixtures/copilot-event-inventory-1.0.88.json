@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.copilot-capability-inventory/v1",
+  "schema": "wardmote.copilot-capability-inventory/v1",
   "harnessVersion": "1.0.88",
   "source": "Exact darwin-arm64 distribution embedded schemas/session-events.schema.json and app.js; no live model inference",
   "sourceSchemaSha256": "d8cb713c05d5278a68dde5c5d4482574f836e922ae13aa06f82474c209a7c6e9",

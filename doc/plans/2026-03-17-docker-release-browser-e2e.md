@@ -2,7 +2,7 @@
 
 ## Context
 
-Today release smoke testing for published Paperclip packages is manual and shell-driven:
+Today release smoke testing for published Wardmote packages is manual and shell-driven:
 
 ```sh
 HOST_PORT=3232 DATA_DIR=./data/release-smoke-canary PAPERCLIPAI_VERSION=canary ./scripts/docker-onboard-smoke.sh
@@ -105,8 +105,8 @@ Later we can add a second credentialed smoke lane for real model-backed agents.
 
 The current defaults in `scripts/docker-onboard-smoke.sh` should be treated as stable test fixtures:
 
-- email: `smoke-admin@paperclip.local`
-- password: `paperclip-smoke-password`
+- email: `smoke-admin@wardmote.local`
+- password: `wardmote-smoke-password`
 
 The browser test should log in with those exact values unless overridden by env vars.
 
@@ -214,7 +214,7 @@ Recommended triggers:
 
 Recommended inputs:
 
-- `paperclip_version`
+- `wardmote_version`
   - `canary` or `latest`
 - `host_port`
   - optional, default runner-safe port
@@ -254,7 +254,7 @@ First ship the workflow as manual-only so the harness and test can be stabilized
 
 After `publish_canary` succeeds in `.github/workflows/release.yml`, call the reusable release-smoke workflow with:
 
-- `paperclip_version=canary`
+- `wardmote_version=canary`
 
 This proves the just-published public canary really boots and onboards.
 
@@ -262,7 +262,7 @@ This proves the just-published public canary really boots and onboards.
 
 After `publish_stable` succeeds, call the same workflow with:
 
-- `paperclip_version=latest`
+- `wardmote_version=latest`
 
 This gives us post-publish confirmation that the stable dist-tag is healthy.
 

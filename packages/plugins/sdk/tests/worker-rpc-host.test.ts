@@ -120,7 +120,7 @@ describe("worker performAction context", () => {
     try {
       await expect(callWorker("initialize", {
         manifest: {
-          id: "paperclip.test-worker-context",
+          id: "wardmote.test-worker-context",
           apiVersion: 1,
           version: "1.0.0",
           displayName: "Worker Context Test",
@@ -246,7 +246,7 @@ describe("worker invocation scope propagation", () => {
     try {
       await callWorker("initialize", {
         manifest: {
-          id: "paperclip.scope-test",
+          id: "wardmote.scope-test",
           apiVersion: 1,
           version: "1.0.0",
           displayName: "Scope test",
@@ -344,7 +344,7 @@ describe("worker configChanged cross-tenant guard", () => {
     async function initialize() {
       return await callWorker("initialize", {
         manifest: {
-          id: "paperclip.config-guard-test",
+          id: "wardmote.config-guard-test",
           apiVersion: 1,
           version: "1.0.0",
           displayName: "Config Guard Test",
@@ -581,7 +581,7 @@ describe("worker provider tracer", () => {
     try {
       await callWorker("initialize", {
         manifest: {
-          id: "paperclip.tracer-test",
+          id: "wardmote.tracer-test",
           apiVersion: 1,
           version: "1.0.0",
           displayName: "Tracer test",
@@ -716,7 +716,7 @@ describe("worker execute.log emitter", () => {
     try {
       await callWorker("initialize", {
         manifest: {
-          id: "paperclip.execute-log-test",
+          id: "wardmote.execute-log-test",
           apiVersion: 1,
           version: "1.0.0",
           displayName: "Execute log test",
@@ -860,7 +860,7 @@ describe("worker setup-token pseudo-terminal dispatch", () => {
       await expect(
         callWorker("initialize", {
           manifest: {
-            id: "paperclip.login-pty",
+            id: "wardmote.login-pty",
             apiVersion: 1,
             version: "1.0.0",
             displayName: "Login PTY Test",
@@ -947,7 +947,7 @@ describe("worker duplex channel dispatch", () => {
       async setup() {},
       async onDuplexChannelOpen(params) {
         expect(params.hostRouteId).toBe("route-1");
-        expect(params.command).toEqual(["paperclip-bridge"]);
+        expect(params.command).toEqual(["wardmote-bridge"]);
         expect(params.providerLeaseId).toBe("lease-1");
         return { workerSessionId: "ws-1" };
       },
@@ -996,7 +996,7 @@ describe("worker duplex channel dispatch", () => {
       await expect(
         callWorker("initialize", {
           manifest: {
-            id: "paperclip.duplex-channel",
+            id: "wardmote.duplex-channel",
             apiVersion: 1,
             version: "1.0.0",
             displayName: "Duplex Channel Test",
@@ -1026,7 +1026,7 @@ describe("worker duplex channel dispatch", () => {
           companyId: "company-1",
           environmentId: "env-1",
           providerLeaseId: "lease-1",
-          command: ["paperclip-bridge"],
+          command: ["wardmote-bridge"],
         }),
       ).resolves.toEqual({ workerSessionId: "ws-1" });
 
@@ -1091,7 +1091,7 @@ describe("worker duplex channel dispatch", () => {
     try {
       const result = (await callWorker("initialize", {
         manifest: {
-          id: "paperclip.bare",
+          id: "wardmote.bare",
           apiVersion: 1,
           version: "1.0.0",
           displayName: "Bare Test",

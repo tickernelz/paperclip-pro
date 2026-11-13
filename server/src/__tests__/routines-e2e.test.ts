@@ -655,13 +655,13 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
 
     const runRes = await postRoutineRun(app, createRes.body.id, {
       source: "manual",
-      variables: { repo: "paperclip" },
+      variables: { repo: "wardmote" },
     });
 
     expect(runRes.status).toBe(202);
     expect(runRes.body.triggerPayload).toEqual({
       variables: {
-        repo: "paperclip",
+        repo: "wardmote",
         priority: "high",
       },
     });
@@ -671,7 +671,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
       .from(issues)
       .where(eq(issues.id, runRes.body.linkedIssueId));
 
-    expect(issue?.description).toBe("Review paperclip for high bugs");
+    expect(issue?.description).toBe("Review wardmote for high bugs");
   });
 
   it("defaults activity gates and rejects invalid activity gate values", async () => {

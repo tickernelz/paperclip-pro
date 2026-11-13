@@ -19,7 +19,7 @@ import {
 import { runnerPrpCoordinator } from "./runner-prp-coordinator.js";
 
 const moduleDirectory = dirname(fileURLToPath(import.meta.url));
-const RUNNER_VERSION = "paperclip-runner-v1";
+const RUNNER_VERSION = "wardmote-runner-v1";
 
 interface NativeGoalControl {
   sessionId: string;
@@ -326,7 +326,7 @@ export async function executeNativeCodexRunner(input: {
   const runnerDigest = `sha256:${createHash("sha256").update(readFileSync(binary)).digest("hex")}`;
   const runtimeRoot = input.runtimeRoot
     ? resolve(input.runtimeRoot)
-    : resolve(resolveWardmoteInstanceRoot(), "runtime", "paperclip-runner");
+    : resolve(resolveWardmoteInstanceRoot(), "runtime", "wardmote-runner");
   const runnerStateDirectory = resolve(runtimeRoot, "runner", input.runId);
   const goalControl = await readNativeGoalControl({
     db: input.db,

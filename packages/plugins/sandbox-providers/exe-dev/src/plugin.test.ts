@@ -298,7 +298,7 @@ describe("exe.dev sandbox provider plugin", () => {
       requestedCwd: "/workspace/custom",
       config: {
         apiKey: "api-key",
-        namePrefix: "paperclip",
+        namePrefix: "wardmote",
         image: "ubuntu:22.04",
         timeoutMs: 300000,
       },
@@ -682,8 +682,8 @@ describe("exe.dev sandbox provider plugin", () => {
     fetchMock
       .mockResolvedValueOnce(
         new Response(JSON.stringify({
-          vm_name: "paperclip-probe",
-          ssh_dest: "paperclip-probe.exe.xyz",
+          vm_name: "wardmote-probe",
+          ssh_dest: "wardmote-probe.exe.xyz",
           status: "running",
         }), { status: 200 }),
       )
@@ -702,23 +702,23 @@ describe("exe.dev sandbox provider plugin", () => {
 
     expect(result).toMatchObject({
       ok: true,
-      summary: "Connected to exe.dev VM paperclip-probe.",
+      summary: "Connected to exe.dev VM wardmote-probe.",
       metadata: {
         provider: "exe-dev",
-        vmName: "paperclip-probe",
-        sshDest: "paperclip-probe.exe.xyz",
+        vmName: "wardmote-probe",
+        sshDest: "wardmote-probe.exe.xyz",
         shellCommand: "bash",
       },
     });
-    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'paperclip-probe'");
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'wardmote-probe'");
   });
 
   it("cleans up the probe VM when SSH verification fails", async () => {
     fetchMock
       .mockResolvedValueOnce(
         new Response(JSON.stringify({
-          vm_name: "paperclip-probe",
-          ssh_dest: "paperclip-probe.exe.xyz",
+          vm_name: "wardmote-probe",
+          ssh_dest: "wardmote-probe.exe.xyz",
           status: "running",
         }), { status: 200 }),
       )
@@ -742,15 +742,15 @@ describe("exe.dev sandbox provider plugin", () => {
       },
     });
     expect(String(result?.metadata?.error ?? "")).toContain("permission denied");
-    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'paperclip-probe'");
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'wardmote-probe'");
   });
 
   it("returns onboarding guidance when probe hits exe.dev SSH registration", async () => {
     fetchMock
       .mockResolvedValueOnce(
         new Response(JSON.stringify({
-          vm_name: "paperclip-probe",
-          ssh_dest: "paperclip-probe.exe.xyz",
+          vm_name: "wardmote-probe",
+          ssh_dest: "wardmote-probe.exe.xyz",
           status: "running",
         }), { status: 200 }),
       )
@@ -771,7 +771,7 @@ describe("exe.dev sandbox provider plugin", () => {
       summary: "exe.dev environment probe failed.",
     });
     expect(String(result?.metadata?.error ?? "")).toContain("the Wardmote host SSH key is not registered with exe.dev");
-    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'paperclip-probe'");
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'wardmote-probe'");
   });
 
   it("deletes non-reusable leases on release", async () => {
@@ -824,11 +824,11 @@ describe("exe.dev sandbox provider plugin", () => {
         providerLeaseId: "vm-1",
         metadata: {
           sshDest: "vm-1.exe.xyz",
-          remoteCwd: "/srv/paperclip/run-1",
+          remoteCwd: "/srv/wardmote/run-1",
         },
       },
       workspace: {
-        localPath: "/local/paperclip",
+        localPath: "/local/wardmote",
         remotePath: undefined,
       },
     });
@@ -837,12 +837,12 @@ describe("exe.dev sandbox provider plugin", () => {
     expect(spawnMock.mock.calls[0]?.[0]).toBe("ssh");
     const sshCommand = String(spawnMock.mock.calls[0]?.[1]?.at(-1) ?? "");
     expect(sshCommand).toContain("mkdir -p");
-    expect(sshCommand).toContain("/srv/paperclip/run-1");
+    expect(sshCommand).toContain("/srv/wardmote/run-1");
     expect(result).toMatchObject({
-      cwd: "/srv/paperclip/run-1",
+      cwd: "/srv/wardmote/run-1",
       metadata: {
         provider: "exe-dev",
-        remoteCwd: "/srv/paperclip/run-1",
+        remoteCwd: "/srv/wardmote/run-1",
       },
     });
   });
@@ -865,12 +865,12 @@ describe("exe.dev sandbox provider plugin", () => {
         },
       },
       workspace: {
-        localPath: "/local/paperclip",
-        remotePath: "/srv/paperclip/remote-fallback",
+        localPath: "/local/wardmote",
+        remotePath: "/srv/wardmote/remote-fallback",
       },
     });
 
-    expect(result?.cwd).toBe("/srv/paperclip/remote-fallback");
+    expect(result?.cwd).toBe("/srv/wardmote/remote-fallback");
   });
 
   it("skips ensureRemoteWorkspace and returns the resolved cwd when no VM metadata is available", async () => {
@@ -885,16 +885,16 @@ describe("exe.dev sandbox provider plugin", () => {
       lease: {
         providerLeaseId: null,
         metadata: {
-          remoteCwd: "/srv/paperclip/no-vm",
+          remoteCwd: "/srv/wardmote/no-vm",
         },
       },
       workspace: {
-        localPath: "/local/paperclip",
+        localPath: "/local/wardmote",
       },
     });
 
     expect(spawnMock).not.toHaveBeenCalled();
-    expect(result?.cwd).toBe("/srv/paperclip/no-vm");
+    expect(result?.cwd).toBe("/srv/wardmote/no-vm");
   });
 });
 

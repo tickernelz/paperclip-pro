@@ -66,7 +66,7 @@ describe("Cloudflare sandbox provider plugin", () => {
         normalizeId: false,
         requestedCwd: "/workspace/custom",
         sessionStrategy: "default",
-        sessionId: "paperclip",
+        sessionId: "wardmote",
         timeoutMs: 450000,
         bridgeRequestTimeoutMs: 40000,
         previewHostname: null,
@@ -100,7 +100,7 @@ describe("Cloudflare sandbox provider plugin", () => {
         providerLeaseId: "pc-run-1-abcd1234",
         metadata: {
           provider: "cloudflare",
-          remoteCwd: "/workspace/paperclip",
+          remoteCwd: "/workspace/wardmote",
           resumedLease: false,
         },
       }),
@@ -112,7 +112,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       environmentId: "env-1",
       issueId: "issue-1",
       runId: "run-1",
-      requestedCwd: "/workspace/paperclip",
+      requestedCwd: "/workspace/wardmote",
       config: {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
@@ -123,12 +123,12 @@ describe("Cloudflare sandbox provider plugin", () => {
       providerLeaseId: "pc-run-1-abcd1234",
       metadata: {
         provider: "cloudflare",
-        remoteCwd: "/workspace/paperclip",
+        remoteCwd: "/workspace/wardmote",
         resumedLease: false,
       },
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://bridge.example.workers.dev/api/paperclip-sandbox/v1/leases/acquire",
+      "https://bridge.example.workers.dev/api/wardmote-sandbox/v1/leases/acquire",
       expect.objectContaining({
         method: "POST",
         headers: expect.any(Headers),
@@ -141,7 +141,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       environmentId: "env-1",
       runId: "run-1",
       issueId: "issue-1",
-      requestedCwd: "/workspace/paperclip",
+      requestedCwd: "/workspace/wardmote",
     });
   });
 
@@ -149,7 +149,7 @@ describe("Cloudflare sandbox provider plugin", () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse({
         providerLeaseId: "pc-run-1-abcd1234",
-        metadata: { provider: "cloudflare", remoteCwd: "/workspace/paperclip", resumedLease: false },
+        metadata: { provider: "cloudflare", remoteCwd: "/workspace/wardmote", resumedLease: false },
       }),
     );
 
@@ -158,7 +158,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       companyId: "company-1",
       environmentId: "env-1",
       runId: "run-1",
-      requestedCwd: "/workspace/paperclip",
+      requestedCwd: "/workspace/wardmote",
       config: {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
@@ -184,7 +184,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       companyId: "company-1",
       environmentId: "env-1",
       providerLeaseId: "pc-env-env-1",
-      leaseMetadata: { remoteCwd: "/workspace/paperclip" },
+      leaseMetadata: { remoteCwd: "/workspace/wardmote" },
       config: {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
@@ -206,7 +206,7 @@ describe("Cloudflare sandbox provider plugin", () => {
         exitCode: 0,
         signal: null,
         timedOut: false,
-        stdout: "/workspace/paperclip\n",
+        stdout: "/workspace/wardmote\n",
         stderr: "",
       }),
     );
@@ -218,7 +218,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       lease: { providerLeaseId: "pc-run-1-abcd1234", metadata: {} },
       command: "pwd",
       args: [],
-      cwd: "/workspace/paperclip",
+      cwd: "/workspace/wardmote",
       config: {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
@@ -229,7 +229,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       exitCode: 0,
       signal: null,
       timedOut: false,
-      stdout: "/workspace/paperclip\n",
+      stdout: "/workspace/wardmote\n",
       stderr: "",
     });
   });
@@ -258,7 +258,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       lease: { providerLeaseId: "pc-run-1-abcd1234", metadata: {} },
       command: "sh",
       args: ["-lc", "ls"],
-      cwd: "/workspace/paperclip",
+      cwd: "/workspace/wardmote",
       env: {
         WARDMOTE_SANDBOX_EXEC_CHANNEL: "bridge",
         KEEP_ME: "visible",
@@ -267,13 +267,13 @@ describe("Cloudflare sandbox provider plugin", () => {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
         sessionStrategy: "default",
-        sessionId: "paperclip",
+        sessionId: "wardmote",
       },
     });
 
     expect(requestBodyAt()).toMatchObject({
       sessionStrategy: "named",
-      sessionId: "paperclip-bridge",
+      sessionId: "wardmote-bridge",
       env: {
         KEEP_ME: "visible",
       },
@@ -311,13 +311,13 @@ describe("Cloudflare sandbox provider plugin", () => {
       lease: { providerLeaseId: "pc-run-1-abcd1234", metadata: {} },
       command: "echo",
       args: ["hello"],
-      cwd: "/workspace/paperclip",
+      cwd: "/workspace/wardmote",
       env: { KEEP_ME: "visible" },
       config: {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
         sessionStrategy: "named",
-        sessionId: "paperclip",
+        sessionId: "wardmote",
       },
     });
 
@@ -342,7 +342,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       lease: { providerLeaseId: "pc-run-1-abcd1234", metadata: {} },
       command: "pwd",
       args: [],
-      cwd: "/workspace/paperclip",
+      cwd: "/workspace/wardmote",
       config: {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
@@ -376,7 +376,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       issueId: "issue-1",
       lease: {
         providerLeaseId: "pc-run-1-abcd1234",
-        metadata: { remoteCwd: "/workspace/paperclip" },
+        metadata: { remoteCwd: "/workspace/wardmote" },
       },
       workspace: {
         localPath: "/tmp/project",
@@ -390,7 +390,7 @@ describe("Cloudflare sandbox provider plugin", () => {
         bridgeBaseUrl: "https://bridge.example.workers.dev",
         bridgeAuthToken: "resolved-token",
       },
-    })).rejects.toThrow("Failed to prepare Cloudflare sandbox workspace at /workspace/paperclip: mkdir: permission denied");
+    })).rejects.toThrow("Failed to prepare Cloudflare sandbox workspace at /workspace/wardmote: mkdir: permission denied");
 
     expect(requestHeadersAt().get("X-Wardmote-Issue-Id")).toBe("issue-1");
   });

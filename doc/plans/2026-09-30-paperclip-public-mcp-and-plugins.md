@@ -1,31 +1,31 @@
-# Paperclip as the persistent team behind your assistant
+# Wardmote as the persistent team behind your assistant
 
 Date: 2026-09-30
 Status: First-release implementation in review; local paid acceptance verified across three models; deployment and hosted/store acceptance remain release gates
 
 ## 1. The thesis
 
-**Paperclip should make a team's identity, tools, work, and governance available wherever someone uses an assistant.**
+**Wardmote should make a team's identity, tools, work, and governance available wherever someone uses an assistant.**
 
-Codex or Claude can be where someone thinks and works. Paperclip supplies the persistent organization: who owns a task, which tools they can use, what happened, what needs approval, and what continues after the conversation ends.
+Codex or Claude can be where someone thinks and works. Wardmote supplies the persistent organization: who owns a task, which tools they can use, what happened, what needs approval, and what continues after the conversation ends.
 
 | Layer | Responsibility |
 | --- | --- |
-| Paperclip core | Companies, agents, tasks, documents, execution, budgets, approvals |
+| Wardmote core | Companies, agents, tasks, documents, execution, budgets, approvals |
 | Capability and authorization layer | What this caller may do, under which identity and task context |
 | MCP endpoint / gateway | Exposes those capabilities to outside clients |
-| Plugin | Packages the connection with instructions for using Paperclip effectively |
-| Team template | Creates a useful starting organization inside Paperclip |
+| Plugin | Packages the connection with instructions for using Wardmote effectively |
+| Team template | Creates a useful starting organization inside Wardmote |
 | Store listing | Helps people discover and install the plugin |
 
-A plugin brings someone into Paperclip and teaches their assistant how to work with it. The durable team and its authority remain in Paperclip. The first product is one Paperclip plugin that lets a person use their team, with hosted onboarding for newcomers. Broader agent gateways follow on the same foundation.
+A plugin brings someone into Wardmote and teaches their assistant how to work with it. The durable team and its authority remain in Wardmote. The first product is one Wardmote plugin that lets a person use their team, with hosted onboarding for newcomers. Broader agent gateways follow on the same foundation.
 
 ## 2. Three experiences
 
 | Experience | Example | Identity and execution |
 | --- | --- | --- |
-| Use Paperclip as me | Show what's blocked and add my feedback. | Connected person's permissions and attribution. |
-| Delegate to my team | Have our researcher investigate competitors. | Person creates work; Paperclip agent executes through normal scheduling and governance. |
+| Use Wardmote as me | Show what's blocked and add my feedback. | Connected person's permissions and attribution. |
+| Delegate to my team | Have our researcher investigate competitors. | Person creates work; Wardmote agent executes through normal scheduling and governance. |
 | Work as an agent | This Codex session will work as our engineer on this task. | Explicitly authorized external session acts as the named agent and claims the task. |
 
 Distinguish these in the connection UI and audit history. Selecting an agent to receive work never silently switches the caller into that agent's identity. An agent gateway is an access point to the agent's authorized capabilities. Its URL identifies the gateway; a separate credential authorizes access. Copying the URL alone confers no authority.
@@ -36,32 +36,32 @@ For eventual agent mode:
 - Preserve the effective agent identity and the person who authorized the session.
 - Require an atomic, time-limited task claim. Native and external execution cannot both own a task.
 - Recheck authority at invocation, including revocation, pause, reassignment, and approval gates.
-- Expose only tools granted for external use; keep upstream credentials inside Paperclip.
+- Expose only tools granted for external use; keep upstream credentials inside Wardmote.
 - Provide task context and relevant instructions explicitly. Connecting MCP does not transfer conversation history or reproduce agent behavior automatically.
 
-Paperclip governs participation. It does not promise to launch or stop the external client, observe every local action, or measure spending the client does not report.
+Wardmote governs participation. It does not promise to launch or stop the external client, observe every local action, or measure spending the client does not report.
 
 ## 3. Shared core, two MCP surfaces
 
 ```mermaid
 flowchart TD
-    A[ChatGPT / Codex / Claude] --> B[Public Paperclip plugin]
+    A[ChatGPT / Codex / Claude] --> B[Public Wardmote plugin]
     C[Direct or private connection] --> D[Agent gateway]
     B --> E[OAuth identity and scoped authorization]
     D --> E
-    E --> F[Shared Paperclip capability layer]
+    E --> F[Shared Wardmote capability layer]
     G[Native runner] --> F
     F --> H[Tasks, documents, agents and governance]
     F --> I[Authorized connected tools]
 ```
 
-Reuse existing named gateways, scoped context, hashed revocable credentials, tool profiles, policies, and connected-tool routing. Inbound gateway OAuth is currently reserved and disabled. Existing Paperclip self-tools are read fixtures, not a complete external API. Richer runner operations currently require an active native run with task ownership.
+Reuse existing named gateways, scoped context, hashed revocable credentials, tool profiles, policies, and connected-tool routing. Inbound gateway OAuth is currently reserved and disabled. Existing Wardmote self-tools are read fixtures, not a complete external API. Richer runner operations currently require an active native run with task ownership.
 
 Extract reusable operation definitions and domain handlers incrementally. Public user connections, native runs, and external agent sessions get explicit authorization contexts. Preserve native execution checks; do not fabricate native runs for outside callers.
 
 ### Public plugin surface
 
-Individually expose bounded Paperclip operations to:
+Individually expose bounded Wardmote operations to:
 
 - Identify the connected account and authorized company.
 - List agents and projects.
@@ -74,9 +74,9 @@ Disclose scheduling/wake effects of task creation and comments. Background work 
 
 ### Agent gateway surface
 
-Later expose the agent's permitted Paperclip operations and third-party tools through direct/private connections. Reuse gateway policies, credential handling, approval records, and audit infrastructure.
+Later expose the agent's permitted Wardmote operations and third-party tools through direct/private connections. Reuse gateway policies, credential handling, approval records, and audit infrastructure.
 
-OpenAI requires individually exposed operations for review and disallows hidden operations through discovery plus generic execution; it also restricts plugins primarily functioning as unofficial third-party intermediaries. Do not publish `search_tools`/`run_tool` or `search_api`/`call_api` as the public plugin's general interface. Delegation to Paperclip agents remains clearly disclosed product behavior with normal permissions and approvals. Store acceptance is subject to review.
+OpenAI requires individually exposed operations for review and disallows hidden operations through discovery plus generic execution; it also restricts plugins primarily functioning as unofficial third-party intermediaries. Do not publish `search_tools`/`run_tool` or `search_api`/`call_api` as the public plugin's general interface. Delegation to Wardmote agents remains clearly disclosed product behavior with normal permissions and approvals. Store acceptance is subject to review.
 
 ## 4. Distribution and first use
 
@@ -92,16 +92,16 @@ Maintain shared content with separate package outputs: OpenAI portable `plugin.j
 
 Onboarding:
 
-1. Discover and install Paperclip.
+1. Discover and install Wardmote.
 2. Connect through browser sign-in.
 3. Choose an existing hosted team or enter hosted setup.
 4. New users define a mission, select a template, and configure execution and spending.
 5. Return to the assistant and delegate a first task.
 6. Inspect progress and retrieve a concrete result.
 
-Cloud owns stack provisioning. Reuse its onboarding flow and report readiness; installation alone must not create companies or start paid agents. Configure execution credentials separately from the client's Paperclip connection.
+Cloud owns stack provisioning. Reuse its onboarding flow and report readiness; installation alone must not create companies or start paid agents. Configure execution credentials separately from the client's Wardmote connection.
 
-Use a stable Paperclip-owned HTTPS public endpoint. Resolve hosted instance access from the authenticated account and authorized company. Do not accept arbitrary instance URLs as tool destinations. Self-hosted users connect directly to reachable instances first; managed relays are deferred.
+Use a stable Wardmote-owned HTTPS public endpoint. Resolve hosted instance access from the authenticated account and authorized company. Do not accept arbitrary instance URLs as tool destinations. Self-hosted users connect directly to reachable instances first; managed relays are deferred.
 
 Implement OAuth with PKCE, resource/audience validation, discovery metadata, refresh/revocation, and registration compatible with both ecosystems. Outbound connector OAuth and inbound authorization remain separate responsibilities.
 
@@ -145,8 +145,8 @@ Defaults: one public listing, hosted onboarding, first-party public tools, broad
 
 ## Initial implementation record (2026-09-30; historical)
 
-Paperclip worktree: `paperclip-public-mcp`, branch `codex/paperclip-public-mcp`.
-Cloud worktree: `paperclip-cloud-public-mcp`, branch `codex/public-mcp`.
+Wardmote worktree: `wardmote-public-mcp`, branch `codex/paperclip-public-mcp`.
+Cloud worktree: `wardmote-cloud-public-mcp`, branch `codex/public-mcp`.
 
 At this initial checkpoint, the first-release code was in isolated branches and
 broad verification had not passed. The failures below remain part of the history;
@@ -155,7 +155,7 @@ No production rollout has been performed.
 
 Implemented:
 
-- Opt-in `/mcp/paperclip` with ten individually exposed first-party tools.
+- Opt-in `/mcp/wardmote` with ten individually exposed first-party tools.
 - Company-scoped OAuth grants with S256 PKCE, exact redirect/resource validation,
   discovery, public client registration, hashed tokens, expiry, rotating refresh
   and revocation.
@@ -229,12 +229,12 @@ Verification:
 
 Open gates at the initial checkpoint:
 
-1. Resolve the broad Paperclip verification failures above, finish all required
+1. Resolve the broad Wardmote verification failures above, finish all required
    test groups, and complete normal code/PR review. No PR has been opened.
 2. Deploy compatible instance and Cloud releases, migrations, a broker key from
    the secret store, and the explicit feature opt-ins. Roll existing/pool stacks
    onto the compatible tenant version. No production deployment has been made.
-3. Build packages against the deployed stable Paperclip-owned HTTPS endpoint and
+3. Build packages against the deployed stable Wardmote-owned HTTPS endpoint and
    provide store review metadata; checked-in packages target loopback development.
 4. Exercise ChatGPT/Codex and Claude application/store installation against the
    staging HTTPS endpoint and run a controlled agent through execution to a
@@ -360,7 +360,7 @@ adds migrations 0301 through 0305 plus disabled MCP code. An operator must enabl
 authenticated instance over HTTPS. A team member can then connect Codex or Claude
 Code directly, consent to a company, review work, delegate tasks as themselves,
 and retrieve results later. [The runbook](../public-mcp.md) includes commands.
-The shared production Paperclip skill also gains generic document-creation and
+The shared production Wardmote skill also gains generic document-creation and
 read-back guidance.
 
 Hosted use additionally requires Cloud migration 0055, a secret-store encryption

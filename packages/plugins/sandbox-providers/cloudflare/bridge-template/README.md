@@ -2,7 +2,7 @@
 
 This Worker is the operator-facing bridge used by `@tickernelz/wardmote-plugin-cloudflare-sandbox`.
 
-It exposes a small authenticated JSON API under `/api/paperclip-sandbox/v1` and translates Wardmote lease and command requests into Cloudflare Sandbox SDK calls.
+It exposes a small authenticated JSON API under `/api/wardmote-sandbox/v1` and translates Wardmote lease and command requests into Cloudflare Sandbox SDK calls.
 
 ## What it does
 

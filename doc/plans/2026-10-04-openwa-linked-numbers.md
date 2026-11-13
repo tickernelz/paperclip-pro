@@ -5,7 +5,7 @@ An OpenWA chat endpoint keeps its agent number (unchanged). The board can link
 extra OpenWA sessions on the same gateway (for example the owner's personal
 WhatsApp). The assigned agent can read selected chats of a linked session on
 demand in owner-triggered runs only. A linked session is never used to send,
-never wakes the agent, and its content is not stored in Paperclip tables; text
+never wakes the agent, and its content is not stored in Wardmote tables; text
 the agent reads appears in that run's transcript and run log.
 
 ## Decisions (owner-confirmed)
@@ -14,10 +14,10 @@ the agent reads appears in that run's transcript and run log.
 2. Mode: on demand only. No socket subscription, no wake, no admission.
 3. Scope: allowlist. A linked number exposes no chat until the board selects
    chats/groups in the UI; reads outside the list fail 403 linked_chat_not_allowed.
-4. Key: Paperclip creates a dedicated OpenWA API key per linked session with the
+4. Key: Wardmote creates a dedicated OpenWA API key per linked session with the
    endpoint's stored admin key (credentials.adminApiKey): role viewer,
-   allowedSessions [linkedSessionId], name "paperclip-linked-<short id>".
-   Stored as a Paperclip-managed company secret; never returned to any client or
+   allowedSessions [linkedSessionId], name "wardmote-linked-<short id>".
+   Stored as a Wardmote-managed company secret; never returned to any client or
    agent. Unlink revokes the key (AuthController_revoke/delete) and deletes the
    secret. When the endpoint has no admin key, linking fails 422
    openwa_admin_key_required with a message telling the board to add one.
@@ -56,7 +56,7 @@ Table chat_openwa_linked_sessions:
 - Routes under /api/chat-endpoints/:endpointId/openwa/linked-sessions:
   GET list (endpoint access), POST link, PUT /:linkedId/chats, DELETE /:linkedId,
   GET /:linkedId/gateway-chats (management access, like existing
-  /openwa/gateway-chats). Follow skill add-paperclip-pro-server-route (openapi,
+  /openwa/gateway-chats). Follow skill add-wardmote-server-route (openapi,
   route prefix map, mcp tools regen, guard classification).
 - Gateway sessions available to link: GET .../openwa/linkable-sessions lists
   gateway sessions (admin key) excluding the agent session and already linked.

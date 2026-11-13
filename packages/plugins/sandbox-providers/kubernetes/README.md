@@ -26,7 +26,7 @@ wardmote plugin install @tickernelz/wardmote-plugin-kubernetes
 Or, for local development:
 
 ```bash
-wardmote plugin install --local /path/to/paperclip/packages/plugins/sandbox-providers/kubernetes
+wardmote plugin install --local /path/to/wardmote/packages/plugins/sandbox-providers/kubernetes
 ```
 
 ## Backends
@@ -173,7 +173,7 @@ pnpm typecheck
 pnpm build
 ```
 
-To run the kind-cluster integration test (requires `kubectl --context kind-paperclip` and a pre-loaded alpine image; see `test/integration/end-to-end-run.test.ts`):
+To run the kind-cluster integration test (requires `kubectl --context kind-wardmote` and a pre-loaded alpine image; see `test/integration/end-to-end-run.test.ts`):
 
 ```bash
 RUN_K8S_INTEGRATION_TESTS=1 pnpm test test/integration/end-to-end-run.test.ts

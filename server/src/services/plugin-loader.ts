@@ -39,7 +39,7 @@ const STANDALONE_BUNDLED_PLUGIN_SDK_PACKAGE = "@tickernelz/wardmote-plugin-sdk";
 // Constants
 // ---------------------------------------------------------------------------
 
-export const NPM_PLUGIN_PACKAGE_PREFIX = "paperclip-plugin-";
+export const NPM_PLUGIN_PACKAGE_PREFIX = "wardmote-plugin-";
 
 /**
  * Default local plugin directory.  The loader scans this directory for
@@ -587,10 +587,9 @@ export interface PluginLoader {
 
 export function isPluginPackageName(name: string): boolean {
   if (name.startsWith(NPM_PLUGIN_PACKAGE_PREFIX)) return true;
-  // Also accept scoped packages like @acme/plugin-linear or @tickernelz/wardmote-plugin-*
   if (name.includes("/")) {
     const localPart = name.split("/")[1] ?? "";
-    return localPart.startsWith("plugin-");
+    return localPart.startsWith("plugin-") || localPart.startsWith(NPM_PLUGIN_PACKAGE_PREFIX);
   }
   return false;
 }

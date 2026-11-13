@@ -1841,7 +1841,7 @@ for (const execution of executions) {
           }
           const journalEvidence = execution.suite.id === "daytona-journal-continuity" && completedTurn === 1
             ? await largeJournalEvidence({
-                stateRoot: path.join(process.env.WARDMOTE_HOME!, "instances", process.env.WARDMOTE_INSTANCE_ID!, "runtime", "paperclip-runner", "durable-sessions"),
+                stateRoot: path.join(process.env.WARDMOTE_HOME!, "instances", process.env.WARDMOTE_INSTANCE_ID!, "runtime", "wardmote-runner", "durable-sessions"),
                 runId: chronologicalRuns.at(-1)!.id,
                 minimumBytes: 2 * 1024 * 1024,
                 minimumCompletedStimulusCalls: 240,

@@ -1,4 +1,4 @@
-# OpenAI Dot as a production Paperclip Runner provider
+# OpenAI Dot as a production Wardmote Runner provider
 
 Date: 2026-10-02
 
@@ -31,11 +31,11 @@ approval. See [the adapter runbook](../openai-dot-runner.md).
 
 ## 1. Recommendation
 
-Add **OpenAI Dot** as a provider of the existing `paperclip_runner` adapter:
+Add **OpenAI Dot** as a provider of the existing `wardmote_runner` adapter:
 
 ```json
 {
-  "adapterType": "paperclip_runner",
+  "adapterType": "wardmote_runner",
   "adapterConfig": {
     "provider": "openai_dot",
     "dotBindingId": "<server-owned binding>",
@@ -46,11 +46,11 @@ Add **OpenAI Dot** as a provider of the existing `paperclip_runner` adapter:
 
 The provider uses MCP Events to notify an existing Dot and authenticated MCP
 tools to receive its actions. Rust `runnerd` owns the provider state machine and
-PRP lifecycle. Paperclip owns connection authorization, durable mailboxes,
+PRP lifecycle. Wardmote owns connection authorization, durable mailboxes,
 admission, tool effects, budgets, approvals, and final task disposition.
 
 The implementation is a new Runner provider, not a new legacy `execute()`
-adapter. Keep `paperclip_runner` in the server/UI/CLI registries. The older
+adapter. Keep `wardmote_runner` in the server/UI/CLI registries. The older
 `create-agent-adapter` skill remains useful for configuration, diagnostics and
 cross-surface consistency; its process-spawning package recipe does not define
 this provider's execution architecture.
@@ -95,7 +95,7 @@ third-party MCP bindings remain unsupported.
 The real-Dot test on October 2 demonstrated:
 
 1. Private custom-plugin installation and ordinary OAuth connection.
-2. Dot successfully calling `paperclip_connection`.
+2. Dot successfully calling `wardmote_connection`.
 3. A verified MCP Events subscription and signed webhook delivery.
 4. Dot fetching and accepting an assignment without a second chat prompt.
 5. Dot invoking a projected tool and saving exactly one test report.
@@ -114,15 +114,15 @@ OAuth state. A stable deployment and a real readiness check are essential.
 
 ## 2. Product contract
 
-### Paperclip initiates work
+### Wardmote initiates work
 
-A user selects **Paperclip Runner → OpenAI Dot**, connects their Dot, and assigns
-it an ordinary task. Existing scheduling admits the task. Paperclip sends a
+A user selects **Wardmote Runner → OpenAI Dot**, connects their Dot, and assigns
+it an ordinary task. Existing scheduling admits the task. Wardmote sends a
 small event; Dot retrieves the current assignment, explicitly accepts it, uses
 the projected tools, and submits its result. The task thread shows delivery,
 acceptance, progress, outputs, and completion separately.
 
-Paperclip can enqueue work whenever its ordinary rules allow. Delivery and
+Wardmote can enqueue work whenever its ordinary rules allow. Delivery and
 execution are asynchronous. A webhook acknowledgement is never presented as
 proof that Dot started work.
 
@@ -132,7 +132,7 @@ Preserve both directions and make the acting identity explicit:
 
 | Context | Authority | Supported behavior |
 | --- | --- | --- |
-| User asks their Dot to use Paperclip | Existing personal MCP connection | Read company work, create/delegate tasks, add feedback, retrieve results; actor is the consenting person. |
+| User asks their Dot to use Wardmote | Existing personal MCP connection | Read company work, create/delegate tasks, add feedback, retrieve results; actor is the consenting person. |
 | Dot executes an assigned Runner turn | Dedicated agent connection plus admitted assignment | Invoke the same authorized semantic tools as another Runner provider; actor is the assigned agent and run. |
 | Dot wants to start work while idle as the agent | Dedicated connection's `request_work` operation | Submit a bounded wake request referencing an authorized task and intent. Normal scheduling decides whether to admit a run before exposing its mutation tools. |
 
@@ -144,7 +144,7 @@ Actual task creation, delegation and writes then use the admitted tool catalog.
 
 Do not silently give an agent the consenting person's authority. A personal
 connection remains optional and independent. If the same Dot also has personal
-Paperclip access or other plugins, Paperclip cannot prevent it from acting
+Wardmote access or other plugins, Wardmote cannot prevent it from acting
 through those separately authorized channels. Users needing strict separation
 must use a Dot/account without those broader connections.
 
@@ -154,11 +154,11 @@ must use a Dot/account without those broader connections.
   do not admit a large backlog into provider sessions waiting for acceptance.
 - One active agent binding per dedicated OAuth grant. Multi-agent multiplexing
   through one Dot connection is deferred.
-- Standard, planning and ask tasks use normal Paperclip tool policy. Only
+- Standard, planning and ask tasks use normal Wardmote tool policy. Only
   capabilities actually exposed to this provider are offered.
 - Start with control-plane work: research coordination, task decomposition,
   documents, comments, approvals and assigned connector tools. A Dot is not
-  presumed to share the Paperclip repository or local filesystem.
+  presumed to share the Wardmote repository or local filesystem.
 - Follow-up messages are durable task messages and subsequent assignments.
   Active steering is unavailable in v1. The UI must say when a message is queued.
 - Model selection, token usage, provider-native session reset, private reasoning,
@@ -170,7 +170,7 @@ must use a Dot/account without those broader connections.
 
 ```mermaid
 sequenceDiagram
-  participant App as Paperclip scheduler/controller
+  participant App as Wardmote scheduler/controller
   participant Runner as Rust runnerd: Dot provider
   participant Broker as Durable Dot mailbox + public MCP
   participant Dot as OpenAI Dot
@@ -213,12 +213,12 @@ second tool dispatcher or finalizer hidden in the MCP route.
 | Dot | Retrieve work, perform reasoning, invoke exposed tools, propose result | Selecting its company/agent/run authority or bypassing finalization |
 
 Runner receives no ChatGPT credential, MCP OAuth token, webhook URL/signing key,
-or unrestricted Paperclip API key. Reuse the authenticated PRP connection for
+or unrestricted Wardmote API key. Reuse the authenticated PRP connection for
 the app-owned broker port. Do not add a second generic HTTP control API solely
 to get operations into runnerd.
 
 The Runner package remains standalone: define the broker port and envelopes in
-the package; implement them in Paperclip server without importing server or DB
+the package; implement them in Wardmote server without importing server or DB
 code into `packages/wardmote-runner`.
 
 ## 4. Production Runner integration
@@ -245,7 +245,7 @@ protocol revision. Tasks cannot override that identity or supply callback URLs.
 
 ### Contract changes
 
-The current native input is a closed `paperclip.native-execution-input.v5`
+The current native input is a closed `wardmote.native-execution-input.v5`
 contract. Introduce the next input revision with a Dot provider variant; retain
 v1–v5 parsing and recovery for existing providers. Update JSON Schema,
 TypeScript and Rust together, plus export/compatibility manifests and fixtures.
@@ -255,7 +255,7 @@ The new input must also distinguish provider workspace access from the Runner's
 own state directory. Dot's workspace-access variant is `none`; it receives no
 provider cwd. Adapt the execution-input builder and filesystem preparation
 guards accordingly instead of satisfying existing mandatory cwd fields with a
-made-up project path. A project/task may still exist in Paperclip without its
+made-up project path. A project/task may still exist in Wardmote without its
 checkout being mounted into this provider.
 
 Add a small, versioned external-provider transport extension over PRP. Proposed
@@ -275,7 +275,7 @@ The existing v2 enums cannot be expanded invisibly in persisted old contracts.
 
 Reads of assignment/receipt projections may come directly from the authorized
 broker database. Mutating lifecycle operations enter the live Runner. Normal
-`semantic_tool` dispatch, `paperclip_finish`/`paperclip_block` validation,
+`semantic_tool` dispatch, `wardmote_finish`/`wardmote_block` validation,
 completion feedback and PRP finalization remain authoritative.
 
 Command acknowledgement means the external operation was durably admitted to
@@ -307,7 +307,7 @@ Settlement is a separate correlated event, preserved across reconnects.
   v1. Do not provision a code sandbox just to wait for a remote Dot. Remote
   runner placement is a separate qualified deployment profile.
 
-### Capabilities reported to Paperclip
+### Capabilities reported to Wardmote
 
 | Capability | v1 behavior |
 | --- | --- |
@@ -320,7 +320,7 @@ Settlement is a separate correlated event, preserved across reconnects.
 | Queued follow-up | App queue supported; do not advertise provider-native steering/follow-up guarantees. |
 | Usage / cost / model controls | Unknown or unavailable; never zero-filled or inferred from elapsed time. |
 | Native skills/MCP injection | Unsupported; expose assigned knowledge/tools through authenticated reads and projection. |
-| Native runtime permission/input control | Unsupported; use Paperclip's durable task interactions and response wakes. |
+| Native runtime permission/input control | Unsupported; use Wardmote's durable task interactions and response wakes. |
 | Goals / child-thread lineage | Unsupported. |
 
 The capability model must distinguish recovering our bridge from resuming an
@@ -333,10 +333,10 @@ cannot express this, rather than setting `resume` or `interruption` to true.
 
 Add a dedicated agent resource, proposed `/mcp/runner`, sharing the existing
 OAuth/DCR/PKCE implementation and event transport. Its grant has a distinct
-purpose and `paperclip:agent` scope, optionally with `offline_access`. It never
-implicitly grants personal `paperclip:write` authority.
+purpose and `wardmote:agent` scope, optionally with `offline_access`. It never
+implicitly grants personal `wardmote:write` authority.
 
-The existing `/mcp/paperclip` resource and its personal consent semantics stay
+The existing `/mcp/wardmote` resource and its personal consent semantics stay
 intact. Make the principal a discriminated personal/delegated-agent type; do not
 manufacture a board actor in an agent call. Recheck the grant's consenting user,
 membership, company availability and explicit agent delegation on every call.
@@ -346,7 +346,7 @@ Pairing sequence:
 
 1. An authorized operator selects an existing/new Dot agent and starts setup.
    Apply the normal hiring/configuration approval rules.
-2. Paperclip creates an expiring one-use pairing intent bound to company,
+2. Wardmote creates an expiring one-use pairing intent bound to company,
    agent, initiating operator, requested delegation and protocol revision.
 3. The user installs/connects the dedicated Dot runner plugin using OAuth and
    explicit agent consent. No agent API key is pasted into a prompt.
@@ -417,9 +417,9 @@ to manufacture a Runner assignment.
 
 ### Event definition
 
-Use one production event, proposed `paperclip.dot.mailbox_updated`, filtered by
+Use one production event, proposed `wardmote.dot.mailbox_updated`, filtered by
 `companyId` and `bindingId`. The prototype's task-filtered
-`paperclip.dot.work_available` stays a lab contract; migrate setup instructions
+`wardmote.dot.work_available` stays a lab contract; migrate setup instructions
 explicitly rather than changing its schema in place.
 
 The event carries only bounded references: binding generation, mailbox item ID,
@@ -474,7 +474,7 @@ call IDs from that identity and preserve them across recovery.
 
 The broker receipt and existing semantic effect receipt have different jobs:
 the former tracks delivery of a provider operation; the latter proves the
-domain effect. Reuse `PaperclipRunnerToolAuthority` and its mutation receipts.
+domain effect. Reuse `WardmoteRunnerToolAuthority` and its mutation receipts.
 Do not implement writes by calling the public personal MCP executor.
 
 ### Lost replies and slow operations
@@ -528,7 +528,7 @@ stateDiagram-v2
 An answered interaction produces a new, ordinarily admitted continuation with
 current context and a new authority epoch. Do not hold a network request open
 through a human approval. Dot's memory may persist, but it must read the new
-Paperclip assignment and contract before taking further actions.
+Wardmote assignment and contract before taking further actions.
 
 Suggested initial operational defaults, configurable by operators and subject
 to qualification: one active assignment, ten-minute acceptance deadline,
@@ -551,7 +551,7 @@ the existing bounded delivery retry policy.
 | After webhook receipt, before accept | Same assignment remains offered; do not synthesize a started turn. |
 | During accept / response lost | Same request returns the accepted receipt; one `turn.started`. |
 | Tool committed, response lost | Reconcile existing semantic receipt; never repeat the effect with a fresh ID. |
-| Paperclip controller restarts | Restore current lease/generation, route persisted operations, replay PRP acknowledgements. |
+| Wardmote controller restarts | Restore current lease/generation, route persisted operations, replay PRP acknowledgements. |
 | runnerd restarts | Restore exact Dot provider checkpoint; verify binding/catalog/assignment identities before replay. |
 | Both restart | Reconcile server records and Runner checkpoint by identity/digest; unresolved divergence becomes operator-visible, not a new assignment. |
 | Subscription expires | Preserve pending work; mark delivery unavailable; wake actionable items after verified reconnection. |
@@ -570,7 +570,7 @@ accepted only from the Runner's durable acceptance evidence.
 
 ### Stop semantics
 
-Pause, cancel, budget stop, reassignment and revocation first fence Paperclip
+Pause, cancel, budget stop, reassignment and revocation first fence Wardmote
 authority in the same governed path used by other providers. Prevent new tool
 dispatch, hide obsolete inbox work, and reconcile already dispatched effects.
 Optionally send a cooperative stop mailbox item while the connection remains
@@ -578,8 +578,8 @@ authorized for that narrowly scoped acknowledgement.
 
 Represent these facts separately:
 
-1. Paperclip authority revoked.
-2. Paperclip-controlled effects settled or unresolved.
+1. Wardmote authority revoked.
+2. Wardmote-controlled effects settled or unresolved.
 3. Dot acknowledged the stop request, if observed.
 4. OpenAI/global external activity stopped: **unconfirmed**.
 
@@ -587,8 +587,8 @@ Killing runnerd does not kill Dot. A model acknowledgement does not prove that
 its child tasks or other plugins stopped. Do not let existing PID/process-death
 recovery logic treat either as a safe global replacement proof.
 
-After fencing and settling Paperclip effects, the run can record cancellation
-of Paperclip participation. Automatic replacement after an accepted assignment
+After fencing and settling Wardmote effects, the run can record cancellation
+of Wardmote participation. Automatic replacement after an accepted assignment
 remains disabled where external activity might duplicate work. Surface the
 uncertainty and require the existing operator recovery path for such cases.
 
@@ -603,7 +603,7 @@ content and large context; pin revisions and recheck authorization on reads.
 
 Use existing deferred tool discovery when catalogs exceed transport limits.
 Expose the core task tools and assigned connector tools through the same
-`PaperclipRunnerToolAuthority` and assignment snapshot used by other providers.
+`WardmoteRunnerToolAuthority` and assignment snapshot used by other providers.
 An old catalog does not preserve revoked grants.
 
 Do not export local environment variables, credential bindings' secret values,
@@ -614,7 +614,7 @@ respect a work mode do not replace server-side tool policy.
 
 In v1, Dot has no shared filesystem. Suppress filesystem-dependent tools unless
 their execution location and authority are explicitly supported. A local path
-reported by Dot is never a path on the Paperclip server. Do not synthesize a
+reported by Dot is never a path on the Wardmote server. Do not synthesize a
 fake cwd or pass it to existing file-upload helpers.
 
 Support durable text/Markdown outputs through existing document tools. For
@@ -628,23 +628,23 @@ task/document provider.
 ### Accounting
 
 Record provider usage and provider cost as unknown. Preserve separately measured
-costs of Paperclip-mediated paid tools. No guessed token counts or zero-cost run
-records. Display **Dot usage is managed outside Paperclip**.
+costs of Wardmote-mediated paid tools. No guessed token counts or zero-cost run
+records. Display **Dot usage is managed outside Wardmote**.
 
 Continue normal budget checks before admission and every paid/mutating action.
-Budget exhaustion prevents new Paperclip work and fences the binding's current
-run. Since token spend and external execution are unobservable, Paperclip cannot
+Budget exhaustion prevents new Wardmote work and fences the binding's current
+run. Since token spend and external execution are unobservable, Wardmote cannot
 promise a hard dollar cap on Dot's own activity. A policy requiring fully metered
 provider spend must make this provider ineligible. Otherwise require the
 operator's explicit selection of an externally billed/unmetered provider
 profile, plus concurrency, operation-count and authority-time limits.
 
 This distinction is a product contract, not permission to weaken existing
-company budget hard stops for costs Paperclip actually controls.
+company budget hard stops for costs Wardmote actually controls.
 
 ## 10. Onboarding and ongoing UX
 
-1. Choose **Paperclip Runner → OpenAI Dot**.
+1. Choose **Wardmote Runner → OpenAI Dot**.
 2. Show stable MCP endpoint and connection/pairing flow. Cloud deployments use
    the stable broker once its agent-resource routing is implemented; self-hosted
    deployments use authenticated public HTTPS.
@@ -667,7 +667,7 @@ Do not show unused cwd, executable, model/effort or token-budget controls.
 Run UI distinguishes **Queued**, **Waiting for Dot**, **Accepted**, **Working**,
 **Waiting for input**, **Finalizing**, and **Needs reconnection/reconciliation**.
 These are projections over normal execution and bridge records, not a second
-issue-status system. Stop messaging describes the scope of what Paperclip can
+issue-status system. Stop messaging describes the scope of what Wardmote can
 stop. Missing provider transcript detail is labelled as unavailable.
 
 The stable plugin description/instructions teach one standing subscription, inbox
@@ -693,7 +693,7 @@ Add TypeScript/Rust parity fixtures and a scripted external peer.
 
 **Files:**
 
-- `packages/adapter-utils/src/paperclip-runner-permissions.ts`
+- `packages/adapter-utils/src/wardmote-runner-permissions.ts`
 - `packages/wardmote-runner/protocol/schemas/` and protocol fixtures
 - `packages/wardmote-runner/src/contracts/{native-execution,harness-driver,types}.ts`
 - `packages/wardmote-runner/src/backends/native-backend-factory.ts`
@@ -750,7 +750,7 @@ route results through existing completion feedback/status policy.
 
 - `server/src/services/native-runtime/{provider-profile,runtime-mode,prepare-native-run,native-execution-input}.ts`
 - `server/src/services/native-runtime/native-session-executor.ts`
-- `server/src/services/native-runtime/paperclip-runner-tool-authority.ts`
+- `server/src/services/native-runtime/wardmote-runner-tool-authority.ts`
 - `server/src/services/native-runtime/{native-run-coordinator-store,native-run-finalizer,status-arbiter}.ts`
 - Narrow integration points in `server/src/services/heartbeat.ts`
 
@@ -852,7 +852,7 @@ refresh. Verify that a task assigned while disconnected resumes once after
 reconnection. Test two queued tasks and a human-question continuation.
 
 Prove subscription removal/revocation from server state, not just Dot's prose.
-Test pending external activity separately from Paperclip authority revocation.
+Test pending external activity separately from Wardmote authority revocation.
 Record unknown usage honestly. Keep the endpoint up through the entire test.
 
 ### Commands and evidence
@@ -907,7 +907,7 @@ those by itself.
 The largest implementation risk is accidentally treating Dot as a controllable
 process. The design must continue to work when it is an independent remote
 assistant that can be delayed, retain unrelated context, or keep doing things
-outside Paperclip after its Paperclip authority ends.
+outside Wardmote after its Wardmote authority ends.
 
 ## 14. Sources and implementation anchors
 
@@ -928,18 +928,18 @@ outside Paperclip after its Paperclip authority ends.
 - [OpenAI Dot documentation](https://learn.chatgpt.com/docs/dots)
 
 This plan is saved in the existing isolated worktree. There is no assigned
-Paperclip issue or authenticated issue-artifact context in this Codex chat, so
+Wardmote issue or authenticated issue-artifact context in this Codex chat, so
 it is a repository plan rather than an uploaded issue artifact. When execution
-is assigned in Paperclip, link this plan as its plan document/work product.
+is assigned in Wardmote, link this plan as its plan document/work product.
 
 
 ## 15. First-time onboarding checkpoint — 2026-10-07
 
-The live onboarding attempt found and fixed two authorization problems. ChatGPT’s client metadata prefers `private_key_jwt` while also publishing `none` as a supported method; Paperclip now negotiates the supported public-client method while retaining S256 PKCE. Dot’s browser blocks the temporary Cloudflare hostname even though ChatGPT’s MCP discovery service reaches it. An optional `PAPERCLIP_MCP_AUTHORIZATION_ORIGIN` separates the browser authorization ingress from the MCP resource, issuer, and token ingress. Both routes use existing operator-approved tunnels; no new hosted infrastructure was created.
+The live onboarding attempt found and fixed two authorization problems. ChatGPT’s client metadata prefers `private_key_jwt` while also publishing `none` as a supported method; Wardmote now negotiates the supported public-client method while retaining S256 PKCE. Dot’s browser blocks the temporary Cloudflare hostname even though ChatGPT’s MCP discovery service reaches it. An optional `WARDMOTE_MCP_AUTHORIZATION_ORIGIN` separates the browser authorization ingress from the MCP resource, issuer, and token ingress. Both routes use existing operator-approved tunnels; no new hosted infrastructure was created.
 
 An operator-issued, expiring, one-use pairing capability now lets Dot approve its exact agent grant without receiving an operator password or board session. The preview validates the pending request, binding, company, current operator membership, and agent status, and displays company, agent, permitted task operations, and access duration before submission. Approval and binding consumption are atomic, and the resulting token remains restricted to the Runner resource and exact agent. The copied setup prompt uses this path and retains the user-requested plugin-creation authorization paragraph. The live attempt also exposed a plugin-name collision and uncertainty about entering the code; the prompt now handles an existing name for another URL, and both the prompt and consent page explain that code entry previews access while submitting Connect grants it.
 
-The synthetic test-drive remains separate from production. Dot created the fresh custom plugin and reached the Tailscale consent page. It entered the code, confirmed the exact company, agent, permissions, and duration in its own scope preview, and stopped before submitting Connect. The human approved the exact connection in Codex. Dot could not verify an agent relay of that approval, so Codex completed the actual consent through the existing private plugin Connect action using the direct human authorization. The registered ChatGPT callback exchanged the real OAuth token successfully. Attaching the already connected app to the Dot conversation exposed its tools; Dot verified its inbox, created and verified the mailbox event subscription, and confirmed a readiness challenge triggered from Paperclip with no manual chat wakeup. The connection is ready. The first ordinary task exposed a heartbeat descriptor omission before dispatch; admission now uses the real dedicated Dot bridge descriptor, rather than the JSON-RPC facade. Its regression test verifies the same capabilities as execution without starting a process or broker. The normal UI retry completed DOT-1 through the real Rust Runner without a manual chat wakeup. Dot accepted mailbox item 2, wrote and read back the exact-nonce document, and completed both reporting steps. The ordinary finalizer committed Done; run `9a44feeb-2779-4217-8210-092852019511` succeeded with exit code 0, no remaining work or verification caveats, and unknown provider usage/cost retained as null. The live connection and local-controller task path are qualified; stable production ingress and hosted/remote modes remain outside this acceptance.
+The synthetic test-drive remains separate from production. Dot created the fresh custom plugin and reached the Tailscale consent page. It entered the code, confirmed the exact company, agent, permissions, and duration in its own scope preview, and stopped before submitting Connect. The human approved the exact connection in Codex. Dot could not verify an agent relay of that approval, so Codex completed the actual consent through the existing private plugin Connect action using the direct human authorization. The registered ChatGPT callback exchanged the real OAuth token successfully. Attaching the already connected app to the Dot conversation exposed its tools; Dot verified its inbox, created and verified the mailbox event subscription, and confirmed a readiness challenge triggered from Wardmote with no manual chat wakeup. The connection is ready. The first ordinary task exposed a heartbeat descriptor omission before dispatch; admission now uses the real dedicated Dot bridge descriptor, rather than the JSON-RPC facade. Its regression test verifies the same capabilities as execution without starting a process or broker. The normal UI retry completed DOT-1 through the real Rust Runner without a manual chat wakeup. Dot accepted mailbox item 2, wrote and read back the exact-nonce document, and completed both reporting steps. The ordinary finalizer committed Done; run `9a44feeb-2779-4217-8210-092852019511` succeeded with exit code 0, no remaining work or verification caveats, and unknown provider usage/cost retained as null. The live connection and local-controller task path are qualified; stable production ingress and hosted/remote modes remain outside this acceptance.
 
 Verification: the focused OAuth/onboarding API suite passed 11 cases, the affected UI suites passed 27 cases, the relevant server/UI typechecks and token gates passed, and the workspace build passed. The earlier focused Runner/MCP suites also passed. A full `test:run` was stopped after unrelated failures and a 300-second workspace snapshot stress timeout; isolated tool-access and event-sequencing rechecks passed, but the full suite is incomplete. After the admission fix, 34 Runner/driver tests and 13 real Rust/broker integration tests passed, and full workspace typecheck and build passed again. The full repository suite is still incomplete, so this checkpoint is not a PR-ready verification claim.
 
@@ -964,7 +964,7 @@ receipt; the operator cancelled that run and Dot acknowledged its fence. Read
 failures now settle as bounded errors. A real Rust regression proves that later
 tools and finalization still work after a missing-file error.
 
-Dot then initiated its own **DOT-4** intake through `paperclip_dot_request_turn`,
+Dot then initiated its own **DOT-4** intake through `wardmote_dot_request_turn`,
 created **hello from idle** for the human owner, verified the missing-file error,
 and wrote/read/executed/registered `idle-proof.txt`. The downloaded 20-byte file
 contains `idle-runner-verified` and matches its registered SHA-256. Both

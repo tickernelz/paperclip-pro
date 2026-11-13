@@ -104,7 +104,7 @@ async function ensureSandboxWorkspace(sandbox: Sandbox, remoteCwd: string): Prom
 async function resolveSandboxWorkingDirectory(sandbox: Sandbox): Promise<string> {
   const result = await sandbox.commands.run("pwd");
   const cwd = result.stdout.trim();
-  const remoteCwd = path.posix.join(cwd.length > 0 ? cwd : "/", "paperclip-workspace");
+  const remoteCwd = path.posix.join(cwd.length > 0 ? cwd : "/", "wardmote-workspace");
   await ensureSandboxWorkspace(sandbox, remoteCwd);
   return remoteCwd;
 }
@@ -359,7 +359,7 @@ const plugin = definePlugin({
       typeof params.lease.metadata?.remoteCwd === "string" &&
       params.lease.metadata.remoteCwd.trim().length > 0
         ? params.lease.metadata.remoteCwd.trim()
-        : params.workspace.remotePath ?? params.workspace.localPath ?? "/paperclip-workspace";
+        : params.workspace.remotePath ?? params.workspace.localPath ?? "/wardmote-workspace";
 
     if (params.lease.providerLeaseId) {
       const sandbox = await connectSandbox(config, params.lease.providerLeaseId);

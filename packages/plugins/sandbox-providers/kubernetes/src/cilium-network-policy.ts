@@ -39,7 +39,7 @@ export function buildCiliumNetworkPolicyManifest(input: BuildCiliumNetworkPolicy
       {
         matchLabels: {
           "k8s:io.kubernetes.pod.namespace": input.wardmoteServerNamespace,
-          app: "paperclip-server",
+          app: "wardmote-server",
         },
       },
     ],

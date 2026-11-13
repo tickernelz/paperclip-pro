@@ -280,7 +280,7 @@ const OPEN_EXECUTION_WORKSPACE_LEASE_STATUSES = ["active", "idle", "in_review"] 
 const DEFAULT_EXECUTE_PROCESS_OUTPUT_BYTES = 256 * 1024;
 export const WORKSPACE_RUNTIME_PORT_ALLOCATION_ATTEMPTS = 32;
 const ACTIVE_RUNTIME_PORT_RESERVATION_STATUSES = ["provisioning", "starting", "running"] as const;
-const DEFAULT_TAILSCALE_BROKER_SOCKET = "/run/paperclip-tailscale-broker/broker.sock";
+const DEFAULT_TAILSCALE_BROKER_SOCKET = "/run/wardmote-tailscale-broker/broker.sock";
 
 class RuntimeServicePortBindCollision extends Error {
   readonly port: number;

@@ -1,4 +1,4 @@
-# paperclip-pro
+# wardmote
 
 ## 0.3.1
 

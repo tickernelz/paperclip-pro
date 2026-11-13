@@ -1,9 +1,10 @@
 import type { PrpStructuredRunResult } from "../../vendor/wardmote-runner/index.js";
+import { RETIRED_STAGING_ROOT } from "./retired-staging-root.js";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { createHash, randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import {
+import { rename,
   mkdtemp,
   link,
   mkdir,
@@ -238,13 +239,30 @@ describe("native runner file handoff", () => {
       await previous.cleanup();
       const slot = path.join(root, previous.workspaceRelativePath);
       await writeFile(slot, "stale bytes after an interrupted owner");
-      const directories = await readdir(path.join(root, ".paperclip-inbound"));
+      const directories = await readdir(path.join(root, ".wardmote-inbound"));
 
       const wake = await stageEmptyWake(root);
       expect(wake.attachments).toEqual([]);
       await wake.cleanup();
       await expect(readFile(slot)).resolves.toEqual(Buffer.alloc(0));
-      await expect(readdir(path.join(root, ".paperclip-inbound"))).resolves.toEqual(directories);
+      await expect(readdir(path.join(root, ".wardmote-inbound"))).resolves.toEqual(directories);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("scrubs bytes left under the staging root used before the rename", async () => {
+    const root = await mkdtemp(path.join(temporaryRoot, "empty-wake-retired-"));
+    try {
+      const previous = await stageNativeRunnerAttachmentBytes({ workspaceRoot: root, body: Buffer.from("previous attachment") });
+      await previous.cleanup();
+      await writeFile(path.join(root, previous.workspaceRelativePath), "stale bytes before the upgrade");
+      await rename(path.join(root, ".wardmote-inbound"), path.join(root, RETIRED_STAGING_ROOT));
+      const retiredSlot = path.join(root, RETIRED_STAGING_ROOT, path.relative(".wardmote-inbound", previous.workspaceRelativePath));
+
+      const wake = await stageEmptyWake(root);
+      await wake.cleanup();
+      await expect(readFile(retiredSlot)).resolves.toEqual(Buffer.alloc(0));
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -257,7 +275,7 @@ describe("native runner file handoff", () => {
       const outside = await mkdtemp(path.join(temporaryRoot, "empty-wake-outside-"));
       try {
         await writeFile(path.join(outside, "keep.txt"), "outside bytes");
-        const inbound = path.join(root, ".paperclip-inbound");
+        const inbound = path.join(root, ".wardmote-inbound");
         if (kind === "root-file") await writeFile(inbound, "not a directory");
         else if (kind === "root-symlink") await symlink(outside, inbound);
         else {
@@ -677,7 +695,7 @@ describe("native runner file handoff", () => {
         contentType: "text/plain",
         byteSize: body.length,
         workspaceRelativePath: expect.stringMatching(
-          /^\.paperclip-inbound\/.+\/[0-9a-f-]{36}$/u,
+          /^\.wardmote-inbound\/.+\/[0-9a-f-]{36}$/u,
         ),
         unavailableReason: null,
       },
@@ -717,7 +735,7 @@ describe("native runner file handoff", () => {
     try {
       const liveForeignDirectory = path.join(
         workspaceRoot,
-        ".paperclip-inbound",
+        ".wardmote-inbound",
         `process-${liveOwner.pid}-unknown-00000000-0000-4000-8000-000000009298`,
       );
       const liveForeignFile = path.join(liveForeignDirectory, "active-slot");
@@ -742,7 +760,7 @@ describe("native runner file handoff", () => {
 
       const recycledOwnerDirectory = path.join(
         workspaceRoot,
-        ".paperclip-inbound",
+        ".wardmote-inbound",
         `process-${liveOwner.pid}-0-00000000-0000-4000-8000-000000009297`,
       );
       const recycledOwnerFile = path.join(recycledOwnerDirectory, "stale-slot");
@@ -783,7 +801,7 @@ describe("native runner file handoff", () => {
 
     const crashDirectory = path.join(
       workspaceRoot,
-      ".paperclip-inbound",
+      ".wardmote-inbound",
       "process-2147483647-0-00000000-0000-4000-8000-000000009299",
     );
     await mkdir(crashDirectory, { recursive: true });

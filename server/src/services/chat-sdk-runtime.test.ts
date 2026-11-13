@@ -293,7 +293,7 @@ describe("Chat SDK endpoint runtime", () => {
     const runtime = createChatSdkEndpointRuntime(
       baseOptions({
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           signingSecret: "signing-secret",
@@ -310,7 +310,7 @@ describe("Chat SDK endpoint runtime", () => {
       botUserId: "U123",
       mode: "webhook",
       nativeStreaming: true,
-      userName: "paperclip-agent",
+      userName: "wardmote-agent",
       webClientOptions: {
         rejectRateLimitedCalls: true,
         retryConfig: { retries: 0 },
@@ -326,7 +326,7 @@ describe("Chat SDK endpoint runtime", () => {
     createChatSdkEndpointRuntime(
       baseOptions({
         provider: "github",
-        userName: "paperclip-agent[bot]",
+        userName: "wardmote-agent[bot]",
         credentials: {
           token: "github-token",
           webhookSecret: "github-secret",
@@ -337,7 +337,7 @@ describe("Chat SDK endpoint runtime", () => {
     expect(captures.githubConfigs[0]).toMatchObject({
       token: "github-token",
       webhookSecret: "github-secret",
-      userName: "paperclip-agent",
+      userName: "wardmote-agent",
     });
   });
 
@@ -390,7 +390,7 @@ describe("Chat SDK endpoint runtime", () => {
       expectedKey: "discord",
       providerConfig: {
         provider: "discord" as const,
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           applicationId: "123456789012345678",
           botToken: "discord-token",
@@ -402,7 +402,7 @@ describe("Chat SDK endpoint runtime", () => {
       expectedKey: "github",
       providerConfig: {
         provider: "github" as const,
-        userName: "paperclip-agent[bot]",
+        userName: "wardmote-agent[bot]",
         credentials: { token: "github-token", webhookSecret: "github-secret" },
       },
     },
@@ -445,7 +445,7 @@ describe("Chat SDK endpoint runtime", () => {
     const onDiscordGatewayEvent = vi.fn();
     const options = baseOptions({
       provider: "discord",
-      userName: "paperclip-agent",
+      userName: "wardmote-agent",
       credentials: {
         apiUrl: "https://discord.example.test/api/v10",
         applicationId: "123456789012345678",
@@ -460,7 +460,7 @@ describe("Chat SDK endpoint runtime", () => {
       apiUrl: "https://discord.example.test/api/v10",
       applicationId: "123456789012345678",
       botToken: "discord-token",
-      userName: "paperclip-agent",
+      userName: "wardmote-agent",
     });
     expect(captures.discordConfigs[0]).not.toHaveProperty("guildId");
     expect(captures.discordConfigs[0]).not.toHaveProperty("publicKey");
@@ -531,7 +531,7 @@ describe("Chat SDK endpoint runtime", () => {
       createChatSdkEndpointRuntime(
         baseOptions({
           provider: "discord",
-          userName: "paperclip-agent",
+          userName: "wardmote-agent",
           credentials: {
             applicationId: "123456789012345678",
             botToken: "unpatched-discord",
@@ -553,7 +553,7 @@ describe("Chat SDK endpoint runtime", () => {
         createChatSdkEndpointRuntime(
           baseOptions({
             provider: "telegram",
-            userName: "paperclip-agent",
+            userName: "wardmote-agent",
             credentials: {
               botToken,
               secretToken: "synthetic-secret",
@@ -568,7 +568,7 @@ describe("Chat SDK endpoint runtime", () => {
     const runtime = createChatSdkEndpointRuntime(
       baseOptions({
         provider: "discord",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           applicationId: "123456789012345678",
           botToken: "discord-token",
@@ -589,7 +589,7 @@ describe("Chat SDK endpoint runtime", () => {
     const runtime = createChatSdkEndpointRuntime({
       ...baseOptions({
         provider: "discord",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           applicationId: "123456789012345678",
           botToken: "discord-token",
@@ -618,7 +618,7 @@ describe("Chat SDK endpoint runtime", () => {
       const runtime = createChatSdkEndpointRuntime(
         baseOptions({
           provider: "discord",
-          userName: "paperclip-agent",
+          userName: "wardmote-agent",
           credentials: {
             applicationId: "123456789012345678",
             botToken: "discord-token",
@@ -652,7 +652,7 @@ describe("Chat SDK endpoint runtime", () => {
     const runtime = createChatSdkEndpointRuntime(
       baseOptions({
         provider: "discord",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           applicationId: "123456789012345678",
           botToken: "gateway-start-failure",
@@ -675,7 +675,7 @@ describe("Chat SDK endpoint runtime", () => {
       const runtime = createChatSdkEndpointRuntime(
         baseOptions({
           provider: "discord",
-          userName: "paperclip-agent",
+          userName: "wardmote-agent",
           credentials: {
             applicationId: "123456789012345678",
             botToken: "gateway-fatal",
