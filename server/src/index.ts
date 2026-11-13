@@ -655,9 +655,14 @@ async function startServerWithDatabaseTeardown(
     logger.warn({ err }, "could not move the OMP session root written before the Wardmote rename; those agents start fresh OMP sessions");
     return null;
   });
-  if (ompSessionRootMove === "moved") logger.info({ ompSessionRoot: defaultOmpSessionRoot() }, "Moved OMP sessions to the Wardmote session root");
-  if (ompSessionRootMove === "kept-both") {
-    logger.warn({ ompSessionRoot: defaultOmpSessionRoot() }, "Both the retired and the Wardmote OMP session roots exist; left both in place, and agents resume from the Wardmote root only");
+  if (ompSessionRootMove?.status === "moved") {
+    logger.info({ ompSessionRoot: defaultOmpSessionRoot() }, "Moved OMP sessions to the Wardmote session root");
+    if (ompSessionRootMove.conflicts.length > 0) {
+      logger.warn(
+        { ompSessionRoot: defaultOmpSessionRoot(), agentDirectories: ompSessionRootMove.conflicts },
+        "Left retired OMP session directories in place because the Wardmote session root already holds sessions for those agents",
+      );
+    }
   }
   const retiredNames = await migrateRetiredNames(db);
   if (retiredNames.files.length > 0 || retiredNames.rows.length > 0) {
