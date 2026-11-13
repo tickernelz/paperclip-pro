@@ -851,7 +851,7 @@ function createConnectionAuthorizationInteraction(
         type: "custom",
         key: "connection:gmail-abc:user:user-dotta",
         label: "Connect Gmail",
-        href: "https://accounts.google.com/o/oauth2/v2/auth?client_id=paperclip",
+        href: "https://accounts.google.com/o/oauth2/v2/auth?client_id=wardmote",
       },
     },
     ...rest,

@@ -94,10 +94,10 @@ class StubSession implements HarnessSession {
       diagnostic: "Bearer server-only-secret",
       sandbox: {
         writableRoots: [
-          "/srv/paperclip/home/.paperclip/instances/company/codex-home/memories",
+          "/srv/wardmote/home/.paperclip/instances/company/codex-home/memories",
           // The real app-server reports this one; it leaked before the
           // redactor covered every hidden directory under a home root.
-          "/srv/paperclip/home/.codex/memories",
+          "/srv/wardmote/home/.codex/memories",
         ],
       },
     });
@@ -634,7 +634,7 @@ describe("Live console package-local demo server", () => {
     expect(JSON.stringify(created)).not.toContain("browser-secret");
     expect(JSON.stringify(created)).not.toContain("browser-must-not-see");
     expect(JSON.stringify(created)).not.toContain("server-only-secret");
-    expect(JSON.stringify(created)).not.toContain("/srv/paperclip/home");
+    expect(JSON.stringify(created)).not.toContain("/srv/wardmote/home");
     expectOpaqueCredentialsRedacted(JSON.stringify(created));
     expect(created).toMatchObject({
       pendingRequests: [{
@@ -665,7 +665,7 @@ describe("Live console package-local demo server", () => {
     expect(replay.replay).toBe(true);
     expect(replay.events.length).toBeGreaterThanOrEqual(5);
     expect(replay.events.every((event, index) => event.sourceSeq === index + 1)).toBe(true);
-    expect(JSON.stringify(replay)).not.toContain("/srv/paperclip/home");
+    expect(JSON.stringify(replay)).not.toContain("/srv/wardmote/home");
     expect(JSON.stringify(replay)).toContain("<server-path>");
     expectOpaqueCredentialsRedacted(JSON.stringify(replay));
 

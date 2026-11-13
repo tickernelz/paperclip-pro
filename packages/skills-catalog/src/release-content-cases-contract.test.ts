@@ -19,7 +19,7 @@ describe("release-content Cases contract", () => {
       "\"caseType\": \"tweet_storm\"",
       "\"parentCaseId\"",
       "PUT /api/cases/:caseId/documents/body",
-      "paperclip-release:vYYYY.MDD.P",
+      "wardmote-release:vYYYY.MDD.P",
       "X-Wardmote-Run-Id",
     ]) {
       expect(combined).toContain(required);

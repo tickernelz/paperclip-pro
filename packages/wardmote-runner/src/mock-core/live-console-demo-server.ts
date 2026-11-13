@@ -160,7 +160,7 @@ function redactBrowserString(value: string): string {
   const truncated = value.length > MAX_BROWSER_STRING_CHARACTERS;
   const visible = truncated ? value.slice(0, MAX_BROWSER_STRING_CHARACTERS) : value;
   const redacted = redactStructuredBrowserCredentials(redactCodexDiagnostic(visible)).replace(
-    /\/(?:srv\/paperclip\/home|home\/[^/\s]+|Users\/[^/\s]+)\/\.[^\s"'<>),\]}]*/g,
+    /\/(?:srv\/wardmote\/home|home\/[^/\s]+|Users\/[^/\s]+)\/\.[^\s"'<>),\]}]*/g,
     "<server-path>",
   );
   return truncated ? `${redacted}[TRUNCATED]` : redacted;

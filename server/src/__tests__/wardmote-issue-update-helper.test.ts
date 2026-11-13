@@ -29,7 +29,7 @@ interface RecordedRequest {
   runId: string | string[] | undefined;
 }
 
-describe("paperclip issue update helper", () => {
+describe("wardmote issue update helper", () => {
   const cleanupFns: Array<() => Promise<void>> = [];
 
   afterEach(async () => {
@@ -121,10 +121,10 @@ describe("paperclip issue update helper", () => {
 
   it.each([".claude/skills", "codex-home/skills"])(
     "delivers the bundled helper through %s from an unrelated workspace", async skillsHome => {
-      const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip completion helper "));
+      const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote completion helper "));
       cleanupFns.push(() => fs.rm(root, { recursive: true, force: true }));
-      const source = path.join(root, "bundle", "paperclip");
-      const installed = path.join(root, skillsHome, "paperclip");
+      const source = path.join(root, "bundle", "wardmote");
+      const installed = path.join(root, skillsHome, "wardmote");
       const cwd = path.join(root, "unrelated project");
       await fs.cp(path.dirname(path.dirname(HELPER_PATH)), source, { recursive: true });
       await fs.mkdir(path.dirname(installed), { recursive: true });

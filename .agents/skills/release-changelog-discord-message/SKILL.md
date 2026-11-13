@@ -193,7 +193,7 @@ Mimic this register; do not invent a "professional" tone.
    beta-keyed file during the soak, `releases/vYYYY.MDD.P.md` once
    canonicalized. Use the version and contributor list from that file —
    never re-derive them.
-2. Resolve the parent `release` case with key `paperclip-release:vYYYY.MDD.P`.
+2. Resolve the parent `release` case with key `wardmote-release:vYYYY.MDD.P`.
    If it does not exist and Cases are enabled, create it using the schema in
    `.agents/skills/release-changelog/SKILL.md` before creating child cases.
 3. Read the **release issue thread** (the one assigned to you that ran the
@@ -221,7 +221,7 @@ stable so retries update the same child case:
 POST /api/companies/:companyId/cases
 {
   "caseType": "tweet_storm",
-  "key": "paperclip-release:vYYYY.MDD.P:tweet-storm",
+  "key": "wardmote-release:vYYYY.MDD.P:tweet-storm",
   "title": "Wardmote vYYYY.MDD.P tweet storm",
   "summary": "Social announcement thread for Wardmote vYYYY.MDD.P.",
   "status": "in_review",

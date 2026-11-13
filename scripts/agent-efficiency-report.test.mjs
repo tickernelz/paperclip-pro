@@ -147,6 +147,6 @@ test("secrets in commands, call args and error text never reach the report", asy
   assert.equal(stats.relaunchedCommands.size, 1);
   for (const secret of secrets) assert.equal(rendered.includes(secret), false, secret);
   assert.match(rendered, /\[REDACTED\]/);
-  const benign = "cd /home/zhafron/Projects/paperclip-pro && pnpm vitest run src/__tests__/issue-create-deduplication-routes.test.ts";
+  const benign = "cd /home/zhafron/Projects/wardmote && pnpm vitest run src/__tests__/issue-create-deduplication-routes.test.ts";
   assert.equal(scrubSecrets(benign), benign);
 });

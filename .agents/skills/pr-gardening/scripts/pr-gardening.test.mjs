@@ -38,7 +38,7 @@ test("origin selection prioritizes work products then comment mentions", () => {
       assigneeAgentId: "agent-1",
       updatedAt: "2026-07-12T12:00:00Z",
       mentions: [{ field: "comment" }],
-      workProducts: [{ type: "pull_request", url: "http://github.com/tickernelz/wardmote/pull/9507?source=paperclip#review" }],
+      workProducts: [{ type: "pull_request", url: "http://github.com/tickernelz/wardmote/pull/9507?source=wardmote#review" }],
     },
   ];
   assert.equal(chooseOriginatingIssue(issues, "https://github.com/tickernelz/wardmote/pull/9507").issueId, "origin");
@@ -99,7 +99,7 @@ test("candidate discovery deduplicates mentions, drops closed PRs, and excludes 
     api_key: "test-key",
     company_id: "company-1",
     now: "2026-07-20T00:00:00Z",
-    paperclip_get: fixture.wardmoteGet,
+    wardmote_get: fixture.wardmoteGet,
     gh_json: fixture.ghJson,
   });
   assert.deepEqual(result.candidates.map((candidate) => candidate.number), [1]);
@@ -131,7 +131,7 @@ test("capped match sets are recorded instead of aborting discovery", async () =>
     api_key: "test-key",
     company_id: "company-1",
     now: "2026-07-20T00:00:00Z",
-    paperclip_get: wardmoteGet,
+    wardmote_get: wardmoteGet,
     gh_json: fixture.ghJson,
   });
   assert.deepEqual(result.candidates.map((candidate) => candidate.number), [1]);
@@ -148,7 +148,7 @@ test("--include-community disables the author filter", async () => {
     company_id: "company-1",
     include_community: true,
     now: "2026-07-20T00:00:00Z",
-    paperclip_get: fixture.wardmoteGet,
+    wardmote_get: fixture.wardmoteGet,
     gh_json: fixture.ghJson,
   });
   assert.deepEqual(result.candidates.map((candidate) => candidate.number), [1, 4]);
@@ -164,7 +164,7 @@ test("open PRs with no activity inside the window are dropped as stale", async (
     api_key: "test-key",
     company_id: "company-1",
     now: "2026-09-01T00:00:00Z",
-    paperclip_get: fixture.wardmoteGet,
+    wardmote_get: fixture.wardmoteGet,
     gh_json: fixture.ghJson,
   });
   assert.deepEqual(result.candidates, []);
