@@ -43,7 +43,7 @@ export function OverviewPanel({
   const snippet = [
     "{",
     '  "mcpServers": {',
-    `    "paperclip-${gateway.displaySlug}": {`,
+    `    "wardmote-${gateway.displaySlug}": {`,
     `      "url": "${endpoint}",`,
     '      "headers": { "Authorization": "Bearer pcgw_•••_TOKEN" }',
     "    }",

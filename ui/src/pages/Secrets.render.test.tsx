@@ -220,8 +220,8 @@ function makeDiscoveryPreview(
         config: {
           region: "us-east-1",
           namespace: "prod-use1",
-          secretNamePrefix: "paperclip",
-          kmsKeyId: "alias/paperclip-secrets",
+          secretNamePrefix: "wardmote",
+          kmsKeyId: "alias/wardmote-secrets",
           ownerTag: "platform",
           environmentTag: "production",
         },
@@ -235,10 +235,10 @@ function makeDiscoveryPreview(
         ],
         signals: {
           namespace: "prod-use1",
-          secretNamePrefix: "paperclip",
+          secretNamePrefix: "wardmote",
           environmentTag: "production",
           ownerTag: "platform",
-          kmsKeyId: "alias/paperclip-secrets",
+          kmsKeyId: "alias/wardmote-secrets",
           hasKmsKey: true,
           sampleCount: 2,
           wardmoteManagedSampleCount: 0,
@@ -1184,7 +1184,7 @@ describe("Secrets page layout", () => {
     expect(regionInput).not.toBeNull();
     await act(async () => {
       setInputValue(regionInput!, "us-east-1");
-      setInputValue(prefixInput!, "paperclip");
+      setInputValue(prefixInput!, "wardmote");
     });
     await flushReact();
 
@@ -1200,12 +1200,12 @@ describe("Secrets page layout", () => {
       config: {
         region: "us-east-1",
         namespace: null,
-        secretNamePrefix: "paperclip",
+        secretNamePrefix: "wardmote",
         kmsKeyId: null,
         ownerTag: null,
         environmentTag: null,
       },
-      query: "paperclip",
+      query: "wardmote",
       pageSize: 25,
     });
     expect(document.body.textContent).toContain("AWS production");
@@ -1220,8 +1220,8 @@ describe("Secrets page layout", () => {
 
     expect((document.getElementById("vault-name") as HTMLInputElement).value).toBe("AWS production");
     expect((document.getElementById("provider-vault-namespace") as HTMLInputElement).value).toBe("prod-use1");
-    expect((document.getElementById("provider-vault-secret-name-prefix") as HTMLInputElement).value).toBe("paperclip");
-    expect((document.getElementById("provider-vault-kms-key-id") as HTMLInputElement).value).toBe("alias/paperclip-secrets");
+    expect((document.getElementById("provider-vault-secret-name-prefix") as HTMLInputElement).value).toBe("wardmote");
+    expect((document.getElementById("provider-vault-kms-key-id") as HTMLInputElement).value).toBe("alias/wardmote-secrets");
     expect((document.getElementById("provider-vault-owner-tag") as HTMLInputElement).value).toBe("platform");
     expect((document.getElementById("provider-vault-environment-tag") as HTMLInputElement).value).toBe("production");
     expect(mockSecretsApi.createProviderConfig).not.toHaveBeenCalled();
