@@ -1,4 +1,3 @@
-import { RETIRED_ACPX_PERMISSION_MODE } from "./retired-acpx-permission-mode.js";
 export type WardmoteRunnerProvider =
   "codex" | "opencode" | "claude_managed" | "aws_agentcore" | "acpx" | "openai_dot";
 
@@ -154,7 +153,6 @@ export function resolveWardmoteRunnerPermissionMode(
 ): WardmoteRunnerPermissionMode | "provider-managed" {
   const capability = WARDMOTE_RUNNER_PERMISSION_CAPABILITIES[provider];
   if (!capability.configurable) return capability.defaultMode;
-  if (provider === "acpx" && value === RETIRED_ACPX_PERMISSION_MODE) return "approve-wardmote";
   return capability.options.some((option) => option.value === value)
     ? (value as WardmoteRunnerPermissionMode)
     : capability.defaultMode;
