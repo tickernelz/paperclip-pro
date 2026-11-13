@@ -13,7 +13,7 @@ use wardmote_runner_core::durable::{
 };
 
 const PROFILE_DIGEST: &str =
-    "sha256:3e88ae296113d4e1ad6a57260d82c3ba97b85794101ae632bfd14f6890e62869";
+    "sha256:7f77704ad58089b4855717bb1fe77db988b7b725fd1823fd2f94f631e6b4f231";
 
 struct Fixture(PathBuf);
 impl Drop for Fixture {

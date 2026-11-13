@@ -101,7 +101,7 @@ test("manifest includes resources and emitted extension and rejects byte changes
   await write("node_modules/native/theme.json", '{"name":"theme"}');
   const result = await writePiDistributionManifest(root);
   assert.equal(result.manifest.files.length, 8);
-  assert.match(result.environment.WARDMOTE_PI_EXTENSION_PATH, /extensions\/paperclip\.js$/);
+  assert.match(result.environment.WARDMOTE_PI_EXTENSION_PATH, /extensions\/wardmote\.js$/);
   await write("node_modules/native/image.wasm", "tampered");
   await assert.rejects(verifyPiRuntimeManifest(root, result.manifest), /differs from its qualified manifest/);
   await symlink("/outside", join(root, "escape"));

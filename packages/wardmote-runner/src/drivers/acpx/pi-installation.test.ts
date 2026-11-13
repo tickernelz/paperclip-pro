@@ -128,13 +128,21 @@ describe("Pi installation factory", () => {
     expect(current.commandDigest).not.toBe(prior.commandDigest);
   });
 
+  it("preserves profile 27 and binds the renamed Pi distribution and its rebuilt closures", async () => {
+    const read = async (version: number) => JSON.parse(await readFile(new URL(`../../../test-fixtures/pi-acp/profile-v${version}-identity.json`, import.meta.url), "utf8"));
+    const prior = await read(27), current = await read(28);
+    expect(Object.keys(current.declaration).filter(key => JSON.stringify(current.declaration[key]) !== JSON.stringify(prior.declaration[key])).sort())
+      .toEqual(["acpxPatchSha256","agentProfileVersion","closure","extensionSha256","helperSha256","noticeProjectionSha256","runtimeSandboxSourceSha256","schema","sharedRuntimeContract","wrapperSha256"]);
+    expect(current.commandDigest).not.toBe(prior.commandDigest);
+  });
+
   it("binds the profile declaration to the reviewed patch and platform closure pins", async () => {
     const hash = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
     const canonical = (value: any): string => Array.isArray(value) ? `[${value.map(canonical).join(",")}]`
       : value && typeof value === "object" ? `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonical(value[key])}`).join(",")}}` : JSON.stringify(value);
-    const identity = JSON.parse(await readFile(new URL("../../../test-fixtures/pi-acp/profile-v27-identity.json", import.meta.url), "utf8"));
+    const identity = JSON.parse(await readFile(new URL("../../../test-fixtures/pi-acp/profile-v28-identity.json", import.meta.url), "utf8"));
     const declaration = identity.declaration;
-    expect(declaration.sharedRuntimeContract).toBe("paperclip.acpx-runtime-contract.v1");
+    expect(declaration.sharedRuntimeContract).toBe("wardmote.acpx-runtime-contract.v1");
     expect(identity.commandDigest).toBe(`sha256:${hash(canonical(declaration))}`);
     expect(QUALIFIED_ACPX_PROFILES.pi.commandDigest).toBe(identity.commandDigest);
     for (const key of ["agent", "agentProfileVersion", "acpxVersion", "agentServerVersion", "agentRuntimeVersion"] as const) {
@@ -158,28 +166,29 @@ describe("Pi installation factory", () => {
     expect(materializer).toContain(`helperSha256: "${declaration.helperSha256}"`);
     // This exact patch produced the reviewed current wrapper/closure.
     // Pin it separately so wrapper-only edits cannot keep an unchanged declaration.
-    expect(hash(await readFile(new URL("../../../../../patches/pi-acp@0.0.33.patch", import.meta.url)))).toBe("a7c63900b513490cceed9e41bc3bd06f03f2cd56265f434aa2c5dc7925fa76b4");
+    expect(hash(await readFile(new URL("../../../../../patches/pi-acp@0.0.33.patch", import.meta.url)))).toBe("7a73adb8820f8b78138b3942eb02ee74a1f5e509e3502c0073e6cf8995da6c34");
   });
 
   it("rejects legacy profiles and tampered executable identities", () => {
     expect(() => assertPiInstallationProfile(candidate())).not.toThrow();
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 1 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 2 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 3 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 4 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 5 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 6 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 7 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 8 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 9 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 10 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 11 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 12 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 13 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 14 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 25 })).toThrow("version 27");
-    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 26 })).toThrow("version 27");
-    for (const priorVersion of [15, 16, 17, 18, 19, 20, 21, 22, 23, 24]) expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: priorVersion })).toThrow("version 27");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 1 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 2 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 3 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 4 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 5 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 6 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 7 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 8 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 9 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 10 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 11 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 12 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 13 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 14 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 25 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 26 })).toThrow("version 28");
+    expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: 27 })).toThrow("version 28");
+    for (const priorVersion of [15, 16, 17, 18, 19, 20, 21, 22, 23, 24]) expect(() => assertPiInstallationProfile({ ...candidate(), agentProfileVersion: priorVersion })).toThrow("version 28");
     for (const changed of [{ agentServerVersion: "latest" }, { commandDigest: `sha256:${"0".repeat(64)}` }, { agentRuntimePackage: "ambient-pi" }]) {
       expect(() => assertPiInstallationProfile({ ...candidate(), ...changed })).toThrow("trusted declaration");
     }

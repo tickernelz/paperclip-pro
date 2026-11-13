@@ -22,12 +22,12 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
     "protocolVersion": 1,
     "acpxVersion": "0.13.1",
     "agent": "pi",
-    "agentProfileVersion": 27,
+    "agentProfileVersion": 28,
     "agentServerPackage": "pi-acp",
     "agentServerVersion": "0.0.33",
     "agentRuntimePackage": "@earendil-works/pi-coding-agent",
     "agentRuntimeVersion": "1.0.0",
-    "commandDigest": "sha256:2654ce76ae38c518ad9fa09738a4dbc8fe4c5ed2d646af660c2387c9843a39f7",
+    "commandDigest": "sha256:33fb5d42fe74fe1858057671030b41812081be5b79a0e4c752968ad228fcb797",
     "permissionPolicy": "interactive"
   },
   "cursor": {
@@ -35,12 +35,12 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
     "protocolVersion": 1,
     "acpxVersion": "0.13.1",
     "agent": "cursor",
-    "agentProfileVersion": 15,
+    "agentProfileVersion": 16,
     "agentServerPackage": "cursor-agent",
     "agentServerVersion": "2026.09.26-dd393fe",
     "agentRuntimePackage": null,
     "agentRuntimeVersion": null,
-    "commandDigest": "sha256:49249e430593c59b328aa15468a90335b7cabd7c971706a089cf93befa72a0a9",
+    "commandDigest": "sha256:ea302d27d2417eeb23f3df1a18c6c062bac161e730aff5e002ce2bcb3547baae",
     "permissionPolicy": "interactive"
   },
   "copilot": {
@@ -48,12 +48,12 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
     "protocolVersion": 1,
     "acpxVersion": "0.13.1",
     "agent": "copilot",
-    "agentProfileVersion": 25,
+    "agentProfileVersion": 26,
     "agentServerPackage": "@github/copilot",
     "agentServerVersion": "1.0.88",
     "agentRuntimePackage": null,
     "agentRuntimeVersion": null,
-    "commandDigest": "sha256:80aceaa0e47d48a43437fb6342263e2c9b89c74b262464341cd3106be9ad394a",
+    "commandDigest": "sha256:bf2699df7bacb074250aa0d8ead4eae53a8894f86dc9f2c5eac9e90eaadf7a61",
     "qualificationStatus": "pending",
     "permissionPolicy": "interactive"
   },
@@ -80,7 +80,7 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
     "agentServerVersion": "1.6.2",
     "agentRuntimePackage": "@openai/codex",
     "agentRuntimeVersion": "0.160.0",
-    "commandDigest": "sha256:3e88ae296113d4e1ad6a57260d82c3ba97b85794101ae632bfd14f6890e62869",
+    "commandDigest": "sha256:7f77704ad58089b4855717bb1fe77db988b7b725fd1823fd2f94f631e6b4f231",
     "permissionPolicy": "interactive"
   }
 } as const;
