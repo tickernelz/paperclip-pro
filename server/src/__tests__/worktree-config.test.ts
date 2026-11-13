@@ -79,7 +79,7 @@ function buildLegacyConfig(sharedRoot: string, publicBaseUrl = "http://127.0.0.1
         baseDir: path.join(sharedRoot, "data", "storage"),
       },
       s3: {
-        bucket: "paperclip",
+        bucket: "wardmote",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,
@@ -630,7 +630,7 @@ describe("worktree config repair", () => {
               baseDir: path.join(transientHome, "instances", instanceId, "data", "storage"),
             },
             s3: {
-              bucket: "paperclip",
+              bucket: "wardmote",
               region: "us-east-1",
               prefix: "",
               forcePathStyle: false,
@@ -741,7 +741,7 @@ describe("worktree config repair", () => {
               baseDir: path.join(currentInstanceRoot, "data", "storage"),
             },
             s3: {
-              bucket: "paperclip",
+              bucket: "wardmote",
               region: "us-east-1",
               prefix: "",
               forcePathStyle: false,
@@ -861,7 +861,7 @@ describe("worktree config repair", () => {
               baseDir: path.join(instanceRoot, "data", "storage"),
             },
             s3: {
-              bucket: "paperclip",
+              bucket: "wardmote",
               region: "us-east-1",
               prefix: "",
               forcePathStyle: false,
@@ -951,7 +951,7 @@ describe("worktree config repair", () => {
               baseDir: path.join(instanceRoot, "data", "storage"),
             },
             s3: {
-              bucket: "paperclip",
+              bucket: "wardmote",
               region: "us-east-1",
               prefix: "",
               forcePathStyle: false,

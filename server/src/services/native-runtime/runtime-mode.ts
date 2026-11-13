@@ -14,7 +14,7 @@ import {
  * original heartbeat selection seam and must remain stable for existing runs
  * and downstream importers.
  */
-export const NATIVE_RUNTIME_RESOLVER_VERSION = "paperclip-runner-v1" as const;
+export const NATIVE_RUNTIME_RESOLVER_VERSION = "wardmote-runner-v1" as const;
 
 /** Resolver version for the richer native runtime profile used by runnerd. */
 export const NATIVE_RUNTIME_PROFILE_RESOLVER_VERSION = "phase6-v1" as const;

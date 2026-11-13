@@ -269,7 +269,7 @@ function buildSourceConfig(): WardmoteConfig {
         baseDir: "/tmp/main/storage",
       },
       s3: {
-        bucket: "paperclip",
+        bucket: "wardmote",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,
@@ -1912,7 +1912,7 @@ describe("worktree helpers", () => {
                 baseDir: path.join(siblingInstanceRoot, "storage"),
               },
               s3: {
-                bucket: "paperclip",
+                bucket: "wardmote",
                 region: "us-east-1",
                 prefix: "",
                 forcePathStyle: false,

@@ -113,7 +113,7 @@ function configWithSecretsProvider(provider: WardmoteConfig["secrets"]["provider
         baseDir: "/tmp/wardmote/storage",
       },
       s3: {
-        bucket: "paperclip",
+        bucket: "wardmote",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,
