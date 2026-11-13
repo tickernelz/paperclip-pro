@@ -4959,7 +4959,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
       // failure and its message.
       const LOSS_DEADLINE_TERMINAL: AcpRuntimeTurnResult = {
         status: "cancelled",
-        stopReason: "paperclip_duplex_loss_deadline",
+        stopReason: "wardmote_duplex_loss_deadline",
       };
       const stepEventRelay = async (): Promise<AcpRuntimeTurnResult> => {
         const turn = activeTurn as AcpRuntimeTurn;

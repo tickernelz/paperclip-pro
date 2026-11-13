@@ -56,7 +56,7 @@ try {
     }
   }
   visit('@tickernelz/wardmote-server');
-  visit('paperclip-pro');
+  visit('@tickernelz/wardmote');
   // Match release.sh's unified versioning in temporary staging directories.
   // Source manifests remain untouched, including independently versioned SDKs.
   run(process.execPath, [join(repo, 'scripts/build-standalone-public-packages.mjs')], repo);

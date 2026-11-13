@@ -11,7 +11,7 @@ export function retainRunnerQualificationPackages({ repo, output, sourceRevision
   assert.match(sourceRevision, /^[a-f0-9]{40}$/);
   assert.equal(JSON.parse(readFileSync(join(repo, 'server/dist/build-info.json'))).commit, sourceRevision);
   assert.ok(publicArchives.some(a => a.name === '@tickernelz/wardmote-server'));
-  assert.ok(publicArchives.some(a => a.name === 'paperclip-pro'));
+  assert.ok(publicArchives.some(a => a.name === '@tickernelz/wardmote'));
   assert.ok(publicArchives.some(a => a.name === '@tickernelz/wardmote-plugin-sdk'));
   assert.equal(new Set(publicArchives.map(a => a.name)).size, publicArchives.length);
   output = resolve(output);

@@ -102,13 +102,13 @@ export const PROVIDERS: ProviderCase[] = [
     provider: "telegram",
     slug: "telegram",
     name: "Telegram",
-    accountLabel: "@maya_paperclip_bot",
+    accountLabel: "@maya_wardmote_bot",
     botLabel: "Maya",
-    botUsername: "maya_paperclip_bot",
+    botUsername: "maya_wardmote_bot",
     resourceLabel: "Maya test chat",
     secondaryResourceLabel: "Maya group chat",
     resourceType: "direct_message",
-    externalUrl: "https://t.me/maya_paperclip_bot",
+    externalUrl: "https://t.me/maya_wardmote_bot",
     setupHeading: /Create Maya in Telegram/i,
     setupButton: "Connect bot",
     chatAndTool: false,
@@ -762,7 +762,7 @@ export async function installChatControlPlaneMock(
               state.revokedPrincipalId ===
               `principal-${provider.provider}-linked`
                 ? null
-                : "paperclip-user-grace",
+                : "wardmote-user-grace",
             wardmoteUserLabel:
               state.revokedPrincipalId ===
               `principal-${provider.provider}-linked`
@@ -909,7 +909,7 @@ export async function fillProviderSetup(page: Page, provider: ProviderCase) {
       "Choose GitHub App private key file",
     );
     await privateKeyFile.setInputFiles({
-      name: "paperclip-test.pem",
+      name: "wardmote-test.pem",
       mimeType: "application/x-pem-file",
       buffer: Buffer.alloc(64 * 1024 + 1, "x"),
     });
@@ -923,7 +923,7 @@ export async function fillProviderSetup(page: Page, provider: ProviderCase) {
     await page.getByRole("button", { name: "Choose .pem file" }).click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles({
-      name: "paperclip-test.pem",
+      name: "wardmote-test.pem",
       mimeType: "application/x-pem-file",
       buffer: Buffer.from(GITHUB_PRIVATE_KEY_FIXTURE),
     });
@@ -942,7 +942,7 @@ export async function fillProviderSetup(page: Page, provider: ProviderCase) {
     await expect(page.locator("body")).not.toContainText(
       GITHUB_PRIVATE_KEY_FIXTURE,
     );
-    await expect(page.locator("body")).not.toContainText("paperclip-test.pem");
+    await expect(page.locator("body")).not.toContainText("wardmote-test.pem");
     await page.getByRole("button", { name: provider.setupButton }).click();
     await expect(page.getByRole("alert")).toContainText("Connection failed");
     await page

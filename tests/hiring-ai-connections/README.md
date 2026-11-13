@@ -8,7 +8,7 @@ missing managed-connection bindings.
 Start from a fresh worktree with dependencies installed:
 
 ```sh
-pnpm exec tsx cli/src/index.ts test-drive --data-dir /tmp/paperclip-hiring-qa --no-browser
+pnpm exec tsx cli/src/index.ts test-drive --data-dir /tmp/wardmote-hiring-qa --no-browser
 ```
 
 Use the URL printed at startup. Test-drive may choose another available port when

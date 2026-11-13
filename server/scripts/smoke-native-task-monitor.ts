@@ -12,7 +12,7 @@ import { and, eq } from "drizzle-orm";
 
 if (!process.argv.includes("--run")) throw new Error("Pass --run to authorize the live two-turn Codex smoke.");
 const root = await mkdtemp(join(tmpdir(), "wardmote-live-task-monitor-"));
-process.env.WARDMOTE_HOME = join(root, "paperclip");
+process.env.WARDMOTE_HOME = join(root, "wardmote");
 process.env.WARDMOTE_INSTANCE_ID = "monitor-smoke";
 process.env.WARDMOTE_TELEMETRY_ENABLED = "false";
 const { createDb, companies, agents, authUsers, companyMemberships, issues, heartbeatRuns, agentWakeupRequests, nativeRunResults, statusDecisions } = await import("@tickernelz/wardmote-db");
