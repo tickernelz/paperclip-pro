@@ -1,4 +1,5 @@
 import { githubRunReplyState } from "./chat-run-publications.js";
+import { withRetiredGitHubMarker } from "./retired-github-marker.js";
 import { stageReceiptReactionRemovals } from "./chat-receipt-reactions.js";
 import {
   GitHubPublicationLeaseLost,
@@ -99,7 +100,7 @@ const hash = (value: unknown) =>
     )
     .digest("hex");
 const marker = (kind: string, key: string) =>
-  `<!-- paperclip-${kind}:${hash(key)} -->`;
+  `<!-- wardmote-${kind}:${hash(key)} -->`;
 const readSchema = z
   .object({
     section: z.enum([
@@ -1036,7 +1037,7 @@ export function githubChatReviewService(db: Db, fetchImpl = fetch) {
               >(`${route}?per_page=100&page=${page}`);
               const found = rows.find(
                 (row) =>
-                  row.body?.includes(bodyMarker) &&
+                  withRetiredGitHubMarker(bodyMarker).some((variant) => row.body?.includes(variant)) &&
                   row.user?.login === source.endpoint.botUsername,
               );
               if (found) return found;
