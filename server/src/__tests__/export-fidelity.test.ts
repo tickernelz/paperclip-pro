@@ -97,7 +97,7 @@ describeEmbeddedPostgres("export fidelity counts", () => {
     await db.insert(issueLabels).values([{ issueId, labelId, companyId }]);
 
     const report = buildExportFidelityReport(companyId, await collectExportFidelityCounts(db, companyId));
-    expect(report.schema).toBe("paperclip-export-fidelity-v1");
+    expect(report.schema).toBe("wardmote-export-fidelity-v1");
     expect(report.companyId).toBe(companyId);
     // Labels travel in the bundle now, so their counts stay informational.
     expect(report.counts.labelDefinitions).toBe(1);
