@@ -75,7 +75,7 @@ export function configureBundledProviderOverrides(installManifest, bundledDepend
   ]) {
     if (!bundledDependencies.includes(serverPackage)) continue;
     const profile = profileData?.profiles?.[agent];
-    if (profileData?.schema !== "paperclip.acpx-profiles.v1" || profile?.agentServerPackage !== serverPackage
+    if (profileData?.schema !== "wardmote.acpx-profiles.v1" || profile?.agentServerPackage !== serverPackage
       || profile.agentRuntimePackage !== runtimePackage || !/^\d+\.\d+\.\d+$/.test(profile.agentServerVersion ?? "")
       || !/^\d+\.\d+\.\d+$/.test(profile.agentRuntimeVersion ?? "")
       || result.dependencies?.[serverPackage] !== profile.agentServerVersion) {

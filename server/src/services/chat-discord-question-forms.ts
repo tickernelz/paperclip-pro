@@ -13,7 +13,7 @@ const MAX_CAS_ATTEMPTS = 8;
 export interface DiscordModalCorrectionResponse {
   action: "errors";
   errors: Record<string, string>;
-  paperclipDiscordCorrection: {
+  wardmoteDiscordCorrection: {
     version: 1;
     actionId: string;
     message: string;
@@ -213,7 +213,7 @@ export async function retainDiscordQuestionFormCorrection(
       return {
         action: "errors",
         errors: input.fieldErrors,
-        paperclipDiscordCorrection: {
+        wardmoteDiscordCorrection: {
           version: 1,
           actionId,
           message: messages.join("\n").slice(0, 1500),

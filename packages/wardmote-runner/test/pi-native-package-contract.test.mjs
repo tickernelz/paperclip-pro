@@ -83,7 +83,7 @@ for (const brokenCatalog of [false, true]) {
       cwd: join(root, "workspace"), stdio: "pipe",
       env: {
         PATH: process.env.PATH, HOME: root, PI_CODING_AGENT_DIR: join(root, "agent"), PI_SKIP_VERSION_CHECK: "1", PI_TELEMETRY: "0",
-        PAPERCLIP_PI_RUNTIME_CONFIGURATION: JSON.stringify({
+        WARDMOTE_PI_RUNTIME_CONFIGURATION: JSON.stringify({
           invocationNamespace: "00000000-0000-4000-8000-000000000000",
           workspace: join(root, "workspace"), readOnly: true, readRoots: [], protectedRoots: [join(root, "agent")], instructions: "Use the assigned tools",
           servers: [{ type: "http", name: "paperclip", url: `http://127.0.0.1:${port}/mcp`, headers: [{ name: "Authorization", value: "Bearer 0123456789abcdef0123456789abcdef" }] }],
@@ -121,7 +121,7 @@ for (const brokenCatalog of [false, true]) {
     const result = await admission;
     assert.equal(result.success, true);
     assert.deepEqual(calls, ["initialize", "tools/list"]);
-    const readiness = result.data.commands.find((command) => command.name === "paperclip-runtime-ready-v1");
+    const readiness = result.data.commands.find((command) => command.name === "wardmote-runtime-ready-v1");
     assert.equal(readiness?.description, "Wardmote runtime gate v1");
   });
 }
@@ -160,8 +160,8 @@ test("real pinned Pi model iterations align owned identities across warm prompts
     await session.bindExtensions({ onError: (error) => extensionErrors.push(error.event) });
     session.subscribe((event) => {
       const normalized = wrapperIds.normalize(assistantIds.normalize(event));
-      if (normalized.paperclipAssistantMessage && event.type !== "message_update") boundaries.push(piAssistantChunk(normalized.paperclipAssistantMessage));
-      if (event.type === "message_update" && ["text_delta", "thinking_delta"].includes(event.assistantMessageEvent.type)) boundaries.push(piAssistantChunk(normalized.paperclipAssistantMessage, event.assistantMessageEvent.delta, event.assistantMessageEvent.type === "thinking_delta"));
+      if (normalized.wardmoteAssistantMessage && event.type !== "message_update") boundaries.push(piAssistantChunk(normalized.wardmoteAssistantMessage));
+      if (event.type === "message_update" && ["text_delta", "thinking_delta"].includes(event.assistantMessageEvent.type)) boundaries.push(piAssistantChunk(normalized.wardmoteAssistantMessage, event.assistantMessageEvent.delta, event.assistantMessageEvent.type === "thinking_delta"));
       if (event.type === "turn_start") events.push({ surface: "session", type: event.type });
       if (event.type === "tool_execution_start") displayed.push(normalized.toolCallId);
     });
@@ -192,7 +192,7 @@ test("real pinned Pi model iterations align owned identities across warm prompts
     ({ session } = await createAgentSession({ cwd: root, agentDir: root, model, modelRuntime, settingsManager: settings, sessionManager: SessionManager.open(persistedFile), resourceLoader, noTools: "builtin", thinkingLevel: "off" }));
     await session.bindExtensions({ onError: error => extensionErrors.push(error.event) });
     assert.ok(session.agent.state.messages.some(message => message.role === "assistant"));
-    session.subscribe(event => { const normalized = loadedMessages.normalize(event); if (normalized.paperclipAssistantMessage && event.type !== "message_update") loaded.push(piAssistantChunk(normalized.paperclipAssistantMessage)); });
+    session.subscribe(event => { const normalized = loadedMessages.normalize(event); if (normalized.wardmoteAssistantMessage && event.type !== "message_update") loaded.push(piAssistantChunk(normalized.wardmoteAssistantMessage)); });
     session.agent.streamFunction = () => {
       const message = { role: "assistant", content: [], api: model.api, provider: model.provider, model: model.id, usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } }, stopReason: "stop", timestamp: 100 };
       return { async *[Symbol.asyncIterator]() { yield { type: "start", partial: message }; yield { type: "done", reason: "stop", message }; }, result: async () => message };
@@ -254,7 +254,7 @@ test("real pinned Pi executes all four owned native question methods without per
     assert.deepEqual(errors, []); assert.equal(results.length, 4);
     assert.ok(results.every(event => !event.isError));
     assert.deepEqual(dialogs.map(dialog => dialog.method), ["select", "confirm", "input", "editor"]);
-    assert.ok(dialogs.every(dialog => !dialog.title.startsWith("paperclip.pi.permission.v1:")));
+    assert.ok(dialogs.every(dialog => !dialog.title.startsWith("wardmote.pi.permission.v1:")));
     assert.deepEqual(results.map(event => event.result.details), [{ status: "answered", optionId: "blue" }, { status: "negative_or_cancelled", confirmed: false }, { status: "answered", value: "Ada" }, { status: "answered", value: "New\ntext" }]);
   } finally { session?.dispose(); await rm(root, { recursive: true, force: true }); }
 });
@@ -352,7 +352,7 @@ test("real pinned Pi tool dispatch admits registered agent files and rejects una
     assert.equal(await readFile(memory, "utf8"), "private memory nonce\n");
     assert.match(JSON.stringify(results[1].result), /private memory nonce/);
     for (const path of [join(outside, "denied.txt"), join(privateRoot, "denied.txt")]) await assert.rejects(readFile(path), { code: "ENOENT" });
-    assert.equal(dialogs.length, 2); assert.ok(dialogs.every(title => title.startsWith("paperclip.pi.permission.v1:")));
+    assert.equal(dialogs.length, 2); assert.ok(dialogs.every(title => title.startsWith("wardmote.pi.permission.v1:")));
   } finally { session?.dispose(); await rm(root, { recursive: true, force: true }); }
 });
 
@@ -524,9 +524,9 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
       child = spawn(process.execPath, [owner], {
         cwd: join(root, "workspace"), stdio: "pipe", env: {
           PATH: "/usr/bin:/bin", HOME: root, PI_CODING_AGENT_DIR: join(root, "agent"), PI_SKIP_VERSION_CHECK: "1", PI_TELEMETRY: "0",
-          PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1", PAPERCLIP_PI_READ_ONLY: "0",
-          ...(agentHome ? { PAPERCLIP_PI_AGENT_HOME: agentHome } : {}),
-          PAPERCLIP_PI_NODE_EXECUTABLE: await realpath(process.execPath), PAPERCLIP_PI_ENTRYPOINT: bootstrap, PAPERCLIP_PI_EXTENSION_PATH: extension,
+          WARDMOTE_ACPX_ISOLATED_CONTEXT: "1", WARDMOTE_PI_READ_ONLY: "0",
+          ...(agentHome ? { WARDMOTE_PI_AGENT_HOME: agentHome } : {}),
+          WARDMOTE_PI_NODE_EXECUTABLE: await realpath(process.execPath), WARDMOTE_PI_ENTRYPOINT: bootstrap, WARDMOTE_PI_EXTENSION_PATH: extension,
         },
       });
       let buffered = "";
@@ -657,7 +657,7 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
     if (scenario.startsWith("provider-")) {
       assert.equal(modelRequests.length, 1); assert.equal(calls.filter(call => call.method === "tools/call").length, 0);
       assert.equal(result._meta.jetbrains.air.sessionFailure.severity, "error");
-      const notice = notifications.find(event => event.method === "paperclip/pi_notice" && event.params.category === "runtime_failure");
+      const notice = notifications.find(event => event.method === "wardmote/pi_notice" && event.params.category === "runtime_failure");
       assert.equal(notice?.params.details.reason, scenario === "provider-error" ? "provider_http_401" : "unknown_native_failure"); return;
     }
     assert.equal(result.stopReason, "end_turn"); assert.equal(result._meta?.jetbrains, undefined);

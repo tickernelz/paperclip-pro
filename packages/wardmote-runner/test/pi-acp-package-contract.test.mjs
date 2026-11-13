@@ -16,7 +16,7 @@ const packageJson = process.env.WARDMOTE_TEST_PI_ACP_PACKAGE
 const packageRoot = dirname(packageJson);
 const packageMetadata = JSON.parse(await readFile(packageJson, "utf8"));
 const packageSource = await readFile(join(packageRoot, "dist/index.js"), "utf8");
-const helperSource = await readFile(join(packageRoot, "dist/paperclip-runtime.js"), "utf8");
+const helperSource = await readFile(join(packageRoot, "dist/wardmote-runtime.js"), "utf8");
 const localHelper = await readFile(new URL("../src/drivers/acpx/pi-acp-runtime.ts", import.meta.url), "utf8");
 const normalize = (source) => source.split("\n").map((line) => line.trimEnd()).join("\n");
 
@@ -37,9 +37,9 @@ async function fixture(t, extra = {}) {
     cwd: join(root, "workspace"), stdio: "pipe",
     env: {
       PATH: process.env.PATH, HOME: root, PI_CODING_AGENT_DIR: join(root, "agent"),
-      PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1", PAPERCLIP_PI_READ_ONLY: "0",
-      PAPERCLIP_PI_NODE_EXECUTABLE: await realpath(process.execPath),
-      PAPERCLIP_PI_ENTRYPOINT: fakePi, PAPERCLIP_PI_EXTENSION_PATH: join(root, "extension.js"),
+      WARDMOTE_ACPX_ISOLATED_CONTEXT: "1", WARDMOTE_PI_READ_ONLY: "0",
+      WARDMOTE_PI_NODE_EXECUTABLE: await realpath(process.execPath),
+      WARDMOTE_PI_ENTRYPOINT: fakePi, WARDMOTE_PI_EXTENSION_PATH: join(root, "extension.js"),
       ...extra,
     },
   });
@@ -82,7 +82,7 @@ async function fixture(t, extra = {}) {
 
 test("actual patched ACP process streams thinking and waits for settlement with usage", async (t) => {
   const f = await fixture(t);
-  assert.equal(f.initialized.agentCapabilities._meta.paperclipPi.steering, true);
+  assert.equal(f.initialized.agentCapabilities._meta.wardmotePi.steering, true);
   assert.deepEqual(f.initialized.authMethods, []);
   const session = await f.call("session/new", { cwd: join(f.root, "workspace"), mcpServers: [] });
   const result = await f.call("session/prompt", { sessionId: session.sessionId, prompt: [{ type: "text", text: "hello" }] });
@@ -113,7 +113,7 @@ for (const scenario of ["narration-final", "tool-only", "empty-final"]) test(`ac
 for (const scenario of ["missing-message-start", "duplicate-message-start", "mismatched-message-end", "missing-message-end"]) test(`actual wrapper rejects malformed native boundaries: ${scenario}`, async t => {
   const f = await fixture(t); const session = await f.call("session/new", { cwd: join(f.root, "workspace"), mcpServers: [] });
   await assert.rejects(f.call("session/prompt", { sessionId: session.sessionId, prompt: [{ type: "text", text: scenario }] }), /exited|Internal error/);
-  const failure = f.notifications.find(event => event.method === "paperclip/pi_notice" && event.params.category === "runtime_failure");
+  const failure = f.notifications.find(event => event.method === "wardmote/pi_notice" && event.params.category === "runtime_failure");
   assert.ok(failure, "native failure notice is flushed before prompt rejection");
   assert.ok(["rpc_delta_boundary_invalid", "assistant_boundary_invalid"].includes(failure.params.details.reason));
   assert.equal(failure.params.severity, "error");
@@ -131,9 +131,9 @@ test("actual patched ACP process scopes recycled native IDs across iterations an
     const lifecycle = updates.filter(update => update.toolCallId === start.toolCallId);
     assert.ok(lifecycle.some(update => update.status === "in_progress"));
     assert.equal(lifecycle.filter(update => ["failed", "completed"].includes(update.status)).length, 1);
-    assert.ok(lifecycle.every(update => update._meta.paperclipPi.nativeToolCallId === "call_0"));
+    assert.ok(lifecycle.every(update => update._meta.wardmotePi.nativeToolCallId === "call_0"));
   }
-  assert.deepEqual(starts.map(update => update._meta.paperclipPi.modelIteration), [1, 2, 3, 5, 6, 7]);
+  assert.deepEqual(starts.map(update => update._meta.wardmotePi.modelIteration), [1, 2, 3, 5, 6, 7]);
 });
 
 test("cancellation closes the iteration before a warm prompt reuses native IDs", async (t) => {
@@ -145,7 +145,7 @@ test("cancellation closes the iteration before a warm prompt reuses native IDs",
   const warm = await f.call("session/prompt", { sessionId: session.sessionId, prompt: [{ type: "text", text: "reused-tool-ids" }] });
   assert.equal(warm.stopReason, "end_turn");
   const starts = f.notifications.map(event => event.params?.update).filter(update => update?.sessionUpdate === "tool_call");
-  assert.deepEqual(starts.map(update => update._meta.paperclipPi.modelIteration), [2, 3, 4]);
+  assert.deepEqual(starts.map(update => update._meta.wardmotePi.modelIteration), [2, 3, 4]);
   assert.equal(new Set(starts.map(update => update.toolCallId)).size, 3);
 });
 
@@ -161,7 +161,7 @@ test("acknowledged native cancellation preserves partial usage and refuses servi
   assert.equal(result.usage.inputTokens, 11);
   assert.equal(result.usage.outputTokens, 3);
   assert.equal(result.usage.cachedReadTokens, undefined);
-  assert.equal(result.usage._meta.paperclipPi.costUsd, undefined);
+  assert.equal(result.usage._meta.wardmotePi.costUsd, undefined);
 });
 
 test("warm load uses stable display-only history IDs distinct from live execution", async (t) => {
@@ -179,8 +179,8 @@ test("warm load uses stable display-only history IDs distinct from live executio
     assert.notEqual(starts[0].toolCallId, starts[1].toolCallId);
     for (const start of starts) {
       assert.match(start.toolCallId, /^pi-history-[a-f0-9]{64}$/);
-      assert.equal(start._meta.paperclipPi.nativeToolCallId, "call_0");
-      assert.equal(start._meta.paperclipPi.identityScope, "history-display-only");
+      assert.equal(start._meta.wardmotePi.nativeToolCallId, "call_0");
+      assert.equal(start._meta.wardmotePi.identityScope, "history-display-only");
     }
     loads.push(starts.map(update => update.toolCallId));
   }
@@ -205,7 +205,7 @@ for (const [method, answer, expected] of [["select", "Blue", { value: "Blue" }],
     f.setAnswer(async () => ({ action: "accept", content: { answer } }));
     await f.call("session/prompt", { sessionId: session.sessionId, prompt: [{ type: "text", text: `native-question-${method}` }] });
     assert.equal(f.requests.length, 1); assert.notEqual(f.requests[0].method, "session/request_permission");
-    assert.equal(f.requests[0].params._meta.paperclipPi.method, method);
+    assert.equal(f.requests[0].params._meta.wardmotePi.method, method);
     const response = f.notifications.map(event => event.params?.update?.content?.text).find(text => text?.includes('"extension_ui_response"'));
     assert.deepEqual(JSON.parse(response), { type: "extension_ui_response", id: `native-${method}`, ...expected });
   });
@@ -215,7 +215,7 @@ test("actual patched ACP reports unsupported external UI as an error and stops t
   const f = await fixture(t); const session = await f.call("session/new", { cwd: join(f.root, "workspace"), mcpServers: [] });
   await assert.rejects(f.call("session/prompt", { sessionId: session.sessionId, prompt: [{ type: "text", text: "oversized-question" }] }), /exited/);
   assert.equal(f.requests.length, 0);
-  assert.ok(f.notifications.some(event => event.method === "paperclip/pi_notice" && event.params?.summary === "Pi structured question is unsupported or invalid; the session was stopped"));
+  assert.ok(f.notifications.some(event => event.method === "wardmote/pi_notice" && event.params?.summary === "Pi structured question is unsupported or invalid; the session was stopped"));
 });
 
 test("native steering is explicit and does not replace the active ACP turn", async (t) => {
@@ -261,7 +261,7 @@ for (const [outcome, expected] of [
     const f = await fixture(t);
     const session = await f.call("session/new", { cwd: join(f.root, "workspace"), mcpServers: [] });
     const result = await f.call("session/prompt", { sessionId: session.sessionId, prompt: [{ type: "text", text: `retry-${outcome}` }] });
-    const messages = f.notifications.filter(event => event.method === "paperclip/pi_notice").map(event => event.params.summary);
+    const messages = f.notifications.filter(event => event.method === "wardmote/pi_notice").map(event => event.params.summary);
     assert.ok(f.notifications.filter(event => event.params?.update?.sessionUpdate === "agent_message_chunk").every(event => !event.params.update.content.text.includes("Retry")));
     assert.ok(messages.includes(expected));
     if (outcome !== "success") assert.ok(messages.every((text) => !text.includes("resuming")));
@@ -275,15 +275,15 @@ test("manual and automatic compaction retain native progress and usage", async (
   const prompt = (text) => f.call("session/prompt", { sessionId: session.sessionId, prompt: [{ type: "text", text }] });
   const manual = await prompt("/compact");
   assert.equal(manual.usage.inputTokens, 5); assert.equal(manual.usage.totalTokens, 8);
-  assert.equal(manual.usage._meta.paperclipPi.provenance, "assistant_message_and_compaction_receipts");
+  assert.equal(manual.usage._meta.wardmotePi.provenance, "assistant_message_and_compaction_receipts");
   const automatic = await prompt("auto-compact");
   assert.equal(automatic.usage.inputTokens, 16); assert.equal(automatic.usage.totalTokens, 24);
-  assert.equal(automatic.usage._meta.paperclipPi.costUsd, 0.03);
-  assert.ok(f.notifications.some((event) => event.method === "paperclip/pi_notice" && event.params?.summary === "Context compaction finished."));
+  assert.equal(automatic.usage._meta.wardmotePi.costUsd, 0.03);
+  assert.ok(f.notifications.some((event) => event.method === "wardmote/pi_notice" && event.params?.summary === "Context compaction finished."));
   const retried = await prompt("retry-compact");
   assert.equal(retried.usage.inputTokens, undefined);
-  assert.equal(retried.usage._meta.paperclipPi.costUsd, undefined);
-  assert.ok(f.notifications.some((event) => event.method === "paperclip/pi_notice" && event.params?.summary === "Context summarization is retrying a provider request."));
+  assert.equal(retried.usage._meta.wardmotePi.costUsd, undefined);
+  assert.ok(f.notifications.some((event) => event.method === "wardmote/pi_notice" && event.params?.summary === "Context summarization is retrying a provider request."));
   const active = prompt("long"); await new Promise((resolve) => setTimeout(resolve, 25));
   await assert.rejects(prompt("/compact"), /requires an idle session/);
   f.notify("session/cancel", { sessionId: session.sessionId }); await active;
@@ -296,14 +296,14 @@ for (const outcome of ["success", "failure", "oversized"]) {
     const session = await f.call("session/new", { cwd: join(f.root, "workspace"), mcpServers: [] });
     const result = await f.call("session/prompt", { sessionId: session.sessionId, prompt: [{ type: "text", text: `bash-${outcome}` }] });
     assert.equal(result.stopReason, "end_turn");
-    const updates = f.notifications.map((event) => event.params?.update).filter((update) => update?._meta?.paperclipPi?.nativeToolCallId === "bash-fixture");
+    const updates = f.notifications.map((event) => event.params?.update).filter((update) => update?._meta?.wardmotePi?.nativeToolCallId === "bash-fixture");
     assert.deepEqual(updates[0].rawInput, { command: outcome === "failure" ? "printf failure >&2; exit 7" : "printf done", timeout: 3 });
     assert.deepEqual(updates[1].rawOutput, { content: [{ type: "text", text: "partial" }] });
     const terminal = updates.at(-1);
     assert.equal(terminal.status, outcome === "failure" ? "failed" : "completed");
     if (outcome === "oversized") {
-      assert.equal(terminal.rawOutput._meta.paperclipPi.omitted, "tool value exceeds 65536 bytes");
-      assert.ok(terminal.rawOutput._meta.paperclipPi.originalBytes > 65536);
+      assert.equal(terminal.rawOutput._meta.wardmotePi.omitted, "tool value exceeds 65536 bytes");
+      assert.ok(terminal.rawOutput._meta.wardmotePi.originalBytes > 65536);
       assert.ok(Buffer.byteLength(JSON.stringify(terminal.rawOutput)) < 256);
     } else {
       assert.deepEqual(terminal.rawOutput, { content: [{ type: "text", text: outcome === "failure" ? "failure\n" : "done\n" }], details: { exitCode: outcome === "failure" ? 7 : 0, truncated: false } });

@@ -9,7 +9,7 @@ const manifest = await readJson("acpx-profiles.json");
 const distributions = await readJson("cursor-distributions.json");
 const contract = await readJson("cursor-contract.json");
 const pkg = await readJson("package.json");
-assert.equal(manifest.schema, "paperclip.acpx-profiles.v1");
+assert.equal(manifest.schema, "wardmote.acpx-profiles.v1");
 assert.equal(manifest.acpxVersion, pkg.dependencies.acpx);
 const entries = Object.entries(manifest.profiles);
 for (const [agent, profile] of entries) {
@@ -39,7 +39,7 @@ const { commandDigest, ...attestation } = contract;
 assert.equal(commandDigest, `sha256:${createHash("sha256").update(canonicalJson(attestation)).digest("hex")}`);
 assert.equal(contract.acpxPatchSha256, createHash("sha256")
   .update(await readFile(new URL("../../patches/acpx@0.13.1.patch", root))).digest("hex"));
-for (const [agent, path] of [["pi", "test-fixtures/pi-acp/profile-v27-identity.json"], ["copilot", "test/fixtures/copilot-profile-v25-identity.json"]]) {
+for (const [agent, path] of [["pi", "test-fixtures/pi-acp/profile-v28-identity.json"], ["copilot", "test/fixtures/copilot-profile-v26-identity.json"]]) {
   const identity = await readJson(path);
   assert.equal(manifest.profiles[agent].agentProfileVersion, identity.declaration.agentProfileVersion);
   assert.equal(manifest.profiles[agent].commandDigest, identity.commandDigest);

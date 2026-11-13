@@ -35,7 +35,7 @@ App only after a human accepts the exact research revision and connection set.
   `paperclip-content/integrations/skills/integration-harness/SKILL.md` as its
   entrypoint. Reference and run them; do not copy their schemas, templates,
   state machines, reconciliation rules, or internal gates into this skill.
-- Treat `paperclip/doc/connections/CONNECTOR-PLAYBOOK.md` on the implementation
+- Treat `wardmote/doc/connections/CONNECTOR-PLAYBOOK.md` on the implementation
   target branch as the connector contract. Follow it end to end; do not
   substitute remembered behavior or the examples in this skill.
 - Finish Phase A with a research-only PR. Do not create an App implementation

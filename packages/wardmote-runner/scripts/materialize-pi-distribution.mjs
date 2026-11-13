@@ -21,8 +21,8 @@ export const PI_BRACE_SECURITY_PATCH_SHA256 = "5273a195b952f233336122842faaf6501
 const supportedTargets = new Set(["darwin-arm64", "darwin-x64", "linux-x64"]);
 export const PI_DISTRIBUTION_PINS = Object.freeze({
   wrapper: "0.0.33", runtime: "1.0.0", sdk: "0.26.0", zod: "3.25.76", nodeVersion: PI_NODE_VERSION, undici: "8.10.2", nodeBundledUndici: "7.29.1",
-  wrapperSha256: "9d129b3d38772e93e97080aa6c4e574ac5df4e47ce5bc331a484a9fbf8188b36",
-  helperSha256: "41e0490b617da0d60e0c8ec58ef311236f945129d99f816cff6897f78da7f91d",
+  wrapperSha256: "e64bd04183eac42095be7ad7df81a0f603c11fb640777e5e8318d72d6550bfc1",
+  helperSha256: "02b9f5553f941b3c839590b9687557b69427fe2ba5619b33f772672aa80abe91",
 });
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
@@ -97,7 +97,7 @@ export async function writePiDistributionManifest(runtimeRoot) {
     schema: "wardmote.pi-runtime-files.v1",
     node: "node/bin/node",
     piEntrypoint: "node_modules/@earendil-works/pi-coding-agent/dist/cli.js",
-    extension: "extensions/paperclip.js",
+    extension: "extensions/wardmote.js",
     wrapperEntrypoint: "node_modules/pi-acp/dist/index.js",
     files: await inventoryPiRuntimeFiles(runtimeRoot),
   };
@@ -108,12 +108,12 @@ export async function writePiDistributionManifest(runtimeRoot) {
 export function piDistributionBootstrapSource() {
   return [
       'const path=require("node:path");',
-      'process.env.PAPERCLIP_PI_NODE_EXECUTABLE=path.join(__dirname,"node/bin/node");',
-      'process.env.PAPERCLIP_PI_ENTRYPOINT=path.join(__dirname,"node_modules/@earendil-works/pi-coding-agent/dist/cli.js");',
-      'process.env.PAPERCLIP_PI_EXTENSION_PATH=path.join(__dirname,"extensions/paperclip.js");',
-      'process.env.PAPERCLIP_PI_MODULE_GUARD_PATH=path.join(__dirname,".paperclip-native-module-guard.cjs");',
-      'const protectedRoots=JSON.parse(process.env.PAPERCLIP_PI_PROTECTED_ROOTS??"[]");if(!Array.isArray(protectedRoots))throw new Error("Invalid Pi protected roots");',
-      'process.env.PAPERCLIP_PI_PROTECTED_ROOTS=JSON.stringify([...protectedRoots,__dirname]);',
+      'process.env.WARDMOTE_PI_NODE_EXECUTABLE=path.join(__dirname,"node/bin/node");',
+      'process.env.WARDMOTE_PI_ENTRYPOINT=path.join(__dirname,"node_modules/@earendil-works/pi-coding-agent/dist/cli.js");',
+      'process.env.WARDMOTE_PI_EXTENSION_PATH=path.join(__dirname,"extensions/wardmote.js");',
+      'process.env.WARDMOTE_PI_MODULE_GUARD_PATH=path.join(__dirname,".wardmote-native-module-guard.cjs");',
+      'const protectedRoots=JSON.parse(process.env.WARDMOTE_PI_PROTECTED_ROOTS??"[]");if(!Array.isArray(protectedRoots))throw new Error("Invalid Pi protected roots");',
+      'process.env.WARDMOTE_PI_PROTECTED_ROOTS=JSON.stringify([...protectedRoots,__dirname]);',
       'import(require("node:url").pathToFileURL(path.join(__dirname,"node_modules/pi-acp/dist/index.js")).href).catch(()=>{process.exitCode=1;});',
       '',
   ].join("\n");
@@ -203,7 +203,7 @@ export async function materializePiDistribution({ outputRoot, nodeExecutable, np
     await runOwned("git", ["apply", "--check", inputPatchPath], { cwd: wrapper, env: environment, timeout: 10_000 });
     await runOwned("git", ["apply", inputPatchPath], { cwd: wrapper, env: environment, timeout: 10_000 });
     const [wrapperBytes, helperBytes, helperSource] = await Promise.all([
-      readFile(join(wrapper, "dist/index.js")), readFile(join(wrapper, "dist/paperclip-runtime.js")),
+      readFile(join(wrapper, "dist/index.js")), readFile(join(wrapper, "dist/wardmote-runtime.js")),
       readFile(helperSourcePath, "utf8"),
     ]);
     // Installed CLI users may run another supported Node patch. Generate the
@@ -214,7 +214,7 @@ export async function materializePiDistribution({ outputRoot, nodeExecutable, np
     const stripped = (await stripPinnedSource(helperSourcePath, helperSource)).split("\n").map((line) => line.trimEnd()).join("\n");
     if (hash(wrapperBytes) !== PI_DISTRIBUTION_PINS.wrapperSha256 || hash(helperBytes) !== PI_DISTRIBUTION_PINS.helperSha256 || helperBytes.toString("utf8") !== stripped) throw new Error("Pi wrapper patch does not match its qualified source");
     await mkdir(join(runtimeRoot, "extensions"));
-    await writeFile(join(runtimeRoot, "extensions/paperclip.js"), (await stripPinnedSource(extensionSourcePath, await readFile(extensionSourcePath, "utf8"))).replace('from "./pi-acp-runtime.js"', 'from "../node_modules/pi-acp/dist/paperclip-runtime.js"'));
+    await writeFile(join(runtimeRoot, "extensions/wardmote.js"), (await stripPinnedSource(extensionSourcePath, await readFile(extensionSourcePath, "utf8"))).replace('from "./pi-acp-runtime.js"', 'from "../node_modules/pi-acp/dist/wardmote-runtime.js"'));
     await mkdir(join(runtimeRoot, "node/bin"), { recursive: true });
     const copiedNode = join(runtimeRoot, "node/bin/node");
     await copyFile(node, copiedNode); await chmod(copiedNode, 0o755);
@@ -243,7 +243,7 @@ export async function materializePiDistribution({ outputRoot, nodeExecutable, np
     }));
     entries.sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
     const nativeClosureSha256 = hash(JSON.stringify(entries));
-    if (nativeClosureSha256 !== PI_DISTRIBUTION_CLOSURE_SHA256[target]) throw new Error("Pi native closure differs from its trusted target pin");
+    if (nativeClosureSha256 !== PI_DISTRIBUTION_CLOSURE_SHA256[target]) throw new Error(`Pi native closure ${target} ${nativeClosureSha256} differs from its trusted target pin`);
     await writeFile(join(staging, "native-closure.json"), `${JSON.stringify({ entries })}\n`);
     const metadata = {
       schema: "wardmote.pi-distribution.v1", pins: PI_DISTRIBUTION_PINS,

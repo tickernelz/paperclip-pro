@@ -75,7 +75,7 @@ describe("Pi native Product qualification", () => {
     expect(cells.reduce((sum, row) => sum + row.task.expectedRunCount, 0)).toBe(12);
     expect(selectRunnerExecutions(parseRunnerSelectors(["--all"])).some(row => row.suite.id === suite.id)).toBe(false);
     expect(runnerMatrix.filter(row => row.suite.id === "extended-harnesses")).toHaveLength(30);
-    expect(piNativeTasks[0]!.buildPrompt("fixture")).toContain("paperclip_native_question");
+    expect(piNativeTasks[0]!.buildPrompt("fixture")).toContain("wardmote_native_question");
     expect(piNativeTasks[1]!.buildPrompt("fixture")).toContain("AGENT_HOME");
   });
 

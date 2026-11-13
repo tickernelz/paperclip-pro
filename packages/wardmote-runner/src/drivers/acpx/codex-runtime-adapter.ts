@@ -413,7 +413,7 @@ export async function openQualifiedAcpxRuntime(
       if (capability) goalState.capability = capability;
       // Only the runner-owned Pi wrapper has an admitted steering contract.
       // Never infer it from generic ACP prompt support or native-only features.
-      const pi = objectRecord(objectRecord(objectRecord(objectRecord(result).agentCapabilities)._meta).paperclipPi);
+      const pi = objectRecord(objectRecord(objectRecord(objectRecord(result).agentCapabilities)._meta).wardmotePi);
       extensionBoundary.steering = options.profile.agent === "pi" && pi.version === 1
         ? { steering: pi.steering === true, queuedFollowUp: pi.queuedFollowUp === true }
         : null;
@@ -423,7 +423,7 @@ export async function openQualifiedAcpxRuntime(
       ...definedEnvironment(options.launchEnvironment),
       ...(options.profile.agent === "claude"
         ? {
-            PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1",
+            WARDMOTE_ACPX_ISOLATED_CONTEXT: "1",
             // This URL comes from the runner-owned authenticated tool bridge,
             // never provider-supplied permission-request metadata.
             WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL: options.mcpServers.find(

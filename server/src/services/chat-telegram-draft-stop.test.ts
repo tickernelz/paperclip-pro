@@ -62,14 +62,14 @@ describe("Telegram exact private draft Stop transport", () => {
       }
       const result = await adapter.stream("telegram:456:42", chunks(), {
         updateIntervalMs: 0,
-        paperclipDraftControl: {
+        wardmoteDraftControl: {
           version: 1,
           draftId: 1337,
           beforeDraft,
           beforeFinal,
         },
       } as never);
-      expect(result).toEqual({ paperclipDraftStopped: true });
+      expect(result).toEqual({ wardmoteDraftStopped: true });
       expect(requests.every(({ method }) => method.endsWith("Draft"))).toBe(
         true,
       );
@@ -109,7 +109,7 @@ describe("Telegram exact private draft Stop transport", () => {
       }
       await expect(
         adapter.stream("telegram:456", chunks(), {
-          paperclipDraftControl: {
+          wardmoteDraftControl: {
             version: 1,
             draftId: 44,
             beforeDraft: async () => {
@@ -143,7 +143,7 @@ describe("Telegram exact private draft Stop transport", () => {
       }
       await expect(
         adapter.stream("telegram:456", chunks(), {
-          paperclipDraftControl: {
+          wardmoteDraftControl: {
             version: 1,
             draftId,
             beforeDraft: async () => true,
@@ -168,7 +168,7 @@ describe("Telegram exact private draft Stop transport", () => {
     }
     await expect(
       adapter.stream("telegram:-100456:42", chunks(), {
-        paperclipDraftControl: {
+        wardmoteDraftControl: {
           version: 1,
           draftId: 4,
           beforeDraft: async () => true,
@@ -208,7 +208,7 @@ describe("Telegram private draft Stop binding", () => {
       messageThreadId: 42,
     });
     expect(
-      isTelegramDraftStopped({ paperclipDraftStopped: true, id: "fake" }),
+      isTelegramDraftStopped({ wardmoteDraftStopped: true, id: "fake" }),
     ).toBe(false);
     expect(parseTelegramDraftBinding({})).toBeNull();
   });

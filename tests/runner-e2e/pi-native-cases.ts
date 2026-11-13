@@ -70,17 +70,17 @@ export function piNativeMemoryPrompt(nonce: string, outsidePath?: string): strin
 
 export function piNativePrompt(id: string, nonce: string): string {
   if (id === "native-pending-provider-death") return [
-    'Call paperclip_native_question exactly once with {method:"input",title:"Pi native provider death",placeholder:"Answer"}. Wait for the real answer; never guess it or substitute semantic request_human_input.',
+    'Call wardmote_native_question exactly once with {method:"input",title:"Pi native provider death",placeholder:"Answer"}. Wait for the real answer; never guess it or substitute semantic request_human_input.',
     "Only after receiving the actual answer, use native write to save its exact tool-result object as JSON to pi-provider-death-answer.json in the task workspace. Never write that file while the question is unanswered. This is an internal verification file, not a deliverable.",
     piNativeFinish(`PI-NATIVE-${id}-${nonce}`),
   ].join("\n");
   if (id === "native-pending-controller-restart") return [
-    'Call paperclip_native_question exactly once with {method:"input",title:"Pi native restart",placeholder:"Answer"}. Wait for the real answer; never guess it or substitute semantic request_human_input.',
+    'Call wardmote_native_question exactly once with {method:"input",title:"Pi native restart",placeholder:"Answer"}. Wait for the real answer; never guess it or substitute semantic request_human_input.',
     "Use native write to save the exact returned tool-result object as JSON to pi-native-restart-answer.json in the task workspace. Do not change or infer its fields. This is an internal verification file, not a deliverable.",
     piNativeFinish(`PI-NATIVE-${id}-${nonce}`),
   ].join("\n");
   if (id === "native-questions") return [
-    "Use paperclip_native_question exactly four times, sequentially, waiting for each answer. Do not substitute semantic request_human_input.",
+    "Use wardmote_native_question exactly four times, sequentially, waiting for each answer. Do not substitute semantic request_human_input.",
     'First: {method:"select",title:"Pi native color",options:[{id:"blue",label:"Blue"},{id:"red",label:"Red"}]}.',
     'Second: {method:"confirm",title:"Pi native confirmation",message:"Continue this fixture?"}.',
     'Third: {method:"input",title:"Pi native name",placeholder:"Name"}.',

@@ -1,5 +1,5 @@
 {
-  "name": "paperclip-pi-runtime-distribution",
+  "name": "wardmote-pi-runtime-distribution",
   "version": "1.0.0",
   "private": true,
   "type": "module",

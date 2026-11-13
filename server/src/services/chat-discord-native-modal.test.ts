@@ -453,7 +453,7 @@ describe("Discord native modal Gateway bridge", () => {
       onModalSubmit: async () => ({
         action: "errors",
         errors: { field: "Required" },
-        paperclipDiscordCorrection: {
+        wardmoteDiscordCorrection: {
           version: 1,
           actionId,
           message: "Release note: Please provide an answer.",

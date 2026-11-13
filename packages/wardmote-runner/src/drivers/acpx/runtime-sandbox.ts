@@ -494,17 +494,17 @@ export async function prepareAcpxRuntimeSandbox(input: {
     XDG_DATA_HOME: dataDirectory,
     XDG_CACHE_HOME: cacheDirectory,
     WARDMOTE_ACPX_PROFILE: input.agent,
-    PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1",
+    WARDMOTE_ACPX_ISOLATED_CONTEXT: "1",
     ...(input.agent === "grok" ? { GROK_HOME: agentHomeDirectory, NO_BROWSER: "1", GROK_DISABLE_AUTOUPDATER: "1" } : {}),
     ...(input.agent === "pi"
       ? {
           PI_CODING_AGENT_DIR: agentHomeDirectory,
           PI_SKIP_VERSION_CHECK: "1",
           PI_TELEMETRY: "0",
-          PAPERCLIP_PI_READ_ONLY: policy.readOnly ? "1" : "0",
-          PAPERCLIP_PI_READ_ROOTS: JSON.stringify(policy.readRoots),
-          PAPERCLIP_PI_PROTECTED_ROOTS: JSON.stringify(protectedPaths),
-          PAPERCLIP_PI_SYSTEM_INSTRUCTIONS: policy.systemInstructions,
+          WARDMOTE_PI_READ_ONLY: policy.readOnly ? "1" : "0",
+          WARDMOTE_PI_READ_ROOTS: JSON.stringify(policy.readRoots),
+          WARDMOTE_PI_PROTECTED_ROOTS: JSON.stringify(protectedPaths),
+          WARDMOTE_PI_SYSTEM_INSTRUCTIONS: policy.systemInstructions,
         }
       : {}),
     ...(input.agent === "cursor"
@@ -725,7 +725,7 @@ function isPersistableEnvironmentName(name: string): boolean {
       name,
     ) ||
     /^(?:HOME|XDG_CONFIG_HOME|XDG_DATA_HOME|XDG_CACHE_HOME)$/.test(name) ||
-    /^(?:WARDMOTE_ACPX_PROFILE|PAPERCLIP_ACPX_ISOLATED_CONTEXT)$/.test(name) ||
+    /^(?:WARDMOTE_ACPX_PROFILE|WARDMOTE_ACPX_ISOLATED_CONTEXT)$/.test(name) ||
     /^(?:PI_CODING_AGENT_DIR|PI_SKIP_VERSION_CHECK|PI_TELEMETRY)$/.test(name) ||
     /^(?:CURSOR_CONFIG_DIR|CURSOR_DATA_DIR|AGENT_CLI_CREDENTIAL_STORE|NO_OPEN_BROWSER|NODE_DISABLE_COMPILE_CACHE)$/.test(name) ||
     /^(?:COPILOT_HOME|COPILOT_CACHE_HOME|COPILOT_AUTO_UPDATE|COPILOT_ALLOW_ALL|COPILOT_DISABLE_TERMINAL_TITLE|NO_COLOR)$/.test(name) ||

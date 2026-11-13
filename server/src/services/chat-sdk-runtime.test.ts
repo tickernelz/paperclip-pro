@@ -22,10 +22,10 @@ vi.mock("@chat-adapter/discord", () => ({
     captures.discordConfigs.push(config);
     return {
       name: "discord",
-      paperclipCompatibilityRevision:
+      wardmoteCompatibilityRevision:
         config.botToken === "unpatched-discord"
           ? undefined
-          : "paperclip-discord-v6",
+          : "wardmote-discord-v6",
       async ensureRootThread(
         channelId: string,
         messageId: string,

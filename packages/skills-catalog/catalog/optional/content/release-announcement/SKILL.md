@@ -74,7 +74,7 @@ For a dev blog, upsert a child case with `parentCaseId` set to the release case:
   "fields": {
     "schema_version": 1,
     "version": "vYYYY.MDD.P",
-    "slug": "paperclip-vYYYY-MDD-P",
+    "slug": "wardmote-vYYYY-MDD-P",
     "word_count_target": 650,
     "target_audience": ["operators", "developers"],
     "requires_screenshot": false,

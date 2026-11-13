@@ -139,7 +139,7 @@ describe("ACPX runtime sandbox", () => {
           UNRELATED_SECRET: "must-not-enter",
           HOME: "/ambient/home", XDG_CONFIG_HOME: "/ambient/config", CURSOR_CONFIG_DIR: "/ambient/cursor",
           COPILOT_HOME: "/ambient/copilot", COPILOT_PKG_CACHE_HOME: "/ambient/extraction-cache", COPILOT_ALLOW_ALL: "true",
-          PAPERCLIP_PI_READ_ONLY: "1", PAPERCLIP_PI_READ_ROOTS: '["/"]', PAPERCLIP_PI_ENTRYPOINT: "/ambient/pi.js",
+          WARDMOTE_PI_READ_ONLY: "1", WARDMOTE_PI_READ_ROOTS: '["/"]', WARDMOTE_PI_ENTRYPOINT: "/ambient/pi.js",
           HTTPS_PROXY: "https://proxy-user:proxy-password@example.test",
           WARDMOTE_NATIVE_MCP_URL:
             "https://mcp.example.test/connect?ticket=secret",
@@ -200,7 +200,7 @@ describe("ACPX runtime sandbox", () => {
         );
       }
       expect(sandbox.protectedPaths).toEqual([dirname(dirname(sandbox.root))]);
-      expect(sandbox.launchEnvironment.PAPERCLIP_PI_ENTRYPOINT).toBeUndefined();
+      expect(sandbox.launchEnvironment.WARDMOTE_PI_ENTRYPOINT).toBeUndefined();
       expect(sandbox.launchEnvironment.COPILOT_PKG_CACHE_HOME).toBeUndefined();
       if (agent === "cursor") {
         expect(sandbox.launchEnvironment).toMatchObject({
@@ -220,11 +220,11 @@ describe("ACPX runtime sandbox", () => {
       }
       if (agent === "pi") {
         expect(sandbox.launchEnvironment).toMatchObject({
-          PAPERCLIP_PI_READ_ONLY: "0", PAPERCLIP_PI_READ_ROOTS: "[]",
-          PAPERCLIP_PI_PROTECTED_ROOTS: JSON.stringify(sandbox.protectedPaths),
-          PAPERCLIP_PI_SYSTEM_INSTRUCTIONS: "bound instructions",
+          WARDMOTE_PI_READ_ONLY: "0", WARDMOTE_PI_READ_ROOTS: "[]",
+          WARDMOTE_PI_PROTECTED_ROOTS: JSON.stringify(sandbox.protectedPaths),
+          WARDMOTE_PI_SYSTEM_INSTRUCTIONS: "bound instructions",
         });
-        expect(sandbox.persistedEnvironment.PAPERCLIP_PI_SYSTEM_INSTRUCTIONS).toBeUndefined();
+        expect(sandbox.persistedEnvironment.WARDMOTE_PI_SYSTEM_INSTRUCTIONS).toBeUndefined();
         await expect(
           readFile(join(sandbox.agentHomeDirectory, "settings.json"), "utf8"),
         ).resolves.toContain('"defaultProjectTrust":"never"');
@@ -241,8 +241,8 @@ describe("ACPX runtime sandbox", () => {
       binding: { ...fixture.binding, permissionMode: "approve-all" }, agent: "pi",
       providerPolicy: { readOnly: true, readRoots: [readRoot], protectedPaths: ["/verified/provider-pack"] },
     });
-    expect(sandbox.launchEnvironment.PAPERCLIP_PI_READ_ONLY).toBe("1");
-    expect(JSON.parse(sandbox.launchEnvironment.PAPERCLIP_PI_READ_ROOTS!)).toHaveLength(1);
+    expect(sandbox.launchEnvironment.WARDMOTE_PI_READ_ONLY).toBe("1");
+    expect(JSON.parse(sandbox.launchEnvironment.WARDMOTE_PI_READ_ROOTS!)).toHaveLength(1);
     expect(sandbox.protectedPaths).toContain("/verified/provider-pack");
     for (const readRoots of [["/"], ["relative"], ["/missing/assigned-skills"]]) {
       await expect(prepareAcpxRuntimeSandbox({ binding: fixture.binding, agent: "pi", providerPolicy: { readOnly: false, readRoots } })).rejects.toThrow();

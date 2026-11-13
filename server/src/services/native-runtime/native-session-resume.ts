@@ -17,7 +17,7 @@ export type NativeToolExecutionTargetKind = "local" | "remote";
 export function nativeRuntimeContractForProvider(
   provider: NativeExecutionInput["provider"],
 ): string | undefined {
-  return provider.kind === "acpx" ? "paperclip.acpx-runtime-contract.v1" : undefined;
+  return provider.kind === "acpx" ? "wardmote.acpx-runtime-contract.v1" : undefined;
 }
 
 /**

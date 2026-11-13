@@ -50,7 +50,7 @@ export function persistedAcpxTurnUsage(
   );
   if (added.length !== 1) return null;
   const usage = record(receipts[added[0]!]);
-  const piReceipt = agent === "pi" ? record(usage.paperclip_pi) : {};
+  const piReceipt = agent === "pi" ? record(usage.wardmote_pi) : {};
   const piReceiptVerified = piReceipt.provenance === "assistant_message_receipts"
     || piReceipt.provenance === "assistant_message_and_compaction_receipts";
   const estimate = piReceiptVerified && typeof piReceipt.cost_usd === "number"

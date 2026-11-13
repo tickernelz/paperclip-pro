@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageName": "@tickernelz/wardmote-skills-catalog",
   "packageVersion": "0.3.1",
-  "generatedAt": "2026-11-13T00:32:20.156Z",
+  "generatedAt": "2026-11-13T15:31:09.431Z",
   "skills": [
     {
       "id": "tickernelz:bundled:docs:doc-maintenance",
@@ -479,11 +479,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 6936,
-          "sha256": "4b188256f1d2049bbc30446f0e5533583049f84f02e3fd5eefd9d20079876f54"
+          "sizeBytes": 6932,
+          "sha256": "233e33ff74a0f3c807fe7a731cfbe748adab7218c72efeee550712af0fb9274c"
         }
       ],
-      "contentHash": "sha256:5566a121d050bb22410bde0532500999aeeefef1bb377dd247cc58b075c51ed1"
+      "contentHash": "sha256:cf86df95690eb91adf8ae7e0e9556272294953817467d8e56cb8b0ed727de035"
     },
     {
       "id": "tickernelz:optional:content:simplified-english",
@@ -1149,8 +1149,8 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 12392,
-          "sha256": "82a8f92b10f62f0aed59224fefd74b4f6635f8f195f4775553e8e9b8a3171f01"
+          "sizeBytes": 12391,
+          "sha256": "9cba67420a298b7397765d4e99f31a0bb03bb6e9fc250de9edac2b3172ae57ac"
         },
         {
           "path": "examples/notion-mcp-research-gate.md",
@@ -1159,7 +1159,7 @@
           "sha256": "b4c5da904e1ae920a5268af7534c5b26dd8ed7264917d7808e3e36524ffde879"
         }
       ],
-      "contentHash": "sha256:09c9bd565c6e1342b82f56487305b0fbbca723182c2eef1c32731b099f6e6f2b"
+      "contentHash": "sha256:0b2a9fe0eefbdd1b6b4731f55c30985912e3b985e9ce2c20d1b3b83229af2e94"
     }
   ]
 }

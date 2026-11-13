@@ -17,8 +17,8 @@ import sys
 PACK = '/opt/wardmote-runner/provider-pack'
 ENTRY = 'node_modules/@earendil-works/pi-coding-agent/dist/cli.js'
 NODE = 'node/bin/node'
-EXTENSION = 'extensions/paperclip.js'
-GUARD = '.paperclip-native-module-guard.cjs'
+EXTENSION = 'extensions/wardmote.js'
+GUARD = '.wardmote-native-module-guard.cjs'
 
 
 def require(value, code):
@@ -131,7 +131,7 @@ def inspect(config):
     closure_bytes, _ = checked_file(PACK + '/provider-assets/pi/linux-x64/native-closure.json', 4 * 1024 * 1024)
     admitted_entries = parse_closure_metadata(closure_bytes, config['closureSha256'])
     entries = {e['path']: e for e in admitted_entries}
-    for name in (NODE, ENTRY, EXTENSION, 'pi-entry.cjs', 'node_modules/pi-acp/dist/index.js', 'node_modules/pi-acp/dist/paperclip-runtime.js'):
+    for name in (NODE, ENTRY, EXTENSION, 'pi-entry.cjs', 'node_modules/pi-acp/dist/index.js', 'node_modules/pi-acp/dist/wardmote-runtime.js'):
         require(name in entries and re.fullmatch(r'[a-f0-9]{64}', entries[name]['sha256']), 'closure_entry')
     pids = [int(p) for p in os.listdir('/proc') if p.isdigit() and int(p) > 1]
     require(len(pids) <= 4096, 'process_bound')
@@ -182,7 +182,7 @@ def inspect(config):
             require(stat.S_ISDIR(st.st_mode) and not st.st_mode & 0o222 and os.path.realpath(directory) == directory, 'snapshot_seal')
         require(os.readlink(f'/proc/{pid}/cwd') == binding['remoteCwd'], 'cwd')
         identities = {}
-        for name in (NODE, ENTRY, EXTENSION, 'pi-entry.cjs', 'node_modules/pi-acp/dist/index.js', 'node_modules/pi-acp/dist/paperclip-runtime.js'):
+        for name in (NODE, ENTRY, EXTENSION, 'pi-entry.cjs', 'node_modules/pi-acp/dist/index.js', 'node_modules/pi-acp/dist/wardmote-runtime.js'):
             content, inode = checked_file(distribution + '/' + name, 256 * 1024 * 1024, True)
             require(len(content) == entries[name]['size'] and digest(content) == entries[name]['sha256'], 'snapshot_digest')
             identities[name] = inode
