@@ -738,8 +738,7 @@ If `plan` already exists, first call `wardmoteGetDocument` (`issueId`, `key: "pl
 | Projects and goals                    | `wardmoteListProjects` • `wardmoteGetProject` • `wardmoteCreateProject` • `wardmoteUpdateProject` • `wardmoteListGoals` • `wardmoteGetGoal` • `wardmoteCreateGoal` • `wardmoteUpdateGoal` |
 | Labels                                | `wardmoteListLabels`                                                                                                                                             |
 | Upload attachment (multipart, `file`) | none — use the upload helper                                                                                                                                      |
-| List / delete attachment              | `wardmoteListIssueAttachments` • `wardmoteDeleteAttachment`                                                                                                     |
-| Transcribe audio/video attachment     | `wardmoteTranscribeAttachment` (read a voice note or recording yourself; cached per file)                                                               |
+| List / delete / transcribe attachment | `wardmoteListIssueAttachments` • `wardmoteDeleteAttachment` • `wardmoteTranscribeAttachment` (voice notes, recordings; cached)                                  |
 | Execution workspace + runtime         | `wardmoteGetIssueWorkspaceRuntime` • `wardmoteControlIssueWorkspaceServices` • `wardmoteWaitForIssueWorkspaceService`                                           |
 | Schedule issue monitor                | `wardmoteUpdateIssue` with `advanced.executionPolicy.monitor.nextCheckAt`                                                                                        |
 | Task watchdog agent                   | `wardmoteGetIssueWatchdog` • `wardmoteSetIssueWatchdog`                                                                                                         |
