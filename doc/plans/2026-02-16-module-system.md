@@ -1,10 +1,10 @@
-# Paperclip Module System
+# Wardmote Module System
 
 > Supersession note: the company-template/package-format direction in this document is no longer current. For the current markdown-first company import/export plan, see `doc/plans/2026-03-13-company-import-export-v2.md` and `docs/companies/companies-spec.md`.
 
 ## Overview
 
-Paperclip's module system lets you extend the control plane with new capabilities — revenue tracking, observability, notifications, dashboards — without forking core. Modules are self-contained packages that register routes, UI pages, database tables, and lifecycle hooks.
+Wardmote's module system lets you extend the control plane with new capabilities — revenue tracking, observability, notifications, dashboards — without forking core. Modules are self-contained packages that register routes, UI pages, database tables, and lifecycle hooks.
 
 Separately, **Company Templates** are code-free data packages (agent teams, org charts, goal hierarchies) that you can import to bootstrap a new company.
 
@@ -16,7 +16,7 @@ Both are discoverable through the **Company Store**.
 
 | Concept | What it is | Contains code? |
 |---------|-----------|----------------|
-| **Module** | A package that extends Paperclip's API, UI, and data model | Yes |
+| **Module** | A package that extends Wardmote's API, UI, and data model | Yes |
 | **Company Template** | A data snapshot — agents, projects, goals, org structure | No (JSON only) |
 | **Company Store** | Registry for browsing/installing modules and templates | — |
 | **Hook** | A named event in the core that modules can subscribe to | — |
@@ -31,7 +31,7 @@ Both are discoverable through the **Company Store**.
 ```
 modules/
   observability/
-    paperclip.module.json     # manifest (required)
+    wardmote.module.json     # manifest (required)
     src/
       index.ts                # entry point — exports register function
       routes.ts               # Express router
@@ -45,7 +45,7 @@ modules/
 
 Modules live in a top-level `modules/` directory. Each module is a pnpm workspace package.
 
-### Manifest (`paperclip.module.json`)
+### Manifest (`wardmote.module.json`)
 
 ```json
 {
@@ -53,7 +53,7 @@ Modules live in a top-level `modules/` directory. Each module is a pnpm workspac
   "name": "Observability",
   "description": "Token tracking, cost metrics, and agent performance instrumentation",
   "version": "0.1.0",
-  "author": "paperclip",
+  "author": "wardmote",
 
   "slot": "observability",
 
@@ -315,7 +315,7 @@ Modules can reference core tables via foreign keys (e.g., `agent_id → agents.i
 On server startup:
 
 ```
-1. Scan modules/ directory for paperclip.module.json manifests
+1. Scan modules/ directory for wardmote.module.json manifests
 2. Validate each manifest (JSON Schema check on configSchema, required fields)
 3. Check slot conflicts (error if two active modules claim the same slot)
 4. Topological sort by dependencies (if module A requires module B)
@@ -333,7 +333,7 @@ On server startup:
 Module config lives in the server's environment or a config file:
 
 ```jsonc
-// paperclip.config.json (or env vars)
+// wardmote.config.json (or env vars)
 {
   "modules": {
     "enabled": ["observability", "revenue", "notifications"],
@@ -439,7 +439,7 @@ A company template is a JSON file describing a full company structure:
   "name": "Startup in a Box",
   "description": "A 5-agent startup team with engineering, product, and ops",
   "version": "1.0.0",
-  "author": "paperclip",
+  "author": "wardmote",
 
   "agents": [
     {
@@ -569,7 +569,7 @@ The Company Store is a registry for discovering and installing modules and templ
       "id": "observability",
       "name": "Observability",
       "description": "Token tracking, cost metrics, and agent performance",
-      "repo": "github:paperclip/mod-observability",
+      "repo": "github:wardmote/mod-observability",
       "version": "0.1.0",
       "tags": ["metrics", "monitoring", "tokens"]
     }
@@ -589,10 +589,10 @@ The Company Store is a registry for discovering and installing modules and templ
 ### CLI Commands
 
 ```bash
-pnpm paperclip-pro store list                    # browse available modules and templates
-pnpm paperclip-pro store install <module-id>     # install a module
-pnpm paperclip-pro store import <template-id>    # import a company template
-pnpm paperclip-pro store export                  # export current company as template
+pnpm wardmote store list                    # browse available modules and templates
+pnpm wardmote store install <module-id>     # install a module
+pnpm wardmote store import <template-id>    # import a company template
+pnpm wardmote store export                  # export current company as template
 ```
 
 ---
@@ -621,7 +621,7 @@ pnpm paperclip-pro store export                  # export current company as tem
 |--------|-------------|-----------|
 | **Audit & Compliance** | Immutable audit trail, approval workflows, spend authorization | All write hooks |
 | **Agent Logs / Replay** | Full execution traces per agent, token-by-token replay | `agent:heartbeat` |
-| **Multi-tenant** | Separate companies/orgs within one Paperclip instance | `server:started` |
+| **Multi-tenant** | Separate companies/orgs within one Wardmote instance | `server:started` |
 
 ---
 
@@ -634,7 +634,7 @@ Add to `@tickernelz/wardmote-server`:
 1. **HookBus** — Event emitter with `register()` and `emit()`, using `Promise.allSettled`
 2. **Module loader** — Scans `modules/`, validates manifests, calls `register(api)`
 3. **Module API object** — `registerRoutes()`, `on()`, `registerService()`, logger, core service access
-4. **Module config** — `paperclip.config.json` with per-module config, env var interpolation
+4. **Module config** — `wardmote.config.json` with per-module config, env var interpolation
 5. **Module migration runner** — Extends `db:migrate` to discover and run module migrations
 6. **Emit hooks from core services** — Add `hookBus.emit()` calls to existing CRUD operations
 

@@ -10,13 +10,13 @@ Status: **MENUNGGU PERSETUJUAN**. Belum ada file yang diubah selain dokumen ini.
 
 ## 1. Temuan yang mengubah bentuk kerja
 
-### 1.1 Agent-Pixels itu BUKAN app mandiri — sudah plugin Paperclip
+### 1.1 Agent-Pixels itu BUKAN app mandiri — sudah plugin Wardmote
 
 Ini fakta paling penting dan tidak terlihat dari luar. `package.json`-nya:
 
 ```json
 "name": "@agent-pixels/paperclip-plugin",
-"paperclipPlugin": { "manifest": "./dist/manifest.js", "worker": "./dist/worker.js", "ui": "./dist/ui/" }
+"wardmotePlugin": { "manifest": "./dist/manifest.js", "worker": "./dist/worker.js", "ui": "./dist/ui/" }
 ```
 
 `src/manifest.ts:21-25` mendeklarasikan `agent-pixels.camera` dengan kapabilitas
@@ -34,7 +34,7 @@ API-nya **identik**. Semua simbol yang dipakai upstream ada di SDK kita:
 |---|---|
 | `definePlugin`, `runWorker` | `packages/plugins/sdk/src/define-plugin.ts:563` |
 | `ctx.agents.list` | `packages/plugins/sdk/src/host-client-factory.ts:272-278` |
-| `PaperclipPluginManifestV1` | `packages/plugins/sdk/src` (manifest types) |
+| `WardmotePluginManifestV1` | `packages/plugins/sdk/src` (manifest types) |
 | `useHostContext`, `usePluginData` | rute `@…/sdk/ui` |
 
 **Kesimpulan:** kode ini tidak "tidak terurus" secara teknis — ia mati karena
@@ -71,7 +71,7 @@ Model `Character` (`office/types.ts`) sudah punya field yang relevan untuk kita:
 `seatId`, `isActive`, `bubbleType`, `inputTokens`, `outputTokens`, `isSubagent`,
 `teamName`, `agentName`, `isTeamLead`.
 
-### 1.4 Requirement "1 agent bisa handle multiple tasks" — **sudah model Paperclip**
+### 1.4 Requirement "1 agent bisa handle multiple tasks" — **sudah model Wardmote**
 
 Ini temuan yang paling menentukan bentuk visualisasinya.
 
@@ -243,7 +243,7 @@ Setiap M punya perintah verifikasi yang bisa dijalankan.
 
 **Acceptance (bisa difalsifikasi):** dengan N=3 agen yang di-seed, karakter
 tampil dan berjalan ke kursi selama 30 detik **tanpa error console**, aset
-terambil dari path lokal, di dev server paperclip-pro.
+terambil dari path lokal, di dev server wardmote.
 
 Bukan sekadar "halamannya kebuka" — kalau N=3 tidak berjalan ke kursi dalam
 30 detik, spike dianggap **gagal** dan rencana direvisi sebelum M3.
@@ -322,7 +322,7 @@ base URL `/_plugins/...` tidak ada lagi di rute non-plugin.
 Catatan gate: `check:migrations` ikut berjalan di `typecheck`/`build`/`migrate`
 (`packages/db/package.json:41-47`) — numbering memaksa paritas persis
 `_journal.json` ↔ nama berkas, dan `check-migration-safety` hanya menerima
-escape inline `-- paperclip:migration-safety-ignore <rule>: <reason>`. Satu
+escape inline `-- wardmote:migration-safety-ignore <rule>: <reason>`. Satu
 `CREATE TABLE` + index + FK cascade seharusnya lolos bersih.
 
 **Verify:** `pnpm -r typecheck` (menjalankan `check:migrations`) +
@@ -370,9 +370,9 @@ Tidak masuk rencana kecuali diminta:
 - `colorize` hue-shift + `matrixEffect` (§1.2) — dievaluasi di M5, kemungkinan dibuang.
 - **Model sub-agent/tmux upstream** — `officeState.ts:456` `nextSubagentId--` (ID negatif) plus
   `Character.isSubagent/parentAgentId/teamName/isTeamLead/leadAgentId` (`types.ts:173-195`)
-  adalah silsilah Task-tool Claude Code, **bukan** model Paperclip. Untuk V1:
+  adalah silsilah Task-tool Claude Code, **bukan** model Wardmote. Untuk V1:
   buang seluruhnya. Kalau nanti diperlukan, petakan ke relasi issue parent/child
-  Paperclip yang nyata, jangan port silsilah tmux apa adanya.
+  Wardmote yang nyata, jangan port silsilah tmux apa adanya.
 - Token spend per karakter selain tampilan sederhana.
 - Publikasi artifact ZIP / rilis npm.
 

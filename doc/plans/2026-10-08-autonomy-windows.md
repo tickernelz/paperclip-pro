@@ -26,7 +26,7 @@ The owner opens an autonomy window for named issue trees, through Wira or the bo
 
 ### Database
 
-`issue_autonomy_windows`: `id`, `company_id`, `root_issue_id` (FK issues, cascade), `granted_by_user_id`, `granted_via` (`whatsapp` or `paperclip`), `status` (`live`, `revoked`, `expired`), `expires_at` not null, `max_accepts` null, `accept_count` default 0, `note`, `created_at`, `updated_at`, `closed_at`, `closed_by_user_id`. Indexes `(company_id, status, expires_at)` and `(company_id, root_issue_id, status)`.
+`issue_autonomy_windows`: `id`, `company_id`, `root_issue_id` (FK issues, cascade), `granted_by_user_id`, `granted_via` (`whatsapp` or `wardmote`), `status` (`live`, `revoked`, `expired`), `expires_at` not null, `max_accepts` null, `accept_count` default 0, `note`, `created_at`, `updated_at`, `closed_at`, `closed_by_user_id`. Indexes `(company_id, status, expires_at)` and `(company_id, root_issue_id, status)`.
 
 ### Server
 
@@ -34,7 +34,7 @@ The owner opens an autonomy window for named issue trees, through Wira or the bo
 - Lazy expiry: `status='expired'` for `live` rows past `expires_at` at lookup time.
 - Board routes: `GET/POST /companies/:companyId/autonomy-windows`, `DELETE /autonomy-windows/:id` (board users), activity log `autonomy_window.opened` / `autonomy_window.closed`.
 - OpenWA owner tool `openwa_autonomy_window` `{ operation: open|close|list, issues: [identifier...], hours?, maxAccepts?, idempotencyKey }`, owner-run only (`assertOpenwaConfigOwnerRun`), attributed to the owner's user.
-- Request confirmation payload gains optional `destructive: boolean` in `packages/shared` validators; only `false` makes a card eligible. The paperclip skill tells agents to declare it on every confirmation.
+- Request confirmation payload gains optional `destructive: boolean` in `packages/shared` validators; only `false` makes a card eligible. The wardmote skill tells agents to declare it on every confirmation.
 
 ### UI
 
@@ -44,7 +44,7 @@ The owner opens an autonomy window for named issue trees, through Wira or the bo
 ### Agents
 
 - Wira AGENTS.md: on "full otonom", call `openwa_autonomy_window open` for the named roots (and write the marker); on "udah bangun", close it.
-- Paperclip skill: declare `destructive` on every confirmation; inside a window `destructive: false` cards come back accepted.
+- Wardmote skill: declare `destructive` on every confirmation; inside a window `destructive: false` cards come back accepted.
 
 ## Acceptance criteria
 

@@ -142,7 +142,7 @@ Note:
 
 - use Better Auth canonical table names/types to avoid custom forks
 
-## 5.2 New Paperclip tables
+## 5.2 New Wardmote tables
 
 1. `instance_user_roles`
 
@@ -455,11 +455,11 @@ Files:
 
 Commands:
 
-1. `paperclip-pro auth bootstrap-ceo`
+1. `wardmote auth bootstrap-ceo`
 - create bootstrap invite
 - print one-time URL
 
-2. `paperclip-pro onboard`
+2. `wardmote onboard`
 - in cloud mode with `bootstrap_pending`, print bootstrap URL and next steps
 - in local mode, skip bootstrap requirement
 

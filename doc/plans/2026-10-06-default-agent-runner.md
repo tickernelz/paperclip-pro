@@ -4,7 +4,7 @@ Updated 2026-10-08.
 
 ## Outcome and ownership
 
-Users choose a harness. New agents use Paperclip Runner where the harness and
+Users choose a harness. New agents use Wardmote Runner where the harness and
 execution target are qualified. Existing agents keep their recorded runner.
 The task owns implementation, verification, review fixes, and reviewable PRs.
 Merging and deployment require separate authorization.
@@ -59,7 +59,7 @@ relative and empty PATH entries against the selected provider working directory;
 retain installed-dependency preference. Extend the existing fresh-process fixture
 and qualify the resulting commit separately from the green `cb5948e` candidate.
 
-Paperclip npm tarballs retain the patched JavaScript graph and strip Codex native
+Wardmote npm tarballs retain the patched JavaScript graph and strip Codex native
 payloads. The published server declares official optional host packages. npm
 installs them for the consumer's OS and architecture. This avoids collisions with
 the legacy adapter's separate Codex version. The server owns the bridge dependency

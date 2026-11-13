@@ -1,4 +1,4 @@
-# Stock harness, with Paperclip: working checklist
+# Stock harness, with Wardmote: working checklist
 
 Created: 2026-10-02. Status refreshed locally: 2026-10-06.
 
@@ -22,7 +22,7 @@ cases, not general coding quality or every configuration. The prepared final
 publication remains separate from implementation completion.
 
 Goal: keep the agent's stock harness behavior and add only what it needs to work
-with Paperclip. Apply this across legacy adapters, the new Runner, and their
+with Wardmote. Apply this across legacy adapters, the new Runner, and their
 configuration variants.
 
 We will work through the numbered items one at a time with Dotta. For each item,
@@ -38,21 +38,21 @@ configured cells alone do not qualify behavior.
 
 ## Agreed direction and boundaries
 
-- Preserve vendor base instructions. Paperclip context should be additive where
+- Preserve vendor base instructions. Wardmote context should be additive where
   the harness supports it.
 - Reduce the default hire operating manual and review every role/team template
   for reduction or removal. Prefer a tiny default, potentially one paragraph.
 - Keep a minimal coordination boundary; load uncommon procedures on demand.
 - Move bookkeeping into the runtime where it can own the operation reliably.
 - Check capability and configuration behavior across all harness paths.
-- Paperclip owns MCP configuration. Missing personal integrations are acceptable
+- Wardmote owns MCP configuration. Missing personal integrations are acceptable
   and intentional; restoring them is not a goal of this work.
 - Configuration changes and configuration-driven session resets are acceptable.
-- Preserve Paperclip authentication, assigned skills, workspace access, tool
+- Preserve Wardmote authentication, assigned skills, workspace access, tool
   authorization, company boundaries, checkout, approvals, budget hard stops,
   pause/cancel behavior, audit records, and usable task/artifact delivery.
 - Restore appropriate repository instruction context without accidentally
-  importing unrelated host configuration or displacing Paperclip-owned MCPs.
+  importing unrelated host configuration or displacing Wardmote-owned MCPs.
 - Decide explicitly how changed defaults affect existing agents and sessions;
   do not assume existing custom instructions should be rewritten.
 
@@ -60,12 +60,12 @@ configured cells alone do not qualify behavior.
 
 - [x] Trace every instruction path: backend composition, TypeScript driver,
   runnerd bridge, and Rust provider; include fresh threads, resume, and recovery.
-- [x] Record the chosen additive mechanism and the minimum Paperclip context it
+- [x] Record the chosen additive mechanism and the minimum Wardmote context it
   needs to carry. Include fallback/direct execution paths.
 - [x] Remove default replacement of stock base instructions across those paths.
 - [x] Verify the actual app-server request and retained session instructions,
   including resume; checking only a prompt builder is insufficient.
-- [x] Verify Paperclip task context, tools, auth, assigned skills, and completion
+- [x] Verify Wardmote task context, tools, auth, assigned skills, and completion
   still work. Record applicable regressions and eval results.
 
 Starting points: [Codex backend](../../packages/wardmote-runner/src/backends/codex-native-backend.ts),
@@ -75,7 +75,7 @@ Starting points: [Codex backend](../../packages/wardmote-runner/src/backends/cod
 
 Decision: use additive `developerInstructions` on Codex start and resume in the
 TypeScript driver, Runner Lab/eval sessions, and Rust provider. Retain existing
-instruction fields for other provider facades. Keep the Paperclip fragment and
+instruction fields for other provider facades. Keep the Wardmote fragment and
 its historical option/trace names unchanged in this bounded fix.
 
 Transition: pre-change Codex threads retain their saved replacement base prompt
@@ -109,7 +109,7 @@ Starting points: [default hire instructions](../../server/src/onboarding-assets/
 [Paperclip operational skill](../../skills/paperclip/SKILL.md).
 
 Decision: Dotta confirmed the harness already handles skill and tool delivery;
-the default hire manual is now only "You are an agent in a Paperclip company."
+the default hire manual is now only "You are an agent in a Wardmote company."
 This replaces 602 words with eight. The shared loader supplies this default
 across instruction-bundle-capable adapters for non-CEO hires without explicit
 instructions. Existing saved bundles retain their content; CEO, first-agent,
@@ -142,7 +142,7 @@ and existing-test update.
   consolidate completion rules. Verify prompt revisions, digests, and session
   compatibility across native Codex, ACPX, and OpenCode. Dotta approved the
   native tool-documentation slice on 2026-10-02 in a separate worktree. Native
-  `paperclip_finish`/`paperclip_block` guidance must not leak into legacy
+  `wardmote_finish`/`wardmote_block` guidance must not leak into legacy
   completion paths, which use the operational skill and API.
 - [x] **2.3 completion slice.** Improve native finish/block documentation
   (#14961), consolidate repeated completion constraints, and preserve useful
@@ -318,10 +318,10 @@ establishes instruction mechanics, not a performance result.
 
 | Layer | Delivery at initial inspection | Disposition |
 | --- | --- | --- |
-| Shared legacy task/chat templates | `DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE` was 661 words and the conversation template was 205, including connection guidance. Used by Claude, Codex, Cursor local/cloud, Gemini, Grok, Kimi, OpenCode, Pi, and Hermes local. | Completed in 2.1: both defaults now 113 words. Repeated procedures removed, connection guidance retained, no replacement skill pointer. |
-| Generic resumed wake contract | `renderPaperclipWakePrompt` added a 172-word execution contract on ordinary resumed turns. OpenClaw requested it on fresh turns too because it has no shared template. | Completed in 2.1: generic contract removed, including legacy opt-ins. Task/event data and conditional runtime contracts retained. |
+| Shared legacy task/chat templates | `DEFAULT_WARDMOTE_AGENT_PROMPT_TEMPLATE` was 661 words and the conversation template was 205, including connection guidance. Used by Claude, Codex, Cursor local/cloud, Gemini, Grok, Kimi, OpenCode, Pi, and Hermes local. | Completed in 2.1: both defaults now 113 words. Repeated procedures removed, connection guidance retained, no replacement skill pointer. |
+| Generic resumed wake contract | `renderWardmoteWakePrompt` added a 172-word execution contract on ordinary resumed turns. OpenClaw requested it on fresh turns too because it has no shared template. | Completed in 2.1: generic contract removed, including legacy opt-ins. Task/event data and conditional runtime contracts retained. |
 | Additional legacy carriers | Hermes local adds a 171-word identity/API/curl wrapper before the shared task template; Hermes gateway supplies its own four-rule execution contract. Pi carries shared defaults in its system extension and suppresses the wake copy when that extension owns policy. | Separate follow-up 2.2; changing the shared constants alone does not remove every wrapper. Preserve transport facts and custom configuration. |
-| Native fixed prompt | The 262-word `paperclip-execution.v5` prompt carries hiring, delegation/dependencies, connection setup, and finalization guidance across native Codex, ACPX, and OpenCode backends. | Keep one short native completion/dependency contract. Relocate uncommon procedures to the relevant tool documentation, improving that documentation where needed before removing instructions. Any change needs prompt revision/digest/session-compatibility verification. |
+| Native fixed prompt | The 262-word `wardmote-execution.v5` prompt carries hiring, delegation/dependencies, connection setup, and finalization guidance across native Codex, ACPX, and OpenCode backends. | Keep one short native completion/dependency contract. Relocate uncommon procedures to the relevant tool documentation, improving that documentation where needed before removing instructions. Any change needs prompt revision/digest/session-compatibility verification. |
 | Native full-turn constraints | `nativeTaskConstraints` adds assigned-skill limits, current agent-file paths, document/file delivery, answered-question handling, and accepted completion/final-response sequencing. Codex/OpenCode add another completion reminder. Prepared constraints reach the model envelope through `native-session-runtime`; compact continuations avoid replaying prior task constraints. | Consolidate duplicate completion instructions. Keep current paths, answer scope, and the required result protocol. Move detailed file/document procedure to discoverable tool descriptions where adequately covered. |
 | Task/event-specific framing | Server task Markdown and wake rendering supply work mode, ordered comments, approved revisions, checkout/holds/blockers, recovery/review/watchdog roles, external-chat bookkeeping/delivery, and conversation handoff. | Retain the facts and mode boundaries in the first reduction. Use one authoritative owner for shared mode directives; review specialized wording separately. |
 
@@ -433,16 +433,16 @@ last plan command on an asynchronous `chat_task_completed` wake and wrote a
 second, text-identical source plan revision. It was not paid/provider execution;
 fresh rebased CI remains required before readiness.
 
-## 4. Fix repository context while retaining Paperclip configuration
+## 4. Fix repository context while retaining Wardmote configuration
 
 - [ ] Map instruction discovery and precedence for each harness: repository
   AGENTS.md/CLAUDE.md or equivalent, project/local settings, isolated homes, and
-  explicit Paperclip instruction injection.
+  explicit Wardmote instruction injection.
 - [ ] Distinguish repository instructions from settings that also load MCPs,
   plugins, credentials, or skills; choose selective loading/injection as needed.
 - [ ] Verify repository instructions are available in the correct workspace,
   including worktrees, remote execution, and resumed sessions.
-- [ ] Verify assigned skill discovery/pinning, authentication, Paperclip MCP
+- [ ] Verify assigned skill discovery/pinning, authentication, Wardmote MCP
   ownership, tool authorization, and configuration-change invalidation.
 - [ ] Record intentional isolation separately from accidental lost context.
 
@@ -516,7 +516,7 @@ does not apply.
 - [x] Review existing suites for reusable coverage. Their custom QA manuals did
   not exercise the tiny default hire; the new suite deliberately omits those
   bundles and reuses independently graded skill, continuation, and chat journeys.
-- [ ] Compare task quality as well as Paperclip protocol compliance when claiming
+- [ ] Compare task quality as well as Wardmote protocol compliance when claiming
   that fewer instructions improve agent performance. Keep model, effort,
   permissions, tools, and fixture comparable.
 - [ ] Select narrow live cells when implementation is ready; retain revisions,
@@ -572,9 +572,9 @@ Confirmed mechanics below do not by themselves establish an effect on task quali
 
 | ID | Finding | Work item / disposition |
 | --- | --- | --- |
-| F1 | Native Codex sent Paperclip text as `baseInstructions`. Probes on codex-cli 0.153.4 showed replacement; additive `developerInstructions` retained the stock base on start and cold resume. | 1; app-server fix merged in PR #14920 |
+| F1 | Native Codex sent Wardmote text as `baseInstructions`. Probes on codex-cli 0.153.4 showed replacement; additive `developerInstructions` retained the stock base on start and cold resume. | 1; app-server fix merged in PR #14920 |
 | F2 | Default hires and role templates prescribe substantial operating procedures; common prompt and wake layers add further coordination text. | 2–3; mechanics confirmed, performance effect unmeasured |
-| F3 | Hiring references require legacy Paperclip skill/comment procedures, while native Runner intentionally omits that operational skill and uses semantic tools. | 2–3, 5; reconcile runtime contracts |
+| F3 | Hiring references require legacy Wardmote skill/comment procedures, while native Runner intentionally omits that operational skill and uses semantic tools. | 2–3, 5; reconcile runtime contracts |
 | F4 | Local Claude appends instructions; Runner Claude preserves the Claude Code preset. Runner isolation excludes project/local settings, which can also exclude repository instruction discovery. | 4; selective context fix to design |
 | F5 | Some Codex capability settings differ between the direct driver and daemon path; an intermediate configuration does not prove the final provider behavior. | 6; effective-path audit pending |
 | F6 | Omitting or nulling `baseInstructions` on an old Codex thread's resume preserves its saved replacement; an empty string produces an empty base. | 1; document the required provider session reset; no automatic migration in this PR |
@@ -585,7 +585,7 @@ Confirmed mechanics below do not by themselves establish an effect on task quali
 | F11 | Task Markdown and the wake renderer prescribe different accepted-plan behavior for planning-mode accepted-confirmation payloads; tests currently expect both. | 2; unify the directive owner; production reachability still to trace |
 | F12 | Native fixed instructions and full-turn constraints repeat completion and uncommon procedures, while reserved finish/block tool descriptions are only one sentence each. | 2; improve tool documentation before removing needed native protocol guidance |
 | F13 | Existing context-integrity/chat fixtures injected a QA manual, so their green results did not qualify the production tiny hire default. | Dedicated stock-harness suite measured real default hires; retained failures prevent blanket qualification. |
-| F14 | Historical classic Claude/OpenCode skill runs save one Paperclip document; reduced runs save none while completing the task. Legacy ACP Claude has the same behavior under a separate guard failure. Pinned skill storage wording is ambiguous. | Measured delivery failures; keep original oracle. Improve legacy skill/API delivery guidance separately, then compare both variants with preserved and storage-specific cases. |
+| F14 | Historical classic Claude/OpenCode skill runs save one Wardmote document; reduced runs save none while completing the task. Legacy ACP Claude has the same behavior under a separate guard failure. Pinned skill storage wording is ambiguous. | Measured delivery failures; keep original oracle. Improve legacy skill/API delivery guidance separately, then compare both variants with preserved and storage-specific cases. |
 | F15 | Classic Claude restart chat fails its memory assertion in both variants. | Existing behavior, not attributable to this reduction from these trials. |
 | F16 | All six legacy ACP cells per variant fail the persisted-provider-credential guard. Three historical ACP cells also have clipped public prompt retrieval, and candidate ACP Codex chat lacks a complete invocation receipt. | Security/receipt qualification follow-ups; do not waive guard, expose raw sessions, or infer missing provider instructions from clipped receipts. |
 | F17 | Prerequisites beside the campaign root violate trusted artifact selection. A same-target pilot superseded 13 candidate cells; one historical AWS runner shut down without upload. | Packaging fixed at `1eb5ba420` and pilot passes. Directory-layout-only copies preserve every byte; missing cells alone recovered at unchanged source, completed failures never rerun. |
@@ -599,9 +599,9 @@ will address them. Record intentional behavior explicitly rather than as a bug.
 | --- | --- | --- |
 | 2026-10-05 | Dotta merged #15151; reconcile the saved roadmap with completed implementation/evidence notes. | Native completion slice complete; general hiring reductions and common legacy prompts also merged. 2.2, remaining fixed native procedures, 3.4 and the broader 4–6 audits stay open. Preserve old failures and bounded qualification limits; no new model run or public report publication in this checklist update. |
 | 2026-10-02 | Dotta approved preserving stock instructions, smaller defaults/templates, minimal coordination, runtime bookkeeping, and coverage across harnesses. | Implementation details to work through one item at a time. |
-| 2026-10-02 | Paperclip-owned MCP isolation and configuration changes/session resets are acceptable. | Preserve Paperclip auth and assigned skills while fixing repository context. |
+| 2026-10-02 | Wardmote-owned MCP isolation and configuration changes/session resets are acceptable. | Preserve Wardmote auth and assigned skills while fixing repository context. |
 | 2026-10-02 | Dotta requested implementation and a PR for item 1. Native app-server paths now use additive developer instructions. | 139 targeted TypeScript tests and 91 Rust provider tests passed; repository typecheck/build passed. Remaining test/review results to record. |
-| 2026-10-02 | Verified actual Codex instruction layering using a localhost Responses stub, without paid inference. | codex-cli 0.153.4 sent identical 14,732-character stock base instructions on start and cold resume, with the Paperclip marker retained in developer input. This is protocol evidence, not a task-quality eval. |
+| 2026-10-02 | Verified actual Codex instruction layering using a localhost Responses stub, without paid inference. | codex-cli 0.153.4 sent identical 14,732-character stock base instructions on start and cold resume, with the Wardmote marker retained in developer input. This is protocol evidence, not a task-quality eval. |
 | 2026-10-02 | Dotta requested and confirmed the merge of item 1. | PR #14920 merged at `408f70e69f9c5e49cb4377f4886ac2001bfa67a2`, with all 55 checks passing and Greptile 5/5. |
 | 2026-10-02 | Dotta directed an identity-only default manual with no skill or runtime pointers; the harness already handles coordination. | Reduced the default to eight words. Existing hire and onboarding suites passed all 64 tests. Shared prompts and role templates remain pending. |
 | 2026-10-02 | Dotta requested three explicit shared-prompt follow-ups and selected common legacy startup/resume reduction first. | Follow-ups 2.1–2.3 recorded. 2.1 complete locally: both defaults 113 words; generic resume contract removed. 563 focused tests and shared utility typecheck/build passed. Extra carriers and native instruction reduction remain pending. |
@@ -609,15 +609,15 @@ will address them. Record intentional behavior explicitly rather than as a bug.
 | 2026-10-02 | Dotta requested PRs and GitHub-runner before/after qualification while discussing subsequent work separately. | Draft [PR #14948](https://github.com/paperclipai/paperclip/pull/14948); native Codex diagnostic [passed](https://github.com/paperclipai/paperclip/actions/runs/37034213743), 34.745 s provider / 56.660 s cell. Comparison restores only the prior manual/shared prompts and holds #14920 constant; no general coding-quality claim. |
 | 2026-10-02 | Full candidate cold setup failed before provider admission; stopped and retained the attempt. | [Run 37037105491](https://github.com/paperclipai/paperclip/actions/runs/37037105491), target `36e987246`: prerequisite imports lacked the plugin SDK build. Added ordinary dependency setup before credential-free prerequisites and exact-source coverage of connection guidance. Cold pilot and full matched campaigns pending. |
 | 2026-10-02 | Dotta deferred 2.2 additional legacy carriers and approved the first 2.3 native tool-description slice separately. | Keep wrappers open; native finish/block documentation must not be supplied to legacy skill/API completion paths. |
-| 2026-10-02 | Matched default-manual/shared-prompt campaigns measured failures, with #14920 constant. | Candidate `f02d8d0df`: 15/24 pass. Historical `12c5433c6`: 15/24 pass after the one runner-shutdown recovery also timed out. Classic Claude/OpenCode Paperclip document delivery regressed in observed trials; keep PR #14948 draft. [Live report](2026-10-02-stock-harness-live-comparison.md). |
+| 2026-10-02 | Matched default-manual/shared-prompt campaigns measured failures, with #14920 constant. | Candidate `f02d8d0df`: 15/24 pass. Historical `12c5433c6`: 15/24 pass after the one runner-shutdown recovery also timed out. Classic Claude/OpenCode Wardmote document delivery regressed in observed trials; keep PR #14948 draft. [Live report](2026-10-02-stock-harness-live-comparison.md). |
 | 2026-10-02 | Cold prerequisite and packaging faults were repaired without weakening admission or behavioral graders. | Three setup attempts stopped before providers. Current `1eb5ba420` pilot passes 557 prerequisite checks and protected report publication; source/hash/cost evidence retained. Candidate cancellation and historical runner shutdown recovered only for missing cells. |
 | 2026-10-02 | Final bounded recovery completed; no further model reruns. | Both matched cohorts have all 24 results, 15 pass and nine fail. Two classic skill deliveries regress; two OpenCode ordered cases pass only with reduced instructions. Overall parity is not behavioral equivalence. All 48 retained result/receipt projections are hashed and sanitized; original interruptions and partial unknown spend remain recorded. |
-| 2026-10-02 | Dotta approved the measured legacy delivery repair and narrow follow-up qualification. | Early operational skill PUT/receipt/link guidance plus generic issue-document reference; eight-word manual retained. Focused original + explicit Paperclip-storage cases on classic Claude/OpenCode, with only the two skill sources varied. All four pairs completed: Claude original Fail → Pass, Claude explicit Pass → Pass, both OpenCode cases Fail → Fail. Explicit OpenCode handoff worsened beneath the unchanged machine grade (clickable API URL → code-formatted path). [Repair report](2026-10-02-legacy-document-skill-repair.md); no full matrix rerun. Claude chat-memory (F15) and ACP credential/receipt failures (F16) remain separate and unresolved. |
+| 2026-10-02 | Dotta approved the measured legacy delivery repair and narrow follow-up qualification. | Early operational skill PUT/receipt/link guidance plus generic issue-document reference; eight-word manual retained. Focused original + explicit Wardmote-storage cases on classic Claude/OpenCode, with only the two skill sources varied. All four pairs completed: Claude original Fail → Pass, Claude explicit Pass → Pass, both OpenCode cases Fail → Fail. Explicit OpenCode handoff worsened beneath the unchanged machine grade (clickable API URL → code-formatted path). [Repair report](2026-10-02-legacy-document-skill-repair.md); no full matrix rerun. Claude chat-memory (F15) and ACP credential/receipt failures (F16) remain separate and unresolved. |
 | 2026-10-02 | Native tool-description comparison completed all six paired cases. | Zero newly failing cases, three unchanged completion passes, three unchanged blocker failures. Claude/OpenCode blocker API matchers pass in both variants; UI matcher wrongly demanded marker-only replies. Codex's exact-action punctuation failure is unchanged. Original failures retained; corrected 10-case browser calibration and separate retained-DOM replay pass all six visible replies. Exact Codex action failures remain. No native fixed-prompt removal measured. |
-| 2026-10-02 | Dotta approved minimal operational skill selection/link correction after retained OpenCode diagnosis. | Candidate `fe9dc1e3c` and baseline `0d7ecfa96d` have two matched Pass → Pass cases, zero new failures/passes and no pending pairs. All four exact-source gates pass 587 checks, all four provider runs and cleanup pass. Candidate original loads Paperclip/reference before delivery, but uses the wrong PAP prefix; baseline original saves publicly later within the same assignment and gives a bare path. Explicit clickable UI links are correct in both. [Complete report](2026-10-02-opencode-skill-routing-link-qualification.md); prior failures retained, no causal or broad quality claim. |
+| 2026-10-02 | Dotta approved minimal operational skill selection/link correction after retained OpenCode diagnosis. | Candidate `fe9dc1e3c` and baseline `0d7ecfa96d` have two matched Pass → Pass cases, zero new failures/passes and no pending pairs. All four exact-source gates pass 587 checks, all four provider runs and cleanup pass. Candidate original loads Wardmote/reference before delivery, but uses the wrong PAP prefix; baseline original saves publicly later within the same assignment and gives a bare path. Explicit clickable UI links are correct in both. [Complete report](2026-10-02-opencode-skill-routing-link-qualification.md); prior failures retained, no causal or broad quality claim. |
 
 - F18: Native blocker browser assertion required a marker-only reply despite asking for owner/action/reason. Correct marker-plus-explanation checks symmetrically, calibrate contradictory and future-condition replies, retain original verdicts.
-- F19: Original prompt-removal cohorts loaded Paperclip; OpenCode skill truncation omitted the late API recipe. The early repair fixed Claude in one paired trial. In the repaired original OpenCode assignment, Paperclip was first loaded only during disposition recovery after a local-file write. Shared legacy operational-skill delivery/selection needs review before more recipe expansion.
+- F19: Original prompt-removal cohorts loaded Wardmote; OpenCode skill truncation omitted the late API recipe. The early repair fixed Claude in one paired trial. In the repaired original OpenCode assignment, Wardmote was first loaded only during disposition recovery after a local-file write. Shared legacy operational-skill delivery/selection needs review before more recipe expansion.
 - F20: Explicit repaired OpenCode reads the early recipe/reference and saves a public document/revision, but hands off a code-formatted path rather than a clickable anchor. Baseline provides a clickable API URL, rejected by the UI-only oracle. Preserve both grades; clarify future clickable UI-link fixture and review the smallest link example separately.
 - F22: Legacy operational skill mounting is already mandatory, but its discovery description omitted ordinary task/heartbeat work and document delivery. The approved narrow fix expands stock metadata selection and adds a real Markdown link example in the existing reference. Original + clarified-explicit OpenCode pairs both pass in both variants, so improvement causality is not established. Candidate loads the operational skill/reference before public delivery; baseline original writes locally first, then saves publicly in the same assignment. Original candidate copies the example PAP prefix into its link while baseline supplies a bare slug path; neither is scored by the original link-free oracle. No full-body injection or native-tool leakage. ACP Claude names-only metadata, custom ACP unsupported delivery, OpenClaw wrappers and Pi HOME differences remain distinct follow-ups.
 - F23: The new original OpenCode candidate copies `/PAP/issues/RUN-1#document-context-integrity-output` from the literal example despite actual prefix RUN. It passes durable-document grading but has an incorrect-prefix handoff. Baseline original also lacks a clickable canonical link. Approved reference-only correction now derives the link from `issue.identifier` and the saved receipt key. Independent provider-free calibration checks two other prefixes, redirected keys and rejects a wrong-company link; 25 focused document/source tests, canonical metadata checks and E2E typecheck pass. The recipe now also handles null/absent identifiers through the supported issue-ID route; fresh review caught the initial nullable edge. 56 focused checks pass. Source review shows the UI corrects wrong prefixes, so the frozen PAP href is noncanonical rather than proven broken. These later corrections are not live-qualified by the preserved runs; no further paid rerun.

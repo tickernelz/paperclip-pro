@@ -4,8 +4,8 @@
 
 ### Patch Changes
 
-- Allow the Paperclip host to route adapter sandbox-sync full-tree Git enumeration through its process-wide bounded scheduler.
-- Render the Paperclip heartbeat contract, wake prompt and access note from one `paperclipAccess` value so adapters never name `paperclip*` tools they did not mount, and share the MCP endpoint, headers and per-runtime config renderers from `paperclip-mcp`/`paperclip-mcp-mount`.
+- Allow the Wardmote host to route adapter sandbox-sync full-tree Git enumeration through its process-wide bounded scheduler.
+- Render the Wardmote heartbeat contract, wake prompt and access note from one `wardmoteAccess` value so adapters never name `wardmote*` tools they did not mount, and share the MCP endpoint, headers and per-runtime config renderers from `wardmote-mcp`/`wardmote-mcp-mount`.
 
 ## 0.3.1
 

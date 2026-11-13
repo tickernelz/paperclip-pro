@@ -6,7 +6,7 @@ Status: PRD
 
 ## Summary
 
-Paperclip already exposes a broad REST API, but the CLI only covers a narrow operator slice: setup/configuration, context profiles, board auth, companies import/export/delete, issues basic CRUD/comments/checkout/release, approvals, agents list/get/local CLI key export, activity, dashboard, secrets basics, plugin lifecycle basics, feedback export, and cloud sync.
+Wardmote already exposes a broad REST API, but the CLI only covers a narrow operator slice: setup/configuration, context profiles, board auth, companies import/export/delete, issues basic CRUD/comments/checkout/release, approvals, agents list/get/local CLI key export, activity, dashboard, secrets basics, plugin lifecycle basics, feedback export, and cloud sync.
 
 The next CLI product slice should make the CLI a real external API entry point:
 
@@ -15,7 +15,7 @@ The next CLI product slice should make the CLI a real external API entry point:
 3. Provide single-command agent execution and prompt handoff for scripts.
 4. Add CLI coverage for API surfaces that are currently UI-only or curl-only.
 
-The most important requirement is credential ergonomics. External integrations need a reliable "way in" to Paperclip:
+The most important requirement is credential ergonomics. External integrations need a reliable "way in" to Wardmote:
 
 - full board access via a board token approved by a user
 - individual agent access via an agent API key scoped to a specific company and agent
@@ -39,7 +39,7 @@ Current top-level command families:
 Current auth behavior:
 
 - `auth login` creates a CLI auth challenge, opens the board approval URL, and stores the approved board token locally.
-- `agent local-cli` creates an agent API key through board access, installs local skills, and prints `PAPERCLIP_API_URL`, `PAPERCLIP_COMPANY_ID`, `PAPERCLIP_AGENT_ID`, and `PAPERCLIP_API_KEY`.
+- `agent local-cli` creates an agent API key through board access, installs local skills, and prints `WARDMOTE_API_URL`, `WARDMOTE_COMPANY_ID`, `WARDMOTE_AGENT_ID`, and `WARDMOTE_API_KEY`.
 - Every client command can accept `--api-base`, `--api-key`, `--context`, `--profile`, `--company-id`, and `--json`.
 
 Main limitation:
@@ -64,19 +64,19 @@ Main limitation:
 
 ## API Location Requirements
 
-The CLI must always know which Paperclip API it is operating against. This is especially important for fork/local development, where Paperclip may run on `3101+` rather than the upstream default `3100`.
+The CLI must always know which Wardmote API it is operating against. This is especially important for fork/local development, where Wardmote may run on `3101+` rather than the upstream default `3100`.
 
 Resolution order:
 
 1. Explicit `--api-base <url>`.
-2. `PAPERCLIP_API_URL`.
+2. `WARDMOTE_API_URL`.
 3. Selected context profile `apiBase`.
 4. Repo-local or instance config port, when available.
 5. Default `http://localhost:3100`.
 
 Behavior requirements:
 
-- `paperclip-pro connect` must show the resolved API base before any auth or mutation and allow the user to override it.
+- `wardmote connect` must show the resolved API base before any auth or mutation and allow the user to override it.
 - Non-interactive commands must accept `--api-base` and produce a clear connection error that includes the attempted URL and a health-check hint.
 - Profiles must persist `apiBase` so a board/agent persona is always tied to the API instance it was created for.
 - Commands that mint or use tokens must not silently fall back to a different API base if a stored credential is missing. They should ask interactively or fail with instructions in non-interactive mode.
@@ -89,7 +89,7 @@ Behavior requirements:
 Command:
 
 ```sh
-paperclip-pro connect
+wardmote connect
 ```
 
 Flow:
@@ -121,7 +121,7 @@ Expected profile shape should evolve from today's context:
       "companyId": "company-id",
       "persona": "agent",
       "agentId": "agent-id",
-      "apiKeyEnvVarName": "PAPERCLIP_API_KEY"
+      "apiKeyEnvVarName": "WARDMOTE_API_KEY"
     }
   }
 }
@@ -132,9 +132,9 @@ Expected profile shape should evolve from today's context:
 Commands:
 
 ```sh
-paperclip-pro token board create --company-id <company-id> --name "external-admin"
-paperclip-pro token board list
-paperclip-pro token board revoke <key-id>
+wardmote token board create --company-id <company-id> --name "external-admin"
+wardmote token board list
+wardmote token board revoke <key-id>
 ```
 
 Requirements:
@@ -162,9 +162,9 @@ API gap:
 Commands:
 
 ```sh
-paperclip-pro token agent create --company-id <company-id> --agent <agent-id-or-name> --name "external-worker"
-paperclip-pro token agent list --company-id <company-id> --agent <agent-id-or-name>
-paperclip-pro token agent revoke --agent <agent-id-or-name> <key-id>
+wardmote token agent create --company-id <company-id> --agent <agent-id-or-name> --name "external-worker"
+wardmote token agent list --company-id <company-id> --agent <agent-id-or-name>
+wardmote token agent revoke --agent <agent-id-or-name> <key-id>
 ```
 
 Requirements:
@@ -190,15 +190,15 @@ CLI gap:
 Required user-facing shape:
 
 ```sh
-paperclip-pro agent-prompt <agent-name-or-id> <agent-api-key> "Prompt here"
+wardmote agent-prompt <agent-name-or-id> <agent-api-key> "Prompt here"
 ```
 
 Recommended safer variants:
 
 ```sh
-paperclip-pro agent prompt --agent <agent-name-or-id> --api-key-env PAPERCLIP_API_KEY "Prompt here"
-paperclip-pro agent prompt --profile my-agent "Prompt here"
-paperclip-pro board prompt --agent <agent-name-or-id> "Prompt here"
+wardmote agent prompt --agent <agent-name-or-id> --api-key-env WARDMOTE_API_KEY "Prompt here"
+wardmote agent prompt --profile my-agent "Prompt here"
+wardmote board prompt --agent <agent-name-or-id> "Prompt here"
 ```
 
 Behavior:
@@ -215,7 +215,7 @@ Behavior:
 
 Open decision:
 
-- Default prompt target should be `issue create + assign + wake`, because Paperclip's communication model is tasks/comments, not chat.
+- Default prompt target should be `issue create + assign + wake`, because Wardmote's communication model is tasks/comments, not chat.
 - A direct "send message" mode can be `--issue <id>` and should add an issue comment plus optional wake.
 
 ## Missing CLI Coverage By API Domain
@@ -287,12 +287,12 @@ Missing CLI surfaces:
 CLI commands to add:
 
 ```sh
-paperclip-pro agent wake <agent>
-paperclip-pro run list --company-id <company-id>
-paperclip-pro run get <run-id>
-paperclip-pro run log <run-id>
-paperclip-pro run cancel <run-id>
-paperclip-pro issue runs <issue-id>
+wardmote agent wake <agent>
+wardmote run list --company-id <company-id>
+wardmote run get <run-id>
+wardmote run log <run-id>
+wardmote run cancel <run-id>
+wardmote issue runs <issue-id>
 ```
 
 ### P1: Projects and Goals
@@ -313,8 +313,8 @@ Missing CLI surfaces:
 Commands:
 
 ```sh
-paperclip-pro project list|get|create|update|delete
-paperclip-pro goal list|get|create|update|delete
+wardmote project list|get|create|update|delete
+wardmote goal list|get|create|update|delete
 ```
 
 ### P1: Issue Parity Beyond Basic CRUD
@@ -361,14 +361,14 @@ Missing CLI surfaces:
 Commands:
 
 ```sh
-paperclip-pro issue child create <issue-id>
-paperclip-pro issue document list|get|put|delete|lock|unlock|revisions|restore
-paperclip-pro issue work-product list|create|update|delete
-paperclip-pro issue interaction list|create|accept|reject|respond|cancel
-paperclip-pro issue attachment list|upload|download|delete
-paperclip-pro issue force-release <issue-id>
-paperclip-pro issue label list|create|delete
-paperclip-pro issue read|unread|archive|unarchive
+wardmote issue child create <issue-id>
+wardmote issue document list|get|put|delete|lock|unlock|revisions|restore
+wardmote issue work-product list|create|update|delete
+wardmote issue interaction list|create|accept|reject|respond|cancel
+wardmote issue attachment list|upload|download|delete
+wardmote issue force-release <issue-id>
+wardmote issue label list|create|delete
+wardmote issue read|unread|archive|unarchive
 ```
 
 ### P1: Agent Lifecycle and Configuration
@@ -405,11 +405,11 @@ Missing CLI surfaces:
 Commands:
 
 ```sh
-paperclip-pro agent create|update|pause|resume|approve|terminate|delete
-paperclip-pro agent org
-paperclip-pro agent config get|revisions|rollback
-paperclip-pro agent instructions get|set|file
-paperclip-pro adapter list|models|profiles|detect|test|install|enable|disable|reload
+wardmote agent create|update|pause|resume|approve|terminate|delete
+wardmote agent org
+wardmote agent config get|revisions|rollback
+wardmote agent instructions get|set|file
+wardmote adapter list|models|profiles|detect|test|install|enable|disable|reload
 ```
 
 ### P1: Costs, Budgets, and Finance
@@ -430,10 +430,10 @@ Missing CLI surfaces:
 Commands:
 
 ```sh
-paperclip-pro cost summary|by-agent|by-project|by-provider|issue
-paperclip-pro cost event create
-paperclip-pro finance event create|list|summary
-paperclip-pro budget overview|set-company|set-agent|policy-create|incident-resolve
+wardmote cost summary|by-agent|by-project|by-provider|issue
+wardmote cost event create
+wardmote finance event create|list|summary
+wardmote budget overview|set-company|set-agent|policy-create|incident-resolve
 ```
 
 ### P1: Access, Invites, and Memberships
@@ -456,10 +456,10 @@ Missing CLI surfaces:
 Commands:
 
 ```sh
-paperclip-pro invite create|list|revoke|show|onboarding
-paperclip-pro join list|approve|reject|claim-key
-paperclip-pro member list|update|archive|permissions
-paperclip-pro admin user list|promote|demote|company-access
+wardmote invite create|list|revoke|show|onboarding
+wardmote join list|approve|reject|claim-key
+wardmote member list|update|archive|permissions
+wardmote admin user list|promote|demote|company-access
 ```
 
 ### P2: Routines, Workspaces, Environments
@@ -477,10 +477,10 @@ Missing CLI surfaces:
 Commands:
 
 ```sh
-paperclip-pro routine list|create|get|update|run|runs|trigger|revision
-paperclip-pro environment list|create|get|update|delete|probe|leases
-paperclip-pro workspace list|get|update|operations|runtime
-paperclip-pro project workspace list|create|update|delete|runtime
+wardmote routine list|create|get|update|run|runs|trigger|revision
+wardmote environment list|create|get|update|delete|probe|leases
+wardmote workspace list|get|update|operations|runtime
+wardmote project workspace list|create|update|delete|runtime
 ```
 
 ### P2: Instance, Sidebar, Assets, Profile, and Miscellaneous
@@ -514,31 +514,31 @@ Missing CLI surfaces:
 Recommended command hierarchy:
 
 ```text
-paperclip-pro connect
-paperclip-pro token board|agent create|list|revoke
-paperclip-pro whoami
-paperclip-pro prompt ...
-paperclip-pro board ...
-paperclip-pro agent ...
-paperclip-pro issue ...
-paperclip-pro project ...
-paperclip-pro goal ...
-paperclip-pro run ...
-paperclip-pro cost ...
-paperclip-pro budget ...
-paperclip-pro routine ...
-paperclip-pro environment ...
-paperclip-pro workspace ...
-paperclip-pro invite ...
-paperclip-pro member ...
-paperclip-pro plugin ...
-paperclip-pro instance ...
+wardmote connect
+wardmote token board|agent create|list|revoke
+wardmote whoami
+wardmote prompt ...
+wardmote board ...
+wardmote agent ...
+wardmote issue ...
+wardmote project ...
+wardmote goal ...
+wardmote run ...
+wardmote cost ...
+wardmote budget ...
+wardmote routine ...
+wardmote environment ...
+wardmote workspace ...
+wardmote invite ...
+wardmote member ...
+wardmote plugin ...
+wardmote instance ...
 ```
 
 Alias policy:
 
 - Keep existing commands working.
-- Add aliases only for high-frequency flows, for example `paperclip-pro ask` as an alias for `paperclip-pro prompt`.
+- Add aliases only for high-frequency flows, for example `wardmote ask` as an alias for `wardmote prompt`.
 
 ## Authorization Rules
 
@@ -560,7 +560,7 @@ Automated tests should prefer mocked HTTP/server fixtures where possible. Live/A
 - Board token tests must use a test-specific key name and revoke the key during cleanup when the API supports it.
 - Cleanup should archive or delete the disposable company when the server permits it. If deletion is disabled, the test must leave the company clearly named as disposable and report its ID.
 - Commands must provide a `--yes` or non-interactive path for test setup so CI and local verification do not depend on manual prompts.
-- Destructive tests must require an explicit test opt-in such as an env var or a dedicated test command; normal unit tests must not mutate a real running Paperclip instance.
+- Destructive tests must require an explicit test opt-in such as an env var or a dedicated test command; normal unit tests must not mutate a real running Wardmote instance.
 
 ## Implementation Plan
 
@@ -598,15 +598,15 @@ Automated tests should prefer mocked HTTP/server fixtures where possible. Live/A
 
 ## Acceptance Criteria
 
-- A new user can run `paperclip-pro connect`, confirm or override the API base, select board or agent, and get a saved working profile tied to that API base.
+- A new user can run `wardmote connect`, confirm or override the API base, select board or agent, and get a saved working profile tied to that API base.
 - A board operator can mint an agent key for a selected agent in a selected company without using `agent local-cli`.
 - A script can run a one-liner equivalent to:
 
 ```sh
-paperclip-pro agent-prompt AgentName "$AGENT_API_KEY" "Prompt here"
+wardmote agent-prompt AgentName "$AGENT_API_KEY" "Prompt here"
 ```
 
-- The one-liner creates or updates Paperclip work, does not require a browser, and fails with a clear company/agent mismatch error when the token does not belong to the requested agent.
+- The one-liner creates or updates Wardmote work, does not require a browser, and fails with a clear company/agent mismatch error when the token does not belong to the requested agent.
 - Live/API verification creates and uses a disposable company only; no existing company is used for testing.
 - CLI docs list which API route families are covered and which remain UI-only.
 - Token creation, revocation, and prompt handoff have tests for board and agent auth paths.

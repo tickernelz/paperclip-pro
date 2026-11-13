@@ -20,7 +20,7 @@ qualification. Its results do not establish connection behavior.
 | --- | --- | --- |
 | Native fixed prompt | Session instruction context | packages/wardmote-runner/src/contracts/runtime-context.ts |
 | Connection discovery and request descriptions/schemas | Granted tool catalog; subject to provider/catalog delivery | server/src/services/connection-tool-definitions.ts and packages/shared/src/connection-intent-guidance.ts |
-| Shared connection guidance | Legacy prompt/environment delivery and native task-context tool results | packages/adapter-utils/src/server-utils.ts and server/src/services/native-runtime/paperclip-runner-tool-authority.ts |
+| Shared connection guidance | Legacy prompt/environment delivery and native task-context tool results | packages/adapter-utils/src/server-utils.ts and server/src/services/native-runtime/wardmote-runner-tool-authority.ts |
 | Search, request, and outcome instructions | Returned as the operation/state is encountered | server/src/services/connection-intents.ts |
 | Assigned connection instructions | Optional per-connection runtime context, separate from fixed guidance | packages/wardmote-runner/src/contracts/runtime-context.ts |
 
