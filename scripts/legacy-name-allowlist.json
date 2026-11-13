@@ -54,7 +54,7 @@
       "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833) (pengecualian tetap literal artefak luar); sebelumnya: Raka, keputusan otonom ZHA-5279 (mode full otonom, 2026-11-11); ditinjau Hendra"
     },
     "repo-eksternal": {
-      "reason": "Alamat dan jalur berkas di repo eksternal milik pihak lain (korpus eval paperclipai/paperclip-evals: tautan blob GitHub dan jalur kasus uji). Menggantinya memutus tautan ke berkas yang tidak kita kendalikan. Hanya jalur ke repo itu; nama produk di berkas yang sama sudah Wardmote.",
+      "reason": "Alamat dan jalur berkas di repo eksternal milik pihak lain (korpus eval paperclipai/paperclip-evals: tautan blob GitHub dan jalur kasus uji). Menggantinya memutus tautan ke berkas yang tidak kita kendalikan. Juga rujukan ke upstream yang di-fork (repo GitHub paperclipai/paperclip, domain upstream paperclip.ing dan pages.paperclip.ing, direktori workspace ~/paperclipai berisi checkout repo upstream, repo konten dan website upstream (paperclip-content, paperclip-website), notice hak cipta Paperclip AI) dan paket npm lama yang sudah deprecated (@tickernelz/paperclip-pro, home ~/.paperclip-pro) di dokumen pengguna yang menjelaskan asal fork dan jalur migrasi. Hanya rujukan ke artefak itu; nama produk di berkas yang sama sudah Wardmote.",
       "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833) (pengecualian tetap literal artefak luar); sebelumnya: Raka, keputusan otonom ZHA-5279 (mode full otonom, 2026-11-12); jalur yang sama dipulihkan atas temuan Hendra ronde 95 (PR #269); ditinjau Hendra"
     },
     "artefak-eksternal": {
@@ -402,12 +402,11 @@
     ["packages/shared/src/work-product.test.ts",1,"uji-regresi"],
     ["packages/shared/src/workspace-commands.ts",1,"belum-diganti"],
     ["packages/shared/src/workspace-restore.ts",1,"belum-diganti"],
-    ["packages/skills-catalog/catalog/bundled/product/wardmote-capsules/references/generator-workflows.md",4,"belum-diganti"],
+    ["packages/skills-catalog/catalog/bundled/product/wardmote-capsules/references/generator-workflows.md",4,"repo-eksternal"],
     ["packages/skills-catalog/catalog/bundled/product/wardmote-capsules/references/hero-capsule-bank.md",2,"repo-eksternal"],
     ["packages/skills-catalog/catalog/bundled/product/wardmote-capsules/references/identicon-prototyper.md",6,"repo-eksternal"],
-    ["packages/skills-catalog/catalog/bundled/product/wardmote-capsules/references/individual-status-capsules.md",1,"belum-diganti"],
-    ["packages/skills-catalog/catalog/optional/content/release-announcement/SKILL.md",1,"belum-diganti"],
-    ["packages/skills-catalog/catalog/optional/software-development/prepare-mcp-integration/SKILL.md",6,"belum-diganti"],
+    ["packages/skills-catalog/catalog/bundled/product/wardmote-capsules/references/individual-status-capsules.md",1,"repo-eksternal"],
+    ["packages/skills-catalog/catalog/optional/software-development/prepare-mcp-integration/SKILL.md",5,"repo-eksternal"],
     ["packages/skills-catalog/catalog/optional/software-development/prepare-mcp-integration/examples/notion-mcp-research-gate.md",4,"repo-eksternal"],
     ["packages/wardmote-runner/README.md",6,"belum-diganti"],
     ["packages/wardmote-runner/cursor-contract.json",4,"belum-diganti"],
