@@ -47,7 +47,7 @@ describe("HTTP logger redaction", () => {
     app.get("/mcp/oauth/authorize", (_req, res) => res.redirect("https://client.example/callback?code=redirect-canary"));
     await request(app).post("/mcp/oauth/token").send({ code: "code-canary", code_verifier: "pkce-canary", refresh_token: "refresh-canary" });
     await request(app).get("/mcp/oauth/authorize?state=state-canary");
-    await request(app).post("/mcp/wardmote").send({ params: { delivery: { url: "https://receiver.example/callback-path-canary", secret: "whsec_callback-secret-canary" }, _meta: { "ai.paperclip/cloudAuthority": { token: "cloud-authority-canary" } } } });
+    await request(app).post("/mcp/wardmote").send({ params: { delivery: { url: "https://receiver.example/callback-path-canary", secret: "whsec_callback-secret-canary" }, _meta: { "ai.wardmote/authority": { token: "cloud-authority-canary" } } } });
     expect(chunks.join("")).not.toMatch(/callback-path-canary|callback-secret-canary|cloud-authority-canary/);
     chunks.length = 0;
     app.post(`/mcp/${RETIRED_MCP_PATH_SEGMENT}`, (_req, res) => res.status(404).json({ error: "not_found" }));

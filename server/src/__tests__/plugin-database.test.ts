@@ -29,7 +29,7 @@ import { buildPluginWorkerEnv, pluginLoader } from "../services/plugin-loader.js
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
-const multiMigrationPluginKey = "paperclip.dbfixture";
+const multiMigrationPluginKey = "wardmote.dbfixture";
 const llmWikiPluginKey = "wardmote.plugin-llm-wiki";
 
 if (!embeddedPostgresSupport.supported) {
@@ -343,7 +343,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   }, 20_000);
 
   afterEach(async () => {
-    for (const pluginKey of ["paperclip.dbtest", "paperclip.escape", "paperclip.refresh", multiMigrationPluginKey, llmWikiPluginKey]) {
+    for (const pluginKey of ["wardmote.dbtest", "wardmote.escape", "wardmote.refresh", multiMigrationPluginKey, llmWikiPluginKey]) {
       const namespace = derivePluginDatabaseNamespace(pluginKey);
       await db.execute(sql.raw(`DROP SCHEMA IF EXISTS "${namespace}" CASCADE`));
     }
@@ -435,7 +435,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     return pluginId;
   }
 
-  function manifest(pluginKey = "paperclip.dbtest"): WardmotePluginManifestV1 {
+  function manifest(pluginKey = "wardmote.dbtest"): WardmotePluginManifestV1 {
     return {
       id: pluginKey,
       apiVersion: 1,
@@ -610,7 +610,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   });
 
   it("records a failed migration when SQL escapes the plugin namespace", async () => {
-    const pluginManifest = manifest("paperclip.escape");
+    const pluginManifest = manifest("wardmote.escape");
     const packageRoot = await createPluginPackage(
       pluginManifest,
       "CREATE TABLE public.plugin_escape (id uuid PRIMARY KEY);",
@@ -629,7 +629,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   });
 
   it("rolls back plugin install when migration validation fails", async () => {
-    const pluginManifest = manifest("paperclip.escape");
+    const pluginManifest = manifest("wardmote.escape");
     const namespace = derivePluginDatabaseNamespace(pluginManifest.id);
     const packageRoot = await createInstallablePluginPackage(
       pluginManifest,
@@ -668,7 +668,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   });
 
   it("refreshes persisted manifests from disk before activation", async () => {
-    const staleManifest = manifest("paperclip.refresh");
+    const staleManifest = manifest("wardmote.refresh");
     const refreshedManifest: WardmotePluginManifestV1 = {
       ...staleManifest,
       capabilities: [...staleManifest.capabilities, "agent.tools.register"],

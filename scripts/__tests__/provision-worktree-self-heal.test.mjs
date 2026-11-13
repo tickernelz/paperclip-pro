@@ -330,7 +330,7 @@ test("rejects a non-regular instance config without suggesting a setup bypass", 
   assert.deepEqual(readCliInvocations(baseCwd), []);
 });
 
-test("rejects a dangling base workspace .paperclip symlink instead of falling back", () => {
+test("rejects a dangling base workspace .wardmote symlink instead of falling back", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
   fs.symlinkSync(path.join(baseCwd, "absent-dir"), path.join(baseCwd, ".wardmote"));
 
@@ -592,7 +592,7 @@ test("runtime provisioning seeds a worktree config that has no seed markers", ()
   );
 });
 
-test("runtime provisioning bootstraps and seeds an empty .paperclip directory", () => {
+test("runtime provisioning bootstraps and seeds an empty .wardmote directory", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
   fs.mkdirSync(path.join(baseCwd, "scripts"), { recursive: true });
   fs.copyFileSync(script, path.join(baseCwd, "scripts", "provision-worktree.sh"));
