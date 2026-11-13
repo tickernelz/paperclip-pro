@@ -184,6 +184,16 @@ type ProcessAttempt = {
   accounting: OmpAccounting;
 };
 
+function isProviderRequestRejected(attempt: ProcessAttempt): boolean {
+  return classifyOmpFailure({
+    parsedError: attempt.rpcPromptError || attempt.parsed.errors.find((error) => error.trim()) || "",
+    stderr: attempt.proc.stderr,
+    timedOut: attempt.proc.timedOut,
+    exitCode: attempt.proc.exitCode ?? 1,
+    signal: attempt.proc.signal,
+  }).errorFamily === "provider_request_rejected";
+}
+
 function stringList(value: unknown, commaSeparated = false): string[] {
   const values = Array.isArray(value)
     ? value
@@ -1330,6 +1340,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       await onLog(
         "stdout",
         `[wardmote] OMP session "${savedSessionId}" is unavailable; retrying once with a fresh session.\n`,
+      );
+      const retry = await runAttempt(null);
+      return attachSessionBytes(toResult(retry, true, initial));
+    }
+    if (initialFailed && !ctx.signal?.aborted && isProviderRequestRejected(initial)) {
+      await onLog(
+        "stdout",
+        "[wardmote] The provider rejected the request as invalid; the same session would resend the rejected content, so retrying once with a fresh session.\n",
       );
       const retry = await runAttempt(null);
       return attachSessionBytes(toResult(retry, true, initial));

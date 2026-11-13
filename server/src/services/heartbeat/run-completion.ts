@@ -2,6 +2,7 @@ import { NON_RETRYABLE_PREFLIGHT_FAILURE_CODES, isHeartbeatRunTerminalStatus } f
 import { ChatControlRecoveryUnresolvedError } from "./queue.js";
 import { readTransientRecoveryContractFromRun, readHeartbeatRunErrorFamily, isTransientWorkspaceGitScanCode } from "./retries.js";
 import { createRunModelFallback } from "./run-model-fallback.js";
+import { blockIssueAfterProviderRequestRejection, type ProviderRequestRejectionDependencies } from "./provider-request-rejection.js";
 import { MODEL_FALLBACK_PRIMARY_KEY } from "../model-fallback.js";
 import { type RunSessionOutcome, resolveNextSessionState, normalizeUsageTotals, resolveCacheAdjustedCostUsd, resolveLedgerBiller, resolveLedgerCostStatus, normalizeLedgerBillingType } from "./run-state.js";
 import { readGitConnectionFailure } from "../git-connection-failure.js";
@@ -88,7 +89,7 @@ export interface HeartbeatRunCompletionDependencies extends Pick<RunState,
   Pick<ReturnType<typeof createHeartbeatRunControl>, "releaseIssueExecutionAndPromote">,
   Pick<HeartbeatRetryDependencies, "finalizeAgentStatus">,
   Pick<ReturnType<typeof createHeartbeatQueue>, "enqueueWakeup"> {
-  issuesSvc: Pick<ReturnType<typeof issueService>, "addComment">;
+  issuesSvc: Pick<ReturnType<typeof issueService>, "addComment" | "update">;
   recovery: Pick<ReturnType<typeof recoveryService>, "reconcileLegacyContinuation" | "reconcileResolvedDependencyWakeBackstop">
     & Pick<ReturnType<typeof import("./recovery.js").createHeartbeatRecovery>, "enqueueProcessLossRetry">;
   getCurrentUserRedactionOptions: () => Promise<CurrentUserRedactionOptions>;
@@ -379,6 +380,14 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
     failedProcessRunCancellations,
   } = dependencies;
   const runModelFallback = createRunModelFallback({ db, appendRunEvent });
+  const providerRejection: ProviderRequestRejectionDependencies = {
+    getIssue: (issueId) => db.select().from(issues).where(eq(issues.id, issueId)).then((rows) => rows[0] ?? null),
+    getAgent: (agentId) => getAgent(agentId),
+    blockIssue: (issueId, unblockDescriptor) => issuesSvc.update(issueId, { status: "blocked", unblockDescriptor }),
+    wakeup: (agentId, options) => enqueueWakeup(agentId, options),
+    markOwnerNotified: (issueId, notifiedAt) =>
+      db.update(issues).set({ blockedOwnerNotifiedAt: notifiedAt }).where(eq(issues.id, issueId)),
+  };
 
   async function completeRun(input: CompleteHeartbeatRunInput) {
     const { run, agent, issueId, issueRef, signal, output, session, readFailureReportSecrets, adapterResult, sessionCodec, taskSessionForRun, sessionCompaction,
@@ -941,6 +950,11 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
           livenessRun,
           agent,
         );
+      }
+      if (outcome === "failed") {
+        await blockIssueAfterProviderRequestRejection(providerRejection, livenessRun, issueId).catch((err) => {
+          logger.warn({ err, runId: livenessRun.id }, "failed to block the issue after a provider request rejection");
+        });
       }
       const issueCommentPolicyResult = await finalizeIssueCommentPolicy(
         livenessRun,

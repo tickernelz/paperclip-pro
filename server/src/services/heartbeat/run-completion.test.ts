@@ -53,7 +53,7 @@ function callbacks(db: Db) {
     releaseIssueExecutionAndPromote: vi.fn<Dependencies["releaseIssueExecutionAndPromote"]>(async () => undefined),
     finalizeAgentStatus: vi.fn<Dependencies["finalizeAgentStatus"]>(async () => undefined),
     enqueueWakeup: vi.fn<Dependencies["enqueueWakeup"]>(),
-    issuesSvc: { addComment: vi.fn<Dependencies["issuesSvc"]["addComment"]>() },
+    issuesSvc: { addComment: vi.fn<Dependencies["issuesSvc"]["addComment"]>(), update: vi.fn<Dependencies["issuesSvc"]["update"]>(async () => null) },
     recovery: { reconcileLegacyContinuation: vi.fn<Dependencies["recovery"]["reconcileLegacyContinuation"]>(), reconcileResolvedDependencyWakeBackstop: vi.fn<Dependencies["recovery"]["reconcileResolvedDependencyWakeBackstop"]>(), enqueueProcessLossRetry: vi.fn<Dependencies["recovery"]["enqueueProcessLossRetry"]>(async () => null) },
     getCurrentUserRedactionOptions: lifecycleDeps.getCurrentUserRedactionOptions,
     budgetHooks: {},
@@ -235,6 +235,36 @@ describe.skipIf(!support.supported)("heartbeat run completion boundary", () => {
     await f.completion.completeRun(f.input);
     expect(f.deps.clearTaskSessions).toHaveBeenCalledWith(f.run.companyId, f.agent.id, { taskKey: "completion-task", adapterType: "process", expectedRunId: f.run.id });
     expect(f.deps.upsertTaskSession).not.toHaveBeenCalled();
+  });
+
+  it("blocks the run's issue for the assignee's manager when the provider rejects the request even on a fresh session", async () => {
+    const f = await fixture();
+    const [manager] = await db.insert(agents).values({ companyId: f.run.companyId, name: "Manager", adapterType: "process" }).returning();
+    await db.update(agents).set({ reportsTo: manager.id }).where(eq(agents.id, f.agent.id));
+    const [issue] = await db.insert(issues).values({
+      companyId: f.run.companyId, title: "Status card refresh", status: "in_progress",
+      assigneeAgentId: f.agent.id, executionRunId: f.run.id, hiddenAt: new Date(),
+    }).returning();
+    f.deps.issuesSvc.update.mockImplementation(async (id, patch) => {
+      const [row] = await db.update(issues).set({
+        status: "blocked", unblockDescriptor: patch.unblockDescriptor, blockedTransitionAt: new Date(),
+      }).where(eq(issues.id, id)).returning();
+      return row as never;
+    });
+    Object.assign(f.input.adapterResult, {
+      exitCode: 1,
+      errorMessage: "400 The request contains image input, but this combo has no confirmed vision-capable target (type=invalid_request_error)",
+      errorCode: "omp_provider_request_rejected",
+      errorFamily: "provider_request_rejected",
+    });
+    await f.completion.completeRun({ ...f.input, issueId: issue.id });
+    expect((await read(f.run.id)).status).toBe("failed");
+    expect(f.deps.issuesSvc.update).toHaveBeenCalledWith(issue.id, {
+      status: "blocked",
+      unblockDescriptor: { owner: { agentId: manager.id }, action: expect.stringContaining("vision-capable target") },
+    });
+    expect(f.deps.enqueueWakeup).toHaveBeenCalledWith(manager.id, expect.objectContaining({ reason: "issue_unblock_requested" }));
+    expect((await db.select().from(issues).where(eq(issues.id, issue.id)))[0]).toMatchObject({ status: "blocked", blockedOwnerNotifiedAt: expect.any(Date) });
   });
 
   it("keeps the saved task session when a failed run reports no session", async () => {
