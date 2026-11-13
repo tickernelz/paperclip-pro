@@ -133,8 +133,6 @@ export function discordWardmoteCommandDefinition(publicOwnerId: string) {
 
 type CommandDefinition = ReturnType<typeof discordWardmoteCommandDefinition>;
 
-// Explicitly shipped prior definitions. This is maintenance evidence only:
-// it never enables command handling before a current definition is confirmed.
 function priorDefinitions(id: string): CommandDefinition[] {
   const renamed = discordWardmoteCommandDefinition(id);
   renamed.name = RETIRED_DISCORD_COMMAND_NAME;
