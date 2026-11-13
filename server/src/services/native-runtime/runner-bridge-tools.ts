@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { RETIRED_DOT_HOME } from "./retired-dot-home.js";
 import { spawn } from "node:child_process";
 import { constants, existsSync } from "node:fs";
 import * as fs from "node:fs/promises";
@@ -7,6 +8,7 @@ import { z } from "zod";
 import { REPO_CONFIG_DIR_NAMES } from "@tickernelz/wardmote-shared/repo-config-dir";
 import type { NativeRuntimeContextSnapshot } from "../../vendor/wardmote-runner/index.js";
 import { openRunnerApiWorkspaceFile, openRunnerWorkspaceFile } from "./runner-api-files.js";
+const DOT_HOME = ".wardmote-dot-home";
 const relativeFile = z.string().min(1).max(1000).refine(value => !value.includes("\\") && !value.includes("\0") && !path.isAbsolute(value) && value.split("/").every(part => part && part !== "." && part !== ".."), "Use a relative path without traversal");
 const specs = [
   ["get_identity", "Read your agent identity, responsible person, permissions and currently available tools.", z.object({}).strict()],
@@ -174,9 +176,10 @@ async function executeWorkspaceToolInLane(root: string, name: string, raw: unkno
     return { path: input.path, sha256: digest(bytes), byteSize: bytes.length };
   }
   if (name !== "workspace_run" || !workspaceCommandSandboxAvailable()) throw new Error("runner_workspace_command_sandbox_unavailable");
-  const cwd = await fs.realpath(root), privateHome = path.join(cwd, ".paperclip-dot-home");
+  const cwd = await fs.realpath(root), privateHome = path.join(cwd, DOT_HOME);
+  await fs.rm(await confined(cwd, RETIRED_DOT_HOME, true), { recursive: true, force: true });
   await fs.mkdir(privateHome, { recursive: true, mode: 0o700 });
-  await confined(cwd, ".paperclip-dot-home");
+  await confined(cwd, DOT_HOME);
   // Bubblewrap owns a private PID namespace and an init/reaper. Killing the
   // outer supervisor tears it down even when descendants fork and setsid().
   const program = "/usr/bin/bwrap";
