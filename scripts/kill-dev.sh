@@ -3,7 +3,6 @@
 # Kill all local Wardmote dev server processes (across all worktrees).
 #
 # Usage:
-#   scripts/kill-dev.sh        # kill all wardmote dev processes
 #   scripts/kill-dev.sh --dry  # preview what would be killed
 #
 
