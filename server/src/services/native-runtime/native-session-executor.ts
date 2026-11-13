@@ -13572,7 +13572,7 @@ async function createRunnerdBackendWithinSessionClaim(
                   mode: transport.mode,
                   connectionOwner:
                     transport.mode === "provider_ingress"
-                      ? "paperclip"
+                      ? "wardmote"
                       : "runnerd",
                 },
               });

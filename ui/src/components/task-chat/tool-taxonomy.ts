@@ -401,7 +401,7 @@ export function toolActivityPresentation(input: ToolActivityPresentationInput): 
     : transport === "mcp"
       ? "MCP"
       : undefined;
-  const summaryGroup = namespace.toLowerCase() === "paperclip"
+  const summaryGroup = namespace.toLowerCase() === "wardmote"
     ? wardmoteSummaryGroup(action)
     : exact?.group ?? defaultSummaryGroup(action);
 
