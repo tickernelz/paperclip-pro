@@ -7,10 +7,10 @@ Baseline: `d6d88b9de2fc766637422cc43f985c747455a1b0`. Word counts below measure 
 | Prompt | Before words | After words |
 | --- | ---: | ---: |
 | [Default CEO bundle](../../server/src/onboarding-assets/ceo/AGENTS.md) | 1897 | 20 |
-| [Coder](../../skills/wardmote-create-agent/references/agents/coder.md) | 652 | 18 |
-| [QA](../../skills/wardmote-create-agent/references/agents/qa.md) | 619 | 21 |
-| [UX Designer](../../skills/wardmote-create-agent/references/agents/uxdesigner.md) | 1325 | 20 |
-| [Security Engineer](../../skills/wardmote-create-agent/references/agents/securityengineer.md) | 1724 | 28 |
+| [Coder](../../skills/paperclip-create-agent/references/agents/coder.md) | 652 | 18 |
+| [QA](../../skills/paperclip-create-agent/references/agents/qa.md) | 619 | 21 |
+| [UX Designer](../../skills/paperclip-create-agent/references/agents/uxdesigner.md) | 1325 | 20 |
+| [Security Engineer](../../skills/paperclip-create-agent/references/agents/securityengineer.md) | 1724 | 28 |
 | [Chief of staff](../../server/src/onboarding-assets/first-task/chief-of-staff/AGENTS.md) | 164 | 25 |
 | [Catalog ceo](../../packages/teams-catalog/catalog/bundled/company-defaults/core-exec-team/agents/ceo/AGENTS.md) | 377 | 20 |
 | [Catalog cto](../../packages/teams-catalog/catalog/bundled/company-defaults/core-exec-team/agents/cto/AGENTS.md) | 205 | 17 |

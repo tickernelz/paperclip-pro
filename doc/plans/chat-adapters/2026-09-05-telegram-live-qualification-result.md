@@ -23,7 +23,7 @@ the older temporary-tunnel topology below and the earlier private-8443 checkpoin
 
 The real **Reconnect bot** action reused the already-vaulted token successfully;
 the user did not need to create another bot or re-enter a secret. The verified
-bot is [MayaWardmoteQA1234bot](https://t.me/MayaPaperclipQA1234bot), endpoint
+bot is [MayaPaperclipQA1234bot](https://t.me/MayaPaperclipQA1234bot), endpoint
 `5b18b946-2b24-45b6-957f-783a0a735d8a`. Tapping **Start** discovered the account and
 displayed the native welcome without starting a failing agent run. The observed
 account was privately linked through Access, and **Continue setup** returned to

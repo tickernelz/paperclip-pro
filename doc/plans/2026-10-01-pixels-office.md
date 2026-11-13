@@ -1,7 +1,7 @@
 # Plan: Pixels Office — fitur eksperimental bawaan
 
 Tanggal: 2026-10-01
-Repo: `/home/zhafron/Projects/wardmote` (HEAD `ad2b961fd`)
+Repo: `/home/zhafron/Projects/paperclip-pro` (HEAD `ad2b961fd`)
 Sumber ide: `github.com/gcampton/Agent-Pixels` @ `42de7c5` (2026-06-09)
 
 Status: **MENUNGGU PERSETUJUAN**. Belum ada file yang diubah selain dokumen ini.
@@ -15,7 +15,7 @@ Status: **MENUNGGU PERSETUJUAN**. Belum ada file yang diubah selain dokumen ini.
 Ini fakta paling penting dan tidak terlihat dari luar. `package.json`-nya:
 
 ```json
-"name": "@agent-pixels/wardmote-plugin",
+"name": "@agent-pixels/paperclip-plugin",
 "wardmotePlugin": { "manifest": "./dist/manifest.js", "worker": "./dist/worker.js", "ui": "./dist/ui/" }
 ```
 

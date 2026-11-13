@@ -367,9 +367,9 @@ application build, Storybook build, server/UI typechecks, and token gates passed
 
 After the user completed GitHub's access confirmation, a fresh manifest submitted
 through the embedded browser successfully registered
-[Wardmote Review QA260920](https://github.com/apps/paperclip-review-qa260920).
+[Paperclip Review QA260920](https://github.com/apps/paperclip-review-qa260920).
 The App was installed as installation `163220189`, selecting only the disposable
-private repository `cryppadotta/wardmote-github-review-qa-20260919` (ID
+private repository `cryppadotta/paperclip-github-review-qa-20260919` (ID
 `1377781534`). No other repositories were selected. The manifest callback vaulted
 the App credentials and resumed the saved Wardmote bot.
 

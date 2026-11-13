@@ -62,7 +62,7 @@ This does not imply that the companion Cloud broker is deployed or qualified.
 
 ### Gateway reconciliation — 2026-10-06
 
-The canonical worktree remains `dot-events-prototype/wardmote` on
+The canonical worktree remains `dot-events-prototype/paperclip` on
 `codex/dot-events-prototype`. Master was merged through `c365a16e3`.
 The shared consent implementation now creates distinct agent-purpose grants
 for both browser and device flows, validates request resource and organization
@@ -912,7 +912,7 @@ outside Wardmote after its Wardmote authority ends.
 ## 14. Sources and implementation anchors
 
 - [Prototype and actual live acceptance](../dot-runner-prototype.md)
-- [Runner architecture](../architecture/wardmote-runner.md)
+- [Runner architecture](../architecture/paperclip-runner.md)
 - [Runner package ownership and production boundary](../../packages/wardmote-runner/README.md)
 - [Public MCP identity, tools and hosted broker](../public-mcp.md)
 - [Current Dot reference driver](../../packages/wardmote-runner/src/drivers/dot/dot-harness-driver.ts)
@@ -920,7 +920,7 @@ outside Wardmote after its Wardmote authority ends.
 - [Native provider selection](../../server/src/services/native-runtime/provider-profile.ts)
 - [Production native executor](../../server/src/services/native-runtime/native-session-executor.ts)
 - [Rust provider dispatch](../../packages/wardmote-runner/runner/crates/runner-core/src/native_provider_backend.rs)
-- [Production tool authority](../../server/src/services/native-runtime/wardmote-runner-tool-authority.ts)
+- [Production tool authority](../../server/src/services/native-runtime/paperclip-runner-tool-authority.ts)
 - [OpenAI MCP Events](https://developers.openai.com/plugins/build/mcp-events),
   checked 2026-10-02: Dot support, asynchronous webhook acknowledgement,
   callback verification, refresh, ordering and delivery limits.

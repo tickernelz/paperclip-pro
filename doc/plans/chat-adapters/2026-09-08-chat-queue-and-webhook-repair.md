@@ -5241,7 +5241,7 @@ does not establish whether the model or earlier native sanitization caused it.
 It remains a quality follow-up, not a reason to weaken credential redaction.
 
 The exact qualified release binary was copied to private ignored
-`qualified-runner-79.z262Ty/wardmote-runnerd` under the live QA runtime root.
+`qualified-runner-79.z262Ty/paperclip-runnerd` under the live QA runtime root.
 Its SHA256 still equals `6844f20ee4a5fb7f7963117263a384f520054b4bd1e0f812fc58a4f34808b503`;
 mode is 0500 and strict codesign verification passed. It is **not activated**.
 No installed binary, live server, old runner journal or agent status changed.

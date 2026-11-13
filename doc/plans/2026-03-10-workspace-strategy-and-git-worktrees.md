@@ -818,7 +818,7 @@ Long-lived repo anchor.
 
 Examples:
 
-- `./wardmote`
+- `./paperclip`
 - repo URL and base ref
 - primary checkout for a project
 

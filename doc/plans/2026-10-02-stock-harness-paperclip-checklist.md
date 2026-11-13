@@ -106,7 +106,7 @@ live campaign was run, and no task-quality improvement is claimed.
 Starting points: [default hire instructions](../../server/src/onboarding-assets/default/AGENTS.md),
 [shared adapter utilities](../../packages/adapter-utils/src/server-utils.ts),
 [native runtime contract](../../packages/wardmote-runner/src/contracts/runtime-context.ts),
-[Wardmote operational skill](../../skills/wardmote/SKILL.md).
+[Paperclip operational skill](../../skills/paperclip/SKILL.md).
 
 Decision: Dotta confirmed the harness already handles skill and tool delivery;
 the default hire manual is now only "You are an agent in a Wardmote company."
@@ -374,7 +374,7 @@ tests or live evals.
 Starting points: [onboarding assets](../../server/src/onboarding-assets/),
 [default bundle service](../../server/src/services/default-agent-instructions.ts),
 [agent routes](../../server/src/routes/agents.ts),
-[hiring skill and references](../../skills/wardmote-create-agent/),
+[hiring skill and references](../../skills/paperclip-create-agent/),
 [teams catalog](../../packages/teams-catalog/catalog/).
 
 Dotta approved and merged [PR #14985](https://github.com/paperclipai/paperclip/pull/14985)

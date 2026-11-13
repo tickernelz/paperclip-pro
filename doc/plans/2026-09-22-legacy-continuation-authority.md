@@ -130,7 +130,7 @@ Keep this section even if this slice incidentally resolves some assertions.
 | Maintain CI and prepare App/Evals review | Pending | Promote fixed invariants into maintained cheap gates; paid suites remain explicit |
 
 Reference reports moved to `wardmote-evals`; see the
-[results index](../../tests/lifecycle-baseline/README.md#recorded-results-moved-to-wardmote-evals)
+[results index](../../tests/lifecycle-baseline/README.md#recorded-results-moved-to-paperclip-evals)
 for the initial baseline, live baseline, and live fixes.
 Live follow-up: 40/40 Product E2E passed on App `331e89bb3`; original protocol
 correction: 8/8 passed. Those results do not establish prose-free authority.

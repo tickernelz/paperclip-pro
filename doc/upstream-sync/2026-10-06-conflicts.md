@@ -10,7 +10,7 @@ Decision values: `fork` keeps the fork side, `upstream` takes the upstream side,
 | --- | --- | --- | --- | --- |
 | .github/CODEOWNERS | 0ee2acef4 | 6eaf21892 | fork | fork deleted doc/RELEASING.md; upstream only added owners to that dropped line |
 | DESIGN.md | 062180cfa | 749870564 59015846a 144083fd4 4b2bd6563 3c561642b 0be2afcca | upstream | upstream superset: adds Preparing approval readiness and question dismissal semantics, fork text kept verbatim inside |
-| README.md | 524ff1a96 4a33c49b1 2542fea28 6c9c0a1da 79e01da30 64d0192c7 | 5c49b4529 7141ab68a d1f3e7bb0 | combine | fork README (branding, install, ops) kept; upstream runner Rust/WARDMOTE_RUNNER_BINARY note, test-drive data-dir behaviour and telemetry config opt-out added |
+| README.md | 524ff1a96 4a33c49b1 2542fea28 6c9c0a1da 79e01da30 64d0192c7 | 5c49b4529 7141ab68a d1f3e7bb0 | combine | fork README (branding, install, ops) kept; upstream runner Rust/PAPERCLIP_RUNNER_BINARY note, test-drive data-dir behaviour and telemetry config opt-out added |
 | doc/DATABASE.md | 5650a370b e562fa855 | 5c49b4529 984f092dd 17fa71867 4a999089e 98d8a6cca 3ca196b0a | upstream | upstream adds bounded dashboard read retries; execution identity lock section identical to fork |
 | doc/DEVELOPING.md | 60351deec bc88889d4 8bbe2b397 48a614a8f a5d144804 2bdbbae2e | 5c49b4529 45862dd21 2c43b3916 59015846a a65ca0950 6eaf21892 | combine | upstream Storybook story docs, git scan GIT_OPTIONAL_LOCKS and provision-without-seed-config docs taken; fork drops upstream Storybook Visual/Deploy workflows so that hunk keeps fork text |
 | doc/connections/README.md | d27bb187c | 5b8b2b38c 4ac374103 18dac1e1e | combine | upstream Asana/Neon links plus fork OpenWA link |

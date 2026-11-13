@@ -24,7 +24,7 @@ the disabled state persisted; the original setting was then restored.
 | Provider | Disabled setting                         | Send time (UTC) | Observed result                                                                                                                           |
 | -------- | ---------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | Slack    | `#pc-chat-live-0905b`                    | 17:56:10.018    | Activity: filtered, “Destination is not enabled in Wardmote”; no reaction/reply                                                          |
-| GitHub   | `cryppadotta/wardmote-chat-e2e-enabled` | 18:01:08.615    | Saved comment persisted after reload; signed webhook acknowledged at 18:01:10; content rejected before durable ingress; no reaction/reply |
+| GitHub   | `cryppadotta/paperclip-chat-e2e-enabled` | 18:01:08.615    | Saved comment persisted after reload; signed webhook acknowledged at 18:01:10; content rejected before durable ingress; no reaction/reply |
 | Discord  | Clawd `#general`                         | 18:02:53.827    | Activity: filtered, same destination explanation; no reaction/reply                                                                       |
 | Telegram | Allow direct messages                    | 18:03:55.816    | Activity: filtered, same destination explanation; no reply                                                                                |
 

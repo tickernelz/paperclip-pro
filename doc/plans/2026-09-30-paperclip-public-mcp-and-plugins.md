@@ -145,7 +145,7 @@ Defaults: one public listing, hosted onboarding, first-party public tools, broad
 
 ## Initial implementation record (2026-09-30; historical)
 
-Wardmote worktree: `wardmote-public-mcp`, branch `codex/wardmote-public-mcp`.
+Wardmote worktree: `wardmote-public-mcp`, branch `codex/paperclip-public-mcp`.
 Cloud worktree: `wardmote-cloud-public-mcp`, branch `codex/public-mcp`.
 
 At this initial checkpoint, the first-release code was in isolated branches and

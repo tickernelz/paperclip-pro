@@ -189,7 +189,7 @@ installation `159668881`, and reconciled exactly the two approved private test
 repositories.
 
 The first real setup issue is
-[`cryppadotta/wardmote-chat-e2e-enabled#1`](https://github.com/cryppadotta/paperclip-chat-e2e-enabled/issues/1).
+[`cryppadotta/paperclip-chat-e2e-enabled#1`](https://github.com/cryppadotta/paperclip-chat-e2e-enabled/issues/1).
 Root comment `5570993571` produced exactly one Wardmote task, `CHA-1`
 (`07a57128-20ef-4905-aa85-3bbcb4f2769e`), and one external conversation
 (`6a6d6bfa-4b21-45d7-87b3-9a8885449c5a`). GitHub displayed one eyes reaction
@@ -228,7 +228,7 @@ the operative ingress route.
 ### Telegram credential incident and containment
 
 - The signed-in Telegram browser reached the official BotFather conversation
-  for the existing test bot `@MayaWardmoteQA0905Bot`.
+  for the existing test bot `@MayaPaperclipQA0905Bot`.
 - The agent incorrectly copied a message's concatenated DOM text, appending two
   timestamp digits to the token. Wardmote rejected the resulting setup request.
   The HTTP failure logger then recorded the raw submitted credential object.
@@ -494,9 +494,9 @@ Runtime checkpoint after commit `f535dde54`:
 The signed-in in-app browser completed the remaining pre-credential setup:
 
 - Created private, disposable repositories
-  [`cryppadotta/wardmote-chat-e2e-enabled`](https://github.com/cryppadotta/paperclip-chat-e2e-enabled)
+  [`cryppadotta/paperclip-chat-e2e-enabled`](https://github.com/cryppadotta/paperclip-chat-e2e-enabled)
   (ID `1359763399`) and
-  [`cryppadotta/wardmote-chat-e2e-disabled`](https://github.com/cryppadotta/paperclip-chat-e2e-disabled)
+  [`cryppadotta/paperclip-chat-e2e-disabled`](https://github.com/cryppadotta/paperclip-chat-e2e-disabled)
   (ID `1359763710`). Both contain only their initial README; no production data,
   existing repository contents, or generated agent work was added. They are kept
   for the pending positive/negative reach tests, not deleted during setup.

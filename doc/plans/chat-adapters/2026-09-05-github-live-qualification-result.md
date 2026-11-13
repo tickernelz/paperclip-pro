@@ -91,7 +91,7 @@ branch `qa/chat-review-0907`, commit
 The PR's main conversation received human comment `5572099126` and one
 [bot reply `5572100025`](https://github.com/cryppadotta/paperclip-chat-e2e-enabled/pull/3#issuecomment-5572100025)
 containing exactly `GH-PR-LEVEL-0907-OK`. Wardmote bound provider thread
-`github:cryppadotta/wardmote-chat-e2e-enabled:3` to conversation
+`github:cryppadotta/paperclip-chat-e2e-enabled:3` to conversation
 `6f313c48-e684-421f-a730-dd68112c1e2c` and task
 `5329b4bf-6b16-40d5-ad69-65bcbeac2ab3`. Run
 `0d57af6e-2351-4bf2-8736-1d61cc877e67` ran from `14:29:10.041Z` through
@@ -103,7 +103,7 @@ this file** followed by **Add single comment**. Human review comment
 `3950666444` received one
 [bot reply `3950666803`](https://github.com/cryppadotta/paperclip-chat-e2e-enabled/pull/3/changes#r3950666803)
 containing exactly `GH-PR-REVIEW-0907-OK`. Wardmote bound the distinct provider
-thread `github:cryppadotta/wardmote-chat-e2e-enabled:3:rc:3950666444` to
+thread `github:cryppadotta/paperclip-chat-e2e-enabled:3:rc:3950666444` to
 conversation `241f99a5-54ff-4bef-a0e7-313d69bf72b2` and task
 `860c7878-f1a6-498d-995c-6feaa735eb27`. Run
 `78deae9a-eb13-4374-a272-645ef1aec2d1` ran from `14:32:16.599Z` through
@@ -268,7 +268,7 @@ At the September 6 checkpoint, App registration and current-build provider deliv
 - Chat SDK / GitHub adapter: `4.39.0`
 - Provider: GitHub.com, disposable personal-account App and private repository
 - Wardmote endpoint: `4e87c64e-7d0b-497d-85d2-6eb8820340fc` (archived during cleanup)
-- External conversation: `github:cryppadotta/wardmote-chat-e2e-enabled:issue:1`
+- External conversation: `github:cryppadotta/paperclip-chat-e2e-enabled:issue:1`
 - Wardmote task: `9ad34556-30b5-47a1-b207-ba666d8d897e`
 
 No token, webhook secret, private key, cookie, password, or one-time identity-link URL is recorded here.

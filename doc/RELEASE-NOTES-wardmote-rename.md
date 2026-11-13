@@ -44,7 +44,7 @@ An install on 2026.1109.x or older still runs the old `update` code, which canno
 
 Docker, Compose and Quadlet installs keep their data where the old names put it, so move it once before starting the new image. `doc/DOCKER.md` ("Upgrading from the old names") has the commands:
 
-1. Bind mount or quickstart Compose: rename `data/docker-wardmote` to `data/docker-wardmote` and mount it at `/wardmote`.
+1. Bind mount or quickstart Compose: rename `data/docker-paperclip` to `data/docker-wardmote` and mount it at `/wardmote`.
 2. Full-stack Compose: copy the `docker_wardmote-data` volume into `docker_wardmote-data`, and start the stack with `POSTGRES_USER`, `POSTGRES_PASSWORD` and `POSTGRES_DB` set to `wardmote`, because the existing database volume was created with them.
 3. Quadlet: stop `wardmote-pod`, remove the old unit files, rename `wardmote.env` and `~/.local/share/wardmote`, copy the `wardmote-pgdata` volume into `wardmote-pgdata`, build `wardmote-local`, copy the new units and start `wardmote-pod`.
 

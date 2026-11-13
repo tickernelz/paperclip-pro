@@ -68,7 +68,7 @@ The production correction exposes native question field types at the schema
 root and preserves every method-specific constraint and runtime validator.
 Empty arguments, stringified options and cross-method fields remain invalid.
 All three previous closure hashes are reproduced from the retained full
-manifest and reviewed Node pins; only `extensions/wardmote.js` changes.
+manifest and reviewed Node pins; only `extensions/paperclip.js` changes.
 Historical Pi profile-18 decoding retains its exact stored identity; current
 launch admission still rejects it. Later changes are tests, harness and docs.
 Shipping packages and image stay frozen at the source above.
