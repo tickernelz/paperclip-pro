@@ -16700,7 +16700,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       }).thread,
       message: makeMessage({
         id: "telegram-root-77",
-        text: "@paperclip investigate the alert",
+        text: "@wardmote investigate the alert",
         mentioned: true,
       }),
       trigger: "mention",
@@ -38231,7 +38231,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         message: makeMessage({
           id: `${chatId}:1`,
           raw: { message_id: 1 },
-          text: "@paperclip create a Telegram publication failure fixture",
+          text: "@wardmote create a Telegram publication failure fixture",
           userId: chatId,
           mentioned: true,
         }),
@@ -38327,7 +38327,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       message: makeMessage({
         id: `${chatId}:1`,
         raw: { message_id: 1 },
-        text: "@paperclip establish a recovery race fixture",
+        text: "@wardmote establish a recovery race fixture",
         userId: "91234567",
         mentioned: true,
       }),
@@ -38484,7 +38484,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       message: makeMessage({
         id: `${chatId}:1`,
         raw: { message_id: 1 },
-        text: "@paperclip establish a reconnect race fixture",
+        text: "@wardmote establish a reconnect race fixture",
         userId: "92345678",
         mentioned: true,
       }),

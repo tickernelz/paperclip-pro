@@ -503,7 +503,7 @@ function deriveSkillExportDirCandidates(
   };
 
   if (sourceKind === "wardmote_bundled") {
-    pushSuffix("paperclip");
+    pushSuffix("wardmote");
   }
 
   if (skill.sourceType === "github" || skill.sourceType === "skills_sh") {

@@ -261,7 +261,7 @@ and [Runner Product E2E history](https://d1p6rlowie26tp.cloudfront.net/runner-e2
 The consolidated eval hub is at
 [pages.paperclip.ing/evals](https://pages.paperclip.ing/evals/).
 
-For a repeatable workflow, use the matching skill: [paperclip-evals](../.agents/skills/wardmote-evals/SKILL.md),
+For a repeatable workflow, use the matching skill: [wardmote-evals](../.agents/skills/wardmote-evals/SKILL.md),
 [add-runner-eval](../.agents/skills/add-runner-eval/SKILL.md), or
 [add-product-e2e-eval](../.agents/skills/add-product-e2e-eval/SKILL.md).
 
@@ -345,7 +345,7 @@ multi-repository workspace, install the three skills at
 checkout, run:
 
 ```sh
-for skill in paperclip-evals add-runner-eval add-product-e2e-eval; do
+for skill in wardmote-evals add-runner-eval add-product-e2e-eval; do
   install -d "$HOME/paperclipai/.agents/skills/$skill"
   install -m 644 ".agents/skills/$skill/SKILL.md" \
     "$HOME/paperclipai/.agents/skills/$skill/SKILL.md"
@@ -366,7 +366,7 @@ Build from the public history feeds and check its summary logic:
 
 ```sh
 python3 -m unittest discover -s scripts/evals-hub -p 'test_*.py'
-python3 scripts/evals-hub/build.py --output .paperclip/evals-hub
+python3 scripts/evals-hub/build.py --output .wardmote/evals-hub
 ```
 
 The hub checks need Python 3 and do not call model providers.
@@ -385,8 +385,8 @@ put `$(brew --prefix bash)/bin` first in `PATH` before these commands:
 export WARDMOTE_PAGE_BUCKET=pages.paperclip.ing
 export WARDMOTE_PAGE_BASE_URL=https://pages.paperclip.ing
 export AWS_REGION=us-east-1
-bash .agents/skills/wardmote-page/scripts/publish.sh .paperclip/evals-hub --slug evals --dry-run
-bash .agents/skills/wardmote-page/scripts/publish.sh .paperclip/evals-hub --slug evals
+bash .agents/skills/wardmote-page/scripts/publish.sh .wardmote/evals-hub --slug evals --dry-run
+bash .agents/skills/wardmote-page/scripts/publish.sh .wardmote/evals-hub --slug evals
 ```
 
 For later refreshes, rebuild in the same output directory and publish with

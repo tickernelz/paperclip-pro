@@ -54,7 +54,7 @@
       "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833) (pengecualian tetap literal artefak luar); sebelumnya: Raka, keputusan otonom ZHA-5279 (mode full otonom, 2026-11-11); ditinjau Hendra"
     },
     "repo-eksternal": {
-      "reason": "Alamat dan jalur berkas di repo eksternal milik pihak lain (korpus eval paperclipai/paperclip-evals: tautan blob GitHub dan jalur kasus uji). Menggantinya memutus tautan ke berkas yang tidak kita kendalikan. Juga rujukan ke upstream yang di-fork (repo GitHub paperclipai/paperclip, skrip pasang paperclip.ing/install.sh, notice hak cipta Paperclip AI) dan paket npm lama yang sudah deprecated (@tickernelz/paperclip-pro, home ~/.paperclip-pro) di dokumen pengguna yang menjelaskan asal fork dan jalur migrasi. Hanya rujukan ke artefak itu; nama produk di berkas yang sama sudah Wardmote.",
+      "reason": "Alamat dan jalur berkas di repo eksternal milik pihak lain (korpus eval paperclipai/paperclip-evals: tautan blob GitHub dan jalur kasus uji). Menggantinya memutus tautan ke berkas yang tidak kita kendalikan. Juga rujukan ke upstream yang di-fork (repo GitHub paperclipai/paperclip, domain upstream paperclip.ing dan pages.paperclip.ing, direktori workspace ~/paperclipai berisi checkout repo upstream, notice hak cipta Paperclip AI) dan paket npm lama yang sudah deprecated (@tickernelz/paperclip-pro, home ~/.paperclip-pro) di dokumen pengguna yang menjelaskan asal fork dan jalur migrasi. Hanya rujukan ke artefak itu; nama produk di berkas yang sama sudah Wardmote.",
       "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833) (pengecualian tetap literal artefak luar); sebelumnya: Raka, keputusan otonom ZHA-5279 (mode full otonom, 2026-11-12); jalur yang sama dipulihkan atas temuan Hendra ronde 95 (PR #269); ditinjau Hendra"
     },
     "artefak-eksternal": {
@@ -132,7 +132,7 @@
     ["doc/connections/verified-mcp-qualification-2026-10-08.md",1,"repo-eksternal"],
     ["doc/design/DECISION-SHEET.md",1,"belum-diganti"],
     ["doc/dot-runner-prototype.md",1,"belum-diganti"],
-    ["doc/evals.md",21,"belum-diganti"],
+    ["doc/evals.md",16,"repo-eksternal"],
     ["doc/grok-native-runner.md",1,"belum-diganti"],
     ["doc/logs/2026-05-24-cli-api-parity-e2e-log.md",86,"arsip"],
     ["doc/openai-dot-runner.md",2,"repo-eksternal"],
@@ -725,7 +725,7 @@
     ["scripts/verify-release-registry-state.test.mjs",3,"belum-diganti"],
     ["server/scripts/smoke-native-task-monitor.ts",1,"belum-diganti"],
     ["server/src/__tests__/aws-secrets-manager-retired-names.test.ts",13,"uji-regresi"],
-    ["server/src/__tests__/chat-channels.integration.test.ts",5,"belum-diganti"],
+    ["server/src/__tests__/chat-channels.integration.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/cli-invocation-safety.test.ts",6,"belum-diganti"],
     ["server/src/__tests__/company-portability.test.ts",18,"belum-diganti"],
     ["server/src/__tests__/company-skills-catalog-service.test.ts",1,"belum-diganti"],
@@ -767,10 +767,8 @@
     ["server/src/services/chat-sdk-runtime.ts",15,"belum-diganti"],
     ["server/src/services/chat-telegram-draft-stop.test.ts",6,"belum-diganti"],
     ["server/src/services/chat-telegram-draft-stop.ts",2,"belum-diganti"],
-    ["server/src/services/company-portability.ts",1,"belum-diganti"],
     ["server/src/services/connectors/slack/evals/README.md",1,"repo-eksternal"],
     ["server/src/services/email-channels.ts",2,"belum-diganti"],
-    ["server/src/services/environment-custom-images.ts",1,"belum-diganti"],
     ["server/src/services/explicit-native-continuation.test.ts",1,"belum-diganti"],
     ["server/src/services/heartbeat/retired-project-repositories-dir.ts",1,"migrasi-otomatis"],
     ["server/src/services/native-runtime/acpx-qualification.test.ts",1,"uji-regresi"],
