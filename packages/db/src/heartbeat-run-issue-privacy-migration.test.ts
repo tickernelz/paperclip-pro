@@ -231,7 +231,7 @@ describeEmbeddedPostgres("heartbeat run issue privacy migration", () => {
         const [row] = await sql`SELECT count(*)::int AS n FROM pg_stat_activity
           WHERE datname = current_database() AND query LIKE '%SELECT pg_try_advisory_lock%'
             AND query NOT LIKE '%FROM pg_stat_activity%'
-            AND strpos(query, 'paperclip:migrations') > 0`;
+            AND strpos(query, 'wardmote:migrations') > 0`;
         return row.n;
       }, { timeout: 10_000 }).toBe(1);
       expect(await sql`SELECT hash FROM drizzle.__drizzle_migrations WHERE hash = ${hash}`).toHaveLength(0);
