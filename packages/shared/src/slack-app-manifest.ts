@@ -11,8 +11,8 @@ export const SLACK_CHAT_BOT_SCOPES = [
 
 export function defaultSlackAppConfiguration(agentName: string): SlackAppConfiguration {
   const botName = agentName.normalize("NFKD").toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 24) || "paperclip-agent";
-  return { appName: `${botName}-paperclip`, botName, command: `/${botName.replace(/[._]+/g, "-")}` };
+    .replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 24) || "wardmote-agent";
+  return { appName: `${botName}-wardmote`, botName, command: `/${botName.replace(/[._]+/g, "-")}` };
 }
 
 export function buildSlackAppManifest(input: {

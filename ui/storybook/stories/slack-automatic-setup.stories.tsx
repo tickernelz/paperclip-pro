@@ -31,7 +31,7 @@ export const ChooseAgentSelected: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(await canvas.findByText("Advanced", { selector: "summary" }));
-    await expect(canvas.getByLabelText("Slack app name", { exact: true })).toHaveValue("maya-paperclip");
+    await expect(canvas.getByLabelText("Slack app name", { exact: true })).toHaveValue("maya-wardmote");
     await expect(canvas.getByLabelText("Bot display name", { exact: true })).toHaveValue("maya");
     await expect(canvas.getByLabelText("Slash command", { exact: true })).toHaveValue("/maya");
   },

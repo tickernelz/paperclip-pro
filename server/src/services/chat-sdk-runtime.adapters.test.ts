@@ -113,12 +113,12 @@ describe("Chat SDK published adapter integration", () => {
     const providerConfigs = [
       {
         provider: "slack" as const,
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: { botToken: "xoxb-test", signingSecret: "secret" },
       },
       {
         provider: "github" as const,
-        userName: "paperclip-agent[bot]",
+        userName: "wardmote-agent[bot]",
         credentials: { token: "github_pat_test", webhookSecret: "secret" },
       },
       {
@@ -181,7 +181,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "github",
-        userName: "paperclip-agent[bot]",
+        userName: "wardmote-agent[bot]",
         credentials: { token: "github_pat_test", webhookSecret: "secret" },
       },
     });
@@ -298,7 +298,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: { botToken: "xoxb-test", signingSecret: "secret" },
       },
     });
@@ -443,7 +443,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -516,7 +516,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -609,7 +609,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -845,7 +845,7 @@ describe("Chat SDK published adapter integration", () => {
           persistence: memoryPersistence(),
           providerConfig: {
             provider: "slack",
-            userName: "paperclip-agent",
+            userName: "wardmote-agent",
             credentials: {
               botToken: "xoxb-test",
               botUserId: "U-WARDMOTE-BOT",
@@ -979,7 +979,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -1075,7 +1075,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -1173,7 +1173,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -1254,7 +1254,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -1340,7 +1340,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -1438,7 +1438,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -1572,7 +1572,7 @@ describe("Chat SDK published adapter integration", () => {
         persistence,
         providerConfig: {
           provider: "slack",
-          userName: "paperclip-agent",
+          userName: "wardmote-agent",
           credentials: {
             botToken: "xoxb-test",
             botUserId: "U-WARDMOTE-BOT",
@@ -1647,7 +1647,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -1706,7 +1706,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -1787,7 +1787,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -1858,7 +1858,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-WARDMOTE-BOT",
@@ -1957,7 +1957,7 @@ describe("Chat SDK published adapter integration", () => {
         persistence,
         providerConfig: {
           provider: "slack",
-          userName: "paperclip-agent",
+          userName: "wardmote-agent",
           credentials: {
             botToken: "xoxb-test",
             botUserId: "U-WARDMOTE-BOT",
@@ -2760,7 +2760,7 @@ describe("Chat SDK published adapter integration", () => {
       provider: "slack",
       providerConfig: {
         provider: "slack" as const,
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botToken: "xoxb-test",
           botUserId: "U-BOT",
@@ -2777,7 +2777,7 @@ describe("Chat SDK published adapter integration", () => {
       provider: "github",
       providerConfig: {
         provider: "github" as const,
-        userName: "paperclip-agent[bot]",
+        userName: "wardmote-agent[bot]",
         credentials: {
           botUserId: 1,
           token: "github_pat_test",
@@ -2911,7 +2911,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "github",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: {
           botUserId: 999,
           token: "github_pat_test",
@@ -3031,7 +3031,7 @@ describe("Chat SDK published adapter integration", () => {
       {
         providerConfig: {
           provider: "slack",
-          userName: "paperclip-agent",
+          userName: "wardmote-agent",
           credentials: {
             botToken: "xoxb-never-persist",
             signingSecret: "slack-signing-never-persist",
@@ -3194,7 +3194,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "slack",
-        userName: "paperclip-agent",
+        userName: "wardmote-agent",
         credentials: { botToken: "token", signingSecret: "secret" },
       },
     });

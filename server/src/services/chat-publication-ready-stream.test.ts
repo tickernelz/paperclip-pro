@@ -75,7 +75,7 @@ async function withNativeSlack(
     persistence,
     providerConfig: {
       provider: "slack",
-      userName: "paperclip-agent",
+      userName: "wardmote-agent",
       credentials: {
         botToken: "xoxb-test",
         botUserId: "U-BOT",
@@ -710,7 +710,7 @@ describe("already-approved publication streaming", () => {
         persistence,
         providerConfig: {
           provider: "slack",
-          userName: "paperclip-agent",
+          userName: "wardmote-agent",
           credentials: {
             botToken: "xoxb-test",
             botUserId: "U-BOT",
