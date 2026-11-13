@@ -27,7 +27,7 @@ function readiness() { return { ready: true, binding, root, runtime: { dev: "1",
 function harness() {
   let lease: Record<string, unknown> = { id: "lease", companyId: "company", environmentId: "environment", heartbeatRunId: "run", provider: "daytona", providerLeaseId: "sandbox", status: "active", releasedAt: null,
     metadata: { sandboxId: "sandbox", image: authority.image, reuseLease: false, remoteCwd: "/workspace", workspaceSentinel: { path: "/workspace/.wardmote-runtime/reusable-sandbox-lease.json", token: "fixture-sentinel-token", result: "written", runId: "run", providerLeaseId: "sandbox" } } };
-  const labels: Record<string, string> = { "paperclip-provider": "daytona", "paperclip-company-id": "company", "paperclip-environment-id": "environment", "paperclip-run-id": "run", "paperclip-reuse-lease": "false" };
+  const labels: Record<string, string> = { "wardmote-provider": "daytona", "wardmote-company-id": "company", "wardmote-environment-id": "environment", "wardmote-run-id": "run", "wardmote-reuse-lease": "false" };
   const calls: Array<{ command: string; request: Record<string, any>; timeout: number | undefined }> = [];
   let resolveTerminal!: (v: unknown) => void, rejectTerminal!: (e: unknown) => void;
   const terminal = new Promise((resolve, reject) => { resolveTerminal = resolve; rejectTerminal = reject; });
@@ -88,7 +88,7 @@ describe("remote native lease admission", () => {
     }
   });
   it("rejects wrong ownership labels and never discovers a sandbox by name", async () => {
-    const h = harness(); h.labels["paperclip-run-id"] = "other";
+    const h = harness(); h.labels["wardmote-run-id"] = "other";
     await expect(bindRemoteNativeFixture(h.options)).rejects.toThrow("sandbox_labels"); expect(h.get).toHaveBeenCalledExactlyOnceWith("sandbox"); expect(h.executeCommand).not.toHaveBeenCalled();
   });
   it("waits beyond the old 20s install subdeadline for staging, then installs exactly once before action", async () => {
@@ -607,7 +607,7 @@ describe("actual generated observer state machine", () => {
         metadata: { sandboxId: binding.sandboxId, image: binding.image, reuseLease: false, remoteCwd: binding.remoteCwd,
           workspaceSentinel: { path: binding.remoteCwd+'/.wardmote-runtime/reusable-sandbox-lease.json', token: 'fixture-sentinel-token', result: 'written', runId: binding.runId, providerLeaseId: binding.sandboxId } } };
       let programs;
-      const sandbox = { id: binding.sandboxId, labels: { 'paperclip-provider':'daytona','paperclip-company-id':binding.companyId,'paperclip-environment-id':binding.environmentId,'paperclip-run-id':binding.runId,'paperclip-reuse-lease':'false' },
+      const sandbox = { id: binding.sandboxId, labels: { 'wardmote-provider':'daytona','wardmote-company-id':binding.companyId,'wardmote-environment-id':binding.environmentId,'wardmote-run-id':binding.runId,'wardmote-reuse-lease':'false' },
         process: { async executeCommand(command) {
           const encoded = command.slice(command.lastIndexOf(" '")+2,-1), request = JSON.parse(Buffer.from(encoded,'base64'));
           if(request.op==='runtime-ready') return {exitCode:0,result:JSON.stringify({ok:true,result:ready})};

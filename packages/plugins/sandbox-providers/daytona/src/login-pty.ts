@@ -243,7 +243,7 @@ export async function openDaytonaLoginPtySession(
   let buffered = "";
 
   const handle = await process.createPty({
-    id: `paperclip-login-pty-${randomUUID()}`,
+    id: `wardmote-login-pty-${randomUUID()}`,
     ...(options?.cwd ? { cwd: options.cwd } : {}),
     cols: LOGIN_PTY_COLS,
     rows: LOGIN_PTY_ROWS,

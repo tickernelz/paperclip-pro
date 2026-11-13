@@ -42,7 +42,7 @@ Wait for `Server listening on 127.0.0.1:3100`.
 
 ```bash
 npx @tickernelz/wardmote plugin install \
-  --local /path/to/paperclip/packages/plugins/sandbox-providers/kubernetes \
+  --local /path/to/wardmote/packages/plugins/sandbox-providers/kubernetes \
   --api-base http://127.0.0.1:3100
 ```
 

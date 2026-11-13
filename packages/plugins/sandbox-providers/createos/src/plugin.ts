@@ -10,7 +10,7 @@ import { CreateosCleanupError, execute, shellQuote } from "./execute.js";
 import { syncFiles } from "./file-sync.js";
 import { RETIRED_LEASE_MARKER_FILE } from "./retired-names.js";
 
-const CWD = "/paperclip-workspace";
+const CWD = "/wardmote-workspace";
 const MARKER = `${CWD}/.wardmote-runtime/.wardmote-createos-lease`;
 const RETIRED_MARKER = `${CWD}/.wardmote-runtime/${RETIRED_LEASE_MARKER_FILE}`;
 
@@ -137,9 +137,9 @@ export function createPlugin() {
       try {
         lease = await acquire({ ...params, runId: "probe" });
         const result = await execute(new CreateosClient(parseConfig(params.config)), {
-          ...params, lease, command: "/bin/echo", args: ["paperclip-createos-ready"], cwd: CWD,
+          ...params, lease, command: "/bin/echo", args: ["wardmote-createos-ready"], cwd: CWD,
         }, AbortSignal.timeout(parseConfig(params.config).timeoutMs));
-        if (result.timedOut || result.exitCode !== 0 || !result.stdout.includes("paperclip-createos-ready")) throw new Error("CreateOS command probe failed.");
+        if (result.timedOut || result.exitCode !== 0 || !result.stdout.includes("wardmote-createos-ready")) throw new Error("CreateOS command probe failed.");
         return { ok: true, summary: "CreateOS sandbox creation and command execution succeeded." };
       } catch (error) {
         return { ok: false, summary: error instanceof Error ? error.message : "CreateOS probe failed." };

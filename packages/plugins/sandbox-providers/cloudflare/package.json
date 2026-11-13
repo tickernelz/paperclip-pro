@@ -36,7 +36,7 @@
     "worker": "./dist/worker.js"
   },
   "keywords": [
-    "paperclip",
+    "wardmote",
     "plugin",
     "sandbox",
     "cloudflare"

@@ -498,9 +498,9 @@ describe("openDaytonaDuplexChannelSession", () => {
   it("passes the working directory to the pseudo-terminal", async () => {
     const process = createFakeProcess();
 
-    await openDaytonaDuplexChannelSession(process, GATEWAY, { cwd: "/paperclip-workspace" });
+    await openDaytonaDuplexChannelSession(process, GATEWAY, { cwd: "/wardmote-workspace" });
 
-    expect(process.createOptions?.cwd).toBe("/paperclip-workspace");
+    expect(process.createOptions?.cwd).toBe("/wardmote-workspace");
   });
 
   it("ends the channel with the typed write_error and no raw text when a write rejects", async () => {
@@ -635,11 +635,11 @@ describe("openDaytonaDuplexChannelSession", () => {
 describe("createDaytonaDuplexChannelSessionOpener", () => {
   it("opens a session for the command on each call", async () => {
     const process = createFakeProcess();
-    const opener = createDaytonaDuplexChannelSessionOpener(process, { cwd: "/paperclip-workspace" });
+    const opener = createDaytonaDuplexChannelSessionOpener(process, { cwd: "/wardmote-workspace" });
 
     const session = await opener(GATEWAY);
 
-    expect(process.createOptions?.cwd).toBe("/paperclip-workspace");
+    expect(process.createOptions?.cwd).toBe("/wardmote-workspace");
     expect(process.handle?.inputs[0]).toContain(`exec ${GATEWAY_QUOTED}`);
     expect(typeof session.onData).toBe("function");
     expect(typeof session.write).toBe("function");

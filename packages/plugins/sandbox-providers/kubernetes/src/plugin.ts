@@ -52,7 +52,7 @@ import {
   wardmoteLabels,
 } from "./utils.js";
 
-const WARDMOTE_SERVER_NAMESPACE = "paperclip";
+const WARDMOTE_SERVER_NAMESPACE = "wardmote";
 
 // Name of the ServiceAccount created inside each tenant namespace by ensureTenant.
 const TENANT_SERVICE_ACCOUNT = "wardmote-tenant-sa";

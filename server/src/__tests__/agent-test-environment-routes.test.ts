@@ -216,9 +216,9 @@ describe("agent test-environment route", () => {
         provider: "daytona",
         providerLeaseId: "provider-lease-1",
         metadata: {
-          remoteCwd: "/home/user/paperclip-workspace",
+          remoteCwd: "/home/user/wardmote-workspace",
           sandboxId: "sandbox-1",
-          sandboxName: "paperclip-probe",
+          sandboxName: "wardmote-probe",
           templateKind: "snapshot",
           templateRef: "snapshot-1",
         },
@@ -229,7 +229,7 @@ describe("agent test-environment route", () => {
       },
     });
     mockEnvironmentRuntime.realizeWorkspace.mockResolvedValue({
-      cwd: "/home/user/paperclip-workspace",
+      cwd: "/home/user/wardmote-workspace",
     });
     mockResolveEnvironmentExecutionTarget.mockResolvedValue(null);
     testEnvironmentSpy.mockResolvedValue({
@@ -590,7 +590,7 @@ describe("agent test-environment route", () => {
     mockResolveEnvironmentExecutionTarget.mockResolvedValueOnce({
       kind: "remote",
       transport: "sandbox",
-      remoteCwd: "/home/user/paperclip-workspace",
+      remoteCwd: "/home/user/wardmote-workspace",
       providerKey: "fake-plugin",
       runner: { execute: vi.fn() },
     });
@@ -657,7 +657,7 @@ describe("agent test-environment route", () => {
     expect(res.body.checks[0].detail).toContain("providerLeaseId=provider-lease-1");
     expect(res.body.checks[0].detail).toContain("provider=daytona");
     expect(res.body.checks[0].detail).toContain("sandboxId=sandbox-1");
-    expect(res.body.checks[0].detail).toContain("sandboxName=paperclip-probe");
+    expect(res.body.checks[0].detail).toContain("sandboxName=wardmote-probe");
     expect(res.body.checks[0].detail).toContain("snapshotRef=snapshot-1");
     expect(mockReleaseRunLease).toHaveBeenCalledWith({
       environment: expect.objectContaining({ id: "11111111-1111-4111-8111-111111111111" }),
@@ -703,7 +703,7 @@ describe("agent test-environment route", () => {
     const sandboxExecutionTarget = {
       kind: "remote",
       transport: "sandbox",
-      remoteCwd: "/home/user/paperclip-workspace",
+      remoteCwd: "/home/user/wardmote-workspace",
       providerKey: "fake-plugin",
       runner: { execute: vi.fn() },
     };
@@ -951,7 +951,7 @@ describe("agent test-environment route", () => {
       mockResolveEnvironmentExecutionTarget.mockResolvedValueOnce({
         kind: "remote",
         transport: "sandbox",
-        remoteCwd: "/home/user/paperclip-workspace",
+        remoteCwd: "/home/user/wardmote-workspace",
         providerKey: "fake-plugin",
         runner: { execute: vi.fn() },
       });

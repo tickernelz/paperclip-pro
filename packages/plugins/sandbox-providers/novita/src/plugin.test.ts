@@ -29,7 +29,7 @@ describe("Novita sandbox provider plugin", () => {
       apiKey: null,
       domain: null,
       template: null,
-      requestedCwd: "/home/user/paperclip-workspace",
+      requestedCwd: "/home/user/wardmote-workspace",
       timeoutMs: 300_000,
       requestTimeoutMs: 30_000,
       secure: null,

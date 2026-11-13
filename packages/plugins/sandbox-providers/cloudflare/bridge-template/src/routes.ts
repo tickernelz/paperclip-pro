@@ -205,7 +205,7 @@ export async function handleBridgeRequest(request: Request, env: BridgeEnv): Pro
   const url = new URL(request.url);
   const pathname = url.pathname.replace(/\/+$/, "");
 
-  if (request.method === "GET" && pathname === "/api/paperclip-sandbox/v1/health") {
+  if (request.method === "GET" && pathname === "/api/wardmote-sandbox/v1/health") {
     return toJsonResponse({
       ok: true,
       provider: "cloudflare",
@@ -218,7 +218,7 @@ export async function handleBridgeRequest(request: Request, env: BridgeEnv): Pro
     });
   }
 
-  if (request.method === "POST" && pathname === "/api/paperclip-sandbox/v1/probe") {
+  if (request.method === "POST" && pathname === "/api/wardmote-sandbox/v1/probe") {
     const body = await readJson<ProbeRequestBody>(request);
     const remoteCwd = readString(body.requestedCwd, DEFAULT_REMOTE_CWD);
     const keepAlive = readBoolean(body.keepAlive, false);
@@ -261,7 +261,7 @@ export async function handleBridgeRequest(request: Request, env: BridgeEnv): Pro
     }
   }
 
-  if (request.method === "POST" && pathname === "/api/paperclip-sandbox/v1/leases/acquire") {
+  if (request.method === "POST" && pathname === "/api/wardmote-sandbox/v1/leases/acquire") {
     const body = await readJson<AcquireLeaseRequestBody>(request);
     if (!body.environmentId || !body.runId) {
       return toErrorResponse(400, "invalid_request", "environmentId and runId are required.");
@@ -319,7 +319,7 @@ export async function handleBridgeRequest(request: Request, env: BridgeEnv): Pro
     });
   }
 
-  if (request.method === "POST" && pathname === "/api/paperclip-sandbox/v1/leases/resume") {
+  if (request.method === "POST" && pathname === "/api/wardmote-sandbox/v1/leases/resume") {
     const body = await readJson<ResumeLeaseRequestBody>(request);
     if (!body.providerLeaseId) {
       return toErrorResponse(400, "invalid_request", "providerLeaseId is required.");
@@ -372,7 +372,7 @@ export async function handleBridgeRequest(request: Request, env: BridgeEnv): Pro
     });
   }
 
-  if (request.method === "POST" && pathname === "/api/paperclip-sandbox/v1/leases/release") {
+  if (request.method === "POST" && pathname === "/api/wardmote-sandbox/v1/leases/release") {
     const body = await readJson<ReleaseLeaseRequestBody>(request);
     if (!body.providerLeaseId) {
       return toJsonResponse({ ok: true });
@@ -389,7 +389,7 @@ export async function handleBridgeRequest(request: Request, env: BridgeEnv): Pro
     return toJsonResponse({ ok: true });
   }
 
-  if (request.method === "DELETE" && pathname.startsWith("/api/paperclip-sandbox/v1/leases/")) {
+  if (request.method === "DELETE" && pathname.startsWith("/api/wardmote-sandbox/v1/leases/")) {
     const providerLeaseId = decodeURIComponent(pathname.split("/").pop() ?? "");
     if (providerLeaseId.length === 0) {
       return toErrorResponse(400, "invalid_request", "providerLeaseId path parameter is required.");
@@ -403,7 +403,7 @@ export async function handleBridgeRequest(request: Request, env: BridgeEnv): Pro
     return toJsonResponse({ ok: true });
   }
 
-  if (request.method === "POST" && pathname === "/api/paperclip-sandbox/v1/exec") {
+  if (request.method === "POST" && pathname === "/api/wardmote-sandbox/v1/exec") {
     const body = await readJson<ExecuteRequestBody>(request);
     if (!body.providerLeaseId || !body.command) {
       return toErrorResponse(400, "invalid_request", "providerLeaseId and command are required.");

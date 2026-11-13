@@ -29,7 +29,7 @@ const manifest: WardmotePluginManifestV1 = {
           inCluster: {
             type: "boolean",
             description:
-              "When true, the plugin uses the in-pod ServiceAccount credentials. Requires paperclip-server to be running inside the target cluster.",
+              "When true, the plugin uses the in-pod ServiceAccount credentials. Requires wardmote-server to be running inside the target cluster.",
           },
           kubeconfig: {
             type: "string",
@@ -47,7 +47,7 @@ const manifest: WardmotePluginManifestV1 = {
           },
           imageRegistry: {
             type: "string",
-            description: "Override the default registry for agent runtime images (default: ghcr.io/paperclip-pro).",
+            description: "Override the default registry for agent runtime images (default: ghcr.io/paperclipai).",
           },
           imageAllowList: {
             type: "array",

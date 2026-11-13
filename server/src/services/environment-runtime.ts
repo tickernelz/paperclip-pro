@@ -1596,7 +1596,7 @@ function createSandboxEnvironmentDriver(
       return await input.teardown(input.metadata);
     } catch (error) {
       const previous = readEnvironmentCreationCleanupError({ data: {
-        schema: "paperclip/environment-creation-cleanup/v1", cleanup: input.metadata.failedCreateCleanup,
+        schema: "wardmote/environment-creation-cleanup/v1", cleanup: input.metadata.failedCreateCleanup,
       } });
       const observed = readEnvironmentCreationCleanupError(error);
       const scopeKeys = ["providerLeaseId", "companyId", "environmentId", "runId", "attemptId", "accountFingerprint"] as const;
@@ -2687,7 +2687,7 @@ function createSandboxEnvironmentDriver(
           return receipt;
         }
         const failedCreation = readEnvironmentCreationCleanupError({ data: {
-          schema: "paperclip/environment-creation-cleanup/v1",
+          schema: "wardmote/environment-creation-cleanup/v1",
           cleanup: input.lease.metadata?.failedCreateCleanup,
         } });
         // An environment deletion clears the lease FK. Retain the original

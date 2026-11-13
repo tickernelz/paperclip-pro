@@ -35,7 +35,7 @@
     "worker": "./dist/worker.js"
   },
   "keywords": [
-    "paperclip",
+    "wardmote",
     "plugin",
     "sandbox",
     "e2b"

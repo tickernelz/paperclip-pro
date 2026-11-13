@@ -44,12 +44,12 @@ describe("bridge routes", () => {
     vi.mocked(resolveSandbox).mockResolvedValue(sandbox as never);
 
     const response = await handleBridgeRequest(
-      bridgeRequest("/api/paperclip-sandbox/v1/leases/acquire", {
+      bridgeRequest("/api/wardmote-sandbox/v1/leases/acquire", {
         environmentId: "env-1",
         runId: "run-1",
-        requestedCwd: "/workspace/paperclip",
+        requestedCwd: "/workspace/wardmote",
         sessionStrategy: "named",
-        sessionId: "paperclip",
+        sessionId: "wardmote",
       }),
       { BRIDGE_AUTH_TOKEN: "secret-token", Sandbox: {} as never },
     );
@@ -72,8 +72,8 @@ describe("bridge routes", () => {
       expect(optionsArg).not.toHaveProperty("stdin");
     }
     expect(sessionExec.mock.calls[0]?.[0]).toContain("mkdir");
-    expect(sessionExec.mock.calls[0]?.[0]).toContain("/workspace/paperclip");
-    expect(sessionExec.mock.calls[1]?.[0]).toContain("/workspace/paperclip/.wardmote-lease.json");
+    expect(sessionExec.mock.calls[0]?.[0]).toContain("/workspace/wardmote");
+    expect(sessionExec.mock.calls[1]?.[0]).toContain("/workspace/wardmote/.wardmote-lease.json");
   });
 
   it("checks lease sentinels through the named-session exec target on resume", async () => {
@@ -89,11 +89,11 @@ describe("bridge routes", () => {
     vi.mocked(resolveSandbox).mockResolvedValue(sandbox as never);
 
     const response = await handleBridgeRequest(
-      bridgeRequest("/api/paperclip-sandbox/v1/leases/resume", {
+      bridgeRequest("/api/wardmote-sandbox/v1/leases/resume", {
         providerLeaseId: "pc-run-1-abcd1234",
-        requestedCwd: "/workspace/paperclip",
+        requestedCwd: "/workspace/wardmote",
         sessionStrategy: "named",
-        sessionId: "paperclip",
+        sessionId: "wardmote",
       }),
       { BRIDGE_AUTH_TOKEN: "secret-token", Sandbox: {} as never },
     );
@@ -104,8 +104,8 @@ describe("bridge routes", () => {
     expect(typeof commandArg).toBe("string");
     expect(commandArg).toMatch(/^sh -lc /);
     expect(commandArg).toContain("test -s");
-    expect(commandArg).toContain("/workspace/paperclip/.wardmote-lease.json");
-    expect(commandArg).toContain(`/workspace/paperclip/${RETIRED_LEASE_SENTINEL_FILE}`);
+    expect(commandArg).toContain("/workspace/wardmote/.wardmote-lease.json");
+    expect(commandArg).toContain(`/workspace/wardmote/${RETIRED_LEASE_SENTINEL_FILE}`);
     expect(optionsArg).toEqual({ cwd: "/", timeout: expect.any(Number) });
     expect(optionsArg).not.toHaveProperty("args");
   });
@@ -125,12 +125,12 @@ describe("bridge routes", () => {
     vi.mocked(resolveSandbox).mockResolvedValue(sandbox as never);
 
     const response = await handleBridgeRequest(
-      bridgeRequest("/api/paperclip-sandbox/v1/exec", {
+      bridgeRequest("/api/wardmote-sandbox/v1/exec", {
         providerLeaseId: "pc-run-1-abcd1234",
         command: "echo",
         args: ["hello"],
         sessionStrategy: "named",
-        sessionId: "paperclip",
+        sessionId: "wardmote",
         streamOutput: true,
       }),
       { BRIDGE_AUTH_TOKEN: "secret-token", Sandbox: {} as never },

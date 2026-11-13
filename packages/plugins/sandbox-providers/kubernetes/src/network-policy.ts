@@ -79,7 +79,7 @@ export function buildNetworkPolicyManifests(input: BuildNetworkPolicyInput): Rec
           to: [
             {
               namespaceSelector: { matchLabels: { "kubernetes.io/metadata.name": input.wardmoteServerNamespace } },
-              podSelector: { matchLabels: { app: "paperclip-server" } },
+              podSelector: { matchLabels: { app: "wardmote-server" } },
             },
           ],
           ports: [{ protocol: "TCP", port: 3100 }],

@@ -775,15 +775,15 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     const seeded = await seedReusablePluginSandboxLease();
     await environmentService(db).releaseLease(seeded.reusableLease.id, "expired");
     const attemptId = randomUUID();
-    const providerLeaseId = `paperclip-create-${attemptId}`;
+    const providerLeaseId = `wardmote-create-${attemptId}`;
     const cleanup = {
       providerLeaseId, attemptId, companyId: mode === "foreign scope" ? randomUUID() : seeded.companyId,
       environmentId: mode === "foreign environment" ? randomUUID() : seeded.environment.id,
       runId: mode === "foreign run" ? randomUUID() : seeded.runId,
-      accountFingerprint: mode === "malformed" ? "invalid" : "a".repeat(64), labels: { "paperclip-provider": "fake-plugin" },
+      accountFingerprint: mode === "malformed" ? "invalid" : "a".repeat(64), labels: { "wardmote-provider": "fake-plugin" },
     };
     const acquisitionDiagnostic = { phase: "shell", elapsedMs: 300_000, budgetMs: 300_000 };
-    const data = { schema: "paperclip/environment-creation-cleanup/v1", cleanup,
+    const data = { schema: "wardmote/environment-creation-cleanup/v1", cleanup,
       ...(mode === "old worker" ? {} : { acquisitionDiagnostic: mode === "invalid diagnostic"
         ? { ...acquisitionDiagnostic, phase: "private-command" } : acquisitionDiagnostic }),
     };
@@ -848,13 +848,13 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
       const seeded = await seedReusablePluginSandboxLease();
       await environmentService(db).releaseLease(seeded.reusableLease.id, "expired");
       const cleanup = {
-        providerLeaseId: `paperclip-create-${randomUUID()}`, attemptId: randomUUID(),
+        providerLeaseId: `wardmote-create-${randomUUID()}`, attemptId: randomUUID(),
         companyId: seeded.companyId, environmentId: seeded.environment.id, runId: seeded.runId,
-        accountFingerprint: "a".repeat(64), labels: { "paperclip-provider": "fake-plugin" },
+        accountFingerprint: "a".repeat(64), labels: { "wardmote-provider": "fake-plugin" },
       };
       const observed = { ...cleanup, observedProviderLeaseId: "verified-provider-id" };
       const failure = Object.assign(new Error("Creation uncertain"), {
-        data: { schema: "paperclip/environment-creation-cleanup/v1", cleanup },
+        data: { schema: "wardmote/environment-creation-cleanup/v1", cleanup },
       });
       let injected = false;
       let deleted = false;
@@ -871,7 +871,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
           if (!injected && fault === "foreign observation") {
             injected = true;
             throw Object.assign(new Error("Foreign observation"), {
-              data: { schema: "paperclip/environment-creation-cleanup/v1", cleanup: { ...observed, companyId: "another-company" } },
+              data: { schema: "wardmote/environment-creation-cleanup/v1", cleanup: { ...observed, companyId: "another-company" } },
             });
           }
           if (!injected && fault === "journal write failed") {
@@ -879,7 +879,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
             vi.spyOn(db, "update").mockImplementationOnce(() => { throw new Error("Database unavailable"); });
           }
           throw Object.assign(new Error("Persist observed sandbox identity before cleanup"), {
-            data: { schema: "paperclip/environment-creation-cleanup/v1", cleanup: observed },
+            data: { schema: "wardmote/environment-creation-cleanup/v1", cleanup: observed },
           });
         }
         const rows = await db.select().from(environmentLeases).where(eq(environmentLeases.providerLeaseId, cleanup.providerLeaseId));

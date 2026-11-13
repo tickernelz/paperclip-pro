@@ -44,7 +44,7 @@ const manifest: WardmotePluginManifestV1 = {
           },
           requestedCwd: {
             type: "string",
-            default: "/home/user/paperclip-workspace",
+            default: "/home/user/wardmote-workspace",
             description: "Workspace directory to create inside the sandbox lease.",
           },
           timeoutMs: {
