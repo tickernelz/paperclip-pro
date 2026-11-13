@@ -345,7 +345,7 @@ describe("qualified ACPX runtime sidecar", () => {
       expect(tools.size).toBe(0);
       expect(emitted).toEqual([]);
       expect(wire.writes).toEqual([]);
-      expect(wire.errors).toEqual(["[paperclip-acpx-sidecar] output_frame_too_large\n"]);
+      expect(wire.errors).toEqual(["[wardmote-acpx-sidecar] output_frame_too_large\n"]);
       expect(wire.sequence()).toBe(0);
       expect(wire.emit("runtime.diagnostic", { code: "bounded", message: "rejected" })).toBe(true);
       expect(JSON.parse(wire.writes[0]!)).toMatchObject({ sequence: 1, eventType: "runtime.diagnostic" });

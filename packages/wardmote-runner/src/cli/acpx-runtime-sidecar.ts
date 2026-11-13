@@ -952,9 +952,9 @@ function rejectTurnWaiters(terminalTurnId: string, message: string): void {
 }
 
 type BoundedRuntimeToolEvent = AcpRuntimeEvent & {
-  paperclipBoundedTool: true;
+  wardmoteBoundedTool: true;
   inputUpdated: boolean;
-  paperclipOutput: Record<string, unknown>;
+  wardmoteOutput: Record<string, unknown>;
 };
 
 function boundRuntimeEventForNormalization(
@@ -982,8 +982,8 @@ function boundRuntimeEventForNormalization(
     tag: boundedOptionalText(event.tag, "", 160),
     // Keep only whether this update carried input; rawInput is intentionally dropped.
     inputUpdated: Object.prototype.hasOwnProperty.call(event, "rawInput") && event.rawInput !== undefined,
-    paperclipBoundedTool: true,
-    paperclipOutput: safeOutput(event.rawOutput),
+    wardmoteBoundedTool: true,
+    wardmoteOutput: safeOutput(event.rawOutput),
   } as BoundedRuntimeToolEvent;
 }
 
@@ -1063,7 +1063,7 @@ function sanitizeRuntimeEvent(event: PiProjectedMessageEvent<AcpRuntimeEvent>): 
       title: toolTitle,
       text: boundedOptionalText(event.text, "", 4_000) || null,
       // Preserve only the presence bit; rawInput itself never crosses the sidecar boundary.
-      inputUpdated: boundedTool.paperclipBoundedTool === true
+      inputUpdated: boundedTool.wardmoteBoundedTool === true
         ? boundedTool.inputUpdated
         : Object.prototype.hasOwnProperty.call(event, "rawInput") && event.rawInput !== undefined,
       ...toolClassification,
@@ -1072,7 +1072,7 @@ function sanitizeRuntimeEvent(event: PiProjectedMessageEvent<AcpRuntimeEvent>): 
       {
         ...toolCallIdentity,
         locations:
-          boundedTool.paperclipBoundedTool === true
+          boundedTool.wardmoteBoundedTool === true
             ? (event.locations ?? [])
             : safeAcpxLocations(
                 event.locations,
@@ -1080,8 +1080,8 @@ function sanitizeRuntimeEvent(event: PiProjectedMessageEvent<AcpRuntimeEvent>): 
                 event.kind,
                 toolTitle,
               ),
-        ...(boundedTool.paperclipBoundedTool === true
-          ? boundedTool.paperclipOutput
+        ...(boundedTool.wardmoteBoundedTool === true
+          ? boundedTool.wardmoteOutput
           : safeOutput(event.rawOutput)),
       },
       128 * 1024,
@@ -1375,7 +1375,7 @@ function emit(
 
 function diagnostic(code: string, message: string): void {
   const safe = safeText(message);
-  process.stderr.write(`[paperclip-acpx-sidecar] ${code}: ${safe}\n`);
+  process.stderr.write(`[wardmote-acpx-sidecar] ${code}: ${safe}\n`);
   emit("runtime.diagnostic", { code: code.slice(0, 160), message: safe });
 }
 
@@ -1397,7 +1397,7 @@ function response(
 function writeFrame(value: AcpxSidecarEvent | AcpxSidecarResponse): boolean {
   const line = stringifyAcpxSidecarFrame(value);
   if (Buffer.byteLength(line) > ACPX_SIDECAR_MAX_FRAME_BYTES) {
-    process.stderr.write("[paperclip-acpx-sidecar] output_frame_too_large\n");
+    process.stderr.write("[wardmote-acpx-sidecar] output_frame_too_large\n");
     return false;
   }
   process.stdout.write(`${line}\n`);

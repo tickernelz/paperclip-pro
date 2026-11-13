@@ -260,7 +260,7 @@ async function handleRequest(
     writeRpc(response, id, {
       protocolVersion: "2025-03-26",
       capabilities: { tools: { listChanged: false } },
-      serverInfo: { name: "paperclip-runner", version: "1" },
+      serverInfo: { name: "wardmote-runner", version: "1" },
     });
     return;
   }
