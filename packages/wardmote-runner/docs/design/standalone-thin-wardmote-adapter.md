@@ -966,7 +966,7 @@ packages/wardmote-runner/spec/fixtures/status-authority-sdk.json
 packages/wardmote-runner/src/backends/codex-native-backend.ts
 packages/wardmote-runner/src/backends/harness-driver-backend.test.ts
 packages/wardmote-runner/src/backends/harness-driver-backend.ts
-packages/wardmote-runner/src/cli/standalone-paperclip.ts
+packages/wardmote-runner/src/cli/standalone-wardmote.ts
 packages/wardmote-runner/src/conformance/control-plane-port.test.ts
 packages/wardmote-runner/src/conformance/control-plane-port.ts
 packages/wardmote-runner/src/contracts/control-plane-port.ts

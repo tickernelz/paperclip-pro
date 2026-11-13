@@ -96,7 +96,7 @@ The source manifests describe each measured working tree. The latest full matrix
 
 This proves the selected local public MCP workflows across three models. It does not prove hosted newcomer provisioning, store installation, desktop chat UI interoperability, or production deployment. Cloud/instance migrations, feature opt-ins, broker secrets, stable HTTPS packaging and hosted acceptance remain release gates. External-agent leases and third-party tool gateways remain later releases.
 
-The [implementation plan](2026-09-30-paperclip-public-mcp-and-plugins.md) retains initial broad-run failures and the current PR qualification record. Paid success does not substitute for repository checks, review, or hosted acceptance.
+The [implementation plan](2026-09-30-public-mcp-and-plugins.md) retains initial broad-run failures and the current PR qualification record. Paid success does not substitute for repository checks, review, or hosted acceptance.
 
 ## Reproduce
 

@@ -2049,7 +2049,7 @@ existing domain authorization and scheduling; OAuth does not grant agent
 identity, native run ownership, approval decisions or third-party credentials.
 See [Public MCP](public-mcp.md) for the implemented instance-side boundary,
 configuration, plugin packages and outstanding hosted release gates. The
-[delivery plan](plans/2026-09-30-paperclip-public-mcp-and-plugins.md) separates
+[delivery plan](plans/2026-09-30-public-mcp-and-plugins.md) separates
 external agent participation and granted third-party tools into later releases.
 
 The experimental OpenAI Dot Runner provider uses a separate `/mcp/runner`

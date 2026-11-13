@@ -64,7 +64,7 @@ export function createRunnerE2EServerStopper(options: {
     }
     if (restarting) throw new Error("Controller restart did not retire non-durable children within its graceful deadline");
     if (!state.escalationLogged) {
-      options.log(`\nPaperclip did not stop within ${options.gracefulTimeoutMs}ms; sending SIGKILL\n`);
+      options.log(`\nWardmote did not stop within ${options.gracefulTimeoutMs}ms; sending SIGKILL\n`);
       state.escalationLogged = true;
     }
     if (runnerE2EServerDetached) await state.owner.signal("SIGKILL");

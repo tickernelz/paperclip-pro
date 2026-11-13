@@ -1,7 +1,7 @@
 # Stock harness with Wardmote
 
 This suite covers the instruction reductions tracked in the
-[working checklist](../../doc/plans/2026-10-02-stock-harness-paperclip-checklist.md).
+[working checklist](../../doc/plans/2026-10-02-stock-harness-checklist.md).
 Existing context-integrity and chat evals supplied a custom QA instruction
 bundle. Their passing results therefore did not qualify a hire with the tiny
 production default. The new suite omits that fixture bundle and lets the public

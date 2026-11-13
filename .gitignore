@@ -87,7 +87,7 @@ test-results/
 .lifecycle-baseline/
 
 # Local native Runner test/session state
-.paperclip-runner-prp/
+.wardmote-runner-prp/
 apps/local-browser/firefox/.amo-upload-uuid
 ui/public/downloads/.staging
 __pycache__/
