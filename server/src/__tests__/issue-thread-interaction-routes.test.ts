@@ -624,7 +624,7 @@ describe("issue thread interaction routes", () => {
     expect(res.status).toBe(201);
     expect(mockInteractionService.create).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
       payload: expect.objectContaining({ questionSet, questions: [
-        expect.objectContaining({ id: "repo", options: [{ id: "paperclip_text_answer", label: "Type an answer", freeText: true }] }),
+        expect.objectContaining({ id: "repo", options: [{ id: "wardmote_text_answer", label: "Type an answer", freeText: true }] }),
         expect.objectContaining({ id: "scope", options: questionSet.questions[1].options }),
       ] }),
     }), expect.anything());
