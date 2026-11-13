@@ -25,7 +25,7 @@ export function installConnectionGuidanceFixtures(client: QueryClient, provider:
     healthStatus: "ok", healthMessage: null, requiresReauthorization: false,
     createdByUserId: "user-storybook", createdByAgentId: null,
     agentInstructions: app.agentInstructions ? { ...defaultConnectionAgentInstructions(app.agentInstructions)!, enabled: !options.disabled } : null,
-    config: { methodConfig: { workspaceId: options.missingWorkspace ? "" : "paperclip-acme" }, sourceTemplateKey: app.slug, connectionMethodKey: app.methods[0]?.key, url: app.methods[0]?.defaults?.serverUrl },
+    config: { methodConfig: { workspaceId: options.missingWorkspace ? "" : "wardmote-acme" }, sourceTemplateKey: app.slug, connectionMethodKey: app.methods[0]?.key, url: app.methods[0]?.defaults?.serverUrl },
     createdAt: timestamp, updatedAt: timestamp,
   };
   const application = { id: "guidance-app", companyId: company, applicationKey: app.slug, name: app.name, status: "active", metadata: { sourceTemplateKey: app.slug } };

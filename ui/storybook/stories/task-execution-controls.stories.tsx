@@ -108,7 +108,7 @@ function TaskExecutionExample({
   const [error, setError] = useState<string | null>(null);
   const [messages, setMessages] = useState<string[]>([]);
   const [draftKey] = useState(() => {
-    const key = "paperclip:storybook:composer-stop";
+    const key = "wardmote:storybook:composer-stop";
     clearDraft(key);
     if (draft) saveDraft(key, draft);
     return key;

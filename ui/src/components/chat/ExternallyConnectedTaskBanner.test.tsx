@@ -599,7 +599,7 @@ describe("ExternallyConnectedTaskBanner publication truth", () => {
         endpointId: "endpoint-github",
         provider,
         botLabel: "Maya",
-        externalLabel: "paperclipai/paperclip#42",
+        externalLabel: "tickernelz/wardmote#42",
         externalUrl: "https://github.com/tickernelz/wardmote/issues/42",
         conversationId: "conversation-github",
         publicationState: null,

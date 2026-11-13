@@ -39,10 +39,10 @@ const MANAGED_FOLDER = "/var/wardmote/checkouts/test-project";
 function makeCodebase(overrides: Partial<ProjectCodebase> = {}): ProjectCodebase {
   return {
     workspaceId: "workspace-1",
-    repoUrl: "https://github.com/paperclipai/paperclip",
+    repoUrl: "https://github.com/tickernelz/wardmote",
     repoRef: "master",
     defaultRef: "origin/master",
-    repoName: "paperclipai/paperclip",
+    repoName: "tickernelz/wardmote",
     localFolder: LOCAL_FOLDER,
     managedFolder: MANAGED_FOLDER,
     effectiveLocalFolder: LOCAL_FOLDER,

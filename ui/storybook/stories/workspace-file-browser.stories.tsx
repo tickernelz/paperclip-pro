@@ -179,7 +179,7 @@ function Placement() {
               mode: "isolated_workspace",
               status: "active",
               branchName: "PAP-1953-plan-a-file-viewer",
-              cwd: "/srv/paperclip/.../worktrees/PAP-1953",
+              cwd: "/srv/wardmote/.../worktrees/PAP-1953",
               repoUrl: null,
               projectWorkspaceId: "pw-1",
               name: "PAP-1953",

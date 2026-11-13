@@ -320,7 +320,7 @@ function VercelConnectProvenanceHost() {
           externalCredential: {
             provider: "vercel_connect",
             connectorId: "scl_storybook",
-            connectorUid: "notion-paperclip",
+            connectorUid: "notion-wardmote",
             service: "notion",
             connectorType: "oauth",
             principalMode: "user",

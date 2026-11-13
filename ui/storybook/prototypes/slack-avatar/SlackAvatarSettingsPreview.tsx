@@ -52,7 +52,7 @@ export function SlackAvatarSettingsPreview({ initialInstructions = "", failFirst
             </section>
             <SlackAvatarSettings
               agentName="CEO"
-              appName="ceo-paperclip"
+              appName="ceo-wardmote"
               avatarUrl={avatar}
             />
             <ChatCommunicationInstructions value={instructions} onSave={async (next) => {

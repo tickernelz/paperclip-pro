@@ -103,7 +103,7 @@ Tooling: lean on [/react-perf-optimizer](skill://skill-react-perf?s=react-perf-o
 const shouldRun = issue.status === "in_progress" && issue.companyId === company.id;
 \`\`\`
 
-See [the implementation notes](https://github.com/paperclipai/paperclip).`;
+See [the implementation notes](https://github.com/tickernelz/wardmote).`;
 
 const editorMentions: MentionOption[] = [
   { id: "agent-codex", name: "CodexCoder", kind: "agent", agentId: "agent-codex", agentIcon: "code" },
@@ -259,7 +259,7 @@ const routineVariables: RoutineVariable[] = [
     name: "repo",
     label: "Repository",
     type: "text",
-    defaultValue: "paperclipai/paperclip",
+    defaultValue: "tickernelz/wardmote",
     required: true,
     options: [],
   },
@@ -309,13 +309,13 @@ const storybookProject: Project = {
   executionWorkspacePolicy: null,
   codebase: {
     workspaceId: "workspace-board-ui",
-    repoUrl: "https://github.com/paperclipai/paperclip",
+    repoUrl: "https://github.com/tickernelz/wardmote",
     repoRef: "master",
     defaultRef: "master",
-    repoName: "paperclip",
-    localFolder: "/Users/dotta/paperclip",
-    managedFolder: "paperclip",
-    effectiveLocalFolder: "/Users/dotta/paperclip",
+    repoName: "wardmote",
+    localFolder: "/Users/dotta/wardmote",
+    managedFolder: "wardmote",
+    effectiveLocalFolder: "/Users/dotta/wardmote",
     origin: "local_folder",
   },
   workspaces: [],
@@ -738,7 +738,7 @@ export const RoutineRunVariablesDialogOpen: Story = {
 };
 
 const foldCurtainLongMarkdown = [
-  "# paperclip-bench",
+  "# wardmote-bench",
   "",
   "Ship criteria for the benchmark harness — these notes are intentionally lengthy so the fold-curtain clips them.",
   "",

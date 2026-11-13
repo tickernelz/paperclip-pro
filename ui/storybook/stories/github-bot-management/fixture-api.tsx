@@ -40,7 +40,7 @@ export function FixtureApi({
     client.setQueryData(["project-repositories", endpoint.companyId], {
       repositories: [
         { id: "100", fullName: "acme/web", ownerType: "organization", url: "https://github.com/acme/web", connections: ["GitHub"] },
-        { id: "101", fullName: "paperclipai/api", ownerType: "organization", url: "https://github.com/paperclipai/api", connections: ["GitHub"] },
+        { id: "101", fullName: "tickernelz/api", ownerType: "organization", url: "https://github.com/tickernelz/api", connections: ["GitHub"] },
         { id: "102", fullName: "mayacoder/site", ownerType: "personal", url: "https://github.com/mayacoder/site", connections: ["GitHub"] },
       ], connectionCount: 1, failedConnectionCount: 0,
     });

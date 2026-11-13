@@ -21,7 +21,7 @@ export const REF = "nova";
 
 export const library = [
   [
-    "paperclip",
+    "wardmote",
     "Wardmote",
     "Coordinate tasks, report progress, and work with your team.",
   ],
@@ -116,14 +116,14 @@ export function createSettingsFixtures(
       grants: [],
     },
   };
-  let desiredSkills = ["paperclip", "design-guide"];
+  let desiredSkills = ["wardmote", "design-guide"];
   const files: Record<string, string> = {
     "AGENTS.md":
       "# Nova\n\nYou are a product engineer. Build interfaces that are clear, useful, and reliable.\n\n## Working style\n\n- Read the task and relevant code before making changes.\n- Keep changes focused and preserve existing behavior.\n- Test the experience in the browser before handing it back.\n\nRead [workflow.md](workflow.md) for your delivery checklist.\n",
     "workflow.md":
       "# Delivery checklist\n\n1. Understand the user’s goal.\n2. Make a focused change.\n3. Verify the result.\n4. Explain what changed and how it was tested.\n",
     "references/product.md":
-      "# Product context\n\nPaperclip helps people coordinate teams of agents. Prefer simple workflows with visible progress.\n",
+      "# Product context\n\nWardmote helps people coordinate teams of agents. Prefer simple workflows with visible progress.\n",
   };
   let bundleMode: "managed" | "external" = "managed";
   let entryFile = "AGENTS.md";

@@ -167,7 +167,7 @@ const scenarios: Array<{
       tool(
         "mcp",
         "mcp__github__get_pull_request",
-        "paperclipai/paperclip #13255",
+        "tickernelz/wardmote #13255",
       ),
     ],
   },

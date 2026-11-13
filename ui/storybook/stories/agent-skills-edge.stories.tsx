@@ -61,7 +61,7 @@ function libSkill(key: string, name: string, description: string): CompanySkillL
 }
 
 const library: CompanySkillListItem[] = [
-  libSkill("paperclip", "Wardmote", "Coordination skill: heartbeats, checkout, comments, and routine API patterns."),
+  libSkill("wardmote", "Wardmote", "Coordination skill: heartbeats, checkout, comments, and routine API patterns."),
   libSkill("design-guide", "Design guide", "Wardmote UI design system reference: tokens, typography, status colors."),
 ];
 
@@ -103,12 +103,12 @@ function staleSnapshot(): AgentSkillSnapshot {
     adapterType: "acpx_local",
     supported: true,
     mode: "ephemeral",
-    desiredSkills: ["paperclip", "legacy-retired-skill"],
+    desiredSkills: ["wardmote", "legacy-retired-skill"],
     warnings: [],
     entries: [
       {
-        key: "paperclip",
-        runtimeName: "paperclip",
+        key: "wardmote",
+        runtimeName: "wardmote",
         desired: true,
         managed: true,
         state: "configured",
@@ -130,12 +130,12 @@ function detectedSnapshot(): AgentSkillSnapshot {
     adapterType: "acpx_local",
     supported: true,
     mode: "ephemeral",
-    desiredSkills: ["paperclip"],
+    desiredSkills: ["wardmote"],
     warnings: [],
     entries: [
       {
-        key: "paperclip",
-        runtimeName: "paperclip",
+        key: "wardmote",
+        runtimeName: "wardmote",
         desired: true,
         managed: true,
         state: "configured",
@@ -204,7 +204,7 @@ export const StaleWarning: StoryObj = {
       title="Stale desired-skill warning"
       subtitle="An enabled skill key that no longer exists in the company library renders as a compact, removable warning row."
     >
-      <EdgeState agent={buildAgent("agent-stale", ["paperclip", "legacy-retired-skill"])} snapshot={staleSnapshot()} />
+      <EdgeState agent={buildAgent("agent-stale", ["wardmote", "legacy-retired-skill"])} snapshot={staleSnapshot()} />
     </StoryFrame>
   ),
 };
@@ -216,7 +216,7 @@ export const DetectedAdapter: StoryObj = {
       title="Detected on adapter (read-only)"
       subtitle="A user-installed skill outside Wardmote's management shows in a collapsed, read-only section with a lock icon."
     >
-      <EdgeState agent={buildAgent("agent-detected", ["paperclip"])} snapshot={detectedSnapshot()} />
+      <EdgeState agent={buildAgent("agent-detected", ["wardmote"])} snapshot={detectedSnapshot()} />
     </StoryFrame>
   ),
 };

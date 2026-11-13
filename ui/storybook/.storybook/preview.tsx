@@ -329,8 +329,8 @@ function installStorybookApiFixtures() {
     if (/^\/api\/companies\/[^/]+\/ai-connections\/local\/attempts$/.test(url.pathname)) {
       const body = typeof init?.body === "string" ? JSON.parse(init.body) : {};
       return Response.json({ sessionId: "local-storybook", expiresAt: new Date(Date.now() + 1_800_000).toISOString(), command: body.provider === "anthropic"
-        ? "CLAUDE_CONFIG_DIR='/paperclip/login' claude auth login"
-        : "CODEX_HOME='/paperclip/login' codex login --device-auth" });
+        ? "CLAUDE_CONFIG_DIR='/wardmote/login' claude auth login"
+        : "CODEX_HOME='/wardmote/login' codex login --device-auth" });
     }
     if (/^\/api\/companies\/[^/]+\/ai-connections\/local\/check$/.test(url.pathname)) {
       return Response.json({ status: onboardingFixtureState.localLoginStatus });

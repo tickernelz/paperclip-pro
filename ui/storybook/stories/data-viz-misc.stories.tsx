@@ -185,7 +185,7 @@ const kanbanIssues: Issue[] = [
 
 const packageFiles: Record<string, string> = {
   "COMPANY.md": "---\nname: Wardmote Storybook\nkind: company\n---\nFixture company package for UI review.",
-  "agents/codexcoder/AGENTS.md": "---\nname: CodexCoder\nskills:\n  - frontend-design\n  - paperclip\n---\nShips product UI and verifies changes.",
+  "agents/codexcoder/AGENTS.md": "---\nname: CodexCoder\nskills:\n  - frontend-design\n  - wardmote\n---\nShips product UI and verifies changes.",
   "agents/qachecker/AGENTS.md": "---\nname: QAChecker\nskills:\n  - web-design-guidelines\n---\nReviews browser behavior and acceptance criteria.",
   "projects/board-ui/PROJECT.md": "---\ntitle: Board UI\nstatus: in_progress\n---\nStorybook and operator control-plane surfaces.",
   "tasks/PAP-1641.md": "---\ntitle: Create super-detailed storybooks\npriority: high\n---\nParent issue for Storybook coverage.",
@@ -531,7 +531,7 @@ function CompanyPatternIconMatrix() {
 function AsciiArtAnimationDemo({ loading = false }: { loading?: boolean }) {
   return (
     <StoryShell>
-      <Section eyebrow="AsciiArtAnimation" title={loading ? "Loading art surface" : "Animated ASCII paperclip field"}>
+      <Section eyebrow="AsciiArtAnimation" title={loading ? "Loading art surface" : "Animated ASCII clip field"}>
         <div className="h-[360px] overflow-hidden rounded-xl border border-line bg-bg">
           {loading ? (
             <div className="flex h-full items-center justify-center gap-3 text-sm text-ink-3">

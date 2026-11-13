@@ -107,7 +107,7 @@ function createSystemEvent(overrides: Partial<IssueTimelineEvent>): IssueTimelin
     id: "event-default",
     createdAt: new Date("2026-04-20T14:00:00.000Z"),
     actorType: "system",
-    actorId: "paperclip",
+    actorId: "wardmote",
     statusChange: {
       from: "todo",
       to: "in_progress",
@@ -245,7 +245,7 @@ const commentTimelineEvents: IssueTimelineEvent[] = [
     id: "event-system-checkout",
     createdAt: new Date("2026-04-20T13:04:00.000Z"),
     actorType: "system",
-    actorId: "paperclip",
+    actorId: "wardmote",
     statusChange: {
       from: "todo",
       to: "in_progress",
@@ -442,7 +442,7 @@ const issueTimelineEvents: IssueTimelineEvent[] = [
     id: "event-issue-checkout",
     createdAt: new Date("2026-04-20T13:42:00.000Z"),
     actorType: "system",
-    actorId: "paperclip",
+    actorId: "wardmote",
     statusChange: {
       from: "todo",
       to: "in_progress",
@@ -825,7 +825,7 @@ function IssueChatMatrix() {
           </ScenarioCard>
           <ScenarioCard
             title="Planning mode composer"
-            description="Issue is in planning mode. The composer turns amber and surfaces a Planning chip next to the paperclip — clicking it stages a Standard submission without immediately changing the issue mode."
+            description="Issue is in planning mode. The composer turns amber and surfaces a Planning chip next to the attachment button — clicking it stages a Standard submission without immediately changing the issue mode."
           >
             <IssueChatThread
               comments={[]}
