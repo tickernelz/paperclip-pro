@@ -1,6 +1,6 @@
 # Installing Wardmote
 
-> **Fork notice.** This repository is [`tickernelz/wardmote`](https://github.com/tickernelz/wardmote), a hard fork of `paperclipai/paperclip` at `7b7c4d417`. It publishes its own packages under the `@tickernelz` npm scope. `https://paperclip.ing/install.sh` installs **upstream Wardmote**, not this fork; ignore any vanity-installer instruction that survives from upstream.
+> **Fork notice.** This repository is [`tickernelz/wardmote`](https://github.com/tickernelz/wardmote), a hard fork of `paperclipai/paperclip` at `7b7c4d417`. It publishes its own packages under the `@tickernelz` npm scope. `https://paperclip.ing/install.sh` installs **upstream Paperclip**, not this fork; ignore any vanity-installer instruction that survives from upstream.
 
 Wardmote supports a managed installation from the published npm packages
 and a development installation from a git ref. The npm installation is the

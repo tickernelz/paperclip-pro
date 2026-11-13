@@ -308,7 +308,7 @@ PLUS: just dealing with the excellent PRs we have sitting in our inbox.
 
 ## PRESS
 
-I've been doing my part to spread the word about Wardmote
+I've been doing my part to spread the word about Paperclip
 
 * We talked to the incredible [Andrew Warner of Mixergy Fame](https://x.com/dotta/status/2039087507514507407)
 * We gave a tutorial with the [inimitable Greg Isenberg](https://x.com/dotta/status/2037279902445994345)
@@ -350,7 +350,7 @@ This release has *tons* of quality of life improvements around speed, performanc
 
 :thread: Issue chat threads now are a conversation more than comments
 :police_officer: Execution policies like **Reviewer** and **Approver** are now first-class in the harness (e.g. enforce that QA *must* review a task)
-:no_smoking: Blocker dependencies - first-class "wake on blocker resolved" which means now you can have "task graphs" that depend on one another and it's enforced by Wardmote
+:no_smoking: Blocker dependencies - first-class "wake on blocker resolved" which means now you can have "task graphs" that depend on one another and it's enforced by Paperclip
 :woman_feeding_baby: Parent-child tasks - better support for sub-tasks all around, which makes it much easier to organize your work
 
 And then a million fixes around ux, details, keyboard shortcuts, bug fixes, security fixes, etc. Really you should read the [full release notes here](https://github.com/paperclipai/paperclip/releases/tag/v2026.416.0)
@@ -431,7 +431,7 @@ Thank you to everyone who contributed to this release!
 ## What's on my mind
 
 * **Documentation & Blog posts** - I've fallen behind on the docs but aron has done a good job here - we'll be setting up Clips to help maintain these
-* **Paperclip Cloud** - will be a critical unlock for us, but even the shared team story needs developed more - *where should the work be done* and *where are the outputs stored* and *how do we surface them to users*? Each of these questions are a core Wardmote service that needs developed
+* **Paperclip Cloud** - will be a critical unlock for us, but even the shared team story needs developed more - *where should the work be done* and *where are the outputs stored* and *how do we surface them to users*? Each of these questions are a core Paperclip service that needs developed
 * **Wardmote Bench** - In the vein of SWE-Bench I've started an internal benchmark for Wardmote - we have to be able to measure that our changes are improving the system and not regressing
 * **Wardmote Connections Store** - connecting to Github, Slack, Google Docs, and the hundreds of other services we use every day should be easy, secure, and configurable per agent and team
 

@@ -554,7 +554,7 @@
     ["packages/plugins/sandbox-providers/exe-dev/src/plugin.test.ts",24,"belum-diganti"],
     ["packages/plugins/sandbox-providers/exe-dev/src/plugin.ts",1,"belum-diganti"],
     ["packages/plugins/sandbox-providers/kubernetes/README.md",3,"belum-diganti"],
-    ["packages/plugins/sandbox-providers/kubernetes/SMOKE.md",6,"belum-diganti"],
+    ["packages/plugins/sandbox-providers/kubernetes/SMOKE.md",2,"belum-diganti"],
     ["packages/plugins/sandbox-providers/kubernetes/package.json",1,"belum-diganti"],
     ["packages/plugins/sandbox-providers/kubernetes/src/adapter-defaults.ts",6,"belum-diganti"],
     ["packages/plugins/sandbox-providers/kubernetes/src/cilium-network-policy.ts",1,"belum-diganti"],
