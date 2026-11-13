@@ -214,7 +214,7 @@ describe("company decision service", () => {
   });
   it("recovers an interrupted dispatch once without paying for a retry", async () => {
     const f = await fixture();
-    const [invocation] = await db.insert(decisionInvocations).values({ companyId: f.companyId, feature: "test.background", actorType: "system", actorId: "paperclip-decisions",
+    const [invocation] = await db.insert(decisionInvocations).values({ companyId: f.companyId, feature: "test.background", actorType: "system", actorId: "wardmote-decisions",
       ...f.binding, provider: "openai", model: "gpt-6-luna", questionTypes: ["boolean"], startedAt: new Date(Date.now() - 180_000) }).returning();
     await db.insert(budgetReservations).values({ companyId: f.companyId, decisionInvocationId: invocation.id, amountCents: "0.01", providerStartedAt: invocation.startedAt });
     await Promise.all([f.service.recoverInterrupted(), f.service.recoverInterrupted()]);

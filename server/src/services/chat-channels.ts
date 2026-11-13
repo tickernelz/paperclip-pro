@@ -2838,7 +2838,7 @@ function slackCommandForAgent(agentName: string, publicId: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "")
     .slice(0, 6);
-  return `/${slug || "paperclip"}-${suffix || "agent"}`;
+  return `/${slug || "wardmote"}-${suffix || "agent"}`;
 }
 
 export function createChatSdkStatePersistence(db: Db): ChatSdkStatePersistence {
@@ -33562,7 +33562,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
   function discordMarkdownAttachment(text: string): FileUpload {
     return {
       data: Buffer.from(text, "utf8"),
-      filename: "paperclip-response.md",
+      filename: "wardmote-response.md",
       mimeType: "text/markdown; charset=utf-8",
     };
   }
@@ -33572,7 +33572,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     return {
       data,
       mimeType: "text/markdown; charset=utf-8",
-      name: "paperclip-response.md",
+      name: "wardmote-response.md",
       size: data.byteLength,
       type: "file",
     };
