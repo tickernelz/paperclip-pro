@@ -2,7 +2,7 @@
 
 ## Current integration — 2026-10-08
 
-The experimental Runner admits **Pi profile 28** (`sha256:33fb5d42fe74fe1858057671030b41812081be5b79a0e4c752968ad228fcb797`) and
+The experimental Runner admits **Pi profile 29** (`sha256:5636781fd7ac18f218ea9d8d631c08fb2d6b5e4c7ec33abbeb70a40317ea4ed6`) and
 **Cursor profile 16**. Copilot remains pending at **profile 27**. Legacy
 `pi_local` is unchanged. Pi accepts any explicit caller-selected provider/model
 ID and requires native acknowledgement; qualification models are examples, not

@@ -111,7 +111,7 @@ describe("ACPX recovery identity", () => {
     expect(fixture.binding.runtimeRoot).toContain("session-1-");
     expect(fixture.binding.workspaceDigest).toMatch(/^sha256:[0-9a-f]{64}$/);
     expect(fixture.binding.profileSessionKey).toMatch(
-      /^paperclip-[0-9a-f]{64}$/,
+      /^wardmote-[0-9a-f]{64}$/,
     );
     expect(fixture.binding.workspacePath).toBe(
       await realpath(fixture.workspace),

@@ -17,7 +17,7 @@ use wardmote_runner_core::provider_bridge::{authorized_tool_catalog_digest, Auth
 const CODEX_ACPX_DIGEST: &str =
     "sha256:7f77704ad58089b4855717bb1fe77db988b7b725fd1823fd2f94f631e6b4f231";
 const PI_ACPX_DIGEST: &str =
-    "sha256:33fb5d42fe74fe1858057671030b41812081be5b79a0e4c752968ad228fcb797";
+    "sha256:5636781fd7ac18f218ea9d8d631c08fb2d6b5e4c7ec33abbeb70a40317ea4ed6";
 
 fn temporary_directory(label: &str) -> PathBuf {
     let nonce = SystemTime::now()
