@@ -18,7 +18,7 @@ the same grid and drill-down pages as the direct Runner eval suite.
 - `pnpm --filter @tickernelz/wardmote-runner report:runner-workflow-evals`
   validates the deterministic fail-closed fixture matrix and writes JSON,
   Markdown, JUnit, and GitHub-safe artifacts under
-  `.paperclip-local/evals/workflows/`. It makes no network requests.
+  `.wardmote-local/evals/workflows/`. It makes no network requests.
 - `pnpm --filter @tickernelz/wardmote-runner report:runner-live-evals` runs
   the balanced forty-execution schedule against real provider sessions. Live
   candidate failures are trend-only; missing credentials, qualification
@@ -33,10 +33,10 @@ environment. `WARDMOTE_EVAL_MAX_CAMPAIGN_COST_USD` must be a positive finite
 number and defaults to 12 USD for scheduled runs.
 
 Live executions export one immutable Evalbook attempt per workflow/candidate to
-`.paperclip-local/evals/workflows/evalbook-runs/`, then invoke
+`.wardmote-local/evals/workflows/evalbook-runs/`, then invoke
 `evals/paperclip-runner/tools/eval_program.py report` from a `paperclip-evals`
 checkout. That program writes the canonical matrix to
-`.paperclip-local/evals/workflows/index.html`, plus `latest.html`, test pages,
+`.wardmote-local/evals/workflows/index.html`, plus `latest.html`, test pages,
 and attempt pages. Set `WARDMOTE_EVALBOOK_PROGRAM` to the program's absolute
 path or `WARDMOTE_EVALS_ROOT` to its repository root. Conventional sibling
 worktree locations are discovered automatically. GitHub Actions checks out a

@@ -114,7 +114,7 @@ pnpm --filter @tickernelz/wardmote-runner run test:browser:scenarios
 
 The first covers the session data contract and the chat components, the second
 drives the surface in a real browser at both viewports, and the third writes the
-ten acceptance screenshots to `.paperclip-local/evidence/capability/` — failing if any
+ten acceptance screenshots to `.wardmote-local/evidence/capability/` — failing if any
 route scrolls horizontally.
 
 ## What this does not do

@@ -37,7 +37,7 @@ export function capabilityExplorerFixturesPlugin() {
         // Capability's report is optional: when it has not been generated the
         // Parity tab renders "Not run" rather than inventing a verdict.
         const report = await readFile(
-          resolve(packageRoot, ".paperclip-local/evidence/capability/eval-parity-report.json"),
+          resolve(packageRoot, ".wardmote-local/evidence/capability/eval-parity-report.json"),
           "utf8",
         ).catch(() => null);
         return `export default ${report ?? "null"};`;

@@ -67,7 +67,7 @@ it.each([true, false])("settles a real proxy interrupt with controller feedback 
   const { join, resolve } = await import("node:path");
   const { createInterface } = await import("node:readline");
   const root = await mkdtemp(join(tmpdir(), "opencode-proxy-interrupt-feedback-"));
-  const launchRoot = join(root, `.paperclip-verified-executable-${randomUUID().replaceAll("-", "")}`);
+  const launchRoot = join(root, `.wardmote-verified-executable-${randomUUID().replaceAll("-", "")}`);
   await mkdir(launchRoot, { mode: 0o700 });
   await chmod(launchRoot, 0o700);
   const executable = join(launchRoot, "launch");
@@ -82,7 +82,7 @@ it.each([true, false])("settles a real proxy interrupt with controller feedback 
   await writeFile(proxy, execFileSync(process.execPath, ["--input-type=module", "-e", `import { bundleVerifiedProviderEntrypoints } from "./scripts/build-verified-provider-entrypoints.mjs"; const entries = await bundleVerifiedProviderEntrypoints({ write: false }); process.stdout.write(entries.find(({ entrypoint }) => entrypoint.name === "opencode-app-server-proxy").verifiedResult.outputFiles[0].contents);`], { maxBuffer: 16 * 1024 * 1024 }));
   const fd = process.platform === "linux" ? openSync(executable, "r") : undefined;
   const runtime = join(root, "runtime");
-  const child = spawn(process.execPath, [proxy, "--paperclip-trusted-opencode-executable", fd === undefined ? executable : "/proc/self/fd/3"], {
+  const child = spawn(process.execPath, [proxy, "--wardmote-trusted-opencode-executable", fd === undefined ? executable : "/proc/self/fd/3"], {
     env: { ...process.env, WARDMOTE_OPENCODE_RUNTIME_DIR: runtime, OPENROUTER_API_KEY: "fixture-key" },
     stdio: fd === undefined ? ["pipe", "pipe", "pipe"] : ["pipe", "pipe", "pipe", fd],
     detached: process.platform !== "win32",

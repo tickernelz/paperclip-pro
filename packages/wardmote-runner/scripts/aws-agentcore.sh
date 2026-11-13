@@ -4,7 +4,7 @@ set -euo pipefail
 PACKAGE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE="$PACKAGE_DIR/infra/aws-agentcore-wardmote.yaml"
 STACK_DESCRIPTION="Wardmote proof-of-concept Amazon Bedrock AgentCore Harness and least-privilege invocation roles."
-LOCAL_DIR="$PACKAGE_DIR/.paperclip-local"
+LOCAL_DIR="$PACKAGE_DIR/.wardmote-local"
 ENV_FILE="$LOCAL_DIR/aws-agentcore.env"
 ACTIVE_FILE="$LOCAL_DIR/aws-agentcore-lab.pid"
 ACTION="${1:-}"

@@ -25,7 +25,7 @@ async function fixture(t, agent, behavior = {}) {
       async load(id) { const disk = records.get(id); return disk ? parse(structuredClone(disk)) : undefined; },
       async save(record) { records.set(record.acpxRecordId, structuredClone(serialize(record))); },
     },
-    agentRegistry: { resolve: () => behavior.agentCommand ?? "paperclip-verified-acpx-command", list: () => [agent] },
+    agentRegistry: { resolve: () => behavior.agentCommand ?? "wardmote-verified-acpx-command", list: () => [agent] },
     protocolGuardFactory: () => (direction, message) => {
       if (direction === "outbound" && message.method) requests.push(structuredClone(message));
     },

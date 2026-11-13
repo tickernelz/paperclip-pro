@@ -68,7 +68,7 @@ pnpm --filter @tickernelz/wardmote-runner test:capability-evals
 pnpm --filter @tickernelz/wardmote-runner report:capability-evals
 ```
 
-The reporter writes `.paperclip-local/evidence/capability/eval-parity-report.{json,md}`.
+The reporter writes `.wardmote-local/evidence/capability/eval-parity-report.{json,md}`.
 
 Run the bounded provider conformance matrix separately. It creates exactly one
 real Codex turn for each of the 16 checked-in eval groups while retaining the

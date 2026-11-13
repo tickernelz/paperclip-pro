@@ -3311,7 +3311,7 @@ mod tests {
                         entry
                             .file_name()
                             .to_string_lossy()
-                            .starts_with(".paperclip-verified-executable-")
+                            .starts_with(".wardmote-verified-executable-")
                     })
                     .count()
             }
