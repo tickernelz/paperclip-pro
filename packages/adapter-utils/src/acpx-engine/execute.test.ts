@@ -1783,7 +1783,7 @@ describe("shared ACPX engine runtime behavior", () => {
   it.skipIf(process.platform === "win32")("replaces stale managed Codex auth files with source symlinks", async () => {
     const root = await makeTempRoot();
     const sourceCodexHome = path.join(root, "source-codex-home");
-    const wardmoteHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "wardmote-home");
     const wardmoteInstanceId = "test-instance";
     const managedCodexHome = path.join(
       wardmoteHome,
@@ -1832,7 +1832,7 @@ describe("shared ACPX engine runtime behavior", () => {
     async (keyName) => {
       const root = await makeTempRoot();
       const sourceCodexHome = path.join(root, "source-codex-home");
-      const wardmoteHome = path.join(root, "paperclip-home");
+      const wardmoteHome = path.join(root, "wardmote-home");
       await fs.mkdir(sourceCodexHome, { recursive: true });
       const sourceAuth = path.join(sourceCodexHome, "auth.json");
       await fs.writeFile(sourceAuth, JSON.stringify({ tokens: "host-login" }), "utf8");
@@ -1878,7 +1878,7 @@ describe("shared ACPX engine runtime behavior", () => {
 
   it("sets GROK_HOME for a Grok run from the company Grok home, and leaves CODEX_HOME unchanged for a Codex run", async () => {
     const root = await makeTempRoot();
-    const wardmoteHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "wardmote-home");
     const previousWardmoteHome = process.env.WARDMOTE_HOME;
     const previousWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
     try {
@@ -3576,7 +3576,7 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
     async () => {
       const { root, stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
       const sourceCodexHome = path.join(root, "source-codex-home");
-      const wardmoteHome = path.join(root, "paperclip-home");
+      const wardmoteHome = path.join(root, "wardmote-home");
       await fs.mkdir(sourceCodexHome, { recursive: true });
       const sourceAuth = path.join(sourceCodexHome, "auth.json");
       await fs.writeFile(sourceAuth, JSON.stringify({ tokens: "host-login" }), "utf8");

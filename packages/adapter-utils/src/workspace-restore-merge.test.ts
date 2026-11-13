@@ -241,7 +241,7 @@ describe("workspace restore merge", () => {
       async () => {
         const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
         cleanupDirs.push(rootDir);
-        useTempWardmoteHome(path.join(rootDir, "paperclip-home"), "test-instance");
+        useTempWardmoteHome(path.join(rootDir, "wardmote-home"), "test-instance");
 
         // The old lock sat beside the target, so it needed mkdir rights in the
         // target's parent. The new lock root lives under WARDMOTE_HOME instead,
@@ -272,7 +272,7 @@ describe("workspace restore merge", () => {
       async () => {
         const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
         cleanupDirs.push(rootDir);
-        const wardmoteHome = path.join(rootDir, "paperclip-home");
+        const wardmoteHome = path.join(rootDir, "wardmote-home");
         useTempWardmoteHome(wardmoteHome, "test-instance");
 
         const targetDir = path.join(rootDir, "target");
@@ -302,7 +302,7 @@ describe("workspace restore merge", () => {
     it("rejects a lock root that already exists as a symlink", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
-      const wardmoteHome = path.join(rootDir, "paperclip-home");
+      const wardmoteHome = path.join(rootDir, "wardmote-home");
       useTempWardmoteHome(wardmoteHome, "test-instance");
 
       const locksDir = path.join(wardmoteHome, "instances", "test-instance", "locks");
@@ -322,7 +322,7 @@ describe("workspace restore merge", () => {
     it("rejects a lock root that already exists as a non-directory", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
-      const wardmoteHome = path.join(rootDir, "paperclip-home");
+      const wardmoteHome = path.join(rootDir, "wardmote-home");
       useTempWardmoteHome(wardmoteHome, "test-instance");
 
       const locksDir = path.join(wardmoteHome, "instances", "test-instance", "locks");
@@ -340,7 +340,7 @@ describe("workspace restore merge", () => {
     it("closes the create/validate TOCTOU window: rejects a lock root a racing writer swapped for a symlink during creation", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
-      const wardmoteHome = path.join(rootDir, "paperclip-home");
+      const wardmoteHome = path.join(rootDir, "wardmote-home");
       useTempWardmoteHome(wardmoteHome, "test-instance");
 
       const targetDir = path.join(rootDir, "target");
@@ -375,7 +375,7 @@ describe("workspace restore merge", () => {
     it("keeps the private lock database and removes diagnostic ownership after release", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
-      const wardmoteHome = path.join(rootDir, "paperclip-home");
+      const wardmoteHome = path.join(rootDir, "wardmote-home");
       useTempWardmoteHome(wardmoteHome, "test-instance");
 
       const targetDir = path.join(rootDir, "target");
@@ -398,7 +398,7 @@ describe("workspace restore merge", () => {
     it("classifies the real lock-timeout error by its stable code, never by the message text", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
-      const wardmoteHome = path.join(rootDir, "paperclip-home");
+      const wardmoteHome = path.join(rootDir, "wardmote-home");
       useTempWardmoteHome(wardmoteHome, "test-instance");
 
       const targetDir = path.join(rootDir, "target");
@@ -589,7 +589,7 @@ describe("workspace restore merge", () => {
       async () => {
         const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
         cleanupDirs.push(rootDir);
-        useTempWardmoteHome(path.join(rootDir, "paperclip-home"), "test-instance");
+        useTempWardmoteHome(path.join(rootDir, "wardmote-home"), "test-instance");
 
         const targetDir = path.join(rootDir, "target");
         const aliasDir = path.join(rootDir, "target-alias");

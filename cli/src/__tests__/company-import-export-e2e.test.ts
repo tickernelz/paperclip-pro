@@ -287,7 +287,7 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
     tempRoot = mkdtempSync(path.join(os.tmpdir(), "wardmote-company-cli-e2e-"));
     configPath = path.join(tempRoot, "config", "config.json");
     exportDir = path.join(tempRoot, "exported-company");
-    wardmoteHome = path.join(tempRoot, "paperclip-home");
+    wardmoteHome = path.join(tempRoot, "wardmote-home");
     cliShellHome = path.join(tempRoot, "shell-home");
     wardmoteInstanceId = "company-cli-e2e";
     mkdirSync(wardmoteHome, { recursive: true });
