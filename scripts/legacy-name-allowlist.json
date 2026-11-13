@@ -900,7 +900,7 @@
     ["scripts/evals-hub/build.py",4,"belum-diganti"],
     ["scripts/extract-proposed-events.mjs",8,"belum-diganti"],
     ["scripts/extract-proposed-events.test.mjs",2,"belum-diganti"],
-    ["scripts/fork/rename-to-paperclip-pro.mjs",49,"belum-diganti"],
+    ["scripts/fork/rename-to-paperclip-pro.mjs",47,"upstream"],
     ["scripts/ingest-app-definitions.mjs",1,"belum-diganti"],
     ["scripts/install.sh",3,"belum-diganti"],
     ["scripts/kill-dev.sh",3,"belum-diganti"],

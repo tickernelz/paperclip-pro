@@ -9,9 +9,9 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."
 const SCOPE = "@tickernelz";
 const PREFIX = "wardmote";
 const CLI_PACKAGE = `${SCOPE}/${PREFIX}`;
-const CLI_BIN = "paperclip-pro";
+const CLI_BIN = "wardmote";
 const TARBALL_STEM = "tickernelz-wardmote";
-const HOME_DIR = ".paperclip-pro";
+const HOME_DIR = ".wardmote";
 const FORK_REPO = "https://github.com/tickernelz/wardmote";
 
 const SKIP_PREFIXES = ["releases/", "screenshots/", "report/"];
