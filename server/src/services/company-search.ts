@@ -931,7 +931,7 @@ export function companySearchService(db: Db) {
         const workProductConditions = [
           eq(issueWorkProducts.companyId, companyId),
           eq(issueWorkProducts.type, "artifact"),
-          eq(issueWorkProducts.provider, "paperclip"),
+          eq(issueWorkProducts.provider, "wardmote"),
           sql<boolean>`(
             ${issueWorkProducts.title} ILIKE ${containsPattern} ESCAPE '\\'
             OR coalesce(${issueWorkProducts.summary}, '') ILIKE ${containsPattern} ESCAPE '\\'

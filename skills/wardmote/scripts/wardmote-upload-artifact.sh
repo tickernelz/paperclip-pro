@@ -525,7 +525,7 @@ if [[ "$create_work_product" == "1" ]]; then
       --argjson isPrimary "$is_primary_json" \
       '{
         type: "artifact",
-        provider: "paperclip",
+        provider: "wardmote",
         title: $title,
         status: $status,
         reviewState: "none",

@@ -909,7 +909,7 @@ function createArtifactWorkProduct(
     executionWorkspaceId: null,
     runtimeServiceId: null,
     type: "artifact",
-    provider: "paperclip",
+    provider: "wardmote",
     externalId: null,
     title: overrides.title ?? originalFilename,
     url: null,

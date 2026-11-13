@@ -1161,7 +1161,7 @@ export async function prepareNativeRunnerFileHandoff(input: {
         eq(issueWorkProducts.companyId, input.binding.companyId),
         eq(issueWorkProducts.issueId, input.binding.issueId),
         eq(issueWorkProducts.type, "artifact"),
-        eq(issueWorkProducts.provider, "paperclip"),
+        eq(issueWorkProducts.provider, "wardmote"),
         sql`${issueWorkProducts.externalId} = ${issueAttachments.id}::text`,
         eq(issueWorkProducts.createdByRunId, input.binding.runId),
       ),

@@ -293,7 +293,7 @@ function attachment(overrides: Partial<IssueAttachment>): IssueAttachment {
     issueId: "issue",
     issueCommentId: "m1",
     assetId: `asset-${id}`,
-    provider: "paperclip",
+    provider: "wardmote",
     objectKey: id,
     contentType: "application/octet-stream",
     byteSize: 1,

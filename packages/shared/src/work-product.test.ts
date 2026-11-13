@@ -4,6 +4,16 @@ import {
   createIssueWorkProductSchema,
 } from "./validators/work-product.js";
 
+describe("work product provider", () => {
+  it("rejects the retired attachment artifact provider name", () => {
+    const base = { type: "artifact" as const, title: "report.pdf" };
+    expect(createIssueWorkProductSchema.safeParse({ ...base, provider: "wardmote" }).success).toBe(true);
+    const retired = createIssueWorkProductSchema.safeParse({ ...base, provider: "paperclip" });
+    expect(retired.success).toBe(false);
+    expect(retired.error?.issues[0]?.message).toContain("renamed to \"wardmote\"");
+  });
+});
+
 describe("work product metadata with resource ref", () => {
   it("accepts valid workspace file ref in metadata", () => {
     const result = issueWorkProductMetadataSchema.parse({
@@ -103,7 +113,7 @@ describe("create issue work product with resource ref", () => {
   it("accepts work product with resourceRef in metadata", () => {
     const result = createIssueWorkProductSchema.parse({
       type: "artifact",
-      provider: "paperclip",
+      provider: "wardmote",
       title: "Build output",
       status: "active",
       metadata: {

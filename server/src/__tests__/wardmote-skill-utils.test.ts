@@ -107,7 +107,7 @@ if [[ "$method" == "GET" && "$url" == */work-products ]]; then
         '{
           id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
           type: "artifact",
-          provider: "paperclip",
+          provider: "wardmote",
           createdByRunId: $runId,
           externalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
           metadata: { attachmentId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }

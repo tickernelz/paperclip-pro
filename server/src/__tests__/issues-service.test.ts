@@ -139,7 +139,7 @@ describeEmbeddedPostgres("issueService run attachment artifacts", () => {
       companyId,
       issueId,
       type: "artifact",
-      provider: "paperclip",
+      provider: "wardmote",
       title: "screenshot.png",
       createdByRunId: runId,
       metadata: {

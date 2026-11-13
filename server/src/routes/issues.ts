@@ -724,7 +724,7 @@ function requiresWardmoteAttachmentMetadata(
     typeof input.provider === "string"
       ? input.provider
       : (fallback?.provider ?? null);
-  return type === "artifact" && provider === "paperclip";
+  return type === "artifact" && provider === "wardmote";
 }
 
 const attachmentArtifactMetadataInputSchema = z
@@ -12150,7 +12150,7 @@ export function issueRoutes(
         });
       }
       const attachmentId =
-        createInput.type === "artifact" && createInput.provider === "paperclip"
+        createInput.type === "artifact" && createInput.provider === "wardmote"
           ? (createInput.metadata as Record<string, unknown> | null)
               ?.attachmentId
           : null;
@@ -12164,7 +12164,7 @@ export function issueRoutes(
                   eq(issueWorkProducts.companyId, issue.companyId),
                   eq(issueWorkProducts.issueId, issue.id),
                   eq(issueWorkProducts.type, "artifact"),
-                  eq(issueWorkProducts.provider, "paperclip"),
+                  eq(issueWorkProducts.provider, "wardmote"),
                   eq(issueWorkProducts.externalId, attachmentId),
                   eq(issueWorkProducts.createdByRunId, createdByRunId),
                 ),
@@ -12460,7 +12460,7 @@ export function issueRoutes(
             issueId: issue.id,
             projectId: issue.projectId ?? null,
             type: "artifact",
-            provider: "paperclip",
+            provider: "wardmote",
             externalId: req.body.sourceArtifactId,
             title: req.body.title,
             status: "approved",
@@ -21653,7 +21653,7 @@ export function issueRoutes(
           details: {
             workProductId: attachment.artifactWorkProductId,
             type: "artifact",
-            provider: "paperclip",
+            provider: "wardmote",
             source: "run_attachment_upload",
           },
         });

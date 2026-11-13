@@ -162,7 +162,7 @@ describePg("attachment retention", () => {
       companyId,
       issueId: doneIssueId,
       type: "artifact",
-      provider: "paperclip",
+      provider: "wardmote",
       externalId: closedDeliverable.id,
       title: "Deliverable",
       status: "active",

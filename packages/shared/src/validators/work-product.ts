@@ -83,7 +83,9 @@ export const createIssueWorkProductSchema = z.object({
   executionWorkspaceId: z.string().guid().optional().nullable(),
   runtimeServiceId: z.string().guid().optional().nullable(),
   type: issueWorkProductTypeSchema,
-  provider: z.string().min(1),
+  provider: z.string().min(1).refine((provider) => provider !== "paperclip", {
+    message: 'The work product provider "paperclip" was renamed to "wardmote"',
+  }),
   externalId: z.string().optional().nullable(),
   title: z.string().min(1),
   url: z.string().url().optional().nullable(),

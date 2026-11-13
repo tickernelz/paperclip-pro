@@ -198,7 +198,7 @@ function stubSecret(id: string, name: string, latestVersion: number, referenceCo
     companyId: COMPANY_ID,
     key: name.toLowerCase(),
     name,
-    provider: "paperclip",
+    provider: "wardmote",
     status: "active",
     managedMode: "managed",
     externalRef: null,

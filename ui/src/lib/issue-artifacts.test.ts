@@ -38,7 +38,7 @@ function makePromotingWorkProduct(attachmentId: string): IssueWorkProduct {
     executionWorkspaceId: null,
     runtimeServiceId: null,
     type: "artifact",
-    provider: "paperclip",
+    provider: "wardmote",
     externalId: null,
     title: "output.png",
     url: null,
