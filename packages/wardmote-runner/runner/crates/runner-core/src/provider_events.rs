@@ -781,7 +781,7 @@ pub fn normalize_codex_notification(method: &str, params: &Value) -> Vec<Normali
                 }),
             );
         }
-        "paperclip/resumeUsageSnapshot" => push(
+        "wardmote/resumeUsageSnapshot" => push(
             &mut events,
             "harness.diagnostic",
             EventPriority::P0,

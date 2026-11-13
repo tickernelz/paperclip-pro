@@ -37143,7 +37143,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       filename: string;
       mimeType: string;
     };
-    expect(uploaded.filename).toBe("paperclip-response.md");
+    expect(uploaded.filename).toBe("wardmote-response.md");
     expect(uploaded.mimeType).toBe("text/markdown; charset=utf-8");
     expect(Buffer.isBuffer(uploaded.data)).toBe(true);
     expect(uploaded.data.toString("utf8")).toBe(providerSafeSource);
@@ -37885,7 +37885,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     };
     expect(attachment).toMatchObject({
       mimeType: "text/markdown; charset=utf-8",
-      name: "paperclip-response.md",
+      name: "wardmote-response.md",
       size: Buffer.byteLength(providerSafeSource),
       type: "file",
     });
