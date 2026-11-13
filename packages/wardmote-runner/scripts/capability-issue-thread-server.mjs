@@ -1131,7 +1131,7 @@ export function capabilityIssueThreadServerPlugin(options = {}) {
     server.httpServer?.once("close", () => void middleware.close());
   }
   return {
-    name: "paperclip-runner-capability-issue-thread-server",
+    name: "wardmote-runner-capability-issue-thread-server",
     async configureServer(server) {
       const host = server.config.server.host;
       await mount(server, typeof host === "string" ? host : host === true ? "0.0.0.0" : "127.0.0.1");

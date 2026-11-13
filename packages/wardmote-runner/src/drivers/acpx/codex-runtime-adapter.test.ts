@@ -1832,7 +1832,7 @@ describe("Codex ACPX runtime adapter", () => {
         permissionMode: "deny-all",
         mcpServers: [
           {
-            name: "paperclip",
+            name: "wardmote",
             url: "http://127.0.0.1:3210/mcp",
             bearerToken: "bridge-secret",
             runnerOwned: true,
@@ -1852,7 +1852,7 @@ describe("Codex ACPX runtime adapter", () => {
     expect(runtimeOptions?.mcpServers).toEqual([
       {
         type: "http",
-        name: "paperclip",
+        name: "wardmote",
         url: "http://127.0.0.1:3210/mcp",
         headers: [{ name: "Authorization", value: "Bearer bridge-secret" }],
       },

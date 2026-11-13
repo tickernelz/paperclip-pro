@@ -94,7 +94,7 @@ pnpm --filter @tickernelz/wardmote-runner check:clean-consumers
 Set `WARDMOTE_CLEAN_CONSUMER_OUTPUT_DIR` to retain the qualifying inputs and
 machine-readable proof outside the temporary consumer. The output contains the
 package tarball, platform-named release runnerd, `SHA256SUMS`, and
-`paperclip-runner-consumer-conformance.json`. That record is produced by the clean
+`wardmote-runner-consumer-conformance.json`. That record is produced by the clean
 consumer after it imports only the packed package, resolves the explicit binary
 and digest, and completes deterministic conformance without provider calls.
 

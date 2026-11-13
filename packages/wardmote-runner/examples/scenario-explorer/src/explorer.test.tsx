@@ -397,7 +397,7 @@ describe("credential and policy boundary", () => {
       for (const forbidden of [
         "authorization: bearer",
         "api_key=",
-        "paperclip_api_key",
+        "wardmote_api_key",
         "sk-ant-",
         "fixture-secret-value-not-a-real-credential",
       ]) {

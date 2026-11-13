@@ -36,7 +36,7 @@ function compatible(): WardmoteRunnerEvalCompatibilityRequirement {
       contractVersion: 1,
       requiredCapabilities: ["typedEvents", "interruption", "usage", "dynamicTools"],
       descriptor: {
-        kind: "paperclip-deterministic",
+        kind: "wardmote-deterministic",
         displayName: "Deterministic",
         version: "1.0.0",
         protocolVersion: "prp.v1",
@@ -68,7 +68,7 @@ describe("Wardmote Evals integration compatibility", () => {
       schema: "paperclip-runner/evals-integration/v1",
       consumer: "paperclip-evals",
       negotiatedPrpVersion: 1,
-      driverKind: "paperclip-deterministic",
+      driverKind: "wardmote-deterministic",
     });
   });
 

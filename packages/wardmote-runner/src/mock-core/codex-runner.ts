@@ -574,7 +574,7 @@ export async function runCodexCodexTracer(input: CodexCodexTracerInput): Promise
           context.modelInputKinds.length === 1 &&
           context.modelInputKinds[0] === "text",
         credentialsAbsent:
-          !serialized.includes("paperclip_api_key") &&
+          !serialized.includes("wardmote_api_key") &&
           !serialized.includes("authorization: bearer") &&
           !serialized.includes("/api/issues/"),
       },
