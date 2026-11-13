@@ -895,9 +895,11 @@ describe("issue attachment routes", () => {
 
     it("transcribes an audio attachment with the instance provider", async () => {
       mockSpeechSettings(deepgramSettings);
-      providerFetch.mockResolvedValue(
-        new Response(JSON.stringify({ results: { channels: [{ detected_language: "id", alternatives: [{ transcript: "halo dunia" }] }] } }), { status: 200 }),
-      );
+      let sentBody = "";
+      providerFetch.mockImplementation(async (_url, init) => {
+        sentBody = await (init?.body as Blob).text();
+        return new Response(JSON.stringify({ results: { channels: [{ detected_language: "id", alternatives: [{ transcript: "halo dunia" }] }] } }), { status: 200 });
+      });
       const storage = createStorageService(Buffer.from("OggS-voice"));
       mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("audio/ogg", "voice.ogg"));
 
@@ -910,7 +912,7 @@ describe("issue attachment routes", () => {
       const [url, init] = providerFetch.mock.calls[0];
       expect(String(url)).toMatch(/^https:\/\/api\.deepgram\.com\/v1\/listen\?/);
       expect(init?.headers).toMatchObject({ Authorization: "Token dg-secret", "Content-Type": "audio/ogg" });
-      expect(await (init?.body as Blob).text()).toBe("OggS-voice");
+      expect(sentBody).toBe("OggS-voice");
       expect(JSON.stringify(res.body)).not.toContain("dg-secret");
     });
 

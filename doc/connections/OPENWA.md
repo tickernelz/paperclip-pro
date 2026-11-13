@@ -852,7 +852,10 @@ longer than 55 seconds is split at Ogg page boundaries, without decoding, into
 standalone streams of at most 55 seconds: the Opus header pages are repeated,
 granule positions rebased, page sequence numbers and CRCs rewritten, and a part
 never starts on a page that continues a packet. Each part is one synchronous
-request, sent in order, and the texts are joined with a space; with diarization,
+request with its own deadline (`SPEECH_TO_TEXT_REQUEST_TIMEOUT_MS`, 120 s), at most
+three run at once, no new part starts after one fails, and the texts are joined in
+audio order with a space (a 590 s note is 11 parts: 6.1 s wall-clock at 1.5 s per
+request instead of 16.5 s one after another); with diarization,
 speaker labels restart in each part. A 130 s Opus file split this way gave parts
 of 55.0, 55.0 and 20.0 s that ffmpeg decodes without errors. Each part keeps the
 7,500,000-byte request limit, and `maxAudioSeconds` applies to the whole note.

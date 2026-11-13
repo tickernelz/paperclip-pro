@@ -107,3 +107,108 @@ describe("Google transcription of long Ogg Opus voice notes", () => {
     expect(contents.every((content) => content.toString("latin1", 28, 36) === "OpusHead")).toBe(true);
   });
 });
+
+describe("Google deadlines and parallel parts", () => {
+  const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const account = JSON.stringify({
+    type: "service_account",
+    project_id: "proj-zha6055",
+    private_key_id: "kid-deadline",
+    private_key: privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
+    client_email: "deadline@proj-zha6055.iam.gserviceaccount.com",
+    token_uri: "https://oauth2.googleapis.com/token",
+  });
+  const googleSettings = { ...SPEECH_TO_TEXT_DEFAULTS, enabled: true, provider: "google" as const, model: "chirp_3", apiKeyEnvVar: "G", maxAudioSeconds: 7200 };
+
+  function slowGoogle(delayMs: number, failAt?: number) {
+    let inFlight = 0;
+    let peak = 0;
+    let started = 0;
+    const fetchImpl = (async (url: RequestInfo | URL, init?: RequestInit) => {
+      if (String(url).endsWith("/token")) return new Response(JSON.stringify({ access_token: "tok", expires_in: 3600 }), { status: 200 });
+      const index = ++started;
+      inFlight++;
+      peak = Math.max(peak, inFlight);
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const timer = setTimeout(resolve, delayMs);
+          init?.signal?.addEventListener("abort", () => {
+            clearTimeout(timer);
+            reject(init.signal!.reason);
+          });
+        });
+      } finally {
+        inFlight--;
+      }
+      if (index === failAt) return new Response("{}", { status: 503 });
+      return new Response(JSON.stringify({ results: [{ alternatives: [{ transcript: "part " + index }] }] }), { status: 200 });
+    }) as typeof fetch;
+    return { fetchImpl, stats: () => ({ peak, started }) };
+  }
+
+  it("gives every part its own deadline, so parts that each fit succeed even when their sum does not", async () => {
+    const google = slowGoogle(150);
+    const result = await transcribeAudio(
+      { buffer: opusStream(Array(13).fill(10)), mime: "audio/ogg", filename: "v.ogg" },
+      { settings: googleSettings, env: { G: account }, fetchImpl: google.fetchImpl, timeoutMs: 300 },
+    );
+    expect(result.text).toBe("part 1 part 2 part 3");
+    expect(google.stats().started).toBe(3);
+  });
+
+  it("runs at most three parts at once and joins them in audio order", async () => {
+    const google = slowGoogle(30);
+    const result = await transcribeAudio(
+      { buffer: opusStream(Array(60).fill(10)), mime: "audio/ogg", filename: "v.ogg" },
+      { settings: googleSettings, env: { G: account }, fetchImpl: google.fetchImpl },
+    );
+    expect(google.stats()).toEqual({ peak: 3, started: 12 });
+    expect(result.text.split(" ").filter((word) => word !== "part").map(Number).sort((a, b) => a - b)).toEqual(Array.from({ length: 12 }, (_v, i) => i + 1));
+  });
+
+  it("stops starting new parts after one fails", async () => {
+    const google = slowGoogle(20, 2);
+    await expect(
+      transcribeAudio(
+        { buffer: opusStream(Array(60).fill(10)), mime: "audio/ogg", filename: "v.ogg" },
+        { settings: googleSettings, env: { G: account }, fetchImpl: google.fetchImpl },
+      ),
+    ).rejects.toMatchObject({ code: "stt_unavailable" });
+    expect(google.stats().started).toBeLessThanOrEqual(4);
+  });
+});
+
+describe("streamed audio is spooled to a temporary file", () => {
+  it("sends a file-backed body and removes the file, also when the stream is over the limit", async () => {
+    const { mkdtemp, readdir, rm } = await import("node:fs/promises");
+    const os = await import("node:os");
+    const path = await import("node:path");
+    const { Readable } = await import("node:stream");
+    const dir = await mkdtemp(path.join(os.tmpdir(), "zha6055-spool-"));
+    try {
+      let sent = "";
+      const fetchImpl = (async (_url: RequestInfo | URL, init?: RequestInit) => {
+        sent = await (init?.body as Blob).text();
+        expect(await readdir(dir)).toHaveLength(1);
+        return new Response(JSON.stringify({ results: { channels: [{ alternatives: [{ transcript: "ok" }] }] } }), { status: 200 });
+      }) as typeof fetch;
+      const settings = { ...SPEECH_TO_TEXT_DEFAULTS, enabled: true, provider: "deepgram" as const, model: "nova-3", apiKeyEnvVar: "D" };
+      const result = await transcribeAudio(
+        { stream: Readable.from([Buffer.from("part-a "), Buffer.from("part-b")]), mime: "audio/mpeg", filename: "a.mp3" },
+        { settings, env: { D: "k" }, fetchImpl, spoolDir: dir },
+      );
+      expect(result.text).toBe("ok");
+      expect(sent).toBe("part-a part-b");
+      expect(await readdir(dir)).toEqual([]);
+      await expect(
+        transcribeAudio(
+          { stream: Readable.from([Buffer.alloc(10), Buffer.alloc(10)]), mime: "audio/mpeg", filename: "a.mp3" },
+          { settings, env: { D: "k" }, fetchImpl, spoolDir: dir, maxBytes: 15 },
+        ),
+      ).rejects.toMatchObject({ code: "stt_too_large" });
+      expect(await readdir(dir)).toEqual([]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});

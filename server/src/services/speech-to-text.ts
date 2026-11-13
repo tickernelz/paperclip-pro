@@ -1,4 +1,9 @@
+import { randomUUID } from "node:crypto";
+import { createWriteStream, openAsBlob } from "node:fs";
+import { mkdir, rm } from "node:fs/promises";
+import path from "node:path";
 import type { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import {
   SPEECH_TO_TEXT_DEFAULT_KEY_ENV_VARS,
   SPEECH_TO_TEXT_PROVIDERS,
@@ -13,6 +18,7 @@ import {
   type SpeechToTextTranscript,
 } from "@tickernelz/wardmote-shared";
 import { getMaxAttachmentBytes } from "../attachment-types.js";
+import { resolveAttachmentUploadTempDir } from "../attachment-upload.js";
 import {
   googleAccessToken,
   GoogleCredentialsError,
@@ -60,6 +66,7 @@ export type SpeechToTextResult = SpeechToTextTranscript;
 
 export interface SpeechToTextOptions {
   settings: SpeechToTextSettings;
+  spoolDir?: string;
   env?: Record<string, string | undefined>;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
@@ -135,19 +142,48 @@ async function oggOpusBlobDurationSeconds(audio: Blob): Promise<number | null> {
   return oggOpusDurationSeconds(Buffer.concat([head, tail]));
 }
 
-async function collect(stream: Readable, limit: number): Promise<Blob> {
-  const chunks: Buffer[] = [];
+async function spool(stream: Readable, limit: number, tempDir: string): Promise<{ audio: Blob; file: string }> {
+  await mkdir(tempDir, { recursive: true });
+  const file = path.join(tempDir, randomUUID() + ".stt");
   let total = 0;
-  for await (const chunk of stream) {
-    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as Uint8Array);
-    total += buffer.length;
-    if (total > limit) {
-      stream.destroy();
-      throw new SpeechToTextError("stt_too_large", "Audio exceeds the " + limit + " byte speech-to-text limit");
-    }
-    chunks.push(buffer);
+  try {
+    await pipeline(
+      stream,
+      async function* (source: AsyncIterable<Buffer | Uint8Array>) {
+        for await (const chunk of source) {
+          total += chunk.length;
+          if (total > limit) throw new SpeechToTextError("stt_too_large", "Audio exceeds the " + limit + " byte speech-to-text limit");
+          yield chunk;
+        }
+      },
+      createWriteStream(file, { flags: "wx" }),
+    );
+    return { audio: await openAsBlob(file), file };
+  } catch (error) {
+    await rm(file, { force: true });
+    throw error;
   }
-  return new Blob(chunks.map((chunk) => new Uint8Array(chunk.buffer as ArrayBuffer, chunk.byteOffset, chunk.byteLength)));
+}
+
+export const GOOGLE_PARALLEL_PIECES = 3;
+
+async function inOrder<T, R>(items: readonly T[], concurrency: number, run: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+  let failed = false;
+  const worker = async () => {
+    while (!failed && next < items.length) {
+      const index = next++;
+      try {
+        results[index] = await run(items[index]);
+      } catch (error) {
+        failed = true;
+        throw error;
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+  return results;
 }
 
 async function readBoundedText(response: Response): Promise<string> {
@@ -506,10 +542,28 @@ export async function transcribeAudio(input: SpeechToTextInput, options: SpeechT
   if (input.durationHintSeconds != null && input.durationHintSeconds > maxSeconds)
     throw new SpeechToTextError("stt_too_long", "Audio is longer than " + maxSeconds + " seconds");
   let audio: Blob;
+  let spooled: string | null = null;
   if (input.blob) audio = input.blob;
   else if (input.buffer) audio = blobOf(input.buffer);
-  else if (input.stream) audio = await collect(input.stream, limit);
+  else if (input.stream) ({ audio, file: spooled } = await spool(input.stream, limit, options.spoolDir ?? resolveAttachmentUploadTempDir()));
   else throw new SpeechToTextError("stt_empty", "No audio was supplied");
+  try {
+    return await transcribeLoadedAudio(audio, input, options, apiKey, maxSeconds, limit);
+  } finally {
+    if (spooled) await rm(spooled, { force: true });
+  }
+}
+
+async function transcribeLoadedAudio(
+  audio: Blob,
+  input: SpeechToTextInput,
+  options: SpeechToTextOptions,
+  apiKey: string,
+  maxSeconds: number,
+  limit: number,
+): Promise<SpeechToTextResult> {
+  const settings = options.settings;
+  const provider = settings.provider ?? "openai_compatible";
   if (audio.size === 0) throw new SpeechToTextError("stt_empty", "No audio was supplied");
   if (audio.size > limit) throw new SpeechToTextError("stt_too_large", "Audio exceeds the " + limit + " byte speech-to-text limit");
   const measured = input.durationHintSeconds == null || provider === "google" ? await oggOpusBlobDurationSeconds(audio) : null;
@@ -517,11 +571,11 @@ export async function transcribeAudio(input: SpeechToTextInput, options: SpeechT
     throw new SpeechToTextError("stt_too_long", "Audio is longer than " + maxSeconds + " seconds");
   const pieces = provider === "google" ? await googlePieces(audio, measured) : [audio];
   const adapter = ADAPTERS[provider];
-  const timeout = AbortSignal.timeout(options.timeoutMs ?? SPEECH_TO_TEXT_REQUEST_TIMEOUT_MS);
-  const signal = input.signal ? AbortSignal.any([timeout, input.signal]) : timeout;
+  const timeoutMs = options.timeoutMs ?? SPEECH_TO_TEXT_REQUEST_TIMEOUT_MS;
   const fetchImpl = options.fetchImpl ?? fetch;
-  const parts: SpeechToTextResult[] = [];
-  for (const piece of pieces) {
+  const parts = await inOrder(pieces, GOOGLE_PARALLEL_PIECES, async (piece) => {
+    const timeout = AbortSignal.timeout(timeoutMs);
+    const signal = input.signal ? AbortSignal.any([timeout, input.signal]) : timeout;
     const request = await adapter.request(settings, apiKey, piece, input, { fetchImpl, signal });
     const { record, status } = await requestJson(
       fetchImpl,
@@ -529,8 +583,8 @@ export async function transcribeAudio(input: SpeechToTextInput, options: SpeechT
       { method: "POST", headers: request.headers, body: request.body },
       signal,
     );
-    parts.push(adapter.parse(record, settings, status));
-  }
+    return adapter.parse(record, settings, status);
+  });
   return mergeTranscripts(parts);
 }
 
@@ -588,7 +642,7 @@ export async function listSpeechToTextModels(
       fetchImpl,
       googleOrigin(request.baseUrl, location) + "/v2/projects/" + encodeURIComponent(projectId) + "/locations",
       { method: "GET", headers: { Authorization: "Bearer " + token, Accept: "application/json" } },
-      signal,
+      AbortSignal.timeout(options.timeoutMs ?? SPEECH_TO_TEXT_MODEL_LIST_TIMEOUT_MS),
     )
       .then(({ record: list }) =>
         Array.isArray(list.locations)
