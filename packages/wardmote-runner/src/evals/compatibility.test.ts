@@ -24,7 +24,7 @@ function compatible(): WardmoteRunnerEvalCompatibilityRequirement {
       binaryContractVersion: WARDMOTE_RUNNER_BUILD_METADATA.contracts.runnerdArtifact,
       nativeExecutionVersion: 1,
       harnessDriverVersion: 1,
-      prp: { name: "paperclip.runner", minimumVersion: 1, maximumVersion: 1 },
+      prp: { name: "wardmote.runner", minimumVersion: 1, maximumVersion: 1 },
     },
     nativeExecutionVersion: 1,
     prp: { minimumVersion: 1, maximumVersion: 1 },
@@ -82,7 +82,7 @@ describe("Wardmote Evals integration compatibility", () => {
     requirement.nativeExecutionVersion = 2;
     const unsupportedVersion = WARDMOTE_RUNNER_BUILD_METADATA.prp.maximumVersion + 1;
     requirement.prp = { minimumVersion: unsupportedVersion, maximumVersion: unsupportedVersion };
-    requirement.runnerd.prp = { name: "paperclip.runner", minimumVersion: unsupportedVersion, maximumVersion: unsupportedVersion };
+    requirement.runnerd.prp = { name: "wardmote.runner", minimumVersion: unsupportedVersion, maximumVersion: unsupportedVersion };
     requirement.catalog = { version: 2, sha256: `sha256:${"0".repeat(64)}` };
     requirement.driver.contractVersion = 2;
     requirement.driver.descriptor.capabilities.dynamicTools = false;

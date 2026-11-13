@@ -8,9 +8,9 @@ dev). Future work may automate this in CI.
 
 - A running kind cluster:
   ```bash
-  kind create cluster --name paperclip
+  kind create cluster --name wardmote
   ```
-- `kubectl --context kind-paperclip get nodes` returns a node in `Ready` state.
+- `kubectl --context kind-wardmote get nodes` returns a node in `Ready` state.
 
 ## Steps
 
@@ -101,8 +101,8 @@ The plugin's `onEnvironmentAcquireLease` will:
 ### 7. Verify the tenant resources
 
 ```bash
-kubectl --context kind-paperclip get namespace wardmote-smoke
-kubectl --context kind-paperclip get all,networkpolicy,resourcequota,limitrange,sa,role,rolebinding -n wardmote-smoke
+kubectl --context kind-wardmote get namespace wardmote-smoke
+kubectl --context kind-wardmote get all,networkpolicy,resourcequota,limitrange,sa,role,rolebinding -n wardmote-smoke
 ```
 
 Expected:
@@ -119,7 +119,7 @@ Expected:
 ### 8. Tear down
 
 ```bash
-kubectl --context kind-paperclip delete namespace wardmote-smoke
+kubectl --context kind-wardmote delete namespace wardmote-smoke
 kill %1  # wardmote-server
 ```
 

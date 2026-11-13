@@ -7,7 +7,7 @@ recommendedForRoles:
   - ceo
   - engineer
 tags:
-  - paperclip
+  - wardmote
   - triage
   - inbox
   - workflow

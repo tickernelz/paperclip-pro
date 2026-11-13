@@ -970,9 +970,9 @@ function resolveBundledSkillsRoot() {
 function resolveBundledSkillReleasesRoot() {
   const moduleDir = path.dirname(fileURLToPath(import.meta.url));
   return [
-    path.resolve(moduleDir, "../../skills-releases/paperclip"),
-    path.resolve(process.cwd(), "skills-releases/paperclip"),
-    path.resolve(moduleDir, "../../../skills-releases/paperclip"),
+    path.resolve(moduleDir, "../../skills-releases/wardmote"),
+    path.resolve(process.cwd(), "skills-releases/wardmote"),
+    path.resolve(moduleDir, "../../../skills-releases/wardmote"),
   ];
 }
 

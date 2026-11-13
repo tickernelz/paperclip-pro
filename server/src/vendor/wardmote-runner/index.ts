@@ -140,6 +140,7 @@ export const prepareIsolatedCodexHome = runner.prepareIsolatedCodexHome;
 export const resolveSourceCodexHome = runner.resolveSourceCodexHome;
 export const resolveCodexCommand = runner.resolveCodexCommand;
 export const resolvePinnedCodexCommand = runner.resolvePinnedCodexCommand;
+export const PRP_PROTOCOL_NAME = runner.PRP_PROTOCOL_NAME;
 export const validatePrpEvent = runner.validatePrpEvent;
 export const validatePrpStructuredRunResult =
   runner.validatePrpStructuredRunResult;

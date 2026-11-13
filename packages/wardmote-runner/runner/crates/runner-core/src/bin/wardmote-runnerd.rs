@@ -124,7 +124,7 @@ fn build_metadata() -> serde_json::Value {
         "nativeExecutionVersion": 1,
         "harnessDriverVersion": 1,
         "prp": {
-            "name": "paperclip.runner",
+            "name": "wardmote.runner",
             "minimumVersion": 1,
             "maximumVersion": 2
         },

@@ -8,7 +8,7 @@ recommendedForRoles:
   - engineer
   - marketing
 tags:
-  - paperclip
+  - wardmote
   - brand
   - capsules
   - agents
