@@ -1,4 +1,5 @@
 import { PhotonChatAdapter, parsePhotonThreadId } from "./photon/adapter.js";
+import { DISCORD_COMMAND_NAME } from "./chat-discord-command-registration.js";
 import { PhotonLineAuthentication } from "./photon/cloud.js";
 import { PhotonState } from "./photon/state.js";
 import { PhotonReceiver } from "./photon/receiver.js";
@@ -788,7 +789,7 @@ function installDiscordNativeCommands(
       interaction.type === 2 &&
       interaction.commandType === 1 &&
       interaction.applicationId === applicationId &&
-      interaction.commandName === "paperclip" &&
+      interaction.commandName === DISCORD_COMMAND_NAME &&
       snowflake(interaction.commandId) &&
       snowflake(interaction.user?.id) &&
       !interaction.user.bot &&
@@ -822,7 +823,7 @@ function installDiscordNativeCommands(
         data: {
           id: interaction.commandId,
           type: 1,
-          name: "paperclip",
+          name: DISCORD_COMMAND_NAME,
           options: [{ type: 1, name: option.name }],
         },
       };
@@ -833,7 +834,7 @@ function installDiscordNativeCommands(
         try {
           await dispatchContext.run(dispatch, () =>
             sdk.handleSlashCommandEvent({
-              command: `/paperclip ${option.name}`,
+              command: `/${DISCORD_COMMAND_NAME} ${option.name}`,
               text: "",
               adapter,
               raw,

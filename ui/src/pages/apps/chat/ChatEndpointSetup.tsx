@@ -635,7 +635,7 @@ function ChatSdkEndpointSetup() {
         {endpoint && isSlack && !automaticSlack && step === 4 && (
           <SlackIdentityStep
             endpointId={endpoint.id}
-            command={endpoint.setup?.slackApp?.command ?? endpoint.setup?.command ?? "/paperclip"}
+            command={endpoint.setup?.slackApp?.command ?? endpoint.setup?.command ?? "/wardmote"}
             testStartedAt={endpoint.setup?.testStartedAt}
             onSaveExit={() => navigate("/apps")}
             onConnected={() => {
