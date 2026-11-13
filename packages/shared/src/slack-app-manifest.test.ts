@@ -12,7 +12,7 @@ describe("Slack app manifest", () => {
     expect(slackAccountStateSchema.safeParse({ ...account, verificationStatus: "delivered" }).success).toBe(false);
   });
   it("uses readable, valid agent defaults and accepts them atomically with a new Slack draft", () => {
-    expect(defaultSlackAppConfiguration("Maya")).toEqual({ appName: "maya-paperclip", botName: "maya", command: "/maya" });
+    expect(defaultSlackAppConfiguration("Maya")).toEqual({ appName: "maya-wardmote", botName: "maya", command: "/maya" });
     for (const name of ["Research Lead", "Áda Lovelace", "A.B_C", "", "Very long agent name that needs truncating"]) {
       expect(slackAppConfigurationSchema.safeParse(defaultSlackAppConfiguration(name)).success).toBe(true);
     }

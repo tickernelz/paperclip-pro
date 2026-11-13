@@ -41,7 +41,7 @@ export const PROVIDERS: ProviderCase[] = [
     name: "Slack",
     accountLabel: "Acme Workspace",
     botLabel: "Maya",
-    botUsername: "maya-paperclip",
+    botUsername: "maya-wardmote",
     resourceLabel: "#product",
     secondaryResourceLabel: "#support",
     resourceType: "channel",
@@ -58,7 +58,7 @@ export const PROVIDERS: ProviderCase[] = [
     botLabel: "Maya",
     // GitHub's API returns the actor login with this suffix, while people
     // invoke the App with the bare slug.
-    botUsername: "maya-paperclip[bot]",
+    botUsername: "maya-wardmote[bot]",
     resourceLabel: "paperclip-ai/paperclip",
     secondaryResourceLabel: "paperclip-ai/chat-e2e",
     resourceType: "repository",
@@ -73,7 +73,7 @@ export const PROVIDERS: ProviderCase[] = [
     name: "Microsoft Teams",
     accountLabel: "Acme Tenant",
     botLabel: "Maya",
-    botUsername: "maya-paperclip",
+    botUsername: "maya-wardmote",
     resourceLabel: "Product / General",
     secondaryResourceLabel: "Product / Incidents",
     resourceType: "channel",
@@ -88,7 +88,7 @@ export const PROVIDERS: ProviderCase[] = [
     name: "Discord",
     accountLabel: "Clawd",
     botLabel: "Maya",
-    botUsername: "maya-paperclip",
+    botUsername: "maya-wardmote",
     resourceLabel: "#general",
     secondaryResourceLabel: "#support",
     resourceType: "channel",
@@ -363,7 +363,7 @@ export async function installChatControlPlaneMock(
       slackIdentityLinked = true;
       endpoint.setup.slackAccount = { externalUserId: "UINSTALLER", wardmoteUserId: "local-board", status: "linked", welcomeStatus: "sent", dmChannelId: "DE2E" };
       endpoint.setup.slackRegistration = { status: "configured", appId: "AE2E", managementUrl: "https://api.slack.com/apps/AE2E" };
-      Object.assign(endpoint, { status: "verifying", providerAccountId: "TE2E", botExternalId: "UE2E", botUsername: "maya-paperclip" });
+      Object.assign(endpoint, { status: "verifying", providerAccountId: "TE2E", botExternalId: "UE2E", botUsername: "maya-wardmote" });
     },
     setSlackUncertain: () => { endpoint.setup.slackRegistration = { status: "uncertain", errorCode: "slack_creation_uncertain", managementUrl: "https://api.slack.com/apps" }; },
     failNextGitHubEndpointRead: false,
@@ -454,7 +454,7 @@ export async function installChatControlPlaneMock(
         await fulfill(route, githubConfiguration); return;
       }
       if (operation === "progress") {
-        Object.assign(endpoint.setup, { github: { appSlug: githubAppConnected ? "maya-paperclip" : undefined, stage: body.stage, managementUrl: "https://github.com/settings/installations/2468" } });
+        Object.assign(endpoint.setup, { github: { appSlug: githubAppConnected ? "maya-wardmote" : undefined, stage: body.stage, managementUrl: "https://github.com/settings/installations/2468" } });
         await fulfill(route, endpoint); return;
       }
       if (operation === "app") {
@@ -462,8 +462,8 @@ export async function installChatControlPlaneMock(
         state.configuredCredentialKeys = Object.keys(body).sort();
         if (state.setupAttempts === 1) { await fulfill(route, { error: "GitHub rejected the supplied App credentials." }, 422); return; }
         githubAppConnected = true;
-        Object.assign(endpoint, { status: "attention", botExternalId: "123456", botUsername: "maya-paperclip[bot]", botLabel: "Maya" });
-        Object.assign(endpoint.setup, { github: { stage: "install", appSlug: "maya-paperclip", installationUrl: "https://github.com/apps/maya-paperclip/installations/new", managementUrl: "https://github.com/settings/installations/2468" } });
+        Object.assign(endpoint, { status: "attention", botExternalId: "123456", botUsername: "maya-wardmote[bot]", botLabel: "Maya" });
+        Object.assign(endpoint.setup, { github: { stage: "install", appSlug: "maya-wardmote", installationUrl: "https://github.com/apps/maya-wardmote/installations/new", managementUrl: "https://github.com/settings/installations/2468" } });
         await fulfill(route, endpoint); return;
       }
       if (operation === "repositories") {
@@ -1026,7 +1026,7 @@ export async function expectSetupRail(page: Page, newDraft = false) {
 }
 
 export function expectedSlackManifest(webhookUrl: string) {
-  return JSON.stringify(buildSlackAppManifest({ app: { appName: "maya-paperclip", botName: "maya", command: "/maya" }, agentName: "Maya", webhookUrl }), null, 2);
+  return JSON.stringify(buildSlackAppManifest({ app: { appName: "maya-wardmote", botName: "maya", command: "/maya" }, agentName: "Maya", webhookUrl }), null, 2);
 }
 
 export async function expectMinimumProviderSetup(page: Page, provider: ProviderCase) {
@@ -1211,7 +1211,7 @@ export async function expectProviderTryInstructions(
   provider: ProviderCase,
 ) {
   if (provider.provider === "slack") {
-    for (const text of ["Open a channel and invite @maya-paperclip if needed.", "@maya-paperclip you there?", "Continue the conversation in the thread."]) {
+    for (const text of ["Open a channel and invite @maya-wardmote if needed.", "@maya-wardmote you there?", "Continue the conversation in the thread."]) {
       await expect(page.getByText(text, { exact: true })).toBeVisible();
     }
     await expect(page.getByRole("button", { name: "Copy message" })).toBeVisible();
@@ -1222,19 +1222,19 @@ export async function expectProviderTryInstructions(
     provider.provider === "github"
         ? [
             "Open an installed issue or pull request.",
-            "Mention @maya-paperclip in a comment.",
+            "Mention @maya-wardmote in a comment.",
             "Add another comment to continue the same task.",
           ]
         : provider.provider === "microsoft-teams"
           ? [
               "Open an installed channel and start a new post.",
-              "Mention @maya-paperclip in the post.",
+              "Mention @maya-wardmote in the post.",
               "Reply once beneath the post.",
             ]
           : provider.provider === "discord"
             ? [
                 "Open a text channel where the bot is installed.",
-                "Mention @maya-paperclip in a new root message.",
+                "Mention @maya-wardmote in a new root message.",
                 "Reply once inside Maya's new Discord thread.",
               ]
             : [

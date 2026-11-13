@@ -5407,7 +5407,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       assignedAgentName: "Maya",
       status: "draft",
       allowUnlinkedPeople: false,
-      setup: { command: "/maya", slackApp: { appName: "maya-paperclip", botName: "maya", command: "/maya" } },
+      setup: { command: "/maya", slackApp: { appName: "maya-wardmote", botName: "maya", command: "/maya" } },
     });
     const createdCommand = createResponse.body.setup.command as string;
     const [connection] = await db
@@ -7987,7 +7987,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           return new Response(
             JSON.stringify({
               id: appRegistrationId,
-              slug: "maya-paperclip",
+              slug: "maya-wardmote",
               name: "Maya Wardmote",
               owner: { login: "acmeai" },
               permissions: {
@@ -8131,7 +8131,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       status: "verifying",
       providerAccountId: "acmeai",
       botExternalId: "789",
-      botUsername: "maya-paperclip[bot]",
+      botUsername: "maya-wardmote[bot]",
       setup: { step: "test", webhookVerifiedAt: expect.any(String) },
     });
     expect(
@@ -9246,7 +9246,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       thread: setupThread.thread,
       message: makeMessage({
         id: "github-setup-root-811",
-        text: "@maya-paperclip[bot] verify setup state",
+        text: "@maya-wardmote[bot] verify setup state",
         mentioned: true,
       }),
       trigger: "mention",
@@ -17191,7 +17191,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     );
 
     const slashBody = new URLSearchParams({
-      command: "/maya-paperclip",
+      command: "/maya-wardmote",
       team_id: "T-PAPERCLIP",
     }).toString();
     await service.handleWebhook(
