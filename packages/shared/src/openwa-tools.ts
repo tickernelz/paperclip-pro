@@ -159,7 +159,7 @@ export const OPENWA_TOOLS = [
     "read",
     "List OpenWA gateway operations with category and availability on this engine and key. Filter by category or text; page with cursor.",
     {
-      category: z.enum(["read", "write", "wa_admin", "gateway_admin", "paperclip"]).optional(),
+      category: z.enum(["read", "write", "wa_admin", "gateway_admin", "wardmote"]).optional(),
       query: z.string().min(1).max(100).optional(),
       cursor,
     },
