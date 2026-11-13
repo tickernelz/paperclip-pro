@@ -3025,7 +3025,7 @@ fn codex_facade_bridges_opencode_native_questions_instead_of_rejecting_the_metho
                 _ => None,
             },
         )
-        .expect("the provider-native paperclip/runtimeRequest reaches runnerd");
+        .expect("the provider-native wardmote/runtimeRequest reaches runnerd");
     assert_eq!(question_set["schema"], "wardmote.question_set.v1");
     assert_eq!(question_set["questions"][0]["id"], "environment");
 

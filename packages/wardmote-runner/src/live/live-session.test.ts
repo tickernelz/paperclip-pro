@@ -1199,7 +1199,7 @@ describe("Capability live runnerd and Codex session", () => {
       }, "request-1", "cursor", `${turnId}:cursor-native-usage`)!;
       // Rust keeps payload.noticeId but replaces the display wrapper itemId
       // with its durable authority item (durable/state.rs, runnerd transport).
-      return { method: "paperclip/canonicalProviderEvent", params: { threadId, turnId, ...canonical, itemId: "item_lab_fixture" } };
+      return { method: "wardmote/canonicalProviderEvent", params: { threadId, turnId, ...canonical, itemId: "item_lab_fixture" } };
     }
     const retained = (snapshot: CapabilityLiveSessionSnapshot) => snapshot.evidence.filter(entry =>
       entry.kind === "provider_event" && entry.data.canonical === true && entry.data.event === "provider.notice.recorded");
