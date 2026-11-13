@@ -2584,7 +2584,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     it("finalizes working comments written under the retired marker in place", async () => {
       const f = await toolReplyFixture();
-      const thread = makeThread({ channelId: "acmeai/paperclip", id: f.conversation.externalThreadId }).thread;
+      const thread = makeThread({ channelId: "acmeai/wardmote", id: f.conversation.externalThreadId }).thread;
       await deliverMessage({ callbacks: f.callbacks, endpointId: f.endpoint.id, provider: "github", thread,
         trigger: "mention", message: makeMessage({ id: "41802", text: "And this too", userId: "42", userName: "octocat", mentioned: true }) });
       await expect.poll(async () => {
