@@ -63,11 +63,6 @@ import { shouldEnablePrivateHostnameGuard } from "./middleware/private-hostname-
 import { loadConfig } from "./config.js";
 import { logger } from "./middleware/logger.js";
 import { setStartupRecoveryPhase } from "./startup-recovery-state.js";
-import {
-  StartupRefusalError,
-  migrationRefusalError,
-  shouldReportStartupFailure,
-} from "./startup-refusals.js";
 import { getOperatorSettingDefaults } from "./services/setting-defaults.js";
 import { setupEnvironmentCustomImageTerminalWebSocketServer } from "./realtime/environment-custom-image-terminal-ws.js";
 import { setupLiveEventsWebSocketServer } from "./realtime/live-events-ws.js";
@@ -320,15 +315,7 @@ async function startServerWithDatabaseTeardown(
   
     const apply = autoApply ? true : await promptApplyMigrations(state.pendingMigrations);
     if (!apply) {
-      // A database with zero applied migrations and zero tables has
-      // never been migrated: under a managed-cloud supervisor that is
-      // the expected first-boot race (the harness migrates and
-      // restarts), so the refusal carries the supervised-transient
-      // class. Applied history — or pre-existing tables beside an empty
-      // journal — means drift and keeps the plain, always-reported
-      // Error.
-      throw migrationRefusalError(
-        state,
+      throw new Error(
         `${label} has pending migrations (${formatPendingMigrationSummary(state.pendingMigrations)}). ` +
           "Refusing to start against a stale schema. Run pnpm db:migrate or set WARDMOTE_MIGRATION_AUTO_APPLY=true.",
       );
@@ -353,13 +340,7 @@ async function startServerWithDatabaseTeardown(
       return;
     }
     if (!config.databaseUrl) {
-      // Under a managed-cloud supervisor a missing DATABASE_URL on boot
-      // is the config-application race (the container can start before
-      // the staged variables land), not operator error — the supervisor
-      // restarts once the config holds. A malformed value below is a
-      // real misconfiguration and stays an always-reported Error.
-      throw new StartupRefusalError(
-        "database-contract-unmet",
+      throw new Error(
         "authenticated public deployments require DATABASE_URL or config.database.connectionString; refusing embedded PostgreSQL fallback",
       );
     }
@@ -2165,12 +2146,7 @@ function isMainModule(metaUrl: string): boolean {
 if (isMainModule(import.meta.url)) {
   void startServer().catch(async (err) => {
     logger.error({ err }, "Wardmote server failed to start");
-    // Supervised-transient refusals in managed-cloud deployments are an
-    // expected provisioning phase (see startup-refusals.ts) — they log
-    // and exit nonzero but do not page Sentry.
-    if (shouldReportStartupFailure(err)) {
-      captureException(err);
-    }
+    captureException(err);
     await shutdownSentry();
     process.exit(1);
   });

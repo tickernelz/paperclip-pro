@@ -145,7 +145,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const clientId = "https://client.example/public-mcp.json";
     const cimd = createPublicMcpOAuth(db, config, { metadataFetch: async () => new Response(JSON.stringify({ client_id: clientId, client_name: "CIMD client", redirect_uris: [redirectUri], grant_types: ["authorization_code", "refresh_token", "urn:ietf:params:oauth:grant-type:jwt-bearer"] }), { headers: { "content-type": "application/json" } }) });
     const id = (await cimd.authorize({ client_id: clientId, redirect_uri: redirectUri, response_type: "code", resource: config.resource, code_challenge: challenge, code_challenge_method: "S256" })).split("/").at(-1)!;
-    expect((await cimd.describeRequest(id, f.actor, null)).clientOrigin).toBe("https://client.example");
+    expect((await cimd.describeRequest(id, f.actor)).clientOrigin).toBe("https://client.example");
     const consent = await cimd.consent(id, f.actor, { decision: "approve", companyId: f.company.id, allowWrites: false });
     expect(new URL(consent.redirectUrl).searchParams.get("iss")).toBe(config.origin);
     const tokens = await cimd.token({ grant_type: "authorization_code", client_id: clientId, redirect_uri: redirectUri, resource: config.resource, code: new URL(consent.redirectUrl).searchParams.get("code"), code_verifier: verifier });
@@ -335,13 +335,13 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const resumed = createPublicMcpOAuth(db, config);
     const [logo] = await db.insert(assets).values({ companyId: f.company.id, provider: "local_disk", objectKey: randomUUID(), contentType: "image/png", byteSize: 1, sha256: "fixture" }).returning();
     await db.insert(companyLogos).values({ companyId: f.company.id, assetId: logo!.id });
-    expect(await resumed.describeRequest(id, f.actor, null)).toMatchObject({ requestedCompanyId: f.company.id, companies: [{ id: f.company.id, logoUrl: `/api/assets/${logo!.id}/content` }] });
-    expect((await resumed.describeRequest(id, f.actor, null)).companies).toHaveLength(1);
-    expect((await resumed.describeRequest(id, { type: "none" }, null)).companies).toEqual([]);
+    expect(await resumed.describeRequest(id, f.actor)).toMatchObject({ requestedCompanyId: f.company.id, companies: [{ id: f.company.id, logoUrl: `/api/assets/${logo!.id}/content` }] });
+    expect((await resumed.describeRequest(id, f.actor)).companies).toHaveLength(1);
+    expect((await resumed.describeRequest(id, { type: "none" })).companies).toEqual([]);
     await expect(resumed.consent(id, f.actor, { decision: "approve", companyId: other!.id, allowWrites: true })).rejects.toMatchObject({ status: 403 });
     // A concurrent conversation has an independent binding; rejection did not consume either request.
     const otherId = (await oauth.authorize({ ...input, company_id: other!.id })).split("/").at(-1)!;
-    expect((await resumed.describeRequest(otherId, f.actor, null)).companies).toEqual([{ id: other!.id, name: other!.name, logoUrl: null, canWrite: true }]);
+    expect((await resumed.describeRequest(otherId, f.actor)).companies).toEqual([{ id: other!.id, name: other!.name, logoUrl: null, canWrite: true }]);
     const consent = await resumed.consent(id, f.actor, { decision: "approve", companyId: f.company.id, allowWrites: true });
     const tokens = await resumed.token({ ...f.exchange, code: new URL(consent.redirectUrl).searchParams.get("code")! });
     expect((await resumed.authenticate(tokens.access_token)).grant.companyId).toBe(f.company.id);
@@ -349,7 +349,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     await resumed.consent(otherId, f.actor, { decision: "deny", allowWrites: false });
     // Direct connections retain explicit choice across the user's companies.
     const directId = (await oauth.authorize({ ...input, company_id: undefined })).split("/").at(-1)!;
-    const direct = await resumed.describeRequest(directId, f.actor, null);
+    const direct = await resumed.describeRequest(directId, f.actor);
     expect(direct.requestedCompanyId).toBeNull();
     expect(direct.companies.map(c => c.id).sort()).toEqual([f.company.id, other!.id].sort());
     await resumed.consent(directId, f.actor, { decision: "approve", companyId: other!.id, allowWrites: false });
@@ -361,14 +361,14 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const begin = async (companyId: string) => (await oauth.authorize({ client_id: f.client.client_id, redirect_uri: redirectUri, resource: config.resource,
       response_type: "code", code_challenge: challenge, code_challenge_method: "S256", company_id: companyId })).split("/").at(-1)!;
     const missing = await begin(randomUUID());
-    expect((await oauth.describeRequest(missing, f.actor, null)).companies).toEqual([]);
+    expect((await oauth.describeRequest(missing, f.actor)).companies).toEqual([]);
     await expect(oauth.consent(missing, f.actor, { decision: "approve", companyId: f.company.id, allowWrites: false })).rejects.toMatchObject({ status: 403 });
     await oauth.consent(missing, f.actor, { decision: "deny", allowWrites: false });
     for (const unavailable of ["membership", "archived"] as const) {
       const id = await begin(f.company.id);
       if (unavailable === "membership") await db.update(companyMemberships).set({ status: "inactive" }).where(eq(companyMemberships.id, f.membership.id));
       else await db.update(companies).set({ status: "archived" }).where(eq(companies.id, f.company.id));
-      expect((await oauth.describeRequest(id, f.actor, null)).companies).toEqual([]);
+      expect((await oauth.describeRequest(id, f.actor)).companies).toEqual([]);
       await expect(oauth.consent(id, f.actor, { decision: "approve", companyId: f.company.id, allowWrites: false })).rejects.toMatchObject({ status: 403 });
       await oauth.consent(id, f.actor, { decision: "deny", allowWrites: false });
       await db.update(companyMemberships).set({ status: "active" }).where(eq(companyMemberships.id, f.membership.id));
@@ -968,11 +968,8 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     expect(invalid.body.result.structuredContent.issues[0].message).toContain("UUID");
     expect(dispatch).not.toHaveBeenCalled();
     const pending = await oauth.authorize({ client_id: f.client.client_id, redirect_uri: redirectUri, resource: config.resource, response_type: "code", code_challenge: challenge, code_challenge_method: "S256" });
-    vi.stubEnv("WARDMOTE_CLOUD_API_ORIGIN", "https://cloud.example.test");
-    try {
-      const described = await request(app).get(`/api/mcp/requests/${pending.split("/").at(-1)}`);
-      expect(described.body.setupUrl).toBe("https://cloud.example.test/orgs/new");
-    } finally { vi.unstubAllEnvs(); }
+    const described = await request(app).get(`/api/mcp/requests/${pending.split("/").at(-1)}`);
+    expect(described.body).not.toHaveProperty("setupUrl");
     const connection = (await oauth.authenticate(f.tokens.access_token)).grant;
     expect((await request(app).delete(`/api/mcp/connections/${connection.id}`)).status).toBe(403);
     expect((await request(app).delete(`/api/mcp/connections/${connection.id}`).set("Origin", config.origin)).status).toBe(204);
@@ -1037,7 +1034,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     }
     await expect(oauth.authorize(input)).resolves.toContain("/mcp-connect/");
   });
-  async function eventFixture(cloudOrigin?: string, write = false) {
+  async function eventFixture(write = false) {
     const f = await fixture("member", write);
     const principal = await oauth.authenticate(f.tokens.access_token);
     const [task] = await db.insert(issues).values({ companyId: f.company.id, title: "Event fixture", status: "todo" }).returning();
@@ -1045,13 +1042,9 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const secret = "whsec_" + randomBytes(32).toString("base64");
     const received: Array<{ headers: Headers; body: any }> = [];
     let status = 204;
-    let cloudAllowed = true;
     let goodChallenge = true;
     let duringVerification: (() => Promise<void>) | undefined;
     const fetcher: EventFetch = async (url, init) => {
-      if (cloudOrigin && url === cloudOrigin + "/mcp/wardmote") return cloudAllowed
-        ? Response.json({ result: { structuredContent: { user: { id: f.actor.userId }, companyId: f.company.id, connectionId: principal.grant.id } } })
-        : new Response(null, { status: 403 });
       const headers = new Headers(init.headers);
       const body = JSON.parse(String(init.body));
       received.push({ headers, body });
@@ -1066,7 +1059,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       if (!row || row.companyId !== p.grant.companyId) throw new McpApiError(404);
       return row;
     };
-    const options = { fetch: fetcher, now: () => clock, ...(cloudOrigin ? { cloudOrigin } : {}) };
+    const options = { fetch: fetcher, now: () => clock };
     const service = createPublicMcpEvents(db, oauth, dispatch, options);
     const input = { name: "wardmote.task.status_changed", arguments: { companyId: f.company.id, taskId: task!.id, statuses: ["done"] }, delivery: { mode: "webhook", url: "https://receiver.example/events/" + randomUUID(), secret } };
     const activity = async (action = "issue.updated", details: Record<string, unknown> = { status: "done" }) => {
@@ -1075,11 +1068,11 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       return row!;
     };
     return { ...f, principal, task: task!, service, input, received, secret, activity, dispatch, options,
-      advance(ms: number) { clock += ms; }, setStatus(value: number) { status = value; }, denyCloud() { cloudAllowed = false; }, duringVerification(fn: () => Promise<void>) { duringVerification = fn; }, badChallenge() { goodChallenge = false; }, now: () => clock };
+      advance(ms: number) { clock += ms; }, setStatus(value: number) { status = value; }, duringVerification(fn: () => Promise<void>) { duringVerification = fn; }, badChallenge() { goodChallenge = false; }, now: () => clock };
   }
 
   it("Dot prototype: OAuth → signed wakeup → native runner tools → result, with revocation", async () => {
-    const f = await eventFixture(undefined, true);
+    const f = await eventFixture(true);
     const events = createPublicMcpEvents(db, oauth, f.dispatch, { ...f.options, enableDotPrototype: true });
     const extension = createDotRunnerMcpBridge();
     const identity = { companyId: f.company.id, agentId: randomUUID(), issueId: f.task.id, runId: randomUUID(), sessionId: randomUUID() };
@@ -1420,15 +1413,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     await f.service.unsubscribe(f.principal, f.input);
   });
 
-  it("sends only comment/document references and checks hosted membership on each delivery", async () => {
-    const f = await eventFixture("https://cloud.example");
-    const authority = { token: "fixture-cloud-proof", expiresAt: f.now() + 60_000 };
-    await expect(f.service.subscribe(f.principal, f.input)).rejects.toThrow();
-    const subscription = await f.service.subscribe(f.principal, f.input, authority);
-    expect(new Date(subscription.refreshBefore).getTime()).toBe(authority.expiresAt);
-    await f.activity(); f.denyCloud(); await f.service.tick();
-    expect(f.received.filter(r => r.body.eventId)).toHaveLength(0);
-    await f.service.unsubscribe(f.principal, f.input);
+  it("sends only comment/document references", async () => {
     const g = await eventFixture();
     for (const [name, action, details] of [
       ["wardmote.task.comment_created", "issue.comment_added", { commentId: randomUUID(), body: "private comment" }],

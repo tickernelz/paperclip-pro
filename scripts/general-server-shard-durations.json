@@ -533,7 +533,6 @@
     "server/src/__tests__/speko-delivery-diagnostics.test.ts": 18,
     "server/src/__tests__/speko-protocol.test.ts": 18,
     "server/src/__tests__/speko-provider.test.ts": 93,
-    "server/src/__tests__/startup-refusals.test.ts": 8,
     "server/src/__tests__/static-index-html.test.ts": 41,
     "server/src/__tests__/static-ui-cache.test.ts": 5,
     "server/src/__tests__/static-ui-compression.test.ts": 71,
