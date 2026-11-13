@@ -1625,7 +1625,7 @@ pnpm test:e2e:runner -- --list --suite pi-native
 pnpm test:e2e:runner -- --id pi-native.runner-acpx-pi.local.native-questions
 ```
 
-Native questions exercise the runner-owned `paperclip_native_question` tool and
+Native questions exercise the runner-owned `wardmote_native_question` tool and
 the durable browser form bridge. The existing five extended-harness journeys
 continue to prove semantic Wardmote questions and planning separately. Personal
 file persistence uses two fresh task runs and independent byte checks; restrictive

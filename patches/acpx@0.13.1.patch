@@ -51,8 +51,8 @@ diff --git a/dist/live-checkpoint-BSIrfgVo.js b/dist/live-checkpoint-BSIrfgVo.js
  		const parsed = parseTokenUsage(value);
  		if (parsed == null) return null;
 -		usage[key] = parsed;
-+		const receipt = parsePaperclipPiReceipt(asRecord$4(value)?.paperclip_pi);
-+		usage[key] = receipt ? { ...parsed, paperclip_pi: receipt } : parsed;
++		const receipt = parseWardmotePiReceipt(asRecord$4(value)?.wardmote_pi);
++		usage[key] = receipt ? { ...parsed, wardmote_pi: receipt } : parsed;
  	}
  	return usage;
  }
@@ -777,7 +777,7 @@ diff --git a/dist/live-checkpoint-BSIrfgVo.js b/dist/live-checkpoint-BSIrfgVo.js
  	trimConversationForRuntime(conversation);
  	return acpx;
  }
-+function parsePaperclipPiReceipt(raw, costField = "cost_usd") {
++function parseWardmotePiReceipt(raw, costField = "cost_usd") {
 +	const receipt = asRecord$4(raw);
 +	if (receipt?.provenance !== "assistant_message_receipts" && receipt?.provenance !== "assistant_message_and_compaction_receipts") return;
 +	const cost = receipt[costField];
@@ -788,11 +788,11 @@ diff --git a/dist/live-checkpoint-BSIrfgVo.js b/dist/live-checkpoint-BSIrfgVo.js
  	const tokenUsage = sourceToTokenUsage(usage);
 -	if (!tokenUsage) return false;
 -	applyTokenUsage(conversation, tokenUsage, promptMessageId);
-+	const receipt = parsePaperclipPiReceipt(asRecord$4(asRecord$4(usage)?._meta)?.paperclipPi, "costUsd");
++	const receipt = parseWardmotePiReceipt(asRecord$4(asRecord$4(usage)?._meta)?.wardmotePi, "costUsd");
 +	if (!tokenUsage && !receipt) return false;
 +	if (tokenUsage) applyTokenUsage(conversation, tokenUsage, promptMessageId);
 +	const userId = promptMessageId ?? lastUserMessageId(conversation);
-+	if (receipt && userId) conversation.request_token_usage[userId] = { ...conversation.request_token_usage[userId], paperclip_pi: receipt };
++	if (receipt && userId) conversation.request_token_usage[userId] = { ...conversation.request_token_usage[userId], wardmote_pi: receipt };
  	updateConversationTimestamp(conversation, timestamp);
  	trimConversationForRuntime(conversation);
  	return true;
@@ -1303,7 +1303,7 @@ index c3da16452..40ae05653 100644
    cumulative_cost?: SessionUsageCost;
 -  request_token_usage: Record<string, SessionTokenUsage>;
 +  request_token_usage: Record<string, SessionTokenUsage & {
-+    paperclip_pi?: { provenance: "assistant_message_receipts" | "assistant_message_and_compaction_receipts"; cost_usd?: number };
++    wardmote_pi?: { provenance: "assistant_message_receipts" | "assistant_message_and_compaction_receipts"; cost_usd?: number };
 +  }>;
 +  cursor_prompt_usage?: { request_id: string; prompt_message_id: string; receipt: Record<string, unknown> };
    acpx?: SessionAcpxState;

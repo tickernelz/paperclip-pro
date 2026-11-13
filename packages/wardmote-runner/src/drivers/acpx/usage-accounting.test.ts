@@ -136,7 +136,7 @@ describe("persisted terminal ACPX usage", () => {
 
 describe("Pi prompt accounting authority", () => {
   const after = { lastRequestId: "turn", usageCost: { amount: 999, currency: "USD" }, requestTokenUsage: {
-    message: { input_tokens: 12, paperclip_pi: { provenance: "assistant_message_receipts", cost_usd: 0.123 } },
+    message: { input_tokens: 12, wardmote_pi: { provenance: "assistant_message_receipts", cost_usd: 0.123 } },
   } };
   it("preserves an exact new Pi receipt estimate without charging it as billed spend", () => {
     const usage = persistedAcpxTurnUsage({}, after, "turn", "pi")!;
@@ -153,7 +153,7 @@ describe("Pi prompt accounting authority", () => {
       { provenance: "assistant_message_receipts", cost_usd: -1 },
       { provenance: "assistant_message_receipts", cost_usd: Infinity }]) {
       const usage = persistedAcpxTurnUsage({}, { ...after, requestTokenUsage: {
-        message: { input_tokens: 12, paperclip_pi: receipt },
+        message: { input_tokens: 12, wardmote_pi: receipt },
       } }, "turn", "pi")!;
       expect(usage.cost).toBeUndefined();
       expect(acpxUsageEstimateNotice(usage, "turn:pricing")).toBeNull();
@@ -161,7 +161,7 @@ describe("Pi prompt accounting authority", () => {
   });
   it("preserves compaction receipt provenance without treating estimates as billing", () => {
     const usage = persistedAcpxTurnUsage({}, { ...after, requestTokenUsage: {
-      message: { input_tokens: 12, paperclip_pi: {
+      message: { input_tokens: 12, wardmote_pi: {
         provenance: "assistant_message_and_compaction_receipts", cost_usd: 0.25,
       } },
     } }, "turn", "pi")!;

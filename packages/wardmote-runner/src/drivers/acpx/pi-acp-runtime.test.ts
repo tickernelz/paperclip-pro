@@ -22,16 +22,16 @@ describe("Pi native assistant boundaries", () => {
       const start = messages.normalize({ type: "message_start", message: message() });
       const delta = messages.normalize({ type: "message_update", message: message(), assistantMessageEvent: { type: "thinking_delta", delta: "thought" } });
       const end = messages.normalize({ type: "message_end", message: message(1, reason) });
-      const chunk = piAssistantChunk(start.paperclipAssistantMessage);
+      const chunk = piAssistantChunk(start.wardmoteAssistantMessage);
       ids.push(chunk.messageId);
       expect(chunk).toMatchObject({ content: { text: "" }, _meta: { kind: "start" } });
-      expect(piAssistantChunk(delta.paperclipAssistantMessage, "thought", true)).toMatchObject({ messageId: chunk.messageId, sessionUpdate: "agent_thought_chunk" });
-      expect(piAssistantChunk(end.paperclipAssistantMessage)).toMatchObject({ messageId: chunk.messageId, content: { text: "" }, _meta: { kind: `end:${reason}` } });
+      expect(piAssistantChunk(delta.wardmoteAssistantMessage, "thought", true)).toMatchObject({ messageId: chunk.messageId, sessionUpdate: "agent_thought_chunk" });
+      expect(piAssistantChunk(end.wardmoteAssistantMessage)).toMatchObject({ messageId: chunk.messageId, content: { text: "" }, _meta: { kind: `end:${reason}` } });
       messages.normalize({ type: "agent_settled" });
     }
     expect(new Set(ids).size).toBe(5);
     const loaded = new PiAssistantMessages("00000000-0000-4000-8000-000000000001");
-    expect(piAssistantChunk(loaded.normalize({ type: "message_start", message: message() }).paperclipAssistantMessage).messageId).not.toBe(ids[0]);
+    expect(piAssistantChunk(loaded.normalize({ type: "message_start", message: message() }).wardmoteAssistantMessage).messageId).not.toBe(ids[0]);
   });
   it.each(["message_update", "message_end"])("rejects missing starts for %s and poisons subsequent input", type => {
     const messages = new PiAssistantMessages(namespace);
@@ -70,7 +70,7 @@ describe("Pi native assistant boundaries", () => {
     ]) expect(messages.normalize(event)).toEqual(event);
     expect(() => piAssistantChunk({ messageId: "invented", phase: "start" })).toThrow("provenance");
     const start = messages.normalize({ type: "message_start", message: message() });
-    expect(() => piAssistantChunk(start.paperclipAssistantMessage, "synthetic")).toThrow("synthetic");
+    expect(() => piAssistantChunk(start.wardmoteAssistantMessage, "synthetic")).toThrow("synthetic");
   });
 });
 
@@ -196,7 +196,7 @@ describe("Pi ACP bridge", () => {
 
   it("sends only offered native permission choices and keeps questions separate", async () => {
     const f = fixture(); f.connection.requestPermission.mockResolvedValue({ outcome: { outcome: "selected", optionId: "allow_always" } });
-    const event = { id: "p1", method: "select", title: 'paperclip.pi.permission.v1:{"toolCallId":"tool-a","nativeToolCallId":"native-a","modelIteration":1,"toolName":"bash","input":{"command":"pwd"}}' };
+    const event = { id: "p1", method: "select", title: 'wardmote.pi.permission.v1:{"toolCallId":"tool-a","nativeToolCallId":"native-a","modelIteration":1,"toolName":"bash","input":{"command":"pwd"}}' };
     await f.bridge.handle(event);
     expect(f.connection.unstable_createElicitation).not.toHaveBeenCalled();
     expect(f.process.sendExtensionUiResponse).toHaveBeenCalledExactlyOnceWith({ id: "p1", value: "Allow for this session" });
@@ -243,7 +243,7 @@ describe("Pi ACP bridge", () => {
     expect(usage.response()).toMatchObject({ usage: { inputTokens: 8, totalTokens: 20 } });
     usage.accept(failed); // A duplicate old failure cannot undo a successful retry.
     expect(usage.response()._meta).toBeUndefined();
-    expect(usage.response()).toMatchObject({ usage: { _meta: { paperclipPi: { costUsd: 0.02, costSource: "pi_pricing_estimate" } } } });
+    expect(usage.response()).toMatchObject({ usage: { _meta: { wardmotePi: { costUsd: 0.02, costSource: "pi_pricing_estimate" } } } });
     usage.reset(); expect(usage.response()).toEqual({});
   });
 
@@ -251,11 +251,11 @@ describe("Pi ACP bridge", () => {
     const usage = new PiTurnUsage();
     usage.accept({ role: "assistant", timestamp: 1, stopReason: "stop", usage: { input: 4, output: 2 } });
     expect(usage.response()).toEqual({ usage: {
-      inputTokens: 4, outputTokens: 2, _meta: { paperclipPi: { provenance: "assistant_message_receipts" } },
+      inputTokens: 4, outputTokens: 2, _meta: { wardmotePi: { provenance: "assistant_message_receipts" } },
     } });
     usage.accept({ role: "assistant", timestamp: 2, stopReason: "stop", usage: { input: 4, output: 2, cacheRead: 0, cacheWrite: 0, cost: { total: 0 } } });
     expect(usage.response()).toEqual({ usage: {
-      inputTokens: 8, outputTokens: 4, _meta: { paperclipPi: { provenance: "assistant_message_receipts" } },
+      inputTokens: 8, outputTokens: 4, _meta: { wardmotePi: { provenance: "assistant_message_receipts" } },
     } });
   });
 
@@ -263,7 +263,7 @@ describe("Pi ACP bridge", () => {
     const usage = new PiTurnUsage();
     usage.accept({ role: "assistant", timestamp: 1, stopReason: "error", usage: { input: 4, output: 2 } });
     expect(usage.response("cancelled")).toEqual({ usage: {
-      inputTokens: 4, outputTokens: 2, _meta: { paperclipPi: { provenance: "assistant_message_receipts" } },
+      inputTokens: 4, outputTokens: 2, _meta: { wardmotePi: { provenance: "assistant_message_receipts" } },
     } });
     // Ordinary settlement keeps the provider failure and partial accounting.
     expect(usage.response("end_turn")).toMatchObject({
@@ -277,9 +277,9 @@ describe("Pi ACP bridge", () => {
     usage.accept({ role: "assistant", timestamp: 1, stopReason: "error", usage: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0, cost: { total: 0.01 } } });
     const compacted = { firstKeptEntryId: "entry-2", tokensBefore: 100, summary: "Context summary", usage: { input: 10, output: 4, cacheRead: 2, cacheWrite: 0, cost: { total: 0.02 } } };
     usage.acceptCompaction(compacted); usage.acceptCompaction(compacted);
-    expect(usage.response()).toMatchObject({ usage: { inputTokens: 11, outputTokens: 6, totalTokens: 19, _meta: { paperclipPi: { provenance: "assistant_message_and_compaction_receipts", costUsd: 0.03 } } }, _meta: { jetbrains: { air: { sessionFailure: { severity: "error" } } } } });
+    expect(usage.response()).toMatchObject({ usage: { inputTokens: 11, outputTokens: 6, totalTokens: 19, _meta: { wardmotePi: { provenance: "assistant_message_and_compaction_receipts", costUsd: 0.03 } } }, _meta: { jetbrains: { air: { sessionFailure: { severity: "error" } } } } });
     usage.acceptCompaction({ summary: "Missing usage" });
-    expect(usage.response().usage).toEqual({ _meta: { paperclipPi: { provenance: "assistant_message_and_compaction_receipts" } } });
+    expect(usage.response().usage).toEqual({ _meta: { wardmotePi: { provenance: "assistant_message_and_compaction_receipts" } } });
   });
 
   it("launches verified paths only and rejects session escapes", async () => {
@@ -287,8 +287,8 @@ describe("Pi ACP bridge", () => {
     await mkdir(join(root, "sessions"));
     for (const name of ["node", "cli.js", "extension.js"]) await writeFile(join(root, name), "verified");
     const environment = {
-      PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1", PAPERCLIP_PI_READ_ONLY: "0",
-      PAPERCLIP_PI_NODE_EXECUTABLE: join(root, "node"), PAPERCLIP_PI_ENTRYPOINT: join(root, "cli.js"), PAPERCLIP_PI_EXTENSION_PATH: join(root, "extension.js"),
+      WARDMOTE_ACPX_ISOLATED_CONTEXT: "1", WARDMOTE_PI_READ_ONLY: "0",
+      WARDMOTE_PI_NODE_EXECUTABLE: join(root, "node"), WARDMOTE_PI_ENTRYPOINT: join(root, "cli.js"), WARDMOTE_PI_EXTENSION_PATH: join(root, "extension.js"),
       PI_CODING_AGENT_DIR: root,
     };
     const launch = createPiLaunchSpec({ cwd: root, mcpServers: [] }, environment);
@@ -296,13 +296,13 @@ describe("Pi ACP bridge", () => {
     expect(launch.args).toEqual(expect.arrayContaining(["--no-extensions", "--no-approve", "--no-skills", "--offline"]));
     const ambient = createPiLaunchSpec({ cwd: root }, { ...environment, AGENT_HOME: "/ambient/unregistered" });
     expect(ambient.env.AGENT_HOME).toBeUndefined();
-    expect(JSON.parse(ambient.env.PAPERCLIP_PI_RUNTIME_CONFIGURATION!).agentHome).toBeUndefined();
+    expect(JSON.parse(ambient.env.WARDMOTE_PI_RUNTIME_CONFIGURATION!).agentHome).toBeUndefined();
     const agentHome = await realpath(root);
-    const bound = createPiLaunchSpec({ cwd: root }, { ...environment, AGENT_HOME: "/ambient/unregistered", PAPERCLIP_PI_AGENT_HOME: agentHome });
+    const bound = createPiLaunchSpec({ cwd: root }, { ...environment, AGENT_HOME: "/ambient/unregistered", WARDMOTE_PI_AGENT_HOME: agentHome });
     expect(bound.env.AGENT_HOME).toBe(agentHome);
-    expect(JSON.parse(bound.env.PAPERCLIP_PI_RUNTIME_CONFIGURATION!).agentHome).toBe(agentHome);
-    for (const path of ["/", "relative", join(root, "cli.js")]) expect(() => createPiLaunchSpec({ cwd: root }, { ...environment, PAPERCLIP_PI_AGENT_HOME: path })).toThrow("registered directory");
-    expect(() => createPiLaunchSpec({ cwd: root }, { ...environment, PAPERCLIP_PI_NODE_EXECUTABLE: "pi" })).toThrow("binding");
+    expect(JSON.parse(bound.env.WARDMOTE_PI_RUNTIME_CONFIGURATION!).agentHome).toBe(agentHome);
+    for (const path of ["/", "relative", join(root, "cli.js")]) expect(() => createPiLaunchSpec({ cwd: root }, { ...environment, WARDMOTE_PI_AGENT_HOME: path })).toThrow("registered directory");
+    expect(() => createPiLaunchSpec({ cwd: root }, { ...environment, WARDMOTE_PI_NODE_EXECUTABLE: "pi" })).toThrow("binding");
     await symlink(join(root, "cli.js"), join(root, "sessions", "escape.jsonl"));
     expect(() => createPiLaunchSpec({ cwd: root, sessionPath: join(root, "sessions", "escape.jsonl") }, environment)).toThrow("escaped");
   });

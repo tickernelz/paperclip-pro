@@ -866,9 +866,9 @@ describe("ACPX runtime host", () => {
     const model = "openrouter/deepseek/deepseek-v4-flash-0731";
     const profile = resolveQualifiedAcpxProfile("pi", model);
     const openRuntime = vi.fn(async (options: AcpxRuntimePortOpenOptions) => {
-      expect(options.launchEnvironment.PAPERCLIP_PI_READ_ONLY).toBe("1");
-      expect(options.launchEnvironment.PAPERCLIP_PI_SYSTEM_INSTRUCTIONS).toBe("Bound instructions");
-      expect(JSON.parse(options.launchEnvironment.PAPERCLIP_PI_READ_ROOTS!)).toEqual([]);
+      expect(options.launchEnvironment.WARDMOTE_PI_READ_ONLY).toBe("1");
+      expect(options.launchEnvironment.WARDMOTE_PI_SYSTEM_INSTRUCTIONS).toBe("Bound instructions");
+      expect(JSON.parse(options.launchEnvironment.WARDMOTE_PI_READ_ROOTS!)).toEqual([]);
       expect(options.permissionMode).toBe("approve-all");
       return runtimePort({ getStatus: async () => ({ models: { currentModelId: model } }), identity: async () => ({ acpxRecordId: "record-1", backendSessionId: "backend-1", agentSessionId: "agent-1", piThinkingLevel: "low" }) });
     });
@@ -907,7 +907,7 @@ describe("ACPX runtime host", () => {
     temporaryDirectories.push(copies);
     const model = agent === "pi" ? "openrouter/deepseek/deepseek-v4-flash-0731" : "explicit-test-model";
     const options = { ...fixture.options, agent, model, ...(agent === "pi" ? { piThinkingLevel: "low" as const } : {}), permissionMode: "approve-all" as const,
-      providerPolicy: { readOnly: false }, environment: { AGENT_HOME: "/ambient/other-agent", PAPERCLIP_PI_AGENT_HOME: "/ambient/other-agent",
+      providerPolicy: { readOnly: false }, environment: { AGENT_HOME: "/ambient/other-agent", WARDMOTE_PI_AGENT_HOME: "/ambient/other-agent",
         ...(agent === "pi" ? { OPENROUTER_API_KEY: "test" } : agent === "cursor" ? { CURSOR_API_KEY: "test" } : { COPILOT_GITHUB_TOKEN: "test" }),
       },
     };
@@ -919,7 +919,7 @@ describe("ACPX runtime host", () => {
     // Missing trusted context must not turn ambient values into authority.
     const withoutCopy = await AcpxRuntimeHost.open(options, dependencies);
     expect(opened.at(-1)!.launchEnvironment.AGENT_HOME).toBeUndefined();
-    expect(opened.at(-1)!.launchEnvironment.PAPERCLIP_PI_AGENT_HOME).toBeUndefined();
+    expect(opened.at(-1)!.launchEnvironment.WARDMOTE_PI_AGENT_HOME).toBeUndefined();
     await withoutCopy.close({ reason: "no registered copy" });
     for (const run of ["first", "second"]) {
       const rootPath = join(copies, run); await mkdir(rootPath);
@@ -927,7 +927,7 @@ describe("ACPX runtime host", () => {
       const host = await AcpxRuntimeHost.open({ ...options, runtimeContext }, dependencies);
       const launch = opened.at(-1)!;
       expect(launch.launchEnvironment.AGENT_HOME?.endsWith(`/${run}`)).toBe(true);
-      expect(launch.launchEnvironment.PAPERCLIP_PI_AGENT_HOME).toBe(agent === "pi" ? launch.launchEnvironment.AGENT_HOME : undefined);
+      expect(launch.launchEnvironment.WARDMOTE_PI_AGENT_HOME).toBe(agent === "pi" ? launch.launchEnvironment.AGENT_HOME : undefined);
       expect(launch.launchEnvironment.HOME).not.toBe(launch.launchEnvironment.AGENT_HOME);
       if (run === "second") {
         await rename(rootPath, `${rootPath}-replaced`); await mkdir(rootPath);
@@ -958,7 +958,7 @@ describe("ACPX runtime host", () => {
         'printf "%s\\n" "$AGENT_HOME"; cat "$AGENT_HOME/notes/warm-memory.txt"'],
         { encoding: "utf8", env: process.env });
       console.log(JSON.stringify({ shell,
-        configuration: JSON.parse(process.env.PAPERCLIP_PI_RUNTIME_CONFIGURATION),
+        configuration: JSON.parse(process.env.WARDMOTE_PI_RUNTIME_CONFIGURATION),
         arguments: process.argv.slice(2) }));
     `);
     const model = "openrouter/deepseek/deepseek-v4-flash-0731";
@@ -966,9 +966,9 @@ describe("ACPX runtime host", () => {
     const dependencies = fixture.dependencies({ openRuntime: async launch => {
       const spec = createPiLaunchSpec({ cwd: fixture.options.workingDirectory, sessionPath }, {
         ...launch.launchEnvironment,
-        PAPERCLIP_PI_NODE_EXECUTABLE: process.execPath,
-        PAPERCLIP_PI_ENTRYPOINT: entrypoint,
-        PAPERCLIP_PI_EXTENSION_PATH: extension,
+        WARDMOTE_PI_NODE_EXECUTABLE: process.execPath,
+        WARDMOTE_PI_ENTRYPOINT: entrypoint,
+        WARDMOTE_PI_EXTENSION_PATH: extension,
         PI_CODING_AGENT_DIR: sessionHome,
       });
       observed.push(JSON.parse(execFileSync(spec.command, spec.args, {
@@ -989,7 +989,7 @@ describe("ACPX runtime host", () => {
       const host = await AcpxRuntimeHost.open({
         ...fixture.options, agent: "pi", model, piThinkingLevel: "low", permissionMode: "approve-all",
         providerPolicy: { readOnly: false }, runtimeContext, systemInstructions: instructions,
-        environment: { OPENROUTER_API_KEY: "test-only", AGENT_HOME: priorHome, PAPERCLIP_PI_AGENT_HOME: priorHome },
+        environment: { OPENROUTER_API_KEY: "test-only", AGENT_HOME: priorHome, WARDMOTE_PI_AGENT_HOME: priorHome },
       }, dependencies);
       try {
         expect(observed.at(-1)).toMatchObject({

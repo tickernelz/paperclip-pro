@@ -150,7 +150,7 @@ describe("Pi installation factory", () => {
     expect(hash(await readFile(new URL("./pi-message-projection.ts", import.meta.url)))).toBe(declaration.messageProjectionSha256);
     expect(hash(await readFile(new URL("./pi-extension-adapter.ts", import.meta.url)))).toBe(declaration.noticeProjectionSha256);
     const helper = stripTypeScriptTypes(await readFile(new URL("./pi-acp-runtime.ts", import.meta.url), "utf8")).split("\n").map(line => line.trimEnd()).join("\n");
-    const extension = stripTypeScriptTypes(await readFile(new URL("./pi-runtime-extension.ts", import.meta.url), "utf8")).replace('from "./pi-acp-runtime.js"', 'from "../node_modules/pi-acp/dist/paperclip-runtime.js"');
+    const extension = stripTypeScriptTypes(await readFile(new URL("./pi-runtime-extension.ts", import.meta.url), "utf8")).replace('from "./pi-acp-runtime.js"', 'from "../node_modules/pi-acp/dist/wardmote-runtime.js"');
     expect(hash(helper)).toBe(declaration.helperSha256);
     expect(hash(extension)).toBe(declaration.extensionSha256);
     const materializer = await readFile(new URL("../../../scripts/materialize-pi-distribution.mjs", import.meta.url), "utf8");
@@ -202,9 +202,9 @@ describe("Pi installation factory", () => {
     const command = await installation.openCommand();
     const child = command.spawn([], { cwd: workspace, env: {
       PATH: "/usr/bin:/bin", HOME: agentHome, PI_CODING_AGENT_DIR: agentHome,
-      PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1", PAPERCLIP_PI_READ_ONLY: "1",
-      PAPERCLIP_PI_READ_ROOTS: "[]", PAPERCLIP_PI_PROTECTED_ROOTS: JSON.stringify([agentHome]),
-      PAPERCLIP_PI_ENTRYPOINT: "/unverified/ignored.js", PI_TELEMETRY: "0",
+      WARDMOTE_ACPX_ISOLATED_CONTEXT: "1", WARDMOTE_PI_READ_ONLY: "1",
+      WARDMOTE_PI_READ_ROOTS: "[]", WARDMOTE_PI_PROTECTED_ROOTS: JSON.stringify([agentHome]),
+      WARDMOTE_PI_ENTRYPOINT: "/unverified/ignored.js", PI_TELEMETRY: "0",
     } });
     let stderr = ""; child.stderr!.on("data", chunk => { stderr += String(chunk); });
     const pending = new Map<number, { resolve(value: any): void; reject(error: Error): void }>();
@@ -227,7 +227,7 @@ describe("Pi installation factory", () => {
     });
     try {
       const initialized = await call("initialize", { protocolVersion: 1, clientCapabilities: { elicitation: { form: {} } } });
-      expect(initialized.agentCapabilities._meta.paperclipPi.steering).toBe(true);
+      expect(initialized.agentCapabilities._meta.wardmotePi.steering).toBe(true);
       expect(initialized.authMethods).toEqual([]);
       await expect(call("session/new", { cwd: workspace, mcpServers: [] })).rejects.toThrow("Bind the configured OpenRouter API credential");
     } finally {

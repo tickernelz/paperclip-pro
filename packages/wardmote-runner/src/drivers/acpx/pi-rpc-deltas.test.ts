@@ -16,10 +16,10 @@ describe("pinned Pi 1 serialized message deltas", () => {
     const accept = fixture(); accept({ type: "turn_start" }); const first = accept(start());
     accept(delta(`${kind}_start`));
     const streamed = accept(delta(`${kind}_delta`, 0, { delta: "native text" }));
-    expect(streamed.paperclipAssistantMessage).toMatchObject({ messageId: (first.paperclipAssistantMessage as any).messageId, phase: "delta" });
+    expect(streamed.wardmoteAssistantMessage).toMatchObject({ messageId: (first.wardmoteAssistantMessage as any).messageId, phase: "delta" });
     expect(streamed.assistantMessageEvent).toMatchObject({ delta: "native text" });
     accept(delta(`${kind}_end`, 0, { content: "native text" }));
-    expect(accept({ ...end(), message: { ...end().message, content: [{ type: kind, [kind === "text" ? "text" : "thinking"]: "native text" }] } }).paperclipAssistantMessage).toMatchObject({ phase: "end", stopReason: "stop" });
+    expect(accept({ ...end(), message: { ...end().message, content: [{ type: kind, [kind === "text" ? "text" : "thinking"]: "native text" }] } }).wardmoteAssistantMessage).toMatchObject({ phase: "end", stopReason: "stop" });
     accept({ type: "turn_end" }); accept({ type: "agent_settled" });
   });
   it.each(["text", "thinking"])("rejects a mismatched %s end and remains poisoned", kind => {
@@ -54,7 +54,7 @@ describe("pinned Pi 1 serialized message deltas", () => {
     expect(accept({ type: "message_start", message }).assistantMessageEvent).toBeUndefined();
     const terminal = accept({ type: "message_end", message });
     expect(terminal.message).toEqual(message); expect(terminal.assistantMessageEvent).toBeUndefined();
-    expect(terminal.paperclipAssistantMessage).toMatchObject({ phase: "end", stopReason: reason });
+    expect(terminal.wardmoteAssistantMessage).toMatchObject({ phase: "end", stopReason: reason });
     accept({ type: "turn_end" }); accept({ type: "agent_settled" });
   });
   it("correlates interleaved tool indices and preserves final arguments and native IDs", () => {
@@ -91,7 +91,7 @@ describe("pinned Pi 1 serialized message deltas", () => {
   });
   it.each(["error", "aborted"])("closes incomplete stream blocks on authoritative %s, then admits a fresh occurrence", reason => {
     const accept = fixture(); accept({ type: "turn_start" }); accept(start()); accept(delta("text_start")); accept(end(reason)); accept({ type: "turn_end" }); accept({ type: "agent_settled" });
-    accept({ type: "turn_start" }); expect(accept(start(2)).paperclipAssistantMessage).toMatchObject({ phase: "start" });
+    accept({ type: "turn_start" }); expect(accept(start(2)).wardmoteAssistantMessage).toMatchObject({ phase: "start" });
   });
   it.each([
     [delta("text_delta", 0, { delta: "orphan" })],

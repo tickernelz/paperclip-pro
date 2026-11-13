@@ -94,14 +94,14 @@ test("manifest includes resources and emitted extension and rejects byte changes
   await write("node/bin/node", "verified-node");
   await write("node_modules/@earendil-works/pi-coding-agent/dist/cli.js", "verified-pi");
   await write("node_modules/pi-acp/dist/index.js", "verified-wrapper");
-  await write("node_modules/pi-acp/dist/paperclip-runtime.js", "verified-helper");
-  await write("extensions/paperclip.js", "verified-extension");
+  await write("node_modules/pi-acp/dist/wardmote-runtime.js", "verified-helper");
+  await write("extensions/wardmote.js", "verified-extension");
   await write("node_modules/native/runtime.node", Buffer.from([0, 1, 2]));
   await write("node_modules/native/image.wasm", Buffer.from([4, 5, 6]));
   await write("node_modules/native/theme.json", '{"name":"theme"}');
   const result = await writePiDistributionManifest(root);
   assert.equal(result.manifest.files.length, 8);
-  assert.match(result.environment.PAPERCLIP_PI_EXTENSION_PATH, /extensions\/paperclip\.js$/);
+  assert.match(result.environment.WARDMOTE_PI_EXTENSION_PATH, /extensions\/paperclip\.js$/);
   await write("node_modules/native/image.wasm", "tampered");
   await assert.rejects(verifyPiRuntimeManifest(root, result.manifest), /differs from its qualified manifest/);
   await symlink("/outside", join(root, "escape"));

@@ -676,7 +676,7 @@ function piRuntimeFailureKey(event: JsonRecord, payload: JsonRecord): string | n
     || payload.category !== "pi.runtime_failure"
     || !text(event.runId) || !text(event.turnId) || !text(event.normalizedSessionId)) return null;
   const details = Array.isArray(payload.details) ? payload.details.map(record) : [];
-  if (!details.some(detail => detail.name === "source.method" && detail.value === "paperclip/pi_notice")
+  if (!details.some(detail => detail.name === "source.method" && detail.value === "wardmote/pi_notice")
     || !details.some(detail => detail.name === "source.nativeEvent" && detail.value === "runtime_failure")
     || !details.some(detail => detail.name === "source.sessionId" && text(detail.value))) return null;
   const { noticeId: _noticeId, ...notice } = payload;

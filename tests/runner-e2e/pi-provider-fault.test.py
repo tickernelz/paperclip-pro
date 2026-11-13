@@ -29,7 +29,7 @@ def check_cancelled():
     if CANCELLED: raise KeyboardInterrupt('calibration cancelled')
 
 
-NAMES = [fault.NODE, fault.ENTRY, fault.EXTENSION, 'pi-entry.cjs', 'node_modules/pi-acp/dist/index.js', 'node_modules/pi-acp/dist/paperclip-runtime.js']
+NAMES = [fault.NODE, fault.ENTRY, fault.EXTENSION, 'pi-entry.cjs', 'node_modules/pi-acp/dist/index.js', 'node_modules/pi-acp/dist/wardmote-runtime.js']
 
 
 class ClosureMetadataTests(unittest.TestCase):

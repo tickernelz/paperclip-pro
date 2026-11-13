@@ -6,7 +6,7 @@ import test from "node:test";
 
 const require = createRequire(new URL("../packages/wardmote-runner/package.json", import.meta.url));
 const source = readFileSync(require.resolve("@agentclientprotocol/codex-acp"), "utf8");
-const helperStart = source.indexOf("function paperclipSandboxPolicy(");
+const helperStart = source.indexOf("function wardmoteSandboxPolicy(");
 const helperEnd = source.indexOf("\nvar CodexAcpClient", helperStart);
 const methodStart = source.indexOf("  async sendPrompt(");
 const methodEnd = source.indexOf("\n  async runAgentFileChangeReport", methodStart);

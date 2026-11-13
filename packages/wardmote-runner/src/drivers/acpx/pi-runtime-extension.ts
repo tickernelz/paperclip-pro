@@ -10,9 +10,9 @@ import { homedir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const PI_PERMISSION_TITLE_PREFIX = "paperclip.pi.permission.v1:";
+export const PI_PERMISSION_TITLE_PREFIX = "wardmote.pi.permission.v1:";
 export const PI_PERMISSION_OPTIONS = ["Allow once", "Allow for this session", "Deny"] as const;
-export const PI_NATIVE_QUESTION_TOOL = "paperclip_native_question";
+export const PI_NATIVE_QUESTION_TOOL = "wardmote_native_question";
 const MAX_CONFIGURATION_BYTES = 64 * 1024;
 const MAX_RESPONSE_BYTES = 4 * 1024 * 1024;
 const MAX_TOOLS = 512;
@@ -81,7 +81,7 @@ export interface PiRuntimeConfiguration {
 
 /** This environment is synthesized by the verified wrapper, never the model. */
 export function readPiRuntimeConfiguration(environment: NodeJS.ProcessEnv): PiRuntimeConfiguration {
-  const raw = environment.PAPERCLIP_PI_RUNTIME_CONFIGURATION;
+  const raw = environment.WARDMOTE_PI_RUNTIME_CONFIGURATION;
   if (!raw || Buffer.byteLength(raw) > MAX_CONFIGURATION_BYTES) throw new Error("Pi runtime configuration is missing or oversized");
   const value = asRecord(JSON.parse(raw));
   const invocationNamespace = value.invocationNamespace;
@@ -245,7 +245,7 @@ async function askPiNativeQuestion(args: Record<string, unknown>, ui: PiUi, sign
 
 /** Keep authenticated tool validation useful without exposing transport credentials. */
 function piMcpToolError(result: Record<string, unknown>, config: PiRuntimeConfiguration): Error {
-  const fallback = "Paperclip tool request was rejected";
+  const fallback = "Wardmote tool request was rejected";
   if (!Array.isArray(result.content) || result.content.length > MAX_TOOLS) return new Error(`${fallback}: invalid error content`);
   const parts: string[] = [];
   for (const item of result.content) {
@@ -311,7 +311,7 @@ export async function installPiRuntimeExtension(
   request: typeof piMcpRequest = piMcpRequest,
 ): Promise<void> {
   // Registered names are held in this closure; provider-originated metadata
-  // cannot promote a tool to the authenticated Paperclip bridge.
+  // cannot promote a tool to the authenticated Wardmote bridge.
   const identities = new PiToolIdentities(config.invocationNamespace);
   pi.on("turn_start", () => identities.begin());
   pi.on("turn_end", () => identities.end());
@@ -347,7 +347,7 @@ export async function installPiRuntimeExtension(
   // turns; background inference must not outlive or bypass that cost authority.
   pi.on("cache_warming_decision", () => ({ action: "stop" }));
   pi.on("project_trust", () => ({ trusted: "no", remember: false }));
-  pi.on("user_bash", () => ({ result: { output: "Interactive shell commands are disabled in Paperclip Runner", exitCode: 1, cancelled: false, truncated: false } }));
+  pi.on("user_bash", () => ({ result: { output: "Interactive shell commands are disabled in Wardmote Runner", exitCode: 1, cancelled: false, truncated: false } }));
   pi.on("before_agent_start", (event) => config.instructions
     ? { systemPrompt: `${event.systemPrompt}\n\n${config.instructions}` } : undefined);
   pi.on("tool_call", async (event, context) => {
@@ -373,7 +373,7 @@ export async function installPiRuntimeExtension(
   const questions = new Map<string, Promise<{ content: Array<Record<string, unknown>>; details: unknown }>>();
   pi.registerTool({
     name: PI_NATIVE_QUESTION_TOOL, label: "Ask a native question",
-    description: "Ask the human a native Pi select, confirm, input, or editor question. Select is single-choice and returns the supplied stable option ID. This cannot approve tools or a Paperclip Plan. For durable task questions or Plan approval use the assigned Paperclip semantic tools. Cancellation is not an answer; confirm false means No or dismissal.",
+    description: "Ask the human a native Pi select, confirm, input, or editor question. Select is single-choice and returns the supplied stable option ID. This cannot approve tools or a Wardmote Plan. For durable task questions or Plan approval use the assigned Wardmote semantic tools. Cancellation is not an answer; confirm false means No or dismissal.",
     // Model gateways may render only the root properties when describing a
     // tool. Expose the field types there as well as in the strict method
     // branches, so an array of options cannot be mistaken for JSON text.
@@ -409,7 +409,7 @@ export async function installPiRuntimeExtension(
   });
   let count = 0;
   for (const server of config.servers) {
-    await request(server, "initialize", { protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "paperclip-pi", version: "1" } }, `pi-init-${server.name}`);
+    await request(server, "initialize", { protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "wardmote-pi", version: "1" } }, `pi-init-${server.name}`);
     const catalog = await request(server, "tools/list", {}, `pi-tools-${server.name}`);
     if (!Array.isArray(catalog.tools) || catalog.nextCursor) throw new Error("Pi MCP catalog is incomplete");
     for (const rawTool of catalog.tools) {
@@ -453,15 +453,15 @@ export async function installPiRuntimeExtension(
   // Pi reports extension-load failures and may continue. The wrapper requires
   // this exact sentinel before admitting prompts, so a failed extension cannot
   // silently leave native tools unguarded. Register only after every MCP binds.
-  pi.registerCommand("paperclip-runtime-ready-v1", {
-    description: "Paperclip runtime gate v1",
+  pi.registerCommand("wardmote-runtime-ready-v1", {
+    description: "Wardmote runtime gate v1",
     async handler() {},
   });
 }
 
-export default async function paperclipPiExtension(pi: PiExtensionApi): Promise<void> {
+export default async function wardmotePiExtension(pi: PiExtensionApi): Promise<void> {
   const configuration = readPiRuntimeConfiguration(process.env);
   // Do not let the model's shell tool inherit authenticated MCP credentials.
-  delete process.env.PAPERCLIP_PI_RUNTIME_CONFIGURATION;
+  delete process.env.WARDMOTE_PI_RUNTIME_CONFIGURATION;
   await installPiRuntimeExtension(pi, configuration);
 }

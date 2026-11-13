@@ -9,5 +9,5 @@
 export const PI_DISTRIBUTION_CLOSURE_SHA256 = Object.freeze({
   "darwin-arm64": "282022db10150c6632b3444df421342e7d534bdf5d5fb1097a2e79d0625a2bcf",
   "darwin-x64": "64e251e19009f755c0b04f73ce2138246faab71a961b0f13d75ebfcc34bef12e",
-  "linux-x64": "713b1fdff42fb56a1518bdc084f181d70bee8ebadc3e4b1d76321ed9108c8410",
+  "linux-x64": "afb6d58a0ae42da1896827117104f6153ab3d5fa1cff91f37f58838a382f1967",
 });

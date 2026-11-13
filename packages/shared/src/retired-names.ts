@@ -22,53 +22,9 @@ const IRREGULAR_LOWER = new Map(
   Object.entries(RETIRED_IRREGULAR_TOOL_RENAMES).map(([before, after]) => [before.toLowerCase(), after.toLowerCase()]),
 );
 
-const PINNED_RETIRED_ENV_SUFFIXES: ReadonlySet<string> = new Set([
-  "ACPX_ISOLATED_CONTEXT",
-  "PI_AGENT_HOME",
-  "PI_ENTRYPOINT",
-  "PI_EXTENSION_PATH",
-  "PI_MODULE_GUARD_PATH",
-  "PI_NODE_EXECUTABLE",
-  "PI_PROTECTED_ROOTS",
-  "PI_READ_ONLY",
-  "PI_READ_ROOTS",
-  "PI_RUNTIME_CONFIGURATION",
-  "PI_SYSTEM_INSTRUCTIONS",
-]);
+const PINNED_RETIRED_SCHEMA_ID_SUFFIXES: ReadonlySet<string> = new Set([ … ]);
 
-const PINNED_RETIRED_SCHEMA_ID_SUFFIXES: ReadonlySet<string> = new Set([
-  "acpx-profiles.v1",
-  "acpx-runtime-contract.v1",
-  "acpx_profile_declaration.v1",
-  "cursor.instructions-proof.v1",
-  "cursor.instructions.v1",
-  "cursor.native-mode-offline-proof.v1",
-  "cursor.native-usage-offline-proof.v1",
-  "cursor.native-usage.v1",
-  "cursor.patch-initialize-proof.v1",
-  "cursor.production-contract.v1",
-  "cursor.provider-error.v1",
-  "cursor.runtime-patch-proof.v1",
-  "cursor_closure.v1",
-  "cursor_distribution.v1",
-  "native_distribution_closure.v1",
-  "pi-linux-native-admission-proof.v1",
-  "pi-model-admission-proof.v1",
-  "pi-native-controls-proof.v1",
-  "pi-native-denial-proof.v1",
-  "pi-product-file-proof.v1",
-  "pi-product-qualification-proof.v1",
-  "pi-product-question-proof.v1",
-  "pi-provider-pack-offline-proof.v1",
-  "pi-security-closure-proof.v1",
-  "pi-session-open-diagnostic.v1",
-  "pi.permission.v1",
-]);
-
-export function retiredSchemaId(current: string): string {
-  if (!current.startsWith("wardmote.")) throw new Error(`not a current schema id: ${current}`);
-  return `paperclip.${current.slice("wardmote.".length)}`;
-}
+export function retiredSchemaId(current: string): string { … }
 
 export type RetiredNameRewriteOptions = {
   keepEnvKeys?: ReadonlySet<string>;
@@ -85,55 +41,12 @@ function renameLowerTool(name: string): string {
 }
 
 /** Rewrites retired env, MCP tool, header, route and bundled-skill names in agent-facing text. */
-export function rewriteRetiredNames(input: string, options: RetiredNameRewriteOptions = {}): RetiredNameRewrite {
-  let replacements = 0;
-  const count = (next: string) => {
-    replacements += 1;
-    return next;
-  };
-  const text = input
-    .replace(/mcp__paperclip(-assigned)?(__|_)(paperclip[a-z0-9]*)?/g, (_whole, assigned: string | undefined, separator: string, tool: string | undefined) =>
-      count(`mcp__wardmote${assigned ?? ""}${separator}${tool ? renameLowerTool(tool) : ""}`))
-    .replace(/\bpaperclip[A-Z][A-Za-z0-9]*\b/g, (name) => count(renameTool(name)))
-    .replace(/\bPAPERCLIP_[A-Z0-9_]+\b/g, (name) => {
-      const suffix = name.slice("PAPERCLIP_".length);
-      return options.keepEnvKeys?.has(name) || PINNED_RETIRED_ENV_SUFFIXES.has(suffix) ? name : count(`WARDMOTE_${suffix}`);
-    })
-    .replace(/\b(X|x)-(Paperclip|paperclip|PAPERCLIP)-/g, (_whole, x: string, word: string) =>
-      count(`${x}-${word === "Paperclip" ? "Wardmote" : word === "paperclip" ? "wardmote" : "WARDMOTE"}-`))
-    .replace(/\/(mcp|api\/skills)\/paperclip(?![\w-])/g, (_whole, base: string) => count(`/${base}/wardmote`))
-    .replace(/(skill:\/\/|(?<![\w.-])skills\/)paperclip(-board|-converting-plans-to-tasks|-create-agent)?(?![\w-])/g,
-      (_whole, prefix: string, suffix: string | undefined) => count(`${prefix}wardmote${suffix ?? ""}`))
-    .replace(/(?<![\w/.-])paperclip(-board|-converting-plans-to-tasks|-create-agent)(?![\w-])/g,
-      (_whole, suffix: string) => count(`wardmote${suffix}`))
-    .replace(/(?<![\w-])paperclip-(upload-artifact|issue-update)(?=\.sh\b)/g, (_whole, script: string) => count(`wardmote-${script}`))
-    .replace(/(?<![\w.-])paperclip\.((?:[a-z][a-z0-9_-]*\.)+v[0-9]+)(?![\w-]|\.\w)/g, (whole, suffix: string) =>
-      PINNED_RETIRED_SCHEMA_ID_SUFFIXES.has(suffix) ? whole : count(`wardmote.${suffix}`));
-  return { text, replacements };
-}
+export function rewriteRetiredNames(input: string, options: RetiredNameRewriteOptions = {}): RetiredNameRewrite { … }
 
 /** Applies rewriteRetiredNames to every string leaf; object keys stay as stored. */
-export function rewriteRetiredNamesInJson<T>(value: T, options: RetiredNameRewriteOptions = {}): { value: T; replacements: number } {
-  let replacements = 0;
-  const visit = (node: unknown): unknown => {
-    if (typeof node === "string") {
-      const result = rewriteRetiredNames(node, options);
-      replacements += result.replacements;
-      return result.text;
-    }
-    if (Array.isArray(node)) return node.map(visit);
-    if (node && typeof node === "object") {
-      return Object.fromEntries(Object.entries(node as Record<string, unknown>).map(([key, child]) => [key, visit(child)]));
-    }
-    return node;
-  };
-  const next = visit(value) as T;
-  return { value: next, replacements };
-}
+export function rewriteRetiredNamesInJson<T>(value: T, options: RetiredNameRewriteOptions = {}): { value: T; replacements: number } { … }
 
 /** Retired-prefix keys an operator set in an adapter env block; they keep their names. */
-export function operatorRetiredEnvKeys(adapterConfig: unknown): Set<string> {
-  const env = adapterConfig && typeof adapterConfig === "object" ? (adapterConfig as Record<string, unknown>).env : null;
-  if (!env || typeof env !== "object" || Array.isArray(env)) return new Set();
-  return new Set(Object.keys(env).filter((key) => key.startsWith("PAPERCLIP_")));
-}
+export function operatorRetiredEnvKeys(adapterConfig: unknown): Set<string> { … }
+
+[…70ln elided; re-read needed ranges, e.g. pp-zha5833-r10/packages/shared/src/retired-names.ts:27-54,56-59]

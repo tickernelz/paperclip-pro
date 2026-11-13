@@ -4,7 +4,7 @@ import { StringDecoder } from "node:string_decoder";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import { closeSync, constants, fstatSync, lstatSync, openSync, readFileSync, realpathSync } from "node:fs";
 
-const PERMISSION_PREFIX = "paperclip.pi.permission.v1:";
+const PERMISSION_PREFIX = "wardmote.pi.permission.v1:";
 const PERMISSION_CHOICES = [
   { optionId: "allow_once", name: "Allow once", kind: "allow_once" },
   { optionId: "allow_always", name: "Allow for this session", kind: "allow_always" },
@@ -183,7 +183,7 @@ export class PiAssistantMessages {
         this.active = null;
       }
     }
-    return { ...event, paperclipAssistantMessage: boundary };
+    return { ...event, wardmoteAssistantMessage: boundary };
   }
 }
 
@@ -345,7 +345,7 @@ export function snapshotPiWorkspaceFile(cwd: string, path: string, environment: 
     return !isAbsolute(suffix) && suffix !== ".." && !suffix.startsWith(`..${sep}`);
   };
   if (!within(root, logical) || !within(root, physical)) throw new Error("Pi diff escaped its workspace");
-  for (const protectedPath of pathArray(environment.PAPERCLIP_PI_PROTECTED_ROOTS)) {
+  for (const protectedPath of pathArray(environment.WARDMOTE_PI_PROTECTED_ROOTS)) {
     if (within(protectedPath, logical)) throw new Error("Pi diff targets protected state");
     let protectedPhysical: string;
     try { protectedPhysical = realpathSync(protectedPath); } catch { continue; }
@@ -367,15 +367,15 @@ export function createPiLaunchSpec(
   params: { cwd: string; mcpServers?: unknown[]; sessionPath?: string },
   environment: NodeJS.ProcessEnv,
 ): { command: string; args: string[]; env: NodeJS.ProcessEnv; invocationNamespace: string } {
-  if (environment.PAPERCLIP_ACPX_ISOLATED_CONTEXT !== "1") throw new Error("Pi requires an isolated runner launch");
-  const command = requiredFile(environment, "PAPERCLIP_PI_NODE_EXECUTABLE");
-  const entrypoint = requiredFile(environment, "PAPERCLIP_PI_ENTRYPOINT");
-  const extension = requiredFile(environment, "PAPERCLIP_PI_EXTENSION_PATH");
-  if (environment.PAPERCLIP_PI_READ_ONLY !== "0" && environment.PAPERCLIP_PI_READ_ONLY !== "1") throw new Error("Pi requires an explicit read-only policy");
-  const readRoots = pathArray(environment.PAPERCLIP_PI_READ_ROOTS);
-  const protectedRoots = pathArray(environment.PAPERCLIP_PI_PROTECTED_ROOTS);
+  if (environment.WARDMOTE_ACPX_ISOLATED_CONTEXT !== "1") throw new Error("Pi requires an isolated runner launch");
+  const command = requiredFile(environment, "WARDMOTE_PI_NODE_EXECUTABLE");
+  const entrypoint = requiredFile(environment, "WARDMOTE_PI_ENTRYPOINT");
+  const extension = requiredFile(environment, "WARDMOTE_PI_EXTENSION_PATH");
+  if (environment.WARDMOTE_PI_READ_ONLY !== "0" && environment.WARDMOTE_PI_READ_ONLY !== "1") throw new Error("Pi requires an explicit read-only policy");
+  const readRoots = pathArray(environment.WARDMOTE_PI_READ_ROOTS);
+  const protectedRoots = pathArray(environment.WARDMOTE_PI_PROTECTED_ROOTS);
   const workspace = realpathSync(params.cwd);
-  const suppliedAgentHome = environment.PAPERCLIP_PI_AGENT_HOME;
+  const suppliedAgentHome = environment.WARDMOTE_PI_AGENT_HOME;
   let agentHome: string | undefined;
   if (suppliedAgentHome !== undefined) {
     if (!isAbsolute(suppliedAgentHome) || /[\0\r\n]/.test(suppliedAgentHome) || suppliedAgentHome === "/" || !lstatSync(suppliedAgentHome).isDirectory() || realpathSync(suppliedAgentHome) !== suppliedAgentHome) throw new Error("Pi agent files require a canonical registered directory");
@@ -384,14 +384,14 @@ export function createPiLaunchSpec(
   const invocationNamespace = randomUUID();
   const configuration = JSON.stringify({
     invocationNamespace, workspace, servers: params.mcpServers ?? [],
-    readOnly: environment.PAPERCLIP_PI_READ_ONLY === "1",
+    readOnly: environment.WARDMOTE_PI_READ_ONLY === "1",
     readRoots, protectedRoots,
     ...(agentHome ? { agentHome } : {}),
-    instructions: environment.PAPERCLIP_PI_SYSTEM_INSTRUCTIONS ?? "",
+    instructions: environment.WARDMOTE_PI_SYSTEM_INSTRUCTIONS ?? "",
   });
   if (Buffer.byteLength(configuration) > 64 * 1024) throw new Error("Pi launch configuration exceeds its bound");
-  const guard = environment.PAPERCLIP_PI_MODULE_GUARD_PATH === undefined ? []
-    : ["--require", requiredFile(environment, "PAPERCLIP_PI_MODULE_GUARD_PATH")];
+  const guard = environment.WARDMOTE_PI_MODULE_GUARD_PATH === undefined ? []
+    : ["--require", requiredFile(environment, "WARDMOTE_PI_MODULE_GUARD_PATH")];
   const args = [...guard, entrypoint, "--mode", "rpc", "--no-extensions", "--no-skills", "--no-prompt-templates", "--no-themes", "--no-approve", "--offline", "-e", extension];
   for (const root of readRoots) args.push("--skill", root);
   if (params.sessionPath) {
@@ -403,7 +403,7 @@ export function createPiLaunchSpec(
     if (!suffix || isAbsolute(suffix) || suffix === ".." || suffix.startsWith(`..${sep}`) || !lstatSync(params.sessionPath).isFile()) throw new Error("Pi session escaped its private home");
     args.push("--session", sessionPath);
   }
-  const env: NodeJS.ProcessEnv = { ...environment, PAPERCLIP_PI_RUNTIME_CONFIGURATION: configuration };
+  const env: NodeJS.ProcessEnv = { ...environment, WARDMOTE_PI_RUNTIME_CONFIGURATION: configuration };
   // Ambient AGENT_HOME never grants filesystem authority. Only the runner's
   // authenticated working-copy binding reaches both the model and tool gate.
   if (agentHome) env.AGENT_HOME = agentHome; else delete env.AGENT_HOME;
@@ -464,7 +464,7 @@ export class PiUiBridge {
         const input = record(permission.input);
         const result = record(await this.connection.requestPermission({
           sessionId: this.sessionId,
-          toolCall: { toolCallId, _meta: { paperclipPi: { nativeToolCallId: text(permission.nativeToolCallId, 256), modelIteration: permission.modelIteration } }, title: `Pi ${toolName}`, kind: toolName === "bash" ? "execute" : ["write", "edit"].includes(toolName) ? "edit" : "read", status: "pending", rawInput: input },
+          toolCall: { toolCallId, _meta: { wardmotePi: { nativeToolCallId: text(permission.nativeToolCallId, 256), modelIteration: permission.modelIteration } }, title: `Pi ${toolName}`, kind: toolName === "bash" ? "execute" : ["write", "edit"].includes(toolName) ? "edit" : "read", status: "pending", rawInput: input },
           options: PERMISSION_CHOICES,
         }));
         const outcome = record(result.outcome);
@@ -484,7 +484,7 @@ export class PiUiBridge {
       const result = record(await this.connection.unstable_createElicitation({
         sessionId: this.sessionId, mode: "form", message: typeof event.message === "string" ? text(event.message) : title,
         requestedSchema: { type: "object", title, properties: { answer: property }, required: ["answer"] },
-        _meta: { paperclipPi: { version: 1, requestId: id, method } },
+        _meta: { wardmotePi: { version: 1, requestId: id, method } },
       }));
       if (result.action !== "accept") { await finish({ cancelled: true }); return; }
       const answer = record(result.content).answer;
@@ -570,7 +570,7 @@ export class PiTurnUsage {
 
   response(stopReason?: "end_turn" | "cancelled"): RecordValue {
     return {
-      ...(this.observed ? { usage: { ...Object.fromEntries(Object.entries(this.total).filter(([name]) => !this.unknown.has(name as keyof typeof this.total))), _meta: { paperclipPi: { provenance: this.compactionObserved ? "assistant_message_and_compaction_receipts" : "assistant_message_receipts", ...(this.costObserved && !this.costIncomplete ? { costUsd: this.cost, costSource: "pi_pricing_estimate" } : {}) } } } } : {}),
+      ...(this.observed ? { usage: { ...Object.fromEntries(Object.entries(this.total).filter(([name]) => !this.unknown.has(name as keyof typeof this.total))), _meta: { wardmotePi: { provenance: this.compactionObserved ? "assistant_message_and_compaction_receipts" : "assistant_message_receipts", ...(this.costObserved && !this.costIncomplete ? { costUsd: this.cost, costSource: "pi_pricing_estimate" } : {}) } } } } : {}),
       ...(this.failed && stopReason !== "cancelled" ? { _meta: { jetbrains: { air: { version: 1, sessionFailure: { severity: "error", category: "service", title: "Pi provider request failed" } } } } } : {}),
     };
   }

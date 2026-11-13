@@ -53,9 +53,9 @@ describe("rewriteRetiredNames", () => {
     expect(result).toEqual({ text, replacements: 0 });
   });
 
-  it("keeps env names pinned inside the Pi distribution closure", () => {
+  it("rewrites the Pi and ACPX env names that the Pi distribution closure now reads", () => {
     const result = rewriteRetiredNames("PAPERCLIP_PI_READ_ONLY=1 PAPERCLIP_ACPX_ISOLATED_CONTEXT=1 PAPERCLIP_PI_PROVIDERS=x");
-    expect(result).toEqual({ text: "PAPERCLIP_PI_READ_ONLY=1 PAPERCLIP_ACPX_ISOLATED_CONTEXT=1 WARDMOTE_PI_PROVIDERS=x", replacements: 1 });
+    expect(result).toEqual({ text: "WARDMOTE_PI_READ_ONLY=1 WARDMOTE_ACPX_ISOLATED_CONTEXT=1 WARDMOTE_PI_PROVIDERS=x", replacements: 3 });
   });
 
   it("is a no-op on already rewritten text", () => {
