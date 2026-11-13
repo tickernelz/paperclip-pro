@@ -649,7 +649,7 @@ export function createDotRunnerMcpTools(db: Db, heartbeat?: DotHeartbeat): Publi
       else if (name === "wardmote_dot_operation_status") result = await broker.operationStatus(principal, String(input.assignmentId), String(input.requestId));
       else if (name === "wardmote_dot_control_ack") result = await broker.controlAck(principal, String(input.assignmentId), String(input.requestId));
       else { const { assignmentId, requestId, ...args } = input;
-        const action = name.replace("paperclip_dot_", "") as ExternalProviderOperation["action"];
+        const action = name.replace("wardmote_dot_", "") as ExternalProviderOperation["action"];
         result = await broker.operation(principal, String(assignmentId), String(requestId), action, args); }
       return { outcome: "completed", result };
     },

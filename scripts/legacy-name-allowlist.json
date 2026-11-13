@@ -1327,7 +1327,6 @@
     ["server/src/services/company-skills.ts",5,"belum-diganti"],
     ["server/src/services/connectors/slack/agent-guidance.ts",2,"belum-diganti"],
     ["server/src/services/connectors/slack/evals/README.md",1,"belum-diganti"],
-    ["server/src/services/dot-runner-broker.ts",1,"belum-diganti"],
     ["server/src/services/email-channels.ts",2,"belum-diganti"],
     ["server/src/services/environment-custom-images.ts",1,"belum-diganti"],
     ["server/src/services/environment-runtime.ts",2,"belum-diganti"],
