@@ -11,7 +11,7 @@ import { WARDMOTE_CHARACTER } from "./character.js";
  */
 export function characterDefinition(appearance: AgentAppearance, muted = false): Definition {
   const colors = CAP_V1_COLORS[(muted ? "muted-dream" : appearance.paletteId) as CharacterPaletteId];
-  const character = { ...WARDMOTE_CHARACTER.character, id: "paperclip-cap-v1", name: "Agent", color: colors.a, color2: colors.b, followCursor: true, followRotation: true };
+  const character = { ...WARDMOTE_CHARACTER.character, id: "wardmote-cap-v1", name: "Agent", color: colors.a, color2: colors.b, followCursor: true, followRotation: true };
   const definition = definitionOf({ version: 1, name: "Wardmote", characters: [character], expressions: WARDMOTE_CHARACTER.expressions, animations: WARDMOTE_CHARACTER.animations }, character);
   for (const animation of definition.animations) if (animation.id === "happy") animation.loop = false;
   return definition;

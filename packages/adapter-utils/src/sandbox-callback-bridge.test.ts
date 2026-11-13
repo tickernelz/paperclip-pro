@@ -1326,7 +1326,7 @@ describe("sandbox callback bridge", () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-hashskip-warm-"));
     cleanupDirs.push(rootDir);
     const remoteDir = path.join(rootDir, "runtime", "codex", "process-sessions");
-    const remotePath = path.posix.join(remoteDir, "paperclip-process-session-remote.mjs");
+    const remotePath = path.posix.join(remoteDir, "wardmote-process-session-remote.mjs");
     const lockDir = path.posix.join(remoteDir, ".wardmote-process-session-script.lock");
     const body = "console.log('process session remote script v1');\n";
 
@@ -1381,7 +1381,7 @@ describe("sandbox callback bridge", () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-hashskip-cold-"));
     cleanupDirs.push(rootDir);
     const remoteDir = path.join(rootDir, "runtime", "codex", "process-sessions");
-    const remotePath = path.posix.join(remoteDir, "paperclip-process-session-remote.mjs");
+    const remotePath = path.posix.join(remoteDir, "wardmote-process-session-remote.mjs");
     const lockDir = path.posix.join(remoteDir, ".wardmote-process-session-script.lock");
     const body = "console.log('process session remote script v2');\n";
 
@@ -1409,7 +1409,7 @@ describe("sandbox callback bridge", () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-hashskip-fail-"));
     cleanupDirs.push(rootDir);
     const remoteDir = path.join(rootDir, "runtime", "codex", "process-sessions");
-    const remotePath = path.posix.join(remoteDir, "paperclip-process-session-remote.mjs");
+    const remotePath = path.posix.join(remoteDir, "wardmote-process-session-remote.mjs");
     const lockDir = path.posix.join(remoteDir, ".wardmote-process-session-script.lock");
 
     // A runner whose exec fails: the hash-gate cannot be evaluated. The write
