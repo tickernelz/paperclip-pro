@@ -1104,6 +1104,7 @@
     ["tests/runner-e2e/first-task.test.ts",1,"belum-diganti"],
     ["tests/runner-e2e/fixtures/pi-native-restart-actual-prefix.json",1,"belum-diganti"],
     ["tests/runner-e2e/fixtures/plan-task-guidance/current-planning.md",1,"belum-diganti"],
+    ["tests/runner-e2e/fixtures/stock-harness/historical-default-agents.md",1,"id-terpin"],
     ["tests/runner-e2e/hiring-template-turn-accounting.ts",1,"belum-diganti"],
     ["tests/runner-e2e/hiring-template-turn-fixture.ts",1,"belum-diganti"],
     ["tests/runner-e2e/history-publish.ts",5,"belum-diganti"],
