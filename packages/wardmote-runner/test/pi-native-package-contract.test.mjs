@@ -86,7 +86,7 @@ for (const brokenCatalog of [false, true]) {
         WARDMOTE_PI_RUNTIME_CONFIGURATION: JSON.stringify({
           invocationNamespace: "00000000-0000-4000-8000-000000000000",
           workspace: join(root, "workspace"), readOnly: true, readRoots: [], protectedRoots: [join(root, "agent")], instructions: "Use the assigned tools",
-          servers: [{ type: "http", name: "paperclip", url: `http://127.0.0.1:${port}/mcp`, headers: [{ name: "Authorization", value: "Bearer 0123456789abcdef0123456789abcdef" }] }],
+          servers: [{ type: "http", name: "wardmote", url: `http://127.0.0.1:${port}/mcp`, headers: [{ name: "Authorization", value: "Bearer 0123456789abcdef0123456789abcdef" }] }],
         }),
       },
     });
@@ -280,7 +280,7 @@ test("real pinned Pi dispatches aliased MCP tools with their exact original name
     const modelRuntime = await ModelRuntime.create({ credentials: AuthStorage.inMemory({}), modelsPath: null, refreshOnCreate: false, allowModelNetwork: false });
     const model = { id: "fixture", name: "Fixture", api: "openai-completions", provider: "fixture", baseUrl: "http://127.0.0.1:1", reasoning: false, input: ["text"], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 8192, maxTokens: 64 };
     const resourceLoader = new DefaultResourceLoader({ cwd: root, agentDir: root, settingsManager: settings, noExtensions: true, noSkills: true, noPromptTemplates: true, noThemes: true, noContextFiles: true,
-      extensionFactories: [pi => installPiRuntimeExtension(pi, { invocationNamespace: "00000000-0000-4000-8000-000000000000", workspace: root, readOnly: true, readRoots: [], protectedRoots: [], instructions: "", servers: [{ type: "http", name: "paperclip", url: "http://127.0.0.1:1", headers: [] }] }, request)] });
+      extensionFactories: [pi => installPiRuntimeExtension(pi, { invocationNamespace: "00000000-0000-4000-8000-000000000000", workspace: root, readOnly: true, readRoots: [], protectedRoots: [], instructions: "", servers: [{ type: "http", name: "wardmote", url: "http://127.0.0.1:1", headers: [] }] }, request)] });
     await resourceLoader.reload();
     ({ session } = await createAgentSession({ cwd: root, agentDir: root, model, modelRuntime, settingsManager: settings, sessionManager: SessionManager.inMemory(root), resourceLoader, noTools: "builtin", thinkingLevel: "off" }));
     const errors = []; const results = [];
@@ -425,7 +425,7 @@ for (const scenario of ["hello", "interleaved-tools", "provider-error", "provide
             ? { name: index === 0 ? "write" : "read", arguments: index === 0
               ? { path: join(agentHomes[index], "memory.txt"), content: "T1 fixture memory\n" }
               : { path: join(agentHomes[index], "memory.txt") } }
-            : { name: "mcp__wardmote__paperclip_finish", arguments: finishArguments(index) };
+            : { name: "mcp__wardmote__wardmote_finish", arguments: finishArguments(index) };
           const chunks = [];
           if (step < 2) {
             const args = JSON.stringify(tool.arguments);
@@ -560,7 +560,7 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
       child.stdin.write(JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n");
     });
     await call("initialize", { protocolVersion: 1, clientCapabilities: {} });
-    const session = await call("session/new", { cwd: join(root, "workspace"), mcpServers: [{ type: "http", name: "paperclip", url: `http://127.0.0.1:${port}/mcp`, headers: [{ name: "Authorization", value: "Bearer 0123456789abcdef0123456789abcdef" }] }] });
+    const session = await call("session/new", { cwd: join(root, "workspace"), mcpServers: [{ type: "http", name: "wardmote", url: `http://127.0.0.1:${port}/mcp`, headers: [{ name: "Authorization", value: "Bearer 0123456789abcdef0123456789abcdef" }] }] });
     const model = "openrouter/deepseek/deepseek-v4-flash-0731";
     const selected = await call("session/set_config_option", { sessionId: session.sessionId, configId: "model", value: model });
     if (warm) {
@@ -570,7 +570,7 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
       assert.equal((await call("session/prompt", { sessionId: session.sessionId, prompt: prompt(0) })).stopReason, "end_turn");
       assert.equal(await readFile(join(agentHomes[0], "memory.txt"), "utf8"), "T1 fixture memory\n");
       const firstUpdates = notifications.map(event => event.params?.update).filter(Boolean);
-      const firstFinish = firstUpdates.find(update => update.sessionUpdate === "tool_call" && update.title === "mcp__wardmote__paperclip_finish");
+      const firstFinish = firstUpdates.find(update => update.sessionUpdate === "tool_call" && update.title === "mcp__wardmote__wardmote_finish");
       assert.ok(firstFinish);
       assert.equal(firstUpdates.filter(update => update.toolCallId === firstFinish.toolCallId && update.status === "completed").length, 1);
       // Product ends the old provider for registered-file collection. Reopen
@@ -582,7 +582,7 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
       await rm(agentHomes[0], { recursive: true });
       await launchWrapper(agentHomes[1]);
       await call("initialize", { protocolVersion: 1, clientCapabilities: {} });
-      const loaded = await call("session/load", { sessionId: session.sessionId, cwd: join(root, "workspace"), mcpServers: [{ type: "http", name: "paperclip", url: `http://127.0.0.1:${port}/mcp`, headers: [{ name: "Authorization", value: "Bearer 0123456789abcdef0123456789abcdef" }] }] });
+      const loaded = await call("session/load", { sessionId: session.sessionId, cwd: join(root, "workspace"), mcpServers: [{ type: "http", name: "wardmote", url: `http://127.0.0.1:${port}/mcp`, headers: [{ name: "Authorization", value: "Bearer 0123456789abcdef0123456789abcdef" }] }] });
       assert.equal(loaded.modes.currentModeId, "low");
       const secondStart = notifications.length;
       const second = call("session/prompt", { sessionId: session.sessionId, prompt: prompt(1) });
@@ -592,7 +592,7 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
           const until = Date.now() + 5000;
           const check = () => {
             const updates = notifications.slice(secondStart).map(event => event.params?.update).filter(Boolean);
-            const finish = updates.find(update => update.sessionUpdate === "tool_call" && update.title === "mcp__wardmote__paperclip_finish");
+            const finish = updates.find(update => update.sessionUpdate === "tool_call" && update.title === "mcp__wardmote__wardmote_finish");
             if (stalledResponse && finish && updates.some(update => update.toolCallId === finish.toolCallId && JSON.stringify(update.rawInput) === JSON.stringify(finishArguments(1)))) return resolve();
             if (Date.now() >= until) return reject(new Error("pending-only fixture boundary not observed"));
             setTimeout(check, 10);
@@ -612,7 +612,7 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
       const readCompleted = readLifecycle.filter(update => update.status === "completed");
       assert.equal(readCompleted.length, 1);
       assert.ok(readCompleted[0].content.some(block => block.type === "content" && block.content?.type === "text" && block.content.text.includes("T1 fixture memory")));
-      const secondFinish = updates.find(update => update.sessionUpdate === "tool_call" && update.title === "mcp__wardmote__paperclip_finish");
+      const secondFinish = updates.find(update => update.sessionUpdate === "tool_call" && update.title === "mcp__wardmote__wardmote_finish");
       assert.ok(secondFinish); assert.notEqual(secondFinish.toolCallId, firstFinish.toolCallId);
       const lifecycle = updates.filter(update => update.toolCallId === secondFinish.toolCallId);
       const executed = scenario === "warm-recovery";

@@ -70,8 +70,8 @@ describe("ACPX permission policy", () => {
 
   it("keeps deny-all closed against provider-supplied semantic metadata", () => {
     for (const [agent, raw] of [
-      ["claude", { toolCall: { name: "mcp__wardmote__paperclip_finish" } }],
-      ["claude", { toolCall: { rawInput: { serverName: "paperclip" } } }],
+      ["claude", { toolCall: { name: "mcp__wardmote__wardmote_finish" } }],
+      ["claude", { toolCall: { rawInput: { serverName: "wardmote" } } }],
       [
         "codex",
         {
@@ -105,13 +105,13 @@ describe("ACPX permission policy", () => {
       [
         "claude",
         "write",
-        { toolCall: { rawInput: { serverName: "paperclip" } } },
+        { toolCall: { rawInput: { serverName: "wardmote" } } },
         {},
       ],
       [
         "claude",
         "execute",
-        { toolCall: { name: "mcp__wardmote__paperclip_finish" } },
+        { toolCall: { name: "mcp__wardmote__wardmote_finish" } },
         {},
       ],
       [
@@ -120,7 +120,7 @@ describe("ACPX permission policy", () => {
         {
           toolCall: {
             _meta: {
-              claudeCode: { toolName: "mcp.paperclip.get_task_context" },
+              claudeCode: { toolName: "mcp.wardmote.get_task_context" },
             },
           },
         },
@@ -147,7 +147,7 @@ describe("ACPX permission policy", () => {
             _meta: { is_mcp_tool_approval: true },
             toolCall: {
               name: "mcp__wardmote__get_task_context",
-              rawInput: { serverName: "paperclip" },
+              rawInput: { serverName: "wardmote" },
             },
           },
         }),

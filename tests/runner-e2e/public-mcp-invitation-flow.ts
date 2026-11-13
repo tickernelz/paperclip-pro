@@ -37,8 +37,8 @@ export async function runPublicMcpInvitationFlow(input: Parameters<typeof runPub
   const hostTools = [
     hostTool("fetch_setup_instructions", "Read the public Wardmote invitation instructions from its URL. This does not install or authorize anything.", urlProperty, ["url"]),
     hostTool("inspect_mcp_configuration", "Inspect this host's existing MCP server configuration and setup capabilities."),
-    hostTool("configure_paperclip_mcp", "Configure this evaluation host's Wardmote MCP endpoint, preserving other servers. Does not authorize access. The host supports device authorization and refresh without a restart.", urlProperty, ["url"]),
-    hostTool("start_paperclip_authorization", "Start device authorization for the configured server and obtain a human verification URL. Never receives tokens in model context."),
+    hostTool("configure_wardmote_mcp", "Configure this evaluation host's Wardmote MCP endpoint, preserving other servers. Does not authorize access. The host supports device authorization and refresh without a restart.", urlProperty, ["url"]),
+    hostTool("start_wardmote_authorization", "Start device authorization for the configured server and obtain a human verification URL. Never receives tokens in model context."),
     hostTool("request_user_approval", "Present the exact verification URL to the human and wait for their browser decision. Only a human approval makes the Wardmote tools available. Never retry a rejection.", urlProperty, ["url"]),
   ].filter(tool => !chatHandoff || tool.name !== "request_user_approval");
   const toolCall = async (name: string, args: Record<string, unknown>): Promise<unknown> => {
@@ -50,13 +50,13 @@ export async function runPublicMcpInvitationFlow(input: Parameters<typeof runPub
       fetched = true; return { markdown: await response.text() };
     }
     if (name === "inspect_mcp_configuration") return { servers: JSON.parse(await readFile(configPath, "utf8")), canConfigure: !unavailable, supportsDeviceAuthorization: !unavailable, restartRequired: false };
-    if (name === "configure_paperclip_mcp") {
+    if (name === "configure_wardmote_mcp") {
       if (unavailable) return { error: "This browser host cannot install or authorize MCP connections from chat. The user must add the server in their connector settings. No Wardmote tools are available." };
       if (!fetched || args.url !== resource) return { error: "Read the invitation and use its exact MCP endpoint first." };
-      if (!configured) { await writeFile(configPath, JSON.stringify({ ...existing, paperclip: { url: resource } })); configurationWrites++; configured = true; }
+      if (!configured) { await writeFile(configPath, JSON.stringify({ ...existing, wardmote: { url: resource } })); configurationWrites++; configured = true; }
       return { configured: true, authorized: false, restartRequired: false };
     }
-    if (name === "start_paperclip_authorization") {
+    if (name === "start_wardmote_authorization") {
       if (!configured || unavailable) return { error: "Configure a supported host first." };
       if (verificationUrl) return { verificationUrl, userCode };
       const registration = await oauthPost("register", { client_name: "Invitation evaluation host", redirect_uris: [], response_types: [], grant_types: ["urn:ietf:params:oauth:grant-type:device_code", "refresh_token"] });
