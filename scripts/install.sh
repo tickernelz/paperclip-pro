@@ -396,7 +396,7 @@ fi
 if [ "$NO_ONBOARD" = "0" ] && [ -t 0 ] && [ -t 1 ]; then
   if command -v wardmote >/dev/null 2>&1; then
     exec wardmote onboard
-  elif [ -x "${HOME:-}/.local/bin/paperclip-pro" ]; then
+  elif [ -x "${HOME:-}/.local/bin/wardmote" ]; then
     exec "${HOME}/.local/bin/wardmote" onboard
   else
     fail "Wardmote was installed, but 'wardmote' is not available on PATH. Open a new shell and run 'wardmote onboard'."
@@ -404,7 +404,7 @@ if [ "$NO_ONBOARD" = "0" ] && [ -t 0 ] && [ -t 1 ]; then
 fi
 
 if [ "$NO_ONBOARD" = "0" ]; then
-  log "Installation complete. Next: paperclip-pro onboard"
+  log "Installation complete. Next: wardmote onboard"
 else
   log "Installation complete."
 fi

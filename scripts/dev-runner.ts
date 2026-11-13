@@ -45,7 +45,7 @@ try {
 const worktreeEnvBootstrap = bootstrapDevRunnerWorktreeEnv(repoRoot, process.env);
 if (worktreeEnvBootstrap.missingEnv) {
   console.error(
-    `[wardmote] linked git worktree at ${repoRoot} is missing ${path.relative(repoRoot, worktreeEnvBootstrap.envPath)}. Run \`paperclip-pro worktree init\` in this worktree before \`pnpm dev\`.`,
+    `[wardmote] linked git worktree at ${repoRoot} is missing ${path.relative(repoRoot, worktreeEnvBootstrap.envPath)}. Run \`wardmote worktree init\` in this worktree before \`pnpm dev\`.`,
   );
   process.exit(1);
 }
@@ -559,7 +559,7 @@ async function getNativeRunnerRequired(): Promise<boolean> {
 }
 
 async function buildWardmoteRunner() {
-  console.log("[wardmote] building paperclip runner...");
+  console.log("[wardmote] building Wardmote runner...");
   const typescriptResult = await runPnpm(
     ["--filter", "@tickernelz/wardmote-runner", "build:typescript"],
     { stdio: "inherit" },
@@ -569,7 +569,7 @@ async function buildWardmoteRunner() {
     return;
   }
   if (typescriptResult.code !== 0) {
-    console.error("[wardmote] paperclip runner build failed");
+    console.error("[wardmote] Wardmote runner build failed");
     process.exit(typescriptResult.code);
   }
 
@@ -583,7 +583,7 @@ async function buildWardmoteRunner() {
     return;
   }
 
-  console.log("[wardmote] building paperclip runner native binary...");
+  console.log("[wardmote] building Wardmote runner native binary...");
   const binaryResult = await runPnpm(
     ["--filter", "@tickernelz/wardmote-runner", "build:binary"],
     { stdio: "inherit" },
@@ -593,7 +593,7 @@ async function buildWardmoteRunner() {
     return;
   }
   if (binaryResult.code !== 0) {
-    console.error("[wardmote] paperclip runner native binary build failed");
+    console.error("[wardmote] Wardmote runner native binary build failed");
     process.exit(binaryResult.code);
   }
 }
