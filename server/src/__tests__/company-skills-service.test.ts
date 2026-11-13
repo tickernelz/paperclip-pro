@@ -739,7 +739,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     if (!wardmoteSkill) throw new Error("Expected bundled Wardmote skill");
 
     const versions = await svc.listVersions(companyId, wardmoteSkill.id);
-    expect(versions.map((version) => version.releaseId).sort()).toEqual(["v0", "v7-roster"]);
+    expect(versions.map((version) => version.releaseId).sort()).toEqual(["v0-wardmote", "v7-roster-wardmote"]);
     expect(versions).toHaveLength(2);
     const storedSkill = await db
       .select({ currentVersionId: companySkills.currentVersionId })
@@ -748,20 +748,20 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       .then((rows) => rows[0]);
     expect(storedSkill?.currentVersionId).toBeNull();
 
-    const champion = versions.find((version) => version.releaseId === "v7-roster");
+    const champion = versions.find((version) => version.releaseId === "v7-roster-wardmote");
     expect(champion).toMatchObject({
       releaseName: "V7 — Roster champion",
       releasedAt: new Date("2026-07-21T00:00:00.000Z"),
     });
-    if (!champion) throw new Error("Expected seeded v7-roster release");
+    if (!champion) throw new Error("Expected seeded v7-roster-wardmote release");
     const championHashes = Object.fromEntries(champion.fileInventory.map((entry) => [
       entry.path,
       createHash("sha256").update(entry.content).digest("hex"),
     ]));
     expect(championHashes).toMatchObject({
-      "SKILL.md": "87b418057b59d7a6ef5d82464267b4808dcf73f7c6e72b5e15d2785c4328e2e2",
-      "references/cases.md": "3b821f59064a7761091020a14819a8d787131f24029748563d6c0e1be7e6eaec",
-      "references/workflows.md": "35af3966848350d517163b3bb9efa956d1668a671ebf807959e4ed86121d91e2",
+      "SKILL.md": "009dbd81f19f88a749c439759c64ede98297d68f0ec5b1a4d4f08859ee45e80c",
+      "references/cases.md": "d36c7dead2a2da8491e93fdfd79574dba3e71a0e0283dceba0c4e6ee4e109b02",
+      "references/workflows.md": "84635809d68e2af88918181e409befb22f976dda3a8e2a029f74ee6e357af90c",
     });
     expect(championHashes).not.toHaveProperty("EDITS.md");
 

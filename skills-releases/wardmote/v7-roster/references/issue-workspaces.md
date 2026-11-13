@@ -7,8 +7,8 @@ Use this reference when an issue has an isolated execution workspace and you nee
 Start from the issue, not from memory:
 
 ```sh
-curl -sS -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  "$PAPERCLIP_API_URL/api/issues/$PAPERCLIP_TASK_ID/heartbeat-context"
+curl -sS -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+  "$WARDMOTE_API_URL/api/issues/$WARDMOTE_TASK_ID/heartbeat-context"
 ```
 
 Read `currentExecutionWorkspace`:
@@ -18,35 +18,35 @@ Read `currentExecutionWorkspace`:
 - `status` / `closedAt` — whether the workspace is usable
 - `runtimeServices[]` — current services, including `serviceName`, `status`, `healthStatus`, `url`, `port`, and `runtimeServiceId`
 
-If `currentExecutionWorkspace` is `null`, the issue does not currently have a realized execution workspace. For child/follow-up work, create the child with `parentId` or use `inheritExecutionWorkspaceFromIssueId` so Paperclip preserves workspace continuity.
+If `currentExecutionWorkspace` is `null`, the issue does not currently have a realized execution workspace. For child/follow-up work, create the child with `parentId` or use `inheritExecutionWorkspaceFromIssueId` so Wardmote preserves workspace continuity.
 
 ## Control Services
 
-Prefer Paperclip-managed runtime service controls over manual `pnpm dev &` or ad-hoc background processes. These endpoints keep service state, URLs, logs, and ownership visible to other agents and the board.
+Prefer Wardmote-managed runtime service controls over manual `pnpm dev &` or ad-hoc background processes. These endpoints keep service state, URLs, logs, and ownership visible to other agents and the board.
 
 ```sh
 # Start all configured services; waits for configured readiness checks.
 curl -sS -X POST \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+  -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
-  "$PAPERCLIP_API_URL/api/execution-workspaces/<workspace-id>/runtime-services/start" \
+  "$WARDMOTE_API_URL/api/execution-workspaces/<workspace-id>/runtime-services/start" \
   -d '{}'
 
 # Restart all configured services.
 curl -sS -X POST \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+  -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
-  "$PAPERCLIP_API_URL/api/execution-workspaces/<workspace-id>/runtime-services/restart" \
+  "$WARDMOTE_API_URL/api/execution-workspaces/<workspace-id>/runtime-services/restart" \
   -d '{}'
 
 # Stop all running services.
 curl -sS -X POST \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+  -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
-  "$PAPERCLIP_API_URL/api/execution-workspaces/<workspace-id>/runtime-services/stop" \
+  "$WARDMOTE_API_URL/api/execution-workspaces/<workspace-id>/runtime-services/stop" \
   -d '{}'
 ```
 
@@ -71,7 +71,7 @@ For QA/browser checks, use the service whose `status` is `running` and whose `he
 
 ## MCP Tools
 
-When the Paperclip MCP tools are available, prefer these issue-scoped tools:
+When the Wardmote MCP tools are available, prefer these issue-scoped tools:
 
 - `wardmoteGetIssueWorkspaceRuntime` — reads `currentExecutionWorkspace` and service URLs for an issue.
 - `wardmoteControlIssueWorkspaceServices` — starts, stops, or restarts the current issue workspace services.
