@@ -10270,7 +10270,7 @@ describeEmbeddedPostgres("tool access service", () => {
       name: "Notion DCR",
     });
     const redirectUri =
-      "https://paperclip-dev.tail29c1aa.ts.net/api/tools/oauth/callback";
+      "https://wardmote-dev.tail29c1aa.ts.net/api/tools/oauth/callback";
     const registrationBodies: Array<Record<string, unknown>> = [];
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
@@ -10337,7 +10337,7 @@ describeEmbeddedPostgres("tool access service", () => {
     ).toBe("notion-dcr-client");
     expect(registrationBodies).toEqual([
       {
-        client_name: "Wardmote paperclip-dev-tail29c1aa-ts-net",
+        client_name: "Wardmote wardmote-dev-tail29c1aa-ts-net",
         redirect_uris: [redirectUri],
         grant_types: ["authorization_code", "refresh_token"],
         response_types: ["code"],
@@ -11482,7 +11482,7 @@ describeEmbeddedPostgres("tool access service", () => {
         name: `Notion invalid DCR ${field}`,
       });
       const redirectUri =
-        "https://paperclip-dev.tail29c1aa.ts.net/api/tools/oauth/callback";
+        "https://wardmote-dev.tail29c1aa.ts.net/api/tools/oauth/callback";
       vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
         const href = String(url);
         if (

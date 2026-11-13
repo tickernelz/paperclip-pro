@@ -516,9 +516,9 @@ describe("resolveManagedWardmoteRuntimePublicOrigin", () => {
     expect(resolveManagedWardmoteRuntimePublicOrigin({
       ...baseInput,
       environment: {},
-      exposedUrl: "https://paperclip-dev.tail29c1aa.ts.net/path?ignored=true",
+      exposedUrl: "https://wardmote-dev.tail29c1aa.ts.net/path?ignored=true",
       exposedUrlTemplate: "https://{{workspace.branchName}}.tail29c1aa.ts.net",
-    })).toBe("https://paperclip-dev.tail29c1aa.ts.net");
+    })).toBe("https://wardmote-dev.tail29c1aa.ts.net");
     expect(resolveManagedWardmoteRuntimePublicOrigin({
       ...baseInput,
       environment: {},
