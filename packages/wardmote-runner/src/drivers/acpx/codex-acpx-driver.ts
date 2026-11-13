@@ -824,7 +824,7 @@ class CodexAcpxSession implements HarnessSession {
     this.#quarantineCleanup = input.quarantineCleanup;
     this.#events = new AsyncQueue<PrpEvent>(input.maxBufferedEvents);
     this.#sourceInstanceId = stableId(
-      "paperclip-acpx",
+      "wardmote-acpx",
       input.input.normalizedSessionId,
     );
     this.#sourceSequence = input.snapshot?.lastSourceSequence ?? 0;

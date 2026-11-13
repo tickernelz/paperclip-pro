@@ -179,7 +179,7 @@ function createTransportBackedNativeSessionBackend(
       }),
       conversationMode: preparedContext ? "prepared" : "task",
       runnerInstanceId:
-        options.runnerInstanceId ?? `paperclip-native-${input.binding.runId}`,
+        options.runnerInstanceId ?? `wardmote-native-${input.binding.runId}`,
       onSpawn: options.onSpawn,
       transportFactory: transportFactory
         ? (context) => transportFactory({ ...context, baseInstructions })

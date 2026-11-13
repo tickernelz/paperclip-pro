@@ -415,7 +415,7 @@ export class OpenCodeServerDriver implements HarnessDriver {
           workingDirectory: cwd,
           runnerInstanceId:
             this.#options.runnerInstanceId ??
-            `paperclip-opencode-${input.runId}`,
+            `wardmote-opencode-${input.runId}`,
           model: this.#options.model,
           taskEnvelope:
             this.#options.taskEnvelope ??
