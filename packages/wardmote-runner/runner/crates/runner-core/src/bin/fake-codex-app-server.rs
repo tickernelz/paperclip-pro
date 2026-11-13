@@ -457,7 +457,7 @@ fn send_opencode_proxy_runtime_question(state: &FakeState) -> io::Result<()> {
     let turn_id = state.active_turn_id.as_deref().unwrap_or("provider-turn-1");
     send(json!({
         "id": "opencode-runtime-request-1",
-        "method": "paperclip/runtimeRequest",
+        "method": "wardmote/runtimeRequest",
         "params": {
             "request": {
                 "schema": "wardmote.runtime_request.v2",

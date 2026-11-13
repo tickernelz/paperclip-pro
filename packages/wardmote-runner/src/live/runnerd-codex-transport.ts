@@ -1501,8 +1501,8 @@ export function runnerdCanonicalNotificationMethod(
       "turn.cancelled": "turn/completed",
       "usage.reported": "thread/tokenUsage/updated",
       "plan.updated": "turn/plan/updated",
-      "workspace.change.updated": "paperclip/workspaceChange/updated",
-      "run.result.proposed": "paperclip/runResult",
+      "workspace.change.updated": "wardmote/workspaceChange/updated",
+      "run.result.proposed": "wardmote/runResult",
       "session.goal.snapshot": "thread/goal/updated",
       "session.goal.updated": "thread/goal/updated",
       "session.goal.cleared": "thread/goal/cleared",
@@ -6376,7 +6376,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
       );
       const notifications =
         isCanonicalProviderEventType(event.eventType) && !canonicalMethod
-          ? [{ method: "paperclip/canonicalProviderEvent", params: {
+          ? [{ method: "wardmote/canonicalProviderEvent", params: {
               ...(this.#threadId ? { threadId: this.#threadId } : {}),
               ...(this.#turnId ? { turnId: this.#turnId } : {}),
               eventType: event.eventType, payload: eventPayload,
@@ -6421,13 +6421,13 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
                   this.#threadId,
                   this.#turnId,
                 )
-            : method === "paperclip/workspaceChange/updated"
+            : method === "wardmote/workspaceChange/updated"
               ? rehydrateRunnerdWorkspaceChangeNotification(
                   rawParams,
                   this.#threadId,
                   this.#turnId,
                 )
-            : method === "paperclip/runResult"
+            : method === "wardmote/runResult"
               ? rehydrateRunnerdResultNotification(
                   rawParams,
                   this.#threadId,

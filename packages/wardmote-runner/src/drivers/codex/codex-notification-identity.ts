@@ -39,7 +39,7 @@ export function classifyCodexNotification(input: {
 } {
   const { params, method } = input;
   const isInformation = informational.has(method) ||
-    (method === "paperclip/canonicalProviderEvent" &&
+    (method === "wardmote/canonicalProviderEvent" &&
       ["provider.notice.recorded", "harness.diagnostic"].includes(String(params.eventType)));
   const threads = [
     params.threadId,
@@ -88,7 +88,7 @@ export function classifyCodexNotification(input: {
   ) {
     // A descendant may report its own terminal, but never supply a root result or workspace authority.
     return result(
-      method.startsWith("paperclip/") ? "invalid_authority" : "descendant",
+      method.startsWith("wardmote/") ? "invalid_authority" : "descendant",
     );
   }
   return result(
