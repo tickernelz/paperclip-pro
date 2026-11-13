@@ -188,7 +188,7 @@ function redact(
     const result: Record<string, WardmoteJsonValue> =
       Object.fromEntries(entries);
     if (Object.keys(value).length > WARDMOTE_MAX_OBJECT_KEYS) {
-      result.__paperclip_truncated__ = WARDMOTE_SEMANTIC_TRUNCATED;
+      result.__wardmote_truncated__ = WARDMOTE_SEMANTIC_TRUNCATED;
     }
     return result;
   }

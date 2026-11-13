@@ -1722,7 +1722,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const skillRoot = path.join(root, "skills");
     const codexHome = path.join(root, "codex-home");
     const operational = {
-      ...await createSkill(skillRoot, "paperclip"),
+      ...await createSkill(skillRoot, "wardmote"),
       key: "tickernelz/wardmote/wardmote",
     };
 
@@ -1740,7 +1740,7 @@ describe("shared ACPX engine runtime behavior", () => {
   it.each(["codex", "gemini"])("refreshes the %s skill root when a connection home changes between turns", async (agent) => {
     const root = await makeTempRoot();
     const operational = {
-      ...await createSkill(path.join(root, "skills"), "paperclip"),
+      ...await createSkill(path.join(root, "skills"), "wardmote"),
       key: "tickernelz/wardmote/wardmote",
     };
     const homes = [path.join(root, "first-home"), path.join(root, "next-home")];

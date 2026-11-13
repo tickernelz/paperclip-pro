@@ -367,7 +367,7 @@ try {
 } catch (error) {
   exitCode = 1;
   const message = error instanceof Error ? error.message : String(error);
-  appendLog(`\nPaperclip E2E server supervisor failed: ${message}\n`);
+  appendLog(`\nWardmote E2E server supervisor failed: ${message}\n`);
   if (activeRestartRequestId) {
     try {
       await writeRestartAck(activeRestartRequestId, "failed", message);

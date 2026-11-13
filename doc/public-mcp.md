@@ -5,7 +5,7 @@ to one explicitly selected company. It exposes first-party task operations and
 keeps normal Wardmote authorization, scheduling, attribution, budgets and
 approvals. The existing named agent gateways and native runner checks remain
 separate. The accepted roadmap is in
-[the implementation plan](plans/2026-09-30-paperclip-public-mcp-and-plugins.md).
+[the implementation plan](plans/2026-09-30-public-mcp-and-plugins.md).
 
 ## Enable an instance
 
