@@ -8060,7 +8060,7 @@ it.each([
       expect(sessionRoots).toHaveLength(1);
       const requests = (await readFile(join(runtime, sessionRoots[0]!.name, "data/fake-prompt-requests.ndjson"), "utf8")).trim().split("\n").map((line) => JSON.parse(line));
       expect(requests.map((request) => request.parts)).toEqual([[{ type: "text", text: prepared }]]);
-      expect(requests[0].variant).toBe(supportsReasoning ? "paperclip-no-reasoning" : undefined);
+      expect(requests[0].variant).toBe(supportsReasoning ? "wardmote-no-reasoning" : undefined);
       const outcomes = JSON.parse(await readFile(join(runtime, sessionRoots[0]!.name, "data/fake-completion-feedback.json"), "utf8"));
       expect(outcomes).toHaveLength(2);
       expect(outcomes[0].result).toMatchObject({ isError: true, content: [{ text: expect.stringContaining("required document link") }] });
@@ -8069,7 +8069,7 @@ it.each([
       for await (const event of session.events()) if (event.eventType === "turn.completed") break;
       const allRequests = (await readFile(join(runtime, sessionRoots[0]!.name, "data/fake-prompt-requests.ndjson"), "utf8")).trim().split("\n").map((line) => JSON.parse(line));
       expect(allRequests.map(request => request.variant)).toEqual(supportsReasoning
-        ? ["paperclip-no-reasoning", "paperclip-default"] : [undefined, undefined]);
+        ? ["wardmote-no-reasoning", "wardmote-default"] : [undefined, undefined]);
     },
     closeSession: async () => { await session?.close(); },
     closeTransport: () => bundle.transport.close(),

@@ -395,9 +395,12 @@ describe("handoff URL handling", () => {
     expect(redacted).toContain("next=%2F");
 
     const capability = "pcgw_secret-capability";
-    const gatewayLine = `POST /mcp/gateways/gw_test?paperclip_capability=${capability} 200`;
+    const gatewayLine = `POST /mcp/gateways/gw_test?wardmote_capability=${capability} 200`;
     const redactedGatewayLine = redactWorkspaceHandoffTicket(gatewayLine);
     expect(redactedGatewayLine).not.toContain(capability);
-    expect(redactedGatewayLine).toContain("paperclip_capability=[redacted]");
+    expect(redactedGatewayLine).toContain("wardmote_capability=[redacted]");
+
+    const retiredGatewayLine = `POST /mcp/gateways/gw_test?paperclip_capability=${capability} 200`;
+    expect(redactWorkspaceHandoffTicket(retiredGatewayLine)).not.toContain(capability);
   });
 });

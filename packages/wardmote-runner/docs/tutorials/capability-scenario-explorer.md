@@ -99,7 +99,7 @@ origin. Walk this path:
    makes no request beyond its own assets.
 
 The explorer imports the frozen `0.1.2` SDK through the package-local
-`@paperclip-runner-local/capability` alias — deliberately not the published package
+`@wardmote-runner-local/capability` alias — deliberately not the published package
 name. See [the browser explorer reference](../capability-scenario-explorer.md).
 
 ## 3. Read what each surface guarantees

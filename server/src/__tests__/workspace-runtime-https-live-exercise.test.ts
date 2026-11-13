@@ -120,7 +120,7 @@ if (optedIn && !live) {
     const workspaceRuntime = {
       services: [
         {
-          name: "paperclip-dev",
+          name: "wardmote-dev",
           command,
           port: legacyPort,
           // Pre-feature block: backend URL only, no exposure declaration.

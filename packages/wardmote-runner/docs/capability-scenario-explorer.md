@@ -30,7 +30,7 @@ Running a scenario produces one immutable artifact carrying:
 ## Read-only and frozen SDK
 
 The explorer imports the frozen **0.1.2** public SDK through the package-local
-alias `@paperclip-runner-local/capability`, which is deliberately not the published
+alias `@wardmote-runner-local/capability`, which is deliberately not the published
 package name. It adds no SDK export and changes no published surface. Fake mode
 runs entirely in the page against checked-in fixtures and renders fixture time
 only, so two loads of the same route produce identical settled DOM.

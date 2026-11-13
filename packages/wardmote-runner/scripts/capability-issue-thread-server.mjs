@@ -57,8 +57,8 @@ const ACPX_AGENTS = new Set(["claude", "codex"]);
  * the clean room (and the reverse) instead of keeping two independent tenants.
  */
 const CAPABILITY_COOKIES = Object.freeze({
-  issue: "paperclip_capability_issue",
-  cleanroom: "paperclip_capability_chat",
+  issue: "wardmote_capability_issue",
+  cleanroom: "wardmote_capability_chat",
 });
 const CAPABILITY_BYTES = 32;
 const CAPABILITY_MAX_AGE_SECONDS = 30 * 60;

@@ -710,7 +710,7 @@ describeEmbeddedPostgres("tool gateway acceptance", () => {
       const app = createGatewayRouteApp(db, gateway);
       const publicEndpoint = created.endpointPath;
       const queryOnly = await request(app)
-        .post(`${publicEndpoint}?paperclip_capability=${encodeURIComponent(token.token)}`)
+        .post(`${publicEndpoint}?wardmote_capability=${encodeURIComponent(token.token)}`)
         .send({ jsonrpc: "2.0", id: "query-only", method: "tools/list" })
         .expect(401);
       expect(queryOnly.body.error).toBe("Bearer token is required");

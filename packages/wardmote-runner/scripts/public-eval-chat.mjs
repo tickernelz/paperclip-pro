@@ -63,9 +63,9 @@ export function publicChatView(artifact, evalCase) {
   // Only the dedicated mock eval boundary can publish recorded conversation.
   // Early infrastructure failures still receive a viewer with an honest notice.
   const isolated =
-    network?.realPaperclipRequests === 0 &&
-    Array.isArray(network?.childPaperclipEnvironmentKeys) &&
-    network.childPaperclipEnvironmentKeys.length === 0;
+    network?.realWardmoteRequests === 0 &&
+    Array.isArray(network?.childWardmoteEnvironmentKeys) &&
+    network.childWardmoteEnvironmentKeys.length === 0;
   const source =
     isolated &&
     artifact.issueThread?.schema === "wardmote.capability.issue-thread-view.v1"

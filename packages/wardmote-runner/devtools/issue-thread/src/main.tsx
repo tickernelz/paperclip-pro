@@ -7,7 +7,7 @@ import "./evalbook-site.css";
 
 // Hosted Evalbooks use inert JSON plus the same trusted viewer bundle. No
 // inline executable script or network fetch is needed to load an attempt.
-const reportData = document.getElementById("paperclip-eval-report");
+const reportData = document.getElementById("wardmote-eval-report");
 if (reportData !== null) {
   window.__WARDMOTE_EVAL_REPORT__ = JSON.parse(
     reportData.textContent ?? "null",

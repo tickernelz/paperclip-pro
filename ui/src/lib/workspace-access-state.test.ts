@@ -15,7 +15,7 @@ function runtimeService(overrides: Partial<WorkspaceRuntimeService> = {}): Works
     issueId: null,
     scopeType: "execution_workspace",
     scopeId: "ews-1",
-    serviceName: "paperclip-dev",
+    serviceName: "wardmote-dev",
     status: "running",
     lifecycle: "shared",
     reuseKey: null,

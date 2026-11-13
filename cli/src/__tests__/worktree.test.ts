@@ -1242,7 +1242,7 @@ describe("worktree helpers", () => {
         metadata: {
           keep: "project-metadata",
           runtimeConfig: {
-            workspaceRuntime: { services: [{ name: "paperclip-dev" }] },
+            workspaceRuntime: { services: [{ name: "wardmote-dev" }] },
             desiredState: "running",
             serviceStates: { "0": "running", "1": "manual" },
           },
@@ -1275,14 +1275,14 @@ describe("worktree helpers", () => {
         executionWorkspaceId,
         scopeType: "project_workspace",
         scopeId: projectWorkspaceId,
-        serviceName: "paperclip-dev",
+        serviceName: "wardmote-dev",
         status: "running",
         lifecycle: "shared",
         provider: "local_process",
         providerRef: "12345",
         ownerAgentId: agentId,
         port: 42013,
-        url: "https://paperclip-dev.example.test:42013",
+        url: "https://wardmote-dev.example.test:42013",
         healthStatus: "healthy",
       });
       await db.insert(issues).values([
@@ -1377,7 +1377,7 @@ describe("worktree helpers", () => {
       expect(projectWorkspace?.metadata).toEqual({
         keep: "project-metadata",
         runtimeConfig: {
-          workspaceRuntime: { services: [{ name: "paperclip-dev" }] },
+          workspaceRuntime: { services: [{ name: "wardmote-dev" }] },
           desiredState: "stopped",
           serviceStates: { "0": "stopped", "1": "manual" },
         },

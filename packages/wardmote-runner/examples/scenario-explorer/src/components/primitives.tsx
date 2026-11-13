@@ -5,7 +5,7 @@ import type {
   CapabilityParityStatus,
   CapabilityPrimaryDisposition,
   CapabilityRedactionChip as RedactionChipRecord,
-} from "@paperclip-runner-local/capability";
+} from "@wardmote-runner-local/capability";
 
 import {
   DISPOSITION_LABEL,

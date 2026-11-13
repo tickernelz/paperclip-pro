@@ -81,9 +81,9 @@ async function main(): Promise<void> {
         revision !== null && first.assistantText.includes(String(revision)),
       resumedResponseUsesTypedResult:
         revision !== null && second.assistantText.includes(String(revision)),
-      noRealWardmoteRequest: beforeShutdown.networkEvidence.realPaperclipRequests === 0,
+      noRealWardmoteRequest: beforeShutdown.networkEvidence.realWardmoteRequests === 0,
       noWardmoteAuthorityInChild:
-        beforeShutdown.networkEvidence.childPaperclipEnvironmentKeys.length === 0,
+        beforeShutdown.networkEvidence.childWardmoteEnvironmentKeys.length === 0,
       authorityCleared: afterShutdown.authority.active === false,
       runnerExited: afterShutdown.process?.runnerExited === true,
     };

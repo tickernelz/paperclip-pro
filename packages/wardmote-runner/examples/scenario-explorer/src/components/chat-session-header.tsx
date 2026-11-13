@@ -4,7 +4,7 @@ import { Badge, Button } from "@tickernelz/wardmote-runner/react";
 import type {
   CapabilityChatSessionArtifact,
   CapabilityScenarioIndexEntry,
-} from "@paperclip-runner-local/capability";
+} from "@wardmote-runner-local/capability";
 
 import { groupLabel } from "../labels.js";
 import { DispositionBadge, Mono, ParityStatusBadge } from "./primitives.js";

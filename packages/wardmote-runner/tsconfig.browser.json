@@ -28,7 +28,7 @@
       "@tickernelz/wardmote-runner/styles.css": [
         "styles.css"
       ],
-      "@paperclip-runner-local/capability": [
+      "@wardmote-runner-local/capability": [
         "src/scenarios/index.ts"
       ]
     }

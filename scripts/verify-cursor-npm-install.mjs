@@ -63,13 +63,13 @@ for (const [index, name] of [...needed].entries()) {
  console.log(`Packed ${name}`);
 }
 const sentinelSource = join(root,'lifecycle-sentinel'); mkdirSync(sentinelSource);
-writeFileSync(join(sentinelSource,'package.json'), JSON.stringify({name:'paperclip-verification-lifecycle-sentinel',version:'1.0.0',private:true,scripts:{postinstall:'node -e "require(\'node:fs\').writeFileSync(\'lifecycle-ran\', \'ok\')"'}}));
+writeFileSync(join(sentinelSource,'package.json'), JSON.stringify({name:'wardmote-verification-lifecycle-sentinel',version:'1.0.0',private:true,scripts:{postinstall:'node -e "require(\'node:fs\').writeFileSync(\'lifecycle-ran\', \'ok\')"'}}));
 run('npm',['pack','--ignore-scripts','--pack-destination',assets],sentinelSource);
 for (const file of readdirSync(assets)) chmodSync(join(assets,file),0o644);
 const account = prepareCursorInstallAccount(root, process.getuid(), process.getgid());
 const isolated = (command, options={}) => run('docker',cursorConsumerDockerArgs({assets,consumer,cache,account,uid:process.getuid(),gid:process.getgid(),command,...options}));
 isolated(['npm','install','--ignore-scripts','--omit=dev',...readdirSync(assets).filter(f=>f.endsWith('.tgz')).map(f=>`/packages/${f}`)],{download:true});
-const sentinel = join(consumer,'node_modules/paperclip-verification-lifecycle-sentinel/lifecycle-ran');
+const sentinel = join(consumer,'node_modules/wardmote-verification-lifecycle-sentinel/lifecycle-ran');
 assert.equal(existsSync(sentinel),false);
 const lock = readFileSync(join(consumer,'package-lock.json'),'utf8');
 // Ordinary npm hooks may fetch platform dependency assets (e.g. esbuild).

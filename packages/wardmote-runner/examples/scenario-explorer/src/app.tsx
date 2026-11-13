@@ -9,7 +9,7 @@ import {
   type CapabilityRunArtifact,
   type CapabilityScenarioIndex,
   type CapabilityScenarioIndexEntry,
-} from "@paperclip-runner-local/capability";
+} from "@wardmote-runner-local/capability";
 
 import {
   AuthorizationPanel,

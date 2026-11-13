@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import type { CapabilityChatTurn } from "@paperclip-runner-local/capability";
+import type { CapabilityChatTurn } from "@wardmote-runner-local/capability";
 
 import { ParityStatusBadge } from "./primitives.js";
 

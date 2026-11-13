@@ -11556,7 +11556,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
     await expect(
       service.startOAuth(company.id, connected.connectionId, {
-        redirectUri: "http://paperclip-dev:3100/api/tools/oauth/callback",
+        redirectUri: "http://wardmote-dev:3100/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: "board" },
       }),
     ).rejects.toMatchObject({

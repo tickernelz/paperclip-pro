@@ -186,8 +186,8 @@ export function createCapabilityTailnetGateway(config: CapabilityTailnetGatewayC
   const capability = randomBytes(CAPABILITY_BYTES).toString("base64url");
   const secureTransport = config.publicOrigin.protocol === "https:";
   const capabilityCookieName = secureTransport
-    ? "__Host-paperclip_capability"
-    : "paperclip_capability";
+    ? "__Host-wardmote_capability"
+    : "wardmote_capability";
   const upstreamAuthority = config.upstreamHost.includes(":")
     ? `[${config.upstreamHost}]:${config.upstreamPort}`
     : `${config.upstreamHost}:${config.upstreamPort}`;

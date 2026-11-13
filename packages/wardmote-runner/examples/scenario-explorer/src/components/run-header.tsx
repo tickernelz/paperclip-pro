@@ -8,7 +8,7 @@ import {
   Button,
   ReplayControls,
 } from "@tickernelz/wardmote-runner/react";
-import type { CapabilityRunArtifact, CapabilityScenarioIndexEntry } from "@paperclip-runner-local/capability";
+import type { CapabilityRunArtifact, CapabilityScenarioIndexEntry } from "@wardmote-runner-local/capability";
 
 import { ASSERTION_CLASS_LABEL, groupLabel, PARITY_TONE } from "../labels.js";
 import { DispositionBadge, Mono, ParityStatusBadge } from "./primitives.js";

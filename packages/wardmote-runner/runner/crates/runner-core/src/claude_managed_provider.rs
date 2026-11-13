@@ -3041,7 +3041,7 @@ mod tests {
         assert_eq!(overrides.get("mcp_servers"), Some(&json!([])));
         assert!(!serde_json::to_string(&overrides)
             .unwrap()
-            .contains("paperclip_capability"));
+            .contains("wardmote_capability"));
         assert!(overrides
             .get("tools")
             .and_then(Value::as_array)
@@ -3050,7 +3050,7 @@ mod tests {
                 .any(|tool| tool.get("type") == Some(&json!("agent_toolset_20260401")))));
         assert!(serde_json::to_string(&config())
             .unwrap()
-            .find("paperclip_capability")
+            .find("wardmote_capability")
             .is_none());
     }
 

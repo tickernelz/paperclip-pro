@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { Badge } from "@tickernelz/wardmote-runner/react";
-import type { CapabilityTimelineEntry } from "@paperclip-runner-local/capability";
+import type { CapabilityTimelineEntry } from "@wardmote-runner-local/capability";
 
 import { DispositionBadge, JsonBlock, Mono, RedactionChip } from "./primitives.js";
 

@@ -494,7 +494,7 @@ describe("sanitizeRuntimeServiceBaseEnv", () => {
 
 describe("resolveManagedWardmoteRuntimePublicOrigin", () => {
   const baseInput = {
-    serviceName: "paperclip-dev",
+    serviceName: "wardmote-dev",
     command: "pnpm dev --bind lan",
   };
 
@@ -530,7 +530,7 @@ describe("resolveManagedWardmoteRuntimePublicOrigin", () => {
     expect(() => resolveManagedWardmoteRuntimePublicOrigin({
       ...baseInput,
       environment: {},
-      exposedUrl: "http://paperclip-dev:45439",
+      exposedUrl: "http://wardmote-dev:45439",
     })).toThrow(/internal-only.*Configure WARDMOTE_PUBLIC_URL or BETTER_AUTH_URL/);
     expect(() => resolveManagedWardmoteRuntimePublicOrigin({
       ...baseInput,
@@ -4732,7 +4732,7 @@ describe("ensureRuntimeServicesForRun", () => {
         config: {
           workspaceRuntime: {
             services: [{
-              name: "paperclip-dev",
+              name: "wardmote-dev",
               command: `${JSON.stringify(process.execPath)} -e ${JSON.stringify(serviceScript)}`,
               port: { type: "auto" },
               readiness: {
@@ -4793,7 +4793,7 @@ describe("ensureRuntimeServicesForRun", () => {
       workspaceRuntime: {
         services: [
           {
-            name: "paperclip-dev",
+            name: "wardmote-dev",
             command: `${JSON.stringify(process.execPath)} -e ${JSON.stringify(serviceScript)}`,
             port: { type: "auto" },
             readiness: {
@@ -4874,7 +4874,7 @@ describe("ensureRuntimeServicesForRun", () => {
             workspaceRuntime: {
               services: [
                 {
-                  name: "paperclip-dev",
+                  name: "wardmote-dev",
                   command: serviceCommand,
                   cwd: ".",
                   port: { type: "auto" },
@@ -4919,7 +4919,7 @@ describe("ensureRuntimeServicesForRun", () => {
       workspace,
       executionWorkspaceId: "execution-workspace-health",
       config: { workspaceRuntime: { services: [{
-        name: "paperclip-dev",
+        name: "wardmote-dev",
         command: serviceCommand,
         cwd: ".",
         port: { type: "auto" as const },
@@ -4964,7 +4964,7 @@ describe("ensureRuntimeServicesForRun", () => {
       workspace,
       executionWorkspaceId: "execution-workspace-transient-health",
       config: { workspaceRuntime: { services: [{
-        name: "paperclip-dev",
+        name: "wardmote-dev",
         command: serviceCommand,
         cwd: ".",
         port: { type: "auto" as const },
@@ -5013,7 +5013,7 @@ describe("ensureRuntimeServicesForRun", () => {
           workspaceRuntime: {
             services: [
               {
-                name: "paperclip-dev",
+                name: "wardmote-dev",
                 command: serviceCommand,
                 cwd: ".",
                 port: { type: "auto" },
@@ -5161,7 +5161,7 @@ describe("ensureRuntimeServicesForRun", () => {
       workspaceRuntime: {
         services: [
           {
-            name: "paperclip-dev",
+            name: "wardmote-dev",
             command: serviceCommand,
             cwd: ".",
             env: {
@@ -6646,10 +6646,10 @@ describeEmbeddedPostgres("workspace dirty quarantine branch repair", () => {
       issueId: ids.sourceIssueId,
       scopeType: "execution_workspace",
       scopeId: ids.sourceWorkspaceId,
-      serviceName: "paperclip-dev",
+      serviceName: "wardmote-dev",
       status: "running",
       lifecycle: "shared",
-      reuseKey: `execution_workspace:${ids.sourceWorkspaceId}:paperclip-dev`,
+      reuseKey: `execution_workspace:${ids.sourceWorkspaceId}:wardmote-dev`,
       command: "pnpm dev",
       cwd: worktreePath,
       port: 49195,
@@ -7181,7 +7181,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     return {
       workspaceRuntime: {
         services: [{
-          name: "paperclip-dev",
+          name: "wardmote-dev",
           command,
           env: { WARDMOTE_PUBLIC_URL: "http://127.0.0.1:3100" },
           port: { type: "fixed", value: 45_439, envKey: "PORT" },
@@ -8090,7 +8090,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
     const workspaceRuntime = {
       services: [
         {
-          name: "paperclip-dev",
+          name: "wardmote-dev",
           command,
           env: { WARDMOTE_PUBLIC_URL: "http://127.0.0.1:3100" },
           port: legacyPort,
@@ -8617,7 +8617,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
         stableStringifyForTest({
           scopeType,
           scopeId,
-          serviceName: "paperclip-dev",
+          serviceName: "wardmote-dev",
           command: serviceCommand,
           cwd: workspaceRoot,
           port: null,
@@ -8707,7 +8707,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
         issueId: null,
         scopeType,
         scopeId,
-        serviceName: "paperclip-dev",
+        serviceName: "wardmote-dev",
         status: "stopped",
         lifecycle: "shared",
         reuseKey,
@@ -8746,7 +8746,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
           workspaceRuntime: {
             services: [
               {
-                name: "paperclip-dev",
+                name: "wardmote-dev",
                 command: serviceCommand,
                 cwd: ".",
                 port: { type: "auto" },
@@ -8845,10 +8845,10 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       issueId: null,
       scopeType: "project_workspace",
       scopeId: projectWorkspaceId,
-      serviceName: "paperclip-dev",
+      serviceName: "wardmote-dev",
       status: "running",
       lifecycle: "shared",
-      reuseKey: `project_workspace:${projectWorkspaceId}:paperclip-dev`,
+      reuseKey: `project_workspace:${projectWorkspaceId}:wardmote-dev`,
       command: "pnpm dev",
       cwd: "/tmp/wardmote-primary",
       port: 49195,
@@ -8869,7 +8869,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       version: 1,
       serviceKey: "workspace-runtime-wardmote-dev-stale",
       profileKind: "workspace-runtime",
-      serviceName: "paperclip-dev",
+      serviceName: "wardmote-dev",
       command: "pnpm dev",
       cwd: process.cwd(),
       envFingerprint: "fingerprint",
@@ -8879,7 +8879,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       processGroupId: process.pid,
       provider: "local_process",
       runtimeServiceId,
-      reuseKey: `project_workspace:${projectWorkspaceId}:paperclip-dev`,
+      reuseKey: `project_workspace:${projectWorkspaceId}:wardmote-dev`,
       startedAt: startedAt.toISOString(),
       lastSeenAt: updatedAt.toISOString(),
       metadata: null,
@@ -8906,7 +8906,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
     const projectWorkspaceId = randomUUID();
     const executionWorkspaceId = randomUUID();
     const cwd = process.cwd();
-    const reuseKey = `project_workspace:${projectWorkspaceId}:paperclip-dev`;
+    const reuseKey = `project_workspace:${projectWorkspaceId}:wardmote-dev`;
 
     await db.insert(companies).values({
       id: companyId,
@@ -8951,7 +8951,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       issueId: null,
       scopeType: "project_workspace",
       scopeId: projectWorkspaceId,
-      serviceName: "paperclip-dev",
+      serviceName: "wardmote-dev",
       status: "stopped",
       lifecycle: "shared",
       reuseKey,
@@ -8975,7 +8975,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       version: 1,
       serviceKey: "workspace-runtime-wardmote-dev-live-stopped",
       profileKind: "workspace-runtime",
-      serviceName: "paperclip-dev",
+      serviceName: "wardmote-dev",
       command: "node",
       cwd,
       envFingerprint: reuseKey,

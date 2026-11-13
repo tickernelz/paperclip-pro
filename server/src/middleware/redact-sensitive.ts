@@ -69,6 +69,7 @@ const SENSITIVE_KEYS = new Set<string>([
   "signingsecret",
   "webhook_secret",
   "webhooksecret",
+  "wardmote_capability",
   "paperclip_capability",
   // The Claude setup-token login fields. `browserCode` carries the one-time
   // sign-in code and `authorization_code` carries the OAuth code; neither may

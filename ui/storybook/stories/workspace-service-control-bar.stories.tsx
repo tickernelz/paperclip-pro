@@ -12,7 +12,7 @@ function entry(overrides: Partial<WorkspaceServiceControlEntry> = {}): Workspace
     name: "dev",
     state: "running",
     healthStatus: "healthy",
-    url: "http://paperclip-dev:45439",
+    url: "http://wardmote-dev:45439",
     port: 45439,
     canStart: true,
     ...overrides,
