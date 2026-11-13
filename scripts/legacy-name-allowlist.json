@@ -1116,7 +1116,6 @@
     ["server/scripts/smoke-native-task-monitor.ts",1,"belum-diganti"],
     ["server/src/__tests__/adapter-session-codecs.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/agent-avatars.test.ts",2,"belum-diganti"],
-    ["server/src/__tests__/agent-commentary-daytona-smoke.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/agent-directory-probe.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/agent-directory-working-copies.test.ts",2,"belum-diganti"],
     ["server/src/__tests__/agent-instructions-routes.test.ts",1,"belum-diganti"],
