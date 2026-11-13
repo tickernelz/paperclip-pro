@@ -8,7 +8,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { api } from "../api/client";
 import { McpConnectPage, McpDevicePage } from "./McpConnect";
 
-const route = vi.hoisted(() => ({ id: "request-one", companyId: null as string | null, unavailable: false, canWrite: true, requestedWrite: true, requestedConfigure: false, agentConnection: false, requiresSignIn: false, clientName: "Assistant", clientOrigin: null as string | null, setupUrl: "https://my.paperclip.app/orgs/new", reverseCompanies: false, hideFirst: false }));
+const route = vi.hoisted(() => ({ id: "request-one", companyId: null as string | null, unavailable: false, canWrite: true, requestedWrite: true, requestedConfigure: false, agentConnection: false, requiresSignIn: false, clientName: "Assistant", clientOrigin: null as string | null, reverseCompanies: false, hideFirst: false }));
 vi.mock("@/lib/router", () => ({
   useParams: () => ({ id: route.id }),
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
@@ -29,7 +29,7 @@ vi.mock("../api/client", () => ({ api: {
 } }));
 
 beforeEach(() => {
-  Object.assign(route, { id: "request-one", companyId: null, unavailable: false, canWrite: true, requestedWrite: true, requestedConfigure: false, agentConnection: false, requiresSignIn: false, clientName: "Assistant", clientOrigin: null, setupUrl: "https://my.paperclip.app/orgs/new", reverseCompanies: false, hideFirst: false });
+  Object.assign(route, { id: "request-one", companyId: null, unavailable: false, canWrite: true, requestedWrite: true, requestedConfigure: false, agentConnection: false, requiresSignIn: false, clientName: "Assistant", clientOrigin: null, reverseCompanies: false, hideFirst: false });
   vi.clearAllMocks();
 });
 
@@ -170,7 +170,7 @@ it("defaults eligible writes on and preserves opt-out across organization change
   } finally { page.cleanup(); }
 });
 
-it("keeps hosted organization identity fixed and defaults each new request to eligible write access", async () => {
+it("keeps a requested organization identity fixed and defaults each new request to eligible write access", async () => {
   route.companyId = "company-one";
   const page = setup();
   try {
@@ -180,7 +180,7 @@ it("keeps hosted organization identity fixed and defaults each new request to el
     expect(page.checkbox().getAttribute("aria-checked")).toBe("true");
     flushSync(() => page.checkbox().click());
     expect(page.checkbox().getAttribute("aria-checked")).toBe("false");
-    route.id = "hosted-two";
+    route.id = "fixed-two";
     route.companyId = "company-two";
     page.render();
     await vi.waitFor(() => expect(page.container.textContent).toContain("Acme Research"));
@@ -189,7 +189,7 @@ it("keeps hosted organization identity fixed and defaults each new request to el
     await page.client.invalidateQueries({ queryKey: ["mcp-request", route.id] });
     await vi.waitFor(() => expect(page.checkbox().disabled).toBe(true));
     expect(page.checkbox().getAttribute("aria-checked")).toBe("false");
-    // Losing membership never turns a fixed hosted organization into a picker.
+    // Losing membership never turns a fixed organization into a picker.
     route.unavailable = true;
     await page.client.invalidateQueries({ queryKey: ["mcp-request", route.id] });
     await vi.waitFor(() => expect(page.container.textContent).toContain("selected organization is no longer available"));
@@ -230,7 +230,6 @@ it("pins the default organization across refetches and never falls back after it
     await vi.waitFor(() => expect(page.connect().disabled).toBe(true));
     expect(page.container.querySelector<HTMLInputElement>('input[value="company-two"]')?.checked).toBe(false);
     expect(page.checkbox().getAttribute("aria-checked")).toBe("false");
-    expect(page.container.textContent).not.toContain("Create a hosted organization");
     expect(api.post).not.toHaveBeenCalled();
   } finally { page.cleanup(); }
 });

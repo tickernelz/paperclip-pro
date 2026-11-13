@@ -24,7 +24,6 @@ export interface McpConnectionRequest {
   /** Fixed by the authorization request; null permits direct-instance selection. */
   requestedCompanyId: string | null;
   companies: Array<{ id: string; name: string; logoUrl: string | null; canWrite: boolean }>;
-  setupUrl: string | null;
 }
 
 export interface McpConnectionSetup {

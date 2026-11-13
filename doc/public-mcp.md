@@ -348,19 +348,13 @@ or revoked requests cannot finalize a subscription.
 
 Delivery uses a verified HTTPS callback, Standard Webhooks HMAC signatures,
 public-address DNS pinning on every connection, and no redirects. Callback URLs,
-current/previous signing keys and hosted authorization proofs are encrypted with
+current/previous signing keys are encrypted with
 the existing instance secrets master key. Back up that key with the database.
 Callback bodies contain bounded references, not comment/document text; clients
 must read current authorized state before responding or taking an action.
 
-Subscriptions last at most 24 hours (default), with a 30-second minimum. Hosted
-subscriptions last at most five minutes and never outlive the broker access
-proof: refresh the OAuth token before refreshing a subscription when necessary.
-The tenant verifies that proof through the fixed `WARDMOTE_CLOUD_API_ORIGIN`
-broker before each delivery, checking current Cloud membership as well as local
-company membership, grant revocation and task access. A compatible Cloud broker
-must be deployed first for hosted Events. Direct connections to a Cloud tenant
-without a broker authority proof cannot create event subscriptions.
+Subscriptions last at most 24 hours (default), with a 30-second minimum. Each
+delivery rechecks company membership, grant revocation and task access.
 
 Subscriptions and delivery receipts persist across restarts. Activity is scanned
 without a moving timestamp high-water mark; unique receipts prevent duplicate

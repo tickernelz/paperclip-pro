@@ -9,7 +9,7 @@ import { logActivity } from "../activity-log.js";
 import { logger } from "../../middleware/logger.js";
 import { type ApiDispatch } from "./capabilities.js";
 import { PublicMcpDisabledError, type McpPrincipal, type PublicMcpOAuth } from "./oauth.js";
-import { boundedJson, callbackUrl, eventFetch, McpEventError, postEvent, signingKey, verifyCallback, type EventFetch } from "./event-webhooks.js";
+import { callbackUrl, eventFetch, McpEventError, postEvent, signingKey, verifyCallback, type EventFetch } from "./event-webhooks.js";
 
 const names = ["wardmote.task.status_changed", "wardmote.task.comment_created", "wardmote.task.document_updated", "wardmote.dot.work_available", "wardmote.dot.mailbox_updated"] as const;
 const filters = z.object({ companyId: z.uuid(), taskId: z.uuid(), statuses: z.array(z.enum(ISSUE_STATUSES)).min(1).max(ISSUE_STATUSES.length).optional() }).strict();
@@ -22,8 +22,7 @@ const hour = 3600_000;
 const lifetime = 24 * hour;
 const rotationMs = 5 * 60_000;
 type Subscription = typeof subscriptions.$inferSelect;
-export type CloudEventAuthority = { token: string; expiresAt: number };
-type Destination = { url: string; secret: string; previousSecret?: string; previousUntil?: number; cloud?: CloudEventAuthority };
+type Destination = { url: string; secret: string; previousSecret?: string; previousUntil?: number };
 
 export const publicMcpEventDefinitions = names.slice(0, 3).map((name, index) => ({
   name,
@@ -46,13 +45,9 @@ const dotEventDefinition = {
   payloadSchema: z.toJSONSchema(z.object({ companyId: z.uuid(), taskId: z.uuid(), url: z.url(), runId: z.uuid(), agentId: z.uuid(), turnId: z.uuid(), messageId: z.uuid() }).strict()),
 };
 
-export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDispatch, options: { fetch?: EventFetch; now?: () => number; cloudOrigin?: string; enableDotPrototype?: boolean; enableDotRunner?: boolean; isBackgroundWorkEnabled?: () => boolean } = {}) {
+export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDispatch, options: { fetch?: EventFetch; now?: () => number; enableDotPrototype?: boolean; enableDotRunner?: boolean; isBackgroundWorkEnabled?: () => boolean } = {}) {
   const fetcher = options.fetch ?? eventFetch;
   const now = options.now ?? Date.now;
-  // Dedicated tenant Dot grants are authenticated locally, including background
-  // deliveries. They never use the personal connection's Cloud broker proof.
-  const cloudOrigin = options.enableDotRunner ? undefined : options.cloudOrigin ?? process.env.WARDMOTE_CLOUD_API_ORIGIN;
-  if (cloudOrigin && (new URL(cloudOrigin).protocol !== "https:" || new URL(cloudOrigin).origin !== cloudOrigin)) throw new Error("MCP Events requires a fixed HTTPS Cloud origin.");
   const encrypt = async (value: Destination) => (await localEncryptedProvider.createSecret({ value: JSON.stringify(value) })).material;
   const decrypt = async (s: Subscription): Promise<Destination> => JSON.parse(await localEncryptedProvider.resolveVersion({ material: s.deliveryMaterial, externalRef: null, providerVersionRef: null }));
 
@@ -63,21 +58,6 @@ export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDis
     }
     if (args.companyId !== principal.grant.companyId || !principal.grant.scopes.includes("wardmote:read")) throw new McpEventError(-32602, "This task is outside the authorized company.");
     await api(principal, "GET", `/issues/${args.taskId}`);
-  }
-  async function authorizeCloud(principal: McpPrincipal, authority?: CloudEventAuthority) {
-    if (!cloudOrigin) return;
-    if (!authority || !Number.isFinite(authority.expiresAt) || authority.expiresAt <= now() || authority.token.length > 24000) throw new McpEventError(-32602, "Refresh the hosted connection before subscribing.");
-    const response = await fetcher(cloudOrigin + "/mcp/wardmote", {
-      method: "POST", redirect: "error", signal: AbortSignal.timeout(10_000),
-      headers: { Authorization: `Bearer ${authority.token}`, "Content-Type": "application/json", Accept: "application/json, text/event-stream" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "wardmote_connection", arguments: {} } }),
-    });
-    if (!response.ok) { await response.body?.cancel(); throw new McpEventError(-32602, "Hosted connection access is unavailable."); }
-    const body = await boundedJson(response);
-    const result = body.result as { isError?: boolean; structuredContent?: { user?: { id?: string }; companyId?: string; connectionId?: string } } | undefined;
-    if (result?.isError || result?.structuredContent?.user?.id !== principal.grant.userId || result?.structuredContent?.companyId !== principal.grant.companyId || result?.structuredContent?.connectionId !== principal.grant.id) {
-      throw new McpEventError(-32602, "Hosted connection authority does not match.");
-    }
   }
   function identity(principal: McpPrincipal, input: z.infer<typeof unsubscribeSchema>) {
     // Grant includes the authenticated company, person and registered client.
@@ -90,7 +70,7 @@ export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDis
     if (input.arguments.statuses) input.arguments.statuses = [...new Set(input.arguments.statuses)].sort();
   }
 
-  async function subscribe(principal: McpPrincipal, raw: unknown, cloud?: CloudEventAuthority) {
+  async function subscribe(principal: McpPrincipal, raw: unknown) {
     await oauth.assertEnabled();
     const requestedAt = new Date(now());
     const input = subscribeSchema.parse(raw);
@@ -124,7 +104,7 @@ export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDis
           throw new McpEventError(-32602, "Subscription limit reached. Stop an existing monitor first.");
         }
       }
-      if (!verify && !cloudOrigin) return { existing, previous, verify, lease: null };
+      if (!verify) return { existing, previous, verify, lease: null };
       const attempts = await tx.select().from(admissions);
       const companyAttempts = attempts.filter(r => r.companyId === principal.grant.companyId);
       const grantAttempts = companyAttempts.filter(r => r.grantId === principal.grant.id);
@@ -139,12 +119,11 @@ export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDis
     });
     const { existing, previous, verify, lease } = reservation;
     try {
-      await authorizeCloud(principal, cloud);
       if (verify) await verifyCallback(fetcher, id, url, secret, now());
       // Remote waits must not retain database connections or stale authority.
       const current = await oauth.authorizeGrant(principal.grant.id);
       await authorize(current, input.arguments);
-      const material = !verify && !cloudOrigin ? existing!.deliveryMaterial : await encrypt({ url, secret, ...(cloudOrigin ? { cloud } : {}),
+      const material = !verify ? existing!.deliveryMaterial : await encrypt({ url, secret,
         ...(previous && previous.secret !== secret ? { previousSecret: previous.secret, previousUntil: now() + rotationMs }
           : previous?.previousUntil && previous.previousUntil > now() ? { previousSecret: previous.previousSecret, previousUntil: previous.previousUntil } : {}) });
       return await db.transaction(async tx => {
@@ -166,11 +145,9 @@ export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDis
           if (!held || held.stoppedAt || held.expiresAt.getTime() <= now() || pending || canonical(held.deliveryMaterial) !== canonical(existing!.deliveryMaterial)) throw new McpEventError(-32602, "The monitor changed or was stopped. Retry the subscription.");
           retainedExpiry = held.expiresAt.getTime();
         }
-        if (cloudOrigin && cloud!.expiresAt <= now()) throw new McpEventError(-32602, "Refresh the hosted connection before subscribing.");
         // Refreshes extend the same monitor; a shorter overlapping request must
-        // not revoke a lifetime already promised to another caller. Hosted
-        // authority still caps the lifetime to its current proof.
-        const expiresAt = new Date(Math.min(Math.max(retainedExpiry, now() + Math.min(Math.max(input.ttlMs ?? lifetime, 30_000), lifetime)), cloudOrigin ? Math.min(now() + rotationMs, cloud!.expiresAt) : Infinity));
+        // not revoke a lifetime already promised to another caller.
+        const expiresAt = new Date(Math.max(retainedExpiry, now() + Math.min(Math.max(input.ttlMs ?? lifetime, 30_000), lifetime)));
         const value = { companyId: principal.grant.companyId, grantId: principal.grant.id, name: input.name, taskId: input.arguments.taskId ?? null, bindingId: input.arguments.bindingId ?? null,
           arguments: input.arguments, deliveryMaterial: material, expiresAt, stoppedAt: null,
           verifiedAt: verify ? new Date(now()) : existing!.verifiedAt, startsAt: existing?.startsAt ?? requestedAt, scannedAt: new Date(now()) };
@@ -305,7 +282,6 @@ export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDis
       const principal = await oauth.authorizeGrant(s.grantId);
       await authorize(principal, resourceFilters.parse(s.arguments));
       destination = await decrypt(s);
-      await authorizeCloud(principal, destination.cloud);
     } catch (error) {
       if (error instanceof PublicMcpDisabledError) {
         // A live disable pauses the claimed delivery without spending a retry.
