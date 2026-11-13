@@ -1781,7 +1781,7 @@ function legacyCompanyNativeSessionScopeKey(
 }
 
 export function runnerdStateBaseForInstance(instanceRoot: string): string {
-  return resolve(instanceRoot, "runtime", "paperclip-runner", "durable-sessions");
+  return resolve(instanceRoot, "runtime", "wardmote-runner", "durable-sessions");
 }
 
 function runnerdStateBase(): string {
@@ -6018,7 +6018,7 @@ function nativeSessionCheckpointDirectory(): string {
   const directory = resolve(
     resolveWardmoteInstanceRoot(),
     "runtime",
-    "paperclip-runner",
+    "wardmote-runner",
     "sessions",
   );
   mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -8780,13 +8780,13 @@ async function executeWardmoteNativeSessionWithinScope(
                 opencodeRuntimeDirectory: resolve(
                   resolveWardmoteInstanceRoot(),
                   "runtime",
-                  "paperclip-runner",
+                  "wardmote-runner",
                   "opencode",
                 ),
                 acpxRuntimeDirectory: resolve(
                   resolveWardmoteInstanceRoot(),
                   "runtime",
-                  "paperclip-runner",
+                  "wardmote-runner",
                   "acpx",
                 ),
               }),
@@ -10810,7 +10810,7 @@ export async function verifyRemoteRunnerReattachment(input: {
     args: [
       "-c",
       'test -f "$1" && test ! -L "$1" && cat -- "$1"',
-      "paperclip-runner-recovery-identity",
+      "wardmote-runner-recovery-identity",
       identityPath,
     ],
     bypassSession: true,
@@ -10835,7 +10835,7 @@ export async function verifyRemoteRunnerReattachment(input: {
         "-c",
         `${REMOTE_RUNNER_IDENTITY_CHECK_SCRIPT}; ${REMOTE_RUNNER_PROCESS_FINGERPRINT_SCRIPT}; test "$process_fingerprint" = "$5" || exit 4` +
           (signal ? '; kill -"$6" "$pid"' : ""),
-        "paperclip-runner-recovery-check",
+        "wardmote-runner-recovery-check",
         identityPath,
         nonce,
         runnerInstanceId,
@@ -10875,7 +10875,7 @@ async function waitForRemoteRunnerProcessIdentity(input: {
         args: [
           "-c",
           'test -f "$1" && test ! -L "$1" && cat -- "$1"',
-          "paperclip-runner-process-identity",
+          "wardmote-runner-process-identity",
           input.identityPath,
         ],
         bypassSession: true,
@@ -10904,7 +10904,7 @@ async function cleanupRemoteRunnerAfterIdentityFailure(input: {
       args: [
         "-c",
         REMOTE_RUNNER_FAILED_IDENTITY_CLEANUP_SCRIPT,
-        "paperclip-runner-identity-failure-cleanup",
+        "wardmote-runner-identity-failure-cleanup",
         input.identityPath,
         input.nonce,
         input.runnerInstanceId,
@@ -10964,7 +10964,7 @@ export function createRemoteRunnerProcessLauncher(input: {
           args: [
             "-c",
             `${REMOTE_RUNNER_IDENTITY_CHECK_SCRIPT}; kill -${signal} "$expected_pid"`,
-            "paperclip-runner-signal",
+            "wardmote-runner-signal",
             input.processIdentityPath,
             identity.nonce,
             input.runnerInstanceId,
@@ -11025,8 +11025,8 @@ export function createRemoteRunnerProcessLauncher(input: {
         command: "sh",
         args: [
           "-c",
-          'set -eu; identity_path=$1; identity_nonce=$2; runner_instance_id=$3; child_script=$4; shift 4; umask 077; identity_dir=$(dirname -- "$identity_path"); mkdir -p -- "$identity_dir"; if command -v setsid >/dev/null 2>&1; then nohup setsid sh -c "$child_script" paperclip-runner-child "$identity_path" "$identity_nonce" "$runner_instance_id" "$@" </dev/null >/dev/null 2>&1 & else nohup sh -c "$child_script" paperclip-runner-child "$identity_path" "$identity_nonce" "$runner_instance_id" "$@" </dev/null >/dev/null 2>&1 & fi',
-          "paperclip-runner-launch",
+          'set -eu; identity_path=$1; identity_nonce=$2; runner_instance_id=$3; child_script=$4; shift 4; umask 077; identity_dir=$(dirname -- "$identity_path"); mkdir -p -- "$identity_dir"; if command -v setsid >/dev/null 2>&1; then nohup setsid sh -c "$child_script" wardmote-runner-child "$identity_path" "$identity_nonce" "$runner_instance_id" "$@" </dev/null >/dev/null 2>&1 & else nohup sh -c "$child_script" wardmote-runner-child "$identity_path" "$identity_nonce" "$runner_instance_id" "$@" </dev/null >/dev/null 2>&1 & fi',
+          "wardmote-runner-launch",
           input.processIdentityPath,
           identityNonce,
           input.runnerInstanceId,
@@ -11100,7 +11100,7 @@ export function createRemoteRunnerProcessLauncher(input: {
           args: [
             "-c",
             REMOTE_RUNNER_IDENTITY_CHECK_SCRIPT,
-            "paperclip-runner-monitor",
+            "wardmote-runner-monitor",
             input.processIdentityPath,
             identityNonce,
             input.runnerInstanceId,
@@ -11123,7 +11123,7 @@ export function createRemoteRunnerProcessLauncher(input: {
             args: [
               "-c",
               'set -eu; directory=$1; file="$directory/runnerd.stderr.log"; test -d "$directory" && test ! -L "$directory" && test -f "$file" && test ! -L "$file"; tail -c 65536 -- "$file"',
-              "paperclip-runner-diagnostics",
+              "wardmote-runner-diagnostics",
               input.diagnosticsDirectory,
             ],
             bypassSession: true,
@@ -11328,7 +11328,7 @@ async function prepareRemoteDotRunner({ input, target, runner, root, identity }:
     if (metadata.exitCode !== 0 || metadata.timedOut) throw new Error("runner_remote_artifact_verification_failed");
     assertRemoteRunnerBuildMetadata(JSON.parse(metadata.stdout), requiredMode, "openai_dot_mcp");
     const checksum = await runner.execute({ command: "sh", args: ["-c",
-      'if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1"; else shasum -a 256 "$1"; fi', "paperclip-dot-artifact", remoteBinary],
+      'if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1"; else shasum -a 256 "$1"; fi', "wardmote-dot-artifact", remoteBinary],
       bypassSession: true, timeoutMs: 10000 });
     if (checksum.exitCode !== 0 || checksum.timedOut || `sha256:${checksum.stdout.trim().split(/\s+/)[0]}` !== artifact.digest) {
       throw new Error("runner_remote_artifact_verification_failed");
@@ -11337,7 +11337,7 @@ async function prepareRemoteDotRunner({ input, target, runner, root, identity }:
   const readProviderState = async () => {
     const result = await runner.execute({ command: "sh", args: ["-c",
       'set -eu; if test ! -e "$1" && test ! -L "$1"; then exit 3; fi; test -f "$1" && test ! -L "$1"; test "$(wc -c < "$1")" -le 33554432; base64 < "$1"',
-      "paperclip-dot-checkpoint", posix.join(runnerStateDirectory, "dot-provider-state.json")], bypassSession: true, timeoutMs: 10000 });
+      "wardmote-dot-checkpoint", posix.join(runnerStateDirectory, "dot-provider-state.json")], bypassSession: true, timeoutMs: 10000 });
     if (result.exitCode === 3 && !result.timedOut) return null;
     if (result.exitCode !== 0 || result.timedOut) throw new Error("dot_provider_checkpoint_unavailable");
     const state = record(JSON.parse(Buffer.from(result.stdout.replace(/\s+/g, ""), "base64").toString("utf8")));
@@ -11942,7 +11942,7 @@ async function createRunnerdBackendWithinSessionClaim(
           args: [
             "-c",
             'test -x "$1" || exit 1; if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1"; else shasum -a 256 "$1"; fi',
-            "paperclip-runner-artifact",
+            "wardmote-runner-artifact",
             executable,
           ],
           cwd: remoteTarget.remoteCwd,
@@ -12390,7 +12390,7 @@ async function createRunnerdBackendWithinSessionClaim(
       command: "sh",
       args: ["-c",
         'set -eu; umask 077; test -d "$1" && test ! -L "$1" && test -r "$1" && test -x "$1" || exit 1; if test ! -e "$2" && test ! -L "$2"; then mkdir -- "$2"; fi; test -d "$2" && test ! -L "$2" && test -r "$2" && test -x "$2" || exit 1; mkdir -- "$3"',
-        "paperclip-runner-claim-unstarted-session", remoteRuntimeRoot,
+        "wardmote-runner-claim-unstarted-session", remoteRuntimeRoot,
         posix.dirname(remoteSessionRoot), remoteSessionRoot],
       bypassSession: true,
       timeoutMs: 10_000,
@@ -13047,7 +13047,7 @@ async function createRunnerdBackendWithinSessionClaim(
             args: [
               "-c",
               'set -eu; if test -L "$2" || { test -e "$2" && test ! -d "$2"; }; then exit 1; fi; if test -f "$1" && test ! -L "$1" && test ! -e "$3" && test ! -L "$3"; then umask 077; install -d -m 0700 "$2"; mv -- "$1" "$3"; elif test ! -e "$1" && test ! -L "$1" && test -f "$3" && test ! -L "$3"; then :; else exit 1; fi; base64 < "$3"',
-              "paperclip-runner-authority-archive",
+              "wardmote-runner-authority-archive",
               sourcePath,
               archiveDirectory,
               archivedStatePath,
@@ -13234,13 +13234,13 @@ async function createRunnerdBackendWithinSessionClaim(
     opencodeRuntimeDirectory: resolve(
       resolveWardmoteInstanceRoot(),
       "runtime",
-      "paperclip-runner",
+      "wardmote-runner",
       "opencode",
     ),
     acpxRuntimeDirectory: resolve(
       resolveWardmoteInstanceRoot(),
       "runtime",
-      "paperclip-runner",
+      "wardmote-runner",
       "acpx",
     ),
     codexTransportFactory: (recoveryContext) =>
@@ -13276,7 +13276,7 @@ async function createRunnerdBackendWithinSessionClaim(
                 : resolve(
                     resolveWardmoteInstanceRoot(),
                     "runtime",
-                    "paperclip-runner",
+                    "wardmote-runner",
                     "acpx",
                   ),
             }
@@ -13705,7 +13705,7 @@ async function createRunnerdBackendWithinSessionClaim(
       // The launch runtime directory already ends in "acpx"; ACPX adds its
       // own namespace beneath it in resolveAcpxRuntimeRoot.
       const relativeHome = `acpx/acpx/${acpxRuntimeSessionDirectoryName(nativeSessionKey(input.execution))}/grok-home`;
-      const localHome = resolve(resolveWardmoteInstanceRoot(), "runtime", "paperclip-runner", relativeHome);
+      const localHome = resolve(resolveWardmoteInstanceRoot(), "runtime", "wardmote-runner", relativeHome);
       const remoteHome = remoteRunnerFilesystemRoot ? posix.join(remoteRunnerFilesystemRoot, relativeHome) : null;
       const readAuth = async (name: string): Promise<Buffer> => {
         if (!remoteHome || !remoteCommandRunner) return Buffer.from(await readLocalAiCredentialFile(join(localHome, name)));

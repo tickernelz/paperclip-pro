@@ -17,6 +17,7 @@ import {
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { resolveManagedInstructionsRoot } from "../services/agent-instructions.js";
 import { migrateRetiredNames } from "../services/retired-name-migration.js";
+import { RETIRED_RUNNER_RUNTIME_DIR } from "../services/native-runtime/retired-runner-runtime-dir.js";
 
 describe("retired product name migration", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
@@ -142,7 +143,7 @@ describe("retired product name migration", () => {
 
   it("quarantines native runner state written under retired schema ids and keeps current state", async () => {
     const instanceRoot = path.join(home, "instances", "default");
-    const stateBase = path.join(instanceRoot, "runtime", "paperclip-runner", "durable-sessions");
+    const stateBase = path.join(instanceRoot, "runtime", "wardmote-runner", "durable-sessions");
     const retiredKey = "a".repeat(64);
     const currentKey = "b".repeat(64);
     const retiredSchema = "paperclip.runner.durable.control-plane-state.v1";
@@ -160,6 +161,32 @@ describe("retired product name migration", () => {
     expect((await fs.readdir(stateBase)).sort()).toEqual([currentKey, "quarantine"]);
     expect((await fs.readdir(path.join(stateBase, "quarantine")))[0]).toMatch(new RegExp(`^${retiredKey}\\.identity_indeterminate\\.`));
     await fs.rm(stateBase, { recursive: true, force: true });
+  }, 60_000);
+
+  it("moves the runner runtime directory used before the rename and keeps its sessions", async () => {
+    const instanceRoot = path.join(home, "instances", "moved");
+    const retiredBase = path.join(instanceRoot, "runtime", RETIRED_RUNNER_RUNTIME_DIR, "durable-sessions");
+    const currentBase = path.join(instanceRoot, "runtime", "wardmote-runner", "durable-sessions");
+    const key = "c".repeat(64);
+    await fs.mkdir(path.join(retiredBase, key, "control-plane"), { recursive: true });
+    await fs.writeFile(path.join(retiredBase, key, "control-plane", "control-plane-state.json"), JSON.stringify({ schema: "wardmote.runner.durable.control-plane-state.v1" }));
+
+    await migrateRetiredNames(db, { instanceRoot, dryRun: true, now: new Date("2026-11-13T00:00:00Z") });
+    await expect(fs.readdir(retiredBase)).resolves.toEqual([key]);
+
+    const report = await migrateRetiredNames(db, { instanceRoot, now: new Date("2026-11-13T00:00:10Z") });
+    expect(report.quarantinedRunnerStates).toEqual([]);
+    await expect(fs.readdir(currentBase)).resolves.toEqual([key]);
+    const retiredRoot = path.join(instanceRoot, "runtime", RETIRED_RUNNER_RUNTIME_DIR);
+    expect((await fs.lstat(retiredRoot)).isSymbolicLink()).toBe(true);
+    const liveState = path.join(retiredRoot, "durable-sessions", key, "control-plane", "control-plane-state.json");
+    await fs.writeFile(`${liveState}.tmp`, JSON.stringify({ schema: "wardmote.runner.durable.control-plane-state.v1", saved: "after-move" }));
+    await fs.rename(`${liveState}.tmp`, liveState);
+    expect(JSON.parse(await fs.readFile(path.join(currentBase, key, "control-plane", "control-plane-state.json"), "utf8")).saved).toBe("after-move");
+    const again = await migrateRetiredNames(db, { instanceRoot, now: new Date("2026-11-13T00:00:20Z") });
+    expect(again.quarantinedRunnerStates).toEqual([]);
+    expect((await fs.lstat(retiredRoot)).isSymbolicLink()).toBe(true);
+    await fs.rm(instanceRoot, { recursive: true, force: true });
   }, 60_000);
 
   it("reports a bundle it cannot adopt and still rewrites the other agents", async () => {

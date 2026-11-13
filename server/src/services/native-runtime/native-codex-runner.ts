@@ -326,7 +326,7 @@ export async function executeNativeCodexRunner(input: {
   const runnerDigest = `sha256:${createHash("sha256").update(readFileSync(binary)).digest("hex")}`;
   const runtimeRoot = input.runtimeRoot
     ? resolve(input.runtimeRoot)
-    : resolve(resolveWardmoteInstanceRoot(), "runtime", "paperclip-runner");
+    : resolve(resolveWardmoteInstanceRoot(), "runtime", "wardmote-runner");
   const runnerStateDirectory = resolve(runtimeRoot, "runner", input.runId);
   const goalControl = await readNativeGoalControl({
     db: input.db,

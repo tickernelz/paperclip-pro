@@ -1238,7 +1238,7 @@ describe("runner E2E evidence redaction", () => {
         root,
         path.join(
           root,
-          "instances/instance-1/runtime/paperclip-runner/acpx/acpx/session-1/codex-home/auth.json",
+          "instances/instance-1/runtime/wardmote-runner/acpx/acpx/session-1/codex-home/auth.json",
         ),
       ),
     ).toBe(true);
@@ -1247,7 +1247,7 @@ describe("runner E2E evidence redaction", () => {
         root,
         path.join(
           root,
-          "instances/instance-1/runtime/paperclip-runner/durable-sessions/session-1/codex-home/auth.json",
+          "instances/instance-1/runtime/wardmote-runner/durable-sessions/session-1/codex-home/auth.json",
         ),
       ),
     ).toBe(true);
@@ -1262,7 +1262,7 @@ describe("runner E2E evidence redaction", () => {
         root,
         path.join(
           root,
-          "instances/instance-1/runtime/paperclip-runner/durable-sessions/session-1/codex-home/config.toml",
+          "instances/instance-1/runtime/wardmote-runner/durable-sessions/session-1/codex-home/config.toml",
         ),
       ),
     ).toBe(false);
