@@ -158,7 +158,7 @@ export function renderRunnerWorkflowJUnit(report: RunnerWorkflowEvalReport): str
   });
   return [
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-    `<testsuite name="paperclip-runner-workflows" tests="${report.results.length}" failures="${failures}" skipped="${skipped}">`,
+    `<testsuite name="wardmote-runner-workflows" tests="${report.results.length}" failures="${failures}" skipped="${skipped}">`,
     ...cases,
     "</testsuite>",
     "",

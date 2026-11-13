@@ -7,7 +7,7 @@ const ADMIN_EMAIL =
 const ADMIN_PASSWORD =
   process.env.WARDMOTE_RELEASE_SMOKE_PASSWORD ??
   process.env.SMOKE_ADMIN_PASSWORD ??
-  "paperclip-smoke-password";
+  "wardmote-smoke-password";
 const EXPECTED_OMP_VERSION = process.env.WARDMOTE_RELEASE_SMOKE_OMP_VERSION ?? null;
 
 async function signIn(page: Page) {

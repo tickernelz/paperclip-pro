@@ -40,7 +40,7 @@ export interface CodexModelContextSnapshot {
   protocolVersion: typeof CODEX_CODEX_PROTOCOL_VERSION;
   codexVersion: string;
   clientInfo: {
-    name: "paperclip-runner";
+    name: "wardmote-runner";
     title: "Wardmote Runner";
     version: string;
   };

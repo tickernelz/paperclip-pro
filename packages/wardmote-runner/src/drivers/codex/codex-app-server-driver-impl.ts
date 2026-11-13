@@ -744,7 +744,7 @@ export class CodexAppServerDriver implements HarnessDriver {
   ): Promise<Record<string, unknown>> {
     const initialized = await transport.request("initialize", {
       clientInfo: {
-        name: "paperclip-runner",
+        name: "wardmote-runner",
         title: "Wardmote Runner",
         version: DRIVER_VERSION,
       },
@@ -850,7 +850,7 @@ export class CodexAppServerDriver implements HarnessDriver {
         protocolVersion: CODEX_CODEX_PROTOCOL_VERSION,
         codexVersion: boundedText(initialize.userAgent),
         clientInfo: {
-          name: "paperclip-runner",
+          name: "wardmote-runner",
           title: "Wardmote Runner",
           version: DRIVER_VERSION,
         },

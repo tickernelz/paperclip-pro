@@ -9,7 +9,7 @@ if (process.env.NODE_ENV === "test") {
     );
     if (
       url.hostname === "api.github.com" &&
-      headers.get("authorization") === "Bearer paperclip-e2e-repository-fixture"
+      headers.get("authorization") === "Bearer wardmote-e2e-repository-fixture"
     ) {
       if (url.pathname !== "/user/repos")
         return Response.json(

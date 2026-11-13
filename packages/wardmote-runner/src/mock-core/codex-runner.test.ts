@@ -115,7 +115,7 @@ class TraceConformanceDriver implements HarnessDriver {
       protocolVersion: CODEX_CODEX_PROTOCOL_VERSION,
       codexVersion: "trace-fixture",
       clientInfo: {
-        name: "paperclip-runner",
+        name: "wardmote-runner",
         title: "Wardmote Runner",
         version: "1.0.0",
       },
