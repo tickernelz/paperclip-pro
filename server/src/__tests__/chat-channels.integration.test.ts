@@ -2586,8 +2586,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const thread = makeThread({ channelId: "acmeai/paperclip", id: f.conversation.externalThreadId }).thread;
       await deliverMessage({ callbacks: f.callbacks, endpointId: f.endpoint.id, provider: "github", thread,
         trigger: "mention", message: makeMessage({ id: "41802", text: "And this too", userId: "42", userName: "octocat", mentioned: true }) });
-      // Acknowledgements use a best-effort publication lane. Establish both
-      // working comments before testing their coalesced completion cleanup.
       await expect.poll(async () => {
         await githubResponseCommentService(db, f.providerFetch).processPending();
         return f.responseComments.size;
