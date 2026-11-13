@@ -1,4 +1,5 @@
 import { updateAgentConfigurationInTransaction } from "./agent-configuration-transaction.js";
+import { readPackageMetadataBlock } from "./retired-package-metadata-key.js";
 import { logger } from "../middleware/logger.js";
 import { removeRuntimeSkillCache, resolveRuntimeSkillCache, runtimeSkillCacheSpec } from "./runtime-skill-cache.js";
 import { createHash, randomUUID } from "node:crypto";
@@ -624,10 +625,10 @@ function readCanonicalSkillKey(frontmatter: Record<string, unknown>, metadata: R
     ?? asString(metadata?.wardmoteSkillKey),
   );
   if (direct) return direct;
-  const paperclip = isPlainRecord(metadata?.paperclip) ? metadata?.paperclip as Record<string, unknown> : null;
+  const block = readPackageMetadataBlock(metadata);
   return normalizeSkillKey(
-    asString(paperclip?.skillKey)
-    ?? asString(paperclip?.key),
+    asString(block?.skillKey)
+    ?? asString(block?.key),
   );
 }
 

@@ -25,7 +25,7 @@ describe("runner E2E Daytona image contract", () => {
     expect(JSON.parse(runnerPackage).dependencies).not.toHaveProperty("@tickernelz/wardmote-grok-acp");
     expect(packBuilder).toContain('path: "dist/providers/grok/launcher.cjs"');
     expect(dockerfile).toContain("scripts/provision-grok.mjs");
-    expect(dockerfile).toContain("/opt/paperclip/providers/grok/1.0.13/grok");
+    expect(dockerfile).toContain("/opt/wardmote/providers/grok/1.0.13/grok");
     expect(DAYTONA_IMAGE_INPUT_PATHS).toContain("packages/wardmote-runner/scripts/provision-grok.mjs");
     expect(DAYTONA_IMAGE_INPUT_PATHS).not.toContain("packages/grok-acp/package.json");
   });
@@ -51,7 +51,7 @@ describe("runner E2E Daytona image contract", () => {
       "COPY packages ./packages",
     );
     expect(dockerfile).toContain(
-      "/opt/paperclip-runner/provider-pack/provider-pack.json",
+      "/opt/wardmote-runner/provider-pack/provider-pack.json",
     );
     expect(dockerfile).toContain(
       "${WARDMOTE_RUNNER_PROVIDER_PACK_ROOT}/node_modules/.bin",
@@ -66,7 +66,7 @@ describe("runner E2E Daytona image contract", () => {
       'metadata="$(wardmote-runnerd --build-metadata)"',
     );
     expect(dockerfile).toContain("provider-pack.json");
-    expect(dockerfile).toContain("io.paperclip.runner.content-id");
+    expect(dockerfile).toContain("io.wardmote.runner.content-id");
     expect(dockerfile).toContain("org.opencontainers.image.revision");
     expect(extractDaytonaDockerfileFrontendDigest(dockerfile)).toBe(
       "sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e",

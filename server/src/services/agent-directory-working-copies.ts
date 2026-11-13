@@ -25,7 +25,7 @@ const transports = new Map<string, PreparedAdapterExecutionTargetRuntime>();
 const key = (row: Pick<Copy, "companyId" | "runId">) => `${row.companyId}:${row.runId}`;
 function sandboxTransferRoot(row: Copy, remoteCwd: string): string {
   const origin = typeof row.receipt?.materializationRunId === "string" ? row.receipt.materializationRunId : String(row.receipt?.directoryRunId ?? row.runId);
-  return path.posix.join(remoteCwd, ".wardmote-runtime", "paperclip-runner", "agent-file-transfers", row.agentId, origin);
+  return path.posix.join(remoteCwd, ".wardmote-runtime", "wardmote-runner", "agent-file-transfers", row.agentId, origin);
 }
 export function isAgentDirectoryCopy(row: Pick<Copy, "receipt"> | null): boolean {
   return row?.receipt?.schema === AGENT_FILES_CONTRACT;

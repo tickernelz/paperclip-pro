@@ -58,7 +58,7 @@ FROM daytonaio/sandbox:0.8.0@sha256:eadf88e4391072b7ad4bed27d9cadfc9fe9d8ed375d9
 
 USER root
 
-ENV WARDMOTE_RUNNER_PROVIDER_PACK_ROOT=/opt/paperclip-runner/provider-pack
+ENV WARDMOTE_RUNNER_PROVIDER_PACK_ROOT=/opt/wardmote-runner/provider-pack
 ENV PATH=${WARDMOTE_RUNNER_PROVIDER_PACK_ROOT}/node_modules/.bin:/usr/local/share/nvm/current/bin:/usr/local/python/current/bin:/usr/local/py-utils/bin:${PATH}
 
 # Share the pack's latest stable Codex, Claude and OpenCode with every adapter.
@@ -107,12 +107,12 @@ RUN set -eu; \
 
 COPY packages/wardmote-runner/scripts/provision-grok.mjs /tmp/grok-provision/scripts/provision-grok.mjs
 COPY packages/wardmote-runner/src/providers/grok/platforms.json /tmp/grok-provision/src/providers/grok/platforms.json
-RUN node /tmp/grok-provision/scripts/provision-grok.mjs /opt/paperclip/providers/grok/1.0.13/grok && rm -rf /tmp/grok-provision
+RUN node /tmp/grok-provision/scripts/provision-grok.mjs /opt/wardmote/providers/grok/1.0.13/grok && rm -rf /tmp/grok-provision
 
 COPY --from=runnerd-build /workspace/packages/wardmote-runner/runner/target/release/wardmote-runnerd /usr/local/bin/wardmote-runnerd
-COPY --from=provider-pack-build /provider-pack /opt/paperclip-runner/provider-pack
+COPY --from=provider-pack-build /provider-pack /opt/wardmote-runner/provider-pack
 RUN set -eu; for cli in codex claude opencode; do \
-      printf '#!/bin/sh\nexec /opt/paperclip-runner/provider-pack/node_modules/.bin/%s "$@"\n' "$cli" > "/usr/local/bin/$cli"; \
+      printf '#!/bin/sh\nexec /opt/wardmote-runner/provider-pack/node_modules/.bin/%s "$@"\n' "$cli" > "/usr/local/bin/$cli"; \
       chmod 755 "/usr/local/bin/$cli"; \
     done
 
@@ -125,15 +125,15 @@ RUN test -n "${WARDMOTE_RUNNER_CONTENT_ID}" \
     && test -n "${WARDMOTE_RUNNER_SOURCE_REVISION}"
 
 RUN set -eu; \
-    printf '%s\n' 'export PATH=/opt/paperclip-runner/provider-pack/node_modules/.bin:$PATH' \
-      > /etc/profile.d/01-paperclip-runner-provider-pack.sh; \
-    chmod 0644 /etc/profile.d/01-paperclip-runner-provider-pack.sh; \
+    printf '%s\n' 'export PATH=/opt/wardmote-runner/provider-pack/node_modules/.bin:$PATH' \
+      > /etc/profile.d/01-wardmote-runner-provider-pack.sh; \
+    chmod 0644 /etc/profile.d/01-wardmote-runner-provider-pack.sh; \
     for command_name in acpx claude-agent-acp codex-acp claude codex grok gemini kimi opencode cursor-agent agent hermes gh wardmote-runnerd; do \
       command -v "$command_name" >/dev/null || { echo "FATAL: $command_name not on PATH after build" >&2; exit 1; }; \
     done; \
     metadata="$(wardmote-runnerd --build-metadata)"; \
-    /opt/paperclip-runner/provider-pack/node_modules/node/bin/node -e "const [major,minor,patch]=process.versions.node.split('.').map(Number); if (major<24 || (major===24 && (minor<11 || (minor===11 && patch<0)))) process.exit(1)"; \
-    test -f /opt/paperclip-runner/provider-pack/provider-pack.json; \
+    /opt/wardmote-runner/provider-pack/node_modules/node/bin/node -e "const [major,minor,patch]=process.versions.node.split('.').map(Number); if (major<24 || (major===24 && (minor<11 || (minor===11 && patch<0)))) process.exit(1)"; \
+    test -f /opt/wardmote-runner/provider-pack/provider-pack.json; \
     printf '%s' "$metadata" | grep -q '"dial_ws_loopback"'; \
     printf '%s' "$metadata" | grep -q '"dial_wss"'; \
     printf '%s' "$metadata" | grep -q '"listen_ws"'; \
@@ -142,9 +142,9 @@ RUN set -eu; \
 USER daytona
 
 RUN /bin/sh -lc 'set -eu; \
-    test -r /opt/paperclip-runner/provider-pack/provider-pack.json; \
-    /opt/paperclip-runner/provider-pack/node_modules/node/bin/node -e \
-      "JSON.parse(require(\"node:fs\").readFileSync(\"/opt/paperclip-runner/provider-pack/provider-pack.json\", \"utf8\"))"; \
+    test -r /opt/wardmote-runner/provider-pack/provider-pack.json; \
+    /opt/wardmote-runner/provider-pack/node_modules/node/bin/node -e \
+      "JSON.parse(require(\"node:fs\").readFileSync(\"/opt/wardmote-runner/provider-pack/provider-pack.json\", \"utf8\"))"; \
     for command_name in acpx claude-agent-acp codex-acp; do \
       command -v "$command_name" >/dev/null || { echo "FATAL: $command_name not on PATH for daytona user" >&2; exit 1; }; \
     done; \
@@ -155,5 +155,5 @@ RUN /bin/sh -lc 'set -eu; \
     test "$(claude-agent-acp --version)" = "0.73.0"; \
     test "$(codex-acp --version)" = "@agentclientprotocol/codex-acp 1.6.2"'
 
-LABEL io.paperclip.runner.content-id="${WARDMOTE_RUNNER_CONTENT_ID}" \
+LABEL io.wardmote.runner.content-id="${WARDMOTE_RUNNER_CONTENT_ID}" \
       org.opencontainers.image.revision="${WARDMOTE_RUNNER_SOURCE_REVISION}"

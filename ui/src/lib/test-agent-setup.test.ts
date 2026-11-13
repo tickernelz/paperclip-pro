@@ -68,7 +68,7 @@ it("probes native Grok credentials with the pinned prerequisite in the selected 
   });
   expect(testEnvironment).toHaveBeenLastCalledWith("company-1", "grok_local", {
     agentId: "agent-1", environmentId: "sandbox-1",
-    adapterConfig: { provider: "acpx", acpxAgent: "grok", model: "grok-4.7", engine: "cli", command: "/opt/paperclip/providers/grok/1.0.13/grok" },
+    adapterConfig: { provider: "acpx", acpxAgent: "grok", model: "grok-4.7", engine: "cli", command: "/opt/wardmote/providers/grok/1.0.13/grok" },
   });
   expect(result.checks.some((check) => check.code === "grok_hello_probe_passed")).toBe(true);
 });

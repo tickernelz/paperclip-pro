@@ -10782,7 +10782,7 @@ export async function verifyRemoteRunnerReattachment(input: {
   const stateDirectory = posix.join(
     target.remoteCwd,
     ".wardmote-runtime",
-    "paperclip-runner",
+    "wardmote-runner",
     "sessions",
     createHash("sha256").update(input.normalizedSessionId).digest("hex"),
     "runner",
@@ -11306,7 +11306,7 @@ async function prepareRemoteDotRunner({ input, target, runner, root, identity }:
   identity: NonNullable<NonNullable<Parameters<typeof createNativeSessionBackend>[1]>["dotRunnerOptions"]>["identity"];
 }) {
   const runnerBinary = input.runnerRemoteBinaryPath?.trim() || resolveWardmoteRunnerBinary();
-  const remoteRoot = posix.join(target.remoteCwd, ".wardmote-runtime", "paperclip-runner");
+  const remoteRoot = posix.join(target.remoteCwd, ".wardmote-runtime", "wardmote-runner");
   const remoteBinary = posix.join(remoteRoot, "bin", "wardmote-runnerd");
   const runnerStateDirectory = posix.join(remoteRoot, "sessions",
     createHash("sha256").update(identity.normalizedSessionId).digest("hex"), "runner");
@@ -11580,7 +11580,7 @@ async function createRunnerdBackendWithinSessionClaim(
     ? posix.join(
         remoteTarget.remoteCwd,
         ".wardmote-runtime",
-        "paperclip-runner",
+        "wardmote-runner",
       )
     : null;
   const requiresRemoteProviderPack =
@@ -11864,7 +11864,7 @@ async function createRunnerdBackendWithinSessionClaim(
       command: "sh",
       args: [
         "-c",
-        'for candidate in /opt/paperclip-runner/provider-pack "$HOME/.local/share/paperclip-runner/provider-pack"; do if [ -f "$candidate/provider-pack.json" ]; then printf \'%s\\n\' "$candidate"; break; fi; done',
+        'for candidate in /opt/wardmote-runner/provider-pack "$HOME/.local/share/wardmote-runner/provider-pack"; do if [ -f "$candidate/provider-pack.json" ]; then printf \'%s\\n\' "$candidate"; break; fi; done',
       ],
       cwd: remoteTarget.remoteCwd,
       bypassSession: true,

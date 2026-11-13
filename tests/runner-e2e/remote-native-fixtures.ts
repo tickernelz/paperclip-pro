@@ -6,7 +6,7 @@ import { PI_DISTRIBUTION_CLOSURE_SHA256 } from "../../packages/wardmote-runner/s
 const PI_FAULT_SOURCE = readFileSync(new URL("./pi-provider-fault.py", import.meta.url), "utf8");
 
 export const REMOTE_FIXTURE_DAYTONA_SDK_VERSION = "0.203.0";
-const NODE = "/opt/paperclip-runner/provider-pack/node_modules/node/bin/node";
+const NODE = "/opt/wardmote-runner/provider-pack/node_modules/node/bin/node";
 const MAX_OUTPUT = 256 * 1024;
 const TEARDOWN_RESERVE_MS = 15_000;
 const LEASE_READMISSION_BUDGET_MS = 10_000;
@@ -17,7 +17,7 @@ const INSTALL_BUDGET_MS = 27_000;
 export const REMOTE_FIXTURE_MIN_SETUP_BUDGET_MS = LEASE_READMISSION_BUDGET_MS
   + RUNTIME_READY_BUDGET_MS + INSTALL_BUDGET_MS + TEARDOWN_RESERVE_MS;
 const CLOSE_GRACE_MS = 10_000;
-const RUNTIME_RELATIVE = ".wardmote-runtime/paperclip-runner";
+const RUNTIME_RELATIVE = ".wardmote-runtime/wardmote-runner";
 const digest = (value: string) => `sha256:${createHash("sha256").update(value).digest("hex")}`;
 const record = (value: unknown): Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 const fail = (condition: unknown, code: string): void => { if (!condition) throw new Error(`remote_native_fixture:${code}`); };

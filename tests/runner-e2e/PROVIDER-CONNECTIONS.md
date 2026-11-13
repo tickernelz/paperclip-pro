@@ -440,7 +440,7 @@ shared/database/skill-catalog groups passed. Further isolated checks do not
 substitute for a successful complete PR verification run.
 
 The pinned native Grok executable is still absent at
-`/opt/paperclip/providers/grok/1.0.13/grok`. Installing it needs administrator
+`/opt/wardmote/providers/grok/1.0.13/grok`. Installing it needs administrator
 access; retain the checked-in provisioning helper and its checksum verification.
 Subscriptions, staging/Daytona, and common-build release qualification remain
 outstanding.

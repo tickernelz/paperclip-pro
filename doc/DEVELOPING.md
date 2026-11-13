@@ -1458,7 +1458,7 @@ Pin the resolved releases at image build time for reproducibility and refresh
 the runner's qualification versions and binary digests together with those pins.
 The ACP bridges remain separately qualified protocol dependencies.
 
-Native discovery checks `/opt/paperclip-runner/bin`, then `$HOME/.local/bin`,
+Native discovery checks `/opt/wardmote-runner/bin`, then `$HOME/.local/bin`,
 then PATH. Any preferred-directory entry must launch the same shared CLI that
 normal adapters use. Discovery picks the first executable; it does not compare
 versions across directories. With these artifacts preinstalled, startup links

@@ -1,3 +1,4 @@
+import { readPackageMetadataBlock } from "./retired-package-metadata-key.js";
 export const PORTABLE_CATALOG_PROVENANCE_STRING_KEYS = [
   "sourceRef",
   "originHash",
@@ -37,8 +38,8 @@ export function readPortableCatalogProvenance(
   metadata: Record<string, unknown> | null,
   canonicalKey: string | null = null,
 ) {
-  const paperclip = isCatalogRecord(metadata?.paperclip) ? metadata.paperclip : null;
-  const catalog = isCatalogRecord(paperclip?.catalog) ? paperclip.catalog : null;
+  const block = readPackageMetadataBlock(metadata);
+  const catalog = isCatalogRecord(block?.catalog) ? block.catalog : null;
   if (!catalog) return null;
 
   const sourceRef = asCatalogString(catalog.sourceRef) ?? asCatalogString(catalog.originHash);

@@ -1178,7 +1178,7 @@ describe("remote provider pack manifest", () => {
       expect(transport.runnerBinary).toBe(state.bundledRunnerBinary);
       await expect(transport.controlPlaneRegistration({})).rejects.toThrow("reached-staged-Linux-daemon-verification");
       expect(syncIn).toHaveBeenCalledWith([expect.objectContaining({ files: [expect.objectContaining({
-        sourcePath: state.bundledRunnerBinary, targetPath: "/workspace/.wardmote-runtime/paperclip-runner/bin/wardmote-runnerd",
+        sourcePath: state.bundledRunnerBinary, targetPath: "/workspace/.wardmote-runtime/wardmote-runner/bin/wardmote-runnerd",
       })] })]);
       expect(execute.mock.calls.some(([call]) => call.args?.[1] === "uname -s; uname -m")).toBe(false);
     } finally {
@@ -12643,7 +12643,7 @@ describe("runnerd provider runtime wiring", () => {
       sshTransportOptions.environment.WARDMOTE_RUNNER_EXTERNAL_SANDBOX,
     ).toBeUndefined();
     expect(state.createTransport.mock.calls[0]![0].runnerBinary).not.toBe(
-      `${remoteCwd}/.wardmote-runtime/paperclip-runner/bin/wardmote-runnerd`,
+      `${remoteCwd}/.wardmote-runtime/wardmote-runner/bin/wardmote-runnerd`,
     );
   });
 
@@ -12713,7 +12713,7 @@ describe("runnerd provider runtime wiring", () => {
   it.each(["fresh", "existing_state", "symlink_parent", "wrong_identity", "connected", "pending_turn", "remote_probe_failed", "backup_present"])(
     "bootstraps only an untouched provider session in a resumed workspace lease: %s", async (scenario) => {
     const remoteCwd = join(isolatedStateDirectory, "remote");
-    const runtimeRoot = join(remoteCwd, ".wardmote-runtime", "paperclip-runner");
+    const runtimeRoot = join(remoteCwd, ".wardmote-runtime", "wardmote-runner");
     await mkdir(runtimeRoot, { recursive: true });
     const sessionRoot = join(runtimeRoot, "sessions", createHash("sha256").update(execution.session.normalizedSessionId!).digest("hex"));
     if (scenario === "existing_state") await mkdir(sessionRoot, { recursive: true });
@@ -12860,7 +12860,7 @@ describe("runnerd provider runtime wiring", () => {
         } else if (command.args?.[0] === "--version") {
           if (
             command.command.endsWith(
-              "/.wardmote-runtime/paperclip-runner/bin/codex",
+              "/.wardmote-runtime/wardmote-runner/bin/codex",
             )
           ) {
             throw new Error("reached-preinstalled-codex-verification");
@@ -12871,8 +12871,8 @@ describe("runnerd provider runtime wiring", () => {
         } else if (script.includes("command -v wardmote-runnerd")) {
           stdout = image === "missing" ? "" : "/usr/local/bin/wardmote-runnerd\n";
         } else if (script.includes("command -v codex")) {
-          stdout = script.includes("/opt/paperclip-runner/bin/codex")
-            ? "/opt/paperclip-runner/bin/codex\n"
+          stdout = script.includes("/opt/wardmote-runner/bin/codex")
+            ? "/opt/wardmote-runner/bin/codex\n"
             : "/usr/local/bin/codex\n";
         } else if (
           !script.includes("ln -sfn") &&
@@ -12932,7 +12932,7 @@ describe("runnerd provider runtime wiring", () => {
       expect(syncIn).toHaveBeenCalledWith([expect.objectContaining({
         files: [expect.objectContaining({
           sourcePath: controllerArtifact,
-          targetPath: "/workspace/.wardmote-runtime/paperclip-runner/bin/wardmote-runnerd",
+          targetPath: "/workspace/.wardmote-runtime/wardmote-runner/bin/wardmote-runnerd",
         })],
       })]);
     } else {
@@ -12941,13 +12941,13 @@ describe("runnerd provider runtime wiring", () => {
     if (exactRetained) {
       expect(remoteExecute.mock.calls.some(([call]) => call.args?.[1]?.includes("command -v wardmote-runnerd"))).toBe(false);
       expect(remoteExecute).toHaveBeenCalledWith(expect.objectContaining({
-        command: "/workspace/.wardmote-runtime/paperclip-runner/bin/wardmote-runnerd",
+        command: "/workspace/.wardmote-runtime/wardmote-runner/bin/wardmote-runnerd",
         args: ["--build-metadata"],
       }));
     }
     expect(remoteExecute).toHaveBeenCalledWith(
       expect.objectContaining({
-        command: "/opt/paperclip-runner/bin/codex",
+        command: "/opt/wardmote-runner/bin/codex",
         args: ["--version"],
       }),
     );
@@ -13000,7 +13000,7 @@ describe("runnerd provider runtime wiring", () => {
             prpTransportModes: ["listen_ws"],
           });
         } else if (command.args?.[0] === "--version") {
-          if (command.command.endsWith("/.wardmote-runtime/paperclip-runner/bin/codex")) {
+          if (command.command.endsWith("/.wardmote-runtime/wardmote-runner/bin/codex")) {
             throw new Error("reached-preinstalled-codex-verification");
           }
           stdout = `codex-cli ${version}`;
@@ -13009,7 +13009,7 @@ describe("runnerd provider runtime wiring", () => {
         } else if (script.includes("command -v wardmote-runnerd")) {
           stdout = "/usr/local/bin/wardmote-runnerd\n";
         } else if (script.includes("command -v codex")) {
-          stdout = "/opt/paperclip-runner/bin/codex\n";
+          stdout = "/opt/wardmote-runner/bin/codex\n";
         } else if (!script.includes("ln -sfn") && !script.includes("wardmote_codex_launcher_tmp")) {
           throw new Error(`unexpected command: ${command.command}`);
         }
