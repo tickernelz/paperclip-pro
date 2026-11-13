@@ -2049,7 +2049,7 @@ export function heartbeatService(
         await dispatchNativeSessionResumptions({
           db,
           runnerInstanceId:
-            runtimeEnv.WARDMOTE_INSTANCE_ID?.trim() || "paperclip-heartbeat",
+            runtimeEnv.WARDMOTE_INSTANCE_ID?.trim() || "wardmote-heartbeat",
           runIds: [runId],
           dispatch: (claim) => {
             const execution = executeRun(claim.runId, {

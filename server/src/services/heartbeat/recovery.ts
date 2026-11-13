@@ -1909,7 +1909,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
         : await dispatchNativeSessionResumptions({
             db,
             runnerInstanceId:
-              runtimeEnv.WARDMOTE_INSTANCE_ID?.trim() || "paperclip-heartbeat",
+              runtimeEnv.WARDMOTE_INSTANCE_ID?.trim() || "wardmote-heartbeat",
             now,
             runIds: [...claimableNativeRunIds],
             dispatch: (claim) => {

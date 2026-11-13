@@ -2003,7 +2003,7 @@ function applyDocumentFixups(document: any): any {
     [BOARD_SESSION_AUTH_SCHEME]: {
       type: "apiKey",
       in: "cookie",
-      name: "paperclip_session",
+      name: "wardmote-<instance>.session_token",
       description:
         "Board session cookie in authenticated mode. Wardmote uses Better Auth; cookie transport may vary by deployment.",
     },

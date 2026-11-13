@@ -391,7 +391,7 @@ export function createGitHubExternalObjectProvider(
         token = token?.trim() || null;
         const headers: Record<string, string> = {
           accept: "application/vnd.github+json",
-          "user-agent": "paperclip-external-object-resolver",
+          "user-agent": "wardmote-external-object-resolver",
           "x-github-api-version": "2022-11-28",
         };
         if (token) headers.authorization = `Bearer ${token}`;
