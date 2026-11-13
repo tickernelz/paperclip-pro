@@ -3,7 +3,7 @@ import {
   aiRoutingModel,
   type AiProviderRouting,
 } from "@tickernelz/wardmote-shared";
-import { MANAGED_CODEX_PROVIDER_ID } from "@tickernelz/wardmote-runner";
+import { MANAGED_CODEX_PROVIDER_ID } from "../vendor/wardmote-runner/index.js";
 
 /** Projects one authoritative connection into an isolated harness environment. */
 export function managedProviderRouting(
