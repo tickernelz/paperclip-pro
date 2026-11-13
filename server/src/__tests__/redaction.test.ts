@@ -549,7 +549,7 @@ describe("redaction", () => {
     const input = [
       "Authorization: Bearer live-bearer-token-value",
       `payload {"apiKey":"json-secret-value"}`,
-      `paperclip {"WARDMOTE_API_KEY":"wardmote-json-secret"}`,
+      `wardmote {"WARDMOTE_API_KEY":"wardmote-json-secret"}`,
       `escaped {\\"apiKey\\":\\"escaped-json-secret\\"}`,
       `export WARDMOTE_API_KEY='wardmote-shell-secret'`,
       `GITHUB_TOKEN=${githubToken}`,

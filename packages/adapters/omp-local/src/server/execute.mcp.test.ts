@@ -655,10 +655,10 @@ describe("OMP local Wardmote MCP wiring", () => {
 });
 
 describe("Wardmote MCP server resolution", () => {
-  const root = path.join("/opt", "paperclip", "node_modules", "@tickernelz", "adapter", "dist", "server");
+  const root = path.join("/opt", "wardmote", "node_modules", "@tickernelz", "adapter", "dist", "server");
 
   it("prefers the nearest bin shim", () => {
-    const bin = path.join("/opt", "paperclip", "node_modules", ".bin", WARDMOTE_MCP_BIN);
+    const bin = path.join("/opt", "wardmote", "node_modules", ".bin", WARDMOTE_MCP_BIN);
     const resolved = resolveWardmoteMcpServerCommand({
       searchFrom: root,
       exists: (candidate) => candidate === bin,
@@ -667,7 +667,7 @@ describe("Wardmote MCP server resolution", () => {
   });
 
   it("falls back to the package entry point when no shim exists", () => {
-    const dist = path.join("/opt", "paperclip", "node_modules", WARDMOTE_MCP_PACKAGE, "dist", "stdio.js");
+    const dist = path.join("/opt", "wardmote", "node_modules", WARDMOTE_MCP_PACKAGE, "dist", "stdio.js");
     const resolved = resolveWardmoteMcpServerCommand({
       searchFrom: root,
       exists: (candidate) => candidate === dist,
@@ -683,7 +683,7 @@ describe("Wardmote MCP server resolution", () => {
 
   it("uses the package entry that ships with an install", () => {
     const resolved = resolveWardmoteMcpServerCommand({
-      searchFrom: path.join("/opt", "paperclip", "node_modules", "@tickernelz", "adapter"),
+      searchFrom: path.join("/opt", "wardmote", "node_modules", "@tickernelz", "adapter"),
       exists: (candidate) => candidate.endsWith(path.join("dist", "stdio.js")),
       nodePath: "/usr/bin/node",
     });

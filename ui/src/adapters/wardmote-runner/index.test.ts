@@ -21,7 +21,7 @@ const piFailure = (overrides: Record<string, unknown> = {}, eventOverrides: Reco
   },
 });
 
-describe("paperclip runner transcript projection", () => {
+describe("wardmote runner transcript projection", () => {
   it("keeps both pinned Pi failure facts while rendering one consecutive diagnostic", async () => {
     const adapter = createPiProfileExtensionAdapter({ workspacePath: "/fixture", sessionId: "session-1", turnId: "turn-1" });
     const notice = { sessionId: "session-1", category: "runtime_failure", severity: "error",

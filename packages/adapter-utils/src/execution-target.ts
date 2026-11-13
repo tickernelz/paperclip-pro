@@ -4349,7 +4349,7 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
     input.runtimeRootDir?.trim().length
       ? input.runtimeRootDir.trim()
       : path.posix.join(target.remoteCwd, ".wardmote-runtime", input.adapterKey);
-  const bridgeRuntimeDir = path.posix.join(runtimeRootDir, "paperclip-bridge");
+  const bridgeRuntimeDir = path.posix.join(runtimeRootDir, "wardmote-bridge");
   const queueDir = path.posix.join(bridgeRuntimeDir, "queue");
   const assetRemoteDir = path.posix.join(bridgeRuntimeDir, "server");
   const bridgeToken = createSandboxCallbackBridgeToken();

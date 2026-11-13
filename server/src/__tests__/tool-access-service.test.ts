@@ -9896,14 +9896,14 @@ describeEmbeddedPostgres("tool access service", () => {
 
     const connectRes = await request(app)
       .post(`/api/companies/${company.id}/tools/apps/connect`)
-      .set("Host", "paperclip.tail123.ts.net")
-      .set("Origin", "https://paperclip.tail123.ts.net")
+      .set("Host", "wardmote.tail123.ts.net")
+      .set("Origin", "https://wardmote.tail123.ts.net")
       .send({ galleryKey: "slack", name: "Tailscale Slack workspace" });
 
     expect(connectRes.status).toBe(201);
     expect(
       new URL(connectRes.body.auth.startUrl).searchParams.get("redirect_uri"),
-    ).toBe("https://paperclip.tail123.ts.net/api/tools/oauth/callback");
+    ).toBe("https://wardmote.tail123.ts.net/api/tools/oauth/callback");
   });
 
   it("rejects a browser HTTPS origin that does not match the routed request host", async () => {
@@ -9926,7 +9926,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
     const connectRes = await request(app)
       .post(`/api/companies/${company.id}/tools/apps/connect`)
-      .set("Host", "paperclip.tail123.ts.net")
+      .set("Host", "wardmote.tail123.ts.net")
       .set("Origin", "https://evil.example")
       .send({ galleryKey: "slack", name: "Mismatched Slack workspace" });
 
