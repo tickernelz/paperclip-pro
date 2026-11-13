@@ -6,7 +6,7 @@ recommendedForRoles:
   - general
   - manager
 tags:
-  - paperclip
+  - wardmote
   - summary
   - status
   - reporting
