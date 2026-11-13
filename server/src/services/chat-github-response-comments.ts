@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { withRetiredGitHubMarker } from "./retired-github-marker.js";
 import { and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
 import {
   chatActions, chatConversations, chatDeliveries, chatEndpoints,
@@ -28,15 +29,18 @@ type Source = {
 };
 type Comment = { id: number; body?: string; html_url: string; user?: { login?: string } };
 const generation = (endpoint: Source["endpoint"]) => (endpoint.setup as { runtimeGeneration?: number }).runtimeGeneration ?? 0;
+const FINAL_MARKER = "<!-- wardmote-response-state:final -->";
+const hasMarker = (body: string | undefined, marker: string) =>
+  withRetiredGitHubMarker(marker).some((variant) => body?.includes(variant) === true);
 const actionKey = (deliveryId: string) => `github_response:${deliveryId}`;
-const responseMarker = (source: Source) => `<!-- paperclip-response:${createHash("sha256")
+const responseMarker = (source: Source) => `<!-- wardmote-response:${createHash("sha256")
   .update(`${source.endpoint.companyId}:${source.endpoint.id}:${source.delivery.id}`).digest("hex")} -->`;
 
 async function findResponseComment(source: Source, api: Api): Promise<Comment | null> {
   const list = source.replyId ? `/pulls/${source.number}/comments` : `/issues/${source.number}/comments`;
   for (let page = 1; page <= 100; page++) {
     const rows = await api.request<Comment[]>(`${list}?per_page=100&page=${page}`);
-    const found = rows.find(row => row.body?.includes(responseMarker(source)) && row.user?.login === source.endpoint.botUsername);
+    const found = rows.find(row => hasMarker(row.body, responseMarker(source)) && row.user?.login === source.endpoint.botUsername);
     if (found) return found;
     if (rows.length < 100) return null;
   }
@@ -87,14 +91,14 @@ export async function writeGitHubResponseComment(
     // Never recreate a deleted comment or edit an arbitrary caller-selected ID.
     if (!/^[1-9][0-9]*$/.test(String(response.result.id))) throw forbidden("Invalid GitHub response receipt");
     previous = await api.request<Comment>(`${item}/${response.result.id}`);
-    if (!previous.body?.includes(marker) || previous.user?.login !== source.endpoint.botUsername)
+    if (!hasMarker(previous.body, marker) || previous.user?.login !== source.endpoint.botUsername)
       throw forbidden("GitHub response is no longer owned by this App");
   } else {
     previous = await findResponseComment(source, api);
   }
   await assertCurrent();
-  const alreadyFinal = previous?.body?.includes("<!-- paperclip-response-state:final -->") === true;
-  const body = `${projectSafeChatPublicationText(input.body)}\n\n${marker}${input.final ? "\n<!-- paperclip-response-state:final -->" : ""}`;
+  const alreadyFinal = hasMarker(previous?.body, FINAL_MARKER);
+  const body = `${projectSafeChatPublicationText(input.body)}\n\n${marker}${input.final ? `\n${FINAL_MARKER}` : ""}`;
   const posted = previous && (input.acknowledgement || (alreadyFinal && !input.final)) ? previous : await api.request<Comment>(
     previous ? `${item}/${previous.id}` : source.replyId
       ? `/pulls/${source.number}/comments/${source.replyId}/replies` : list,
