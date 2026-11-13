@@ -307,15 +307,17 @@ async function readSourceCodexAuth(sourceAuth: string): Promise<Buffer | null> {
   }
 }
 
+export const MANAGED_CODEX_PROVIDER_ID = "wardmote";
+
 async function managedCodexProviderConfig(sourceHome?: string | null): Promise<string> {
   if (!sourceHome?.trim()) return "";
   const source = await readSourceCodexAuth(join(sourceHome, "config.toml"));
   if (!source) return "";
   let parsed;
   try { parsed = parseToml(source.toString("utf8")); } catch { return ""; }
-  if (parsed.model_provider !== "paperclip") return "";
+  if (parsed.model_provider !== MANAGED_CODEX_PROVIDER_ID) return "";
   const providers = parsed.model_providers as Record<string, unknown> | undefined;
-  const provider = providers?.paperclip as Record<string, unknown> | undefined;
+  const provider = providers?.[MANAGED_CODEX_PROVIDER_ID] as Record<string, unknown> | undefined;
   if (!provider || typeof provider.base_url !== "string" || provider.wire_api !== "responses"
     || provider.requires_openai_auth !== false
     || (provider.env_key !== undefined && provider.env_key !== "WARDMOTE_AI_PROVIDER_KEY")) {
@@ -326,7 +328,7 @@ async function managedCodexProviderConfig(sourceHome?: string | null): Promise<s
     || (url.protocol !== "https:" && !(url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)))) {
     throw new Error("Invalid managed Codex provider URL");
   }
-  return `model_provider = "paperclip"\n[model_providers.paperclip]\nname = "Wardmote connection"\nbase_url = ${JSON.stringify(provider.base_url)}\nwire_api = "responses"\nrequires_openai_auth = false\n${provider.env_key ? 'env_key = "WARDMOTE_AI_PROVIDER_KEY"\n' : ""}`;
+  return `model_provider = "${MANAGED_CODEX_PROVIDER_ID}"\n[model_providers.${MANAGED_CODEX_PROVIDER_ID}]\nname = "Wardmote connection"\nbase_url = ${JSON.stringify(provider.base_url)}\nwire_api = "responses"\nrequires_openai_auth = false\n${provider.env_key ? 'env_key = "WARDMOTE_AI_PROVIDER_KEY"\n' : ""}`;
 }
 
 export async function prepareIsolatedCodexHome(input: {

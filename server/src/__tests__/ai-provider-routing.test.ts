@@ -1,4 +1,8 @@
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, it, expect } from "vitest";
+import { prepareIsolatedCodexHome } from "@tickernelz/wardmote-runner";
 import {
   aiProviderRoutingSchema,
   createAiConnectionSchema,
@@ -139,5 +143,27 @@ describe("provider routing", () => {
     });
     expect(aiProviderRoutingSchema.safeParse({ ...routing, auth: "aws_credentials" }).success).toBe(false);
     for (const key of ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"]) expect(projected.env).not.toHaveProperty(key);
+  });
+  it("keeps the managed Codex gateway when the runner isolates the projected config", async () => {
+    const root = await mkdtemp(join(tmpdir(), "wardmote-codex-routing-"));
+    try {
+      const source = join(root, "source");
+      const target = join(root, "isolated");
+      await mkdir(source);
+      const routing = aiProviderRoutingSchema.parse({
+        kind: "gateway",
+        protocol: "responses",
+        auth: "bearer",
+        baseUrl: "https://gateway.example/v1",
+      });
+      const { codexConfig } = managedProviderRouting(routing, "codex_local", "fixture-secret", "gpt-5.4");
+      await writeFile(join(source, "config.toml"), `cli_auth_credentials_store = "file"\n${codexConfig}`);
+      await prepareIsolatedCodexHome({ context: null, codexHome: target, sourceCodexHome: source });
+      const isolated = await readFile(join(target, "config.toml"), "utf8");
+      expect(isolated).toContain('base_url = "https://gateway.example/v1"');
+      expect(isolated).not.toContain("fixture-secret");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });
