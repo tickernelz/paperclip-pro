@@ -79,7 +79,7 @@ if [[ "${WARDMOTE_KILL_WORKSPACES_ONLY_CURRENT:-}" != "1" ]]; then
     append_runtime_dir "$dir"
   done
 
-  for sibling_root in "$REPO_PARENT"/paperclip*; do
+  for sibling_root in "$REPO_PARENT"/wardmote*; do
     [[ -d "$sibling_root" ]] || continue
     for dir in \
       "$sibling_root"/.wardmote/instances/*/runtime-services \

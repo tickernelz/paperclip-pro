@@ -32,7 +32,7 @@ function receiptNotice(version: 1 | 2 = 1): Record<string, any> {
     schema: "wardmote.provider.notice.v1", noticeId: `copilot-evidence-${"a".repeat(24)}-1`,
     severity: "info", category: `wardmote_semantic_tool_receipt_v${version}`, scope: "turn",
     recoverable: true, userActionable: false, summary: "Wardmote returned a semantic tool result.",
-    provenance: { method: "paperclip/semantic_tool_result", eventType: "semantic_result", sessionId: "session", turnId: "turn" },
+    provenance: { method: "wardmote/semantic_tool_result", eventType: "semantic_result", sessionId: "session", turnId: "turn" },
     details: Object.entries({ stage: "semantic_result", schema: `wardmote.semantic_tool_receipt.v${version}`,
       operationId: "finish_task", callIdentitySha256: "a".repeat(64), inputSha256: "b".repeat(64),
       resultSha256: "c".repeat(64), outcome: "returned", ...(version === 2 ? { normalizedInputSha256: "d".repeat(64) } : {}),
@@ -806,12 +806,12 @@ second-line\" status=401`,
     const secret =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXBlcmNsaXAtcnVuIn0.s1gnatureS1gnatureS1gnature";
     const envLines = [
-      "AGENT_HOME=/home/user/.paperclip-pro/instances/default",
+      "AGENT_HOME=/home/user/.wardmote/instances/default",
       "BETTER_AUTH_TRUSTED_ORIGINS=https://wardmote.example.com,http://localhost:3100",
       `WARDMOTE_API_KEY=${secret}`,
       'WARDMOTE_SANDBOX_READ_PATHS=["/etc/resolv.conf","/etc/hosts"]',
       "WARDMOTE_RUNTIME_API_URL=https://wardmote.example.com",
-      "PWD=/home/user/.paperclip-pro/instances/default",
+      "PWD=/home/user/.wardmote/instances/default",
     ];
     const line = JSON.stringify({
       type: "tool_execution_end",
