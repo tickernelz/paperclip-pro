@@ -1,4 +1,4 @@
-import { updateFastResponseSchema } from "@tickernelz/wardmote-shared";
+import { speechToTextModelListRequestSchema, updateFastResponseSchema } from "@tickernelz/wardmote-shared";
 import {
   ompCustomProviderInputSchema,
   ompCustomProviderProbeSchema,
@@ -7980,6 +7980,52 @@ registry.registerPath({
 });
 
 registry.registerPath({
+  method: "post",
+  path: "/api/instance/settings/general/speech-to-text/models",
+  tags: ["instance"],
+  summary: "List speech-to-text models for a draft provider configuration",
+  description:
+    "Instance admin only. Lists transcription models from Deepgram (GET /v1/models) or an OpenAI-compatible endpoint (GET /models) using the API key in the named server environment variable; ElevenLabs returns Wardmote's curated list because it publishes none. The key value is never returned.",
+  request: { body: jsonBody(speechToTextModelListRequestSchema) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/instance/settings/general/speech-to-text/credentials",
+  tags: ["instance"],
+  summary: "Show whether each speech-to-text provider's default key variable is set",
+  description:
+    "Instance admin only. For each provider returns its default server environment variable name (OPENAI_API_KEY, DEEPGRAM_API_KEY, ELEVENLABS_API_KEY, GOOGLE_APPLICATION_CREDENTIALS) and whether it is set; for Google also whether the service account key is usable and its project id. Only these fixed names are checked and values are never returned.",
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/instance/settings/general/speech-to-text/test",
+  tags: ["instance"],
+  summary: "Transcribe a sample audio file with draft speech-to-text settings",
+  description:
+    "Instance admin only. Multipart `file` (audio or video) plus `settings` (JSON speech-to-text settings, saved or not). Answers 200 with `{ ok: true, text, language?, segments?, durationMs }` or `{ ok: false, code, message, status }` where code is an stt_* error.",
+  requestBody: {
+    content: {
+      "multipart/form-data": {
+        schema: {
+          type: "object",
+          properties: {
+            file: { type: "string", format: "binary", description: "Sample audio or video file." },
+            settings: { type: "string", description: "JSON-encoded speech-to-text settings to test." },
+          },
+          required: ["file", "settings"],
+        },
+      },
+    },
+    required: true as const,
+  },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 413: r.payloadTooLarge },
+});
+
+registry.registerPath({
   method: "get",
   path: "/api/instance/settings/local-run-limits",
   tags: ["instance"],
@@ -9337,6 +9383,27 @@ registry.registerPath({
     200: { description: "File content" },
     401: r.unauthorized,
     404: r.notFound,
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/attachments/{attachmentId}/transcript",
+  tags: ["assets"],
+  summary: "Transcribe an audio or video attachment",
+  description:
+    "Transcribes the attachment with the instance speech-to-text provider (Settings > General > Speech-to-text) and returns `{ attachmentId, text, language?, segments?, cached }`; segments carry speaker turns when diarization is on. Needs read access to the attachment's task. Transcripts are cached per file content and transcript settings, so only the first call is billed. Errors carry an stt_* code: 409 stt_disabled, 413 stt_too_long or stt_too_large, 422 stt_not_audio or stt_empty, 502 stt_rejected, stt_network or stt_invalid_response, 503 stt_missing_key, stt_invalid_credentials or stt_unavailable, 504 stt_timeout.",
+  request: { params: z.object({ attachmentId: z.string() }) },
+  responses: {
+    200: r.ok(),
+    401: r.unauthorized,
+    404: r.notFound,
+    409: r.conflict,
+    413: r.payloadTooLarge,
+    422: r.unprocessable,
+    502: { description: "Speech-to-text provider rejected the request or answered badly" },
+    503: { description: "Speech-to-text provider unavailable or API key not set" },
+    504: { description: "Speech-to-text provider timed out" },
   },
 });
 

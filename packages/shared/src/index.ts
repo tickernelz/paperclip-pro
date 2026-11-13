@@ -972,6 +972,14 @@ export type {
   InstanceSettings,
   BackupRetentionPolicy,
   SpeechToTextSettings,
+  SpeechToTextProvider,
+  SpeechToTextSegment,
+  SpeechToTextTranscript,
+  SpeechToTextModelOption,
+  SpeechToTextModelList,
+  SpeechToTextCredentialState,
+  SpeechToTextCredentialStatus,
+  SpeechToTextTestResult,
   AttachmentRetentionSettings,
   AttachmentLimitSource,
   EffectiveAttachmentLimit,
@@ -1871,6 +1879,14 @@ export {
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_MESSAGE_DELIVERY,
   SPEECH_TO_TEXT_DEFAULTS,
+  SPEECH_TO_TEXT_PROVIDERS,
+  SPEECH_TO_TEXT_DEFAULT_BASE_URLS,
+  SPEECH_TO_TEXT_CURATED_MODELS,
+  SPEECH_TO_TEXT_KEYTERMS_MAX,
+  SPEECH_TO_TEXT_KEYTERM_MAX_LENGTH,
+  SPEECH_TO_TEXT_MAX_SPEAKERS,
+  SPEECH_TO_TEXT_GOOGLE_MAX_LANGUAGES,
+  SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS,
   ATTACHMENT_MAX_MEGABYTES_MIN,
   ATTACHMENT_MAX_MEGABYTES_MAX,
   DEFAULT_ATTACHMENT_MAX_MEGABYTES,
@@ -1916,6 +1932,7 @@ export {
   instanceSettingsSchema,
   instanceGeneralSettingsSchema,
   speechToTextSettingsSchema,
+  speechToTextModelListRequestSchema,
   attachmentMaxMegabytesSchema,
   attachmentRetentionSettingsSchema,
   localRunLimitsSettingsSchema,
@@ -3032,3 +3049,5 @@ export type { AgentLifecycleRequest, AgentLifecycleResult } from "./types/agent-
 export * from "./fast-response.js";
 
 export * from "./wardmote-updates.js";
+
+export * from "./speech-to-text-languages.js";

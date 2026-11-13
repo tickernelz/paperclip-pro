@@ -163,7 +163,7 @@ function createStorageService(body = Buffer.from("test"), options: { failPut?: b
   };
 }
 
-async function createApp(storage: StorageService, options?: { companyIds?: string[]; source?: string }) {
+async function createApp(storage: StorageService, options?: { companyIds?: string[]; source?: string; actor?: Record<string, unknown> }) {
   const [{ errorHandler }, { issueRoutes }] = await Promise.all([
     vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
     vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js"),
@@ -171,7 +171,7 @@ async function createApp(storage: StorageService, options?: { companyIds?: strin
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
-    (req as any).actor = {
+    (req as any).actor = options?.actor ?? {
       type: "board",
       userId: "local-board",
       companyIds: options?.companyIds ?? ["company-1"],
@@ -256,6 +256,7 @@ describe("issue attachment routes", () => {
     vi.doUnmock("../services/issues.js");
     vi.doUnmock("../services/index.js");
     vi.doUnmock("../services/activity-log.js");
+    vi.doUnmock("../services/instance-settings.js");
     vi.doUnmock("../routes/issues.js");
     vi.doUnmock("../routes/authz.js");
     vi.doUnmock("../middleware/index.js");
@@ -856,6 +857,181 @@ describe("issue attachment routes", () => {
     expect(res.status).toBe(404);
     expect(res.body.error).toBe("Issue not found");
     expect(storage.getObject).not.toHaveBeenCalled();
+  });
+
+  describe("POST /attachments/:attachmentId/transcript", () => {
+    const deepgramSettings = {
+      enabled: true,
+      provider: "deepgram",
+      baseUrl: "",
+      model: "nova-3",
+      apiKeyEnvVar: "ZHA6055_DEEPGRAM_KEY",
+      language: "",
+      diarize: false,
+      keyterms: [],
+      deepgram: { smartFormat: true },
+      elevenlabs: { tagAudioEvents: false, numSpeakers: null },
+      maxAudioSeconds: 600,
+      sttWaitSeconds: 15,
+    };
+    const providerFetch = vi.fn<typeof fetch>();
+
+    function mockSpeechSettings(speechToText: Record<string, unknown>) {
+      vi.doMock("../services/instance-settings.js", async (importOriginal) => ({
+        ...(await importOriginal<typeof import("../services/instance-settings.js")>()),
+        instanceSettingsService: () => ({ getGeneral: vi.fn(async () => ({ speechToText })) }),
+      }));
+    }
+
+    beforeEach(() => {
+      providerFetch.mockReset();
+      vi.stubGlobal("fetch", providerFetch);
+      vi.stubEnv("ZHA6055_DEEPGRAM_KEY", "dg-secret");
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("transcribes an audio attachment with the instance provider", async () => {
+      mockSpeechSettings(deepgramSettings);
+      let sentBody = "";
+      providerFetch.mockImplementation(async (_url, init) => {
+        sentBody = await (init?.body as Blob).text();
+        return new Response(JSON.stringify({ results: { channels: [{ detected_language: "id", alternatives: [{ transcript: "halo dunia" }] }] } }), { status: 200 });
+      });
+      const storage = createStorageService(Buffer.from("OggS-voice"));
+      mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("audio/ogg", "voice.ogg"));
+
+      const app = await createApp(storage);
+      const res = await request(app).post("/api/attachments/attachment-1/transcript");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ attachmentId: "attachment-1", text: "halo dunia", language: "id", cached: false });
+      expect(providerFetch).toHaveBeenCalledTimes(1);
+      const [url, init] = providerFetch.mock.calls[0];
+      expect(String(url)).toMatch(/^https:\/\/api\.deepgram\.com\/v1\/listen\?/);
+      expect(init?.headers).toMatchObject({ Authorization: "Token dg-secret", "Content-Type": "audio/ogg" });
+      expect(sentBody).toBe("OggS-voice");
+      expect(JSON.stringify(res.body)).not.toContain("dg-secret");
+    });
+
+    it("answers 409 stt_disabled without reading the object when speech-to-text is off", async () => {
+      mockSpeechSettings({ ...deepgramSettings, enabled: false });
+      const storage = createStorageService();
+      mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("audio/ogg", "voice.ogg"));
+
+      const res = await request(await createApp(storage)).post("/api/attachments/attachment-1/transcript");
+
+      expect(res.status).toBe(409);
+      expect(res.body.code).toBe("stt_disabled");
+      expect(storage.getObject).not.toHaveBeenCalled();
+      expect(providerFetch).not.toHaveBeenCalled();
+    });
+
+    it("lets an agent transcribe an attachment on an issue it can read and hides other issues' attachments", async () => {
+      mockSpeechSettings(deepgramSettings);
+      providerFetch.mockResolvedValue(
+        new Response(JSON.stringify({ results: { channels: [{ alternatives: [{ transcript: "catatan agen" }] }] } }), { status: 200 }),
+      );
+      mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("audio/ogg", "voice.ogg"));
+      const agent = { type: "agent", agentId: "agent-1", companyId: "company-1", runId: "run-1", source: "agent_key" };
+
+      const own = await request(await createApp(createStorageService(), { actor: agent })).post("/api/attachments/attachment-1/transcript");
+      expect(own.status).toBe(200);
+      expect(own.body.text).toBe("catatan agen");
+
+      mockAccessService.decide.mockResolvedValue({ allowed: false, explanation: "Denied by test mock" });
+      const otherStorage = createStorageService();
+      const other = await request(await createApp(otherStorage, { actor: agent })).post("/api/attachments/attachment-1/transcript");
+      expect(other.status).toBe(404);
+      expect(otherStorage.getObject).not.toHaveBeenCalled();
+
+      mockAccessService.decide.mockResolvedValue({ allowed: true, explanation: "Allowed by test mock" });
+      const foreignStorage = createStorageService();
+      const foreign = await request(await createApp(foreignStorage, { actor: { ...agent, companyId: "company-2" } })).post("/api/attachments/attachment-1/transcript");
+      expect(foreign.status).toBe(404);
+      expect(foreignStorage.getObject).not.toHaveBeenCalled();
+      expect(providerFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("refuses an attachment above the provider byte limit without reading it", async () => {
+      mockSpeechSettings({ ...deepgramSettings, provider: "google", model: "chirp_3", google: { location: "us", projectId: "", autoPunctuation: true, alternativeLanguages: [] } });
+      const storage = createStorageService();
+      mockIssueService.getAttachmentById.mockResolvedValue({ ...makeAttachment("audio/mpeg", "call.mp3"), byteSize: 7_500_001 });
+
+      const res = await request(await createApp(storage)).post("/api/attachments/attachment-1/transcript");
+
+      expect(res.status).toBe(413);
+      expect(res.body.code).toBe("stt_too_large");
+      expect(storage.getObject).not.toHaveBeenCalled();
+      expect(providerFetch).not.toHaveBeenCalled();
+    });
+
+    it("sends a local-disk attachment from its file without opening the object stream", async () => {
+      mockSpeechSettings(deepgramSettings);
+      providerFetch.mockResolvedValue(
+        new Response(JSON.stringify({ results: { channels: [{ alternatives: [{ transcript: "dari disk" }] }] } }), { status: 200 }),
+      );
+      const dir = await mkdtemp(path.join(os.tmpdir(), "zha6055-transcript-"));
+      try {
+        const file = path.join(dir, "voice.ogg");
+        const { writeFile } = await import("node:fs/promises");
+        await writeFile(file, "disk-voice");
+        const storage = { ...createStorageService(), localPath: vi.fn(async () => file) };
+        mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("audio/ogg", "voice.ogg"));
+
+        const res = await request(await createApp(storage)).post("/api/attachments/attachment-1/transcript");
+
+        expect(res.status).toBe(200);
+        expect(res.body.text).toBe("dari disk");
+        expect(storage.getObject).not.toHaveBeenCalled();
+        expect(await (providerFetch.mock.calls[0][1]?.body as Blob).text()).toBe("disk-voice");
+      } finally {
+        await rm(dir, { recursive: true, force: true });
+      }
+    });
+
+    it("refuses attachments that are not audio or video", async () => {
+      mockSpeechSettings(deepgramSettings);
+      const storage = createStorageService();
+      mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("application/pdf", "report.pdf"));
+
+      const res = await request(await createApp(storage)).post("/api/attachments/attachment-1/transcript");
+
+      expect(res.status).toBe(422);
+      expect(res.body.code).toBe("stt_not_audio");
+      expect(storage.getObject).not.toHaveBeenCalled();
+    });
+
+    it("maps a provider rejection to 502 stt_rejected", async () => {
+      mockSpeechSettings(deepgramSettings);
+      providerFetch.mockResolvedValue(new Response(JSON.stringify({ err_msg: "Invalid credentials" }), { status: 401 }));
+      const storage = createStorageService();
+      mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("audio/mpeg", "memo.mp3"));
+
+      const res = await request(await createApp(storage)).post("/api/attachments/attachment-1/transcript");
+
+      expect(res.status).toBe(502);
+      expect(res.body.code).toBe("stt_rejected");
+    });
+
+    it("hides other companies' attachments and attachments outside the reader's issues", async () => {
+      mockSpeechSettings(deepgramSettings);
+      mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("audio/ogg", "voice.ogg"));
+      const crossCompanyStorage = createStorageService();
+      const crossCompany = await request(await createApp(crossCompanyStorage, { companyIds: ["company-2"], source: "session" }))
+        .post("/api/attachments/attachment-1/transcript");
+      expect(crossCompany.status).toBe(404);
+      expect(crossCompanyStorage.getObject).not.toHaveBeenCalled();
+
+      mockAccessService.decide.mockResolvedValue({ allowed: false, explanation: "Denied by test mock" });
+      const deniedStorage = createStorageService();
+      const denied = await request(await createApp(deniedStorage)).post("/api/attachments/attachment-1/transcript");
+      expect(denied.status).toBe(404);
+      expect(deniedStorage.getObject).not.toHaveBeenCalled();
+      expect(providerFetch).not.toHaveBeenCalled();
+    });
   });
 
   it("canonicalizes wardmote artifact metadata before creating a work product", async () => {

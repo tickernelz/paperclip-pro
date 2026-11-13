@@ -174,6 +174,23 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
     description: "List files attached to an issue.",
     toolset: "core",
   },
+  "POST /api/attachments/{attachmentId}/transcript": {
+    name: "wardmoteTranscribeAttachment",
+    description: "Transcribe an audio/video attachment (voice note, recording) you can read. Cached per file.",
+    toolset: "core",
+  },
+  "GET /api/instance/settings/general/speech-to-text/credentials": {
+    name: "wardmoteGetSpeechToTextCredentials",
+    description: "Show whether each speech-to-text provider key variable is set (instance admin only).",
+    toolset: "extended",
+    annotations: { readOnlyHint: true },
+  },
+  "POST /api/instance/settings/general/speech-to-text/models": {
+    name: "wardmoteListSpeechToTextModels",
+    description: "List speech-to-text models for a provider (instance admin only).",
+    toolset: "extended",
+    annotations: { readOnlyHint: true },
+  },
   "DELETE /api/attachments/{attachmentId}": {
     name: "wardmoteDeleteAttachment",
     description: "Delete an issue attachment. Irreversible.",

@@ -16,9 +16,9 @@ import { healthApi } from "@/api/health";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { ModeBadge } from "@/components/access/ModeBadge";
 import { FilesAndStorageSection } from "@/components/FilesAndStorageSection";
+import { SpeechToTextSection } from "@/components/SpeechToTextSection";
 import { LocalRunLimitsSection } from "@/components/LocalRunLimitsSection";
 import { Button } from "../components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
@@ -474,116 +474,6 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       </section>
       )}
     </div>
-  );
-}
-
-function SpeechToTextSection({
-  value,
-  disabled,
-  onSave,
-}: {
-  value: SpeechToTextSettings;
-  disabled: boolean;
-  onSave: (next: SpeechToTextSettings) => void;
-}) {
-  const [draft, setDraft] = useState<SpeechToTextSettings>(value);
-  const complete = draft.baseUrl.trim() !== "" && draft.model.trim() !== "" && draft.apiKeyEnvVar.trim() !== "";
-  const dirty = JSON.stringify(draft) !== JSON.stringify(value);
-  const update = (patch: Partial<SpeechToTextSettings>) => setDraft((current) => ({ ...current, ...patch }));
-  const numeric = (raw: string, fallback: number) => {
-    const parsed = Number.parseInt(raw, 10);
-    return Number.isFinite(parsed) ? parsed : fallback;
-  };
-
-  return (
-    <section>
-      <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1.5">
-            <h2 className="text-sm font-semibold">Speech-to-text</h2>
-            <p className="max-w-2xl text-sm text-ink-3">
-              Transcribe voice notes and audio that chat connectors receive, using any OpenAI-compatible
-              /audio/transcriptions endpoint. The API key is read from the named server environment variable at call
-              time and is never stored by Wardmote. This is off by default.
-            </p>
-          </div>
-          <ToggleSwitch
-            checked={draft.enabled}
-            onCheckedChange={() => update({ enabled: !draft.enabled })}
-            disabled={disabled || (!draft.enabled && !complete)}
-            aria-label="Toggle speech-to-text"
-          />
-        </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          <label className="space-y-1.5">
-            <span className="text-xs font-medium text-ink-3">Base URL</span>
-            <Input
-              value={draft.baseUrl}
-              placeholder="https://api.openai.com/v1"
-              disabled={disabled}
-              onChange={(event) => update({ baseUrl: event.target.value })}
-            />
-          </label>
-          <label className="space-y-1.5">
-            <span className="text-xs font-medium text-ink-3">Model</span>
-            <Input
-              value={draft.model}
-              placeholder="whisper-1"
-              disabled={disabled}
-              onChange={(event) => update({ model: event.target.value })}
-            />
-          </label>
-          <label className="space-y-1.5">
-            <span className="text-xs font-medium text-ink-3">API key environment variable</span>
-            <Input
-              value={draft.apiKeyEnvVar}
-              placeholder="OPENAI_API_KEY"
-              autoComplete="off"
-              spellCheck={false}
-              disabled={disabled}
-              onChange={(event) => update({ apiKeyEnvVar: event.target.value })}
-            />
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            <label className="space-y-1.5">
-              <span className="text-xs font-medium text-ink-3">Max audio (seconds)</span>
-              <Input
-                type="number"
-                min={1}
-                max={7200}
-                value={draft.maxAudioSeconds}
-                disabled={disabled}
-                onChange={(event) => update({ maxAudioSeconds: numeric(event.target.value, draft.maxAudioSeconds) })}
-              />
-            </label>
-            <label className="space-y-1.5">
-              <span className="text-xs font-medium text-ink-3">Wake wait (seconds)</span>
-              <Input
-                type="number"
-                min={1}
-                max={120}
-                value={draft.sttWaitSeconds}
-                disabled={disabled}
-                onChange={(event) => update({ sttWaitSeconds: numeric(event.target.value, draft.sttWaitSeconds) })}
-              />
-            </label>
-          </div>
-        </div>
-        {!complete ? (
-          <p className="text-xs text-ink-3">
-            Enter a base URL, a model and an environment variable name to enable transcription.
-          </p>
-        ) : null}
-        <div className="flex gap-2">
-          <Button size="sm" disabled={disabled || !dirty} onClick={() => onSave(draft)}>
-            Save speech-to-text
-          </Button>
-          <Button variant="secondary" size="sm" disabled={disabled || !dirty} onClick={() => setDraft(value)}>
-            Reset
-          </Button>
-        </div>
-      </div>
-    </section>
   );
 }
 

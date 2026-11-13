@@ -343,6 +343,8 @@ import {
 import { decisionTrainingService } from "../services/decision-training.js";
 import { feedbackService } from "../services/feedback.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
+import { SpeechToTextError, speechToTextErrorHttpStatus } from "../services/speech-to-text.js";
+import { transcribeStoredAudio } from "../services/attachment-transcripts.js";
 import {
   ISSUE_BLOCKER_DIAGNOSTICS_MAX_BLOCKERS,
   ISSUE_WAKE_DIAGNOSTICS_LOOKBACK_DAYS,
@@ -21691,6 +21693,40 @@ export function issueRoutes(
       res,
       next,
     });
+  });
+
+  router.post("/attachments/:attachmentId/transcript", async (req, res) => {
+    const attachmentId = req.params.attachmentId as string;
+    const attachment = await getAccessibleResource(
+      req,
+      res,
+      svc.getAttachmentById(attachmentId),
+      "Attachment not found",
+    );
+    if (!attachment) return;
+    const issue = await svc.getById(attachment.issueId);
+    if (!issue) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+    if (!(await assertIssueReadAllowed(req, res, issue))) return;
+    const contentType = attachment.contentType.toLowerCase();
+    if (!contentType.startsWith("audio/") && !contentType.startsWith("video/")) {
+      res.status(422).json({ error: "Only audio or video attachments can be transcribed", code: "stt_not_audio" });
+      return;
+    }
+    const settings = (await instanceSettings.getGeneral()).speechToText;
+    if (!settings.enabled) {
+      res.status(speechToTextErrorHttpStatus("stt_disabled")).json({ error: "Speech-to-text is not enabled for this instance", code: "stt_disabled" });
+      return;
+    }
+    try {
+      const { result, cached } = await transcribeStoredAudio({ storage, file: attachment, settings });
+      res.json({ attachmentId, ...result, cached });
+    } catch (error) {
+      if (!(error instanceof SpeechToTextError)) throw error;
+      res.status(speechToTextErrorHttpStatus(error.code)).json({ error: error.message, code: error.code });
+    }
   });
 
   router.delete("/attachments/:attachmentId", async (req, res) => {
