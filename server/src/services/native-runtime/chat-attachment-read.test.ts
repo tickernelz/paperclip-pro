@@ -344,7 +344,7 @@ describe("native same-conversation historical attachment reading", () => {
       sha256: createHash("sha256").update(sourceBody).digest("hex"),
     });
     expect(result).not.toHaveProperty("objectKey");
-    expect(result.workspaceRelativePath).toMatch(/^\.paperclip-inbound\//);
+    expect(result.workspaceRelativePath).toMatch(/^\.wardmote-inbound\//);
     const stagedPath = path.join(workspaceRoot, result.workspaceRelativePath);
     expect(await readFile(stagedPath)).toEqual(sourceBody);
     expect(await db.select().from(issueAttachments)).toEqual(before);
@@ -502,7 +502,7 @@ describe("native same-conversation historical attachment reading", () => {
     const outside = await mkdtemp(
       path.join(tmpdir(), "wardmote-chat-read-outside-"),
     );
-    await symlink(outside, path.join(unsafeRoot, ".paperclip-inbound"));
+    await symlink(outside, path.join(unsafeRoot, ".wardmote-inbound"));
     const reader = scope({ workspaceRoot: unsafeRoot });
     try {
       await expect(reader.read(selection())).rejects.toThrow("path_denied");
