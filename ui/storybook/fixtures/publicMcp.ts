@@ -11,7 +11,7 @@ export const request: McpConnectionRequest = {
   companies: [
     { id: "00000000-0000-4000-8000-000000000001", name: "Acme Research", logoUrl: null, canWrite: true },
     { id: "00000000-0000-4000-8000-000000000002", name: "Design Partners", logoUrl: null, canWrite: false },
-  ], setupUrl: null,
+  ],
 };
 const connections: McpConnection[] = [
   { id: "codex", companyId: request.companies[0].id, companyName: "Acme Research", clientName: "Codex", user: connectedUser, scopes: ["wardmote:read", "wardmote:write"], createdAt: "2020-01-01T00:00:00Z", revokedAt: null },

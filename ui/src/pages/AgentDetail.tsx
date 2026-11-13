@@ -122,7 +122,6 @@ import {
 import { ResponsibleUserDenialNotice } from "../components/ResponsibleUserDenialNotice";
 import { RunWorkspaceRecoverySurface } from "../components/RunWorkspaceRecoverySurface";
 import { RunnerInspector } from "../components/RunnerInspector";
-import { HoneycombRunLink } from "../components/HoneycombRunLink";
 import {
   ProviderTraceStatusBadge,
   runRequestedProviderTrace,
@@ -3434,12 +3433,6 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
   const canUseProviderTrace =
     boardAccess?.source === "local_implicit" ||
     boardAccess?.isInstanceAdmin === true;
-  const { data: experimentalSettings } = useQuery({
-    queryKey: queryKeys.instance.experimentalSettings,
-    queryFn: () => instanceSettingsApi.getExperimental(),
-  });
-  const wardmoteDeveloperMode =
-    experimentalSettings?.enableWardmoteDeveloperMode === true;
   const { data: providerTraceRows } = useQuery({
     queryKey: queryKeys.providerTraceMetadata(run.companyId, [run.id]),
     queryFn: () => heartbeatsApi.providerTraceMetadata(run.companyId, [run.id]),
@@ -3669,10 +3662,6 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                 <Eye className="h-3.5 w-3.5 mr-1" />
                 Inspect run
               </Button>
-              <HoneycombRunLink
-                runId={run.id}
-                enabled={wardmoteDeveloperMode && canUseProviderTrace}
-              />
               {canUseProviderTrace && !["queued", "running"].includes(run.status) ? (
                 <Button
                   variant="ghost"

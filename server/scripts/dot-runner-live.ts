@@ -24,7 +24,6 @@ const requestIdSchema = z.string().regex(/^pcmcp_request_[A-Za-z0-9_-]{43}$/);
 const scratch = await mkdtemp(join(tmpdir(), "wardmote-dot-live-"));
 process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = join(scratch, "master.key");
 delete process.env.WARDMOTE_SECRETS_MASTER_KEY;
-delete process.env.WARDMOTE_CLOUD_API_ORIGIN;
 const controlToken = randomBytes(32).toString("base64url");
 const app = express(); app.use(express.json({ limit: "256kb" }));
 const control = express(); control.use(express.json({ limit: "16kb" }));
@@ -84,7 +83,7 @@ try {
     const id = requestIdSchema.parse(req.params.id);
     const redirect = redirects.get(id);
     if (redirect) { res.redirect(303, redirect); return; }
-    const request = await oauth.describeRequest(id, actor, null);
+    const request = await oauth.describeRequest(id, actor);
     if (pending.size >= 20 && !pending.has(id)) { res.sendStatus(429); return; }
     pending.set(id, request);
     res.setHeader("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");

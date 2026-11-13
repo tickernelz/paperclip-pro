@@ -97,7 +97,7 @@ describe("durable Dot Runner integration", () => {
     })).toMatchObject({ kind: "native", profile: { backend: "openai_dot_mcp" } });
   });
 
-  async function fixture(options: { cloudOrigin?: string } = {}) {
+  async function fixture() {
     const userId = randomUUID();
     await db.insert(authUsers).values({ id: userId, name: "Dot operator", email: userId + "@example.test", createdAt: new Date(), updatedAt: new Date() });
     const [company] = await db.insert(companies).values({ name: "Dot test", issuePrefix: "DT" + randomBytes(3).toString("hex") }).returning();
@@ -135,7 +135,7 @@ describe("durable Dot Runner integration", () => {
       if (body.type === "verification") { verifications++; return Response.json({ challenge: body.challenge }); }
       received.push(body); return new Response(null, { status: 204 });
     };
-    const events = createPublicMcpEvents(db, oauth, async () => { throw new Error("personal API dispatch forbidden"); }, { enableDotRunner: true, fetch: fetcher, ...options });
+    const events = createPublicMcpEvents(db, oauth, async () => { throw new Error("personal API dispatch forbidden"); }, { enableDotRunner: true, fetch: fetcher });
     const subscription = { name: "wardmote.dot.mailbox_updated", arguments: { companyId: company!.id, bindingId: pairing.bindingId }, delivery: { mode: "webhook", url: "https://example.com/dot-hook", secret } };
     await events.subscribe(principal, subscription);
     await events.tick();
@@ -149,8 +149,8 @@ describe("durable Dot Runner integration", () => {
     return { company: company!, agent: agent!, userId, broker, principal, oauth, events, subscription, received, snapshot, tokens, client, verifications: () => verifications };
   }
 
-  it("keeps scoped Dot events on tenant OAuth when the Cloud personal broker is configured", async () => {
-    const f = await fixture({ cloudOrigin: "https://cloud-broker.example" });
+  it("stops scoped Dot events once the tenant binding is revoked", async () => {
+    const f = await fixture();
     expect(f.verifications()).toBe(1);
     expect(f.received.at(-1)?.data.kind).toBe("readiness_challenge");
     await f.broker.revoke(f.company.id, f.agent.id, f.userId);
@@ -616,7 +616,7 @@ describe("durable Dot Runner integration", () => {
     const input = { client_id: clientId, redirect_uri: redirectUri, response_type: "code", resource: oauth.config.resource,
       company_id: f.company.id, code_challenge: createHash("sha256").update(verifier).digest("base64url"), code_challenge_method: "S256" };
     const id = (await oauth.authorize(input)).split("/").at(-1)!;
-    await expect(personal.describeRequest(id, { type: "board", source: "session", userId: f.userId }, null)).rejects.toThrow();
+    await expect(personal.describeRequest(id, { type: "board", source: "session", userId: f.userId })).rejects.toThrow();
     const description = await request(app).get("/api/mcp/requests/" + id);
     expect(description.body).toMatchObject({ agentConnection: true, requestedCompanyId: f.company.id, clientOrigin: new URL(clientId).origin });
     expect(description.body.companies.map((c: { id: string }) => c.id)).toEqual([f.company.id]);

@@ -2006,8 +2006,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     let repositories = [
       {
         id: 97531,
-        full_name: "acmeai/paperclip",
-        html_url: "https://github.com/acmeai/paperclip",
+        full_name: "acmeai/wardmote",
+        html_url: "https://github.com/acmeai/wardmote",
         owner: { id: 1357, login: "acmeai" },
         private: false,
       },
@@ -2059,9 +2059,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const url = String(input);
       const supplemental = await supplementalProviderFetch?.(input, init);
       if (supplemental) return supplemental;
-      const list = /\/repos\/acmeai\/paperclip\/(issues|pulls)\/([1-9][0-9]*)\/comments(?:\?.*)?$/.exec(url);
-      const reply = /\/repos\/acmeai\/paperclip\/pulls\/([1-9][0-9]*)\/comments\/[1-9][0-9]*\/replies$/.exec(url);
-      const item = /\/repos\/acmeai\/paperclip\/(issues|pulls)\/comments\/([1-9][0-9]*)$/.exec(url);
+      const list = /\/repos\/acmeai\/wardmote\/(issues|pulls)\/([1-9][0-9]*)\/comments(?:\?.*)?$/.exec(url);
+      const reply = /\/repos\/acmeai\/wardmote\/pulls\/([1-9][0-9]*)\/comments\/[1-9][0-9]*\/replies$/.exec(url);
+      const item = /\/repos\/acmeai\/wardmote\/(issues|pulls)\/comments\/([1-9][0-9]*)$/.exec(url);
       if (item) {
         const comment = responseComments.get(Number(item[2]));
         if (!comment) return Response.json({ message: "Not Found" }, { status: 404 });
@@ -2075,7 +2075,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         const id = ++nextResponseId;
         const thread = list ? `${list[1]}:${list[2]}` : `pulls:${reply![1]}`;
         const body = JSON.parse(String(init.body)).body;
-        const comment = { id, body, thread, html_url: `https://github.com/acmeai/paperclip/issues/${list?.[2] ?? reply![1]}#issuecomment-${id}`,
+        const comment = { id, body, thread, html_url: `https://github.com/acmeai/wardmote/issues/${list?.[2] ?? reply![1]}#issuecomment-${id}`,
           user: { login: `maya-${fixture.companyId.slice(0, 8)}[bot]` } };
         responseComments.set(id, comment);
         responseWrites.push({ method: "POST", id, body });
@@ -2338,9 +2338,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       );
       return { ...fixture, ...context, endpoint, principal, management };
     }
-    async function subscribedGitHubFixture(threadId = "github:acmeai/paperclip:issue:419") {
+    async function subscribedGitHubFixture(threadId = "github:acmeai/wardmote:issue:419") {
       const f = await reviewBotFixture();
-      const thread = makeThread({ channelId: "acmeai/paperclip", id: threadId }).thread;
+      const thread = makeThread({ channelId: "acmeai/wardmote", id: threadId }).thread;
       await deliverMessage({ callbacks: f.callbacks, endpointId: f.endpoint.id, provider: "github", thread,
         trigger: "mention", message: makeMessage({ id: "41901", text: `@${f.endpoint.botUsername} start this thread`, userId: "42", userName: "octocat", mentioned: true }) });
       const [conversation] = await db.select().from(chatConversations).where(eq(chatConversations.endpointId, f.endpoint.id));
@@ -2372,7 +2372,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           prompts: { ...saved.configuration.defaults.prompts, mention: `Use ${ref(mention)}.`, opened: ref(injected) },
         },
       } }, "owner-user");
-      const thread = makeThread({ channelId: "acmeai/paperclip", id: "github:acmeai/paperclip:issue:419" }).thread;
+      const thread = makeThread({ channelId: "acmeai/wardmote", id: "github:acmeai/wardmote:issue:419" }).thread;
       await deliverMessage({ callbacks: f.callbacks, endpointId: f.endpoint.id, provider: "github", thread,
         trigger: "mention", message: makeMessage({ id: "41901", text: `@${f.endpoint.botUsername} ${ref(injected)}`, userId: "42", userName: "octocat", mentioned: true }) });
       const [conversation] = await db.select().from(chatConversations).where(eq(chatConversations.endpointId, f.endpoint.id));
@@ -2400,9 +2400,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       expect(await resolveRunScopedMentionedSkillKeys({ ...args, commentIds: [] })).toEqual([next.key]);
     });
     it.each([
-      "github:acmeai/paperclip:issue:419",
-      "github:acmeai/paperclip:419",
-      "github:acmeai/paperclip:419:rc:41899",
+      "github:acmeai/wardmote:issue:419",
+      "github:acmeai/wardmote:419",
+      "github:acmeai/wardmote:419:rc:41899",
     ])("suppresses subscribed GitHub comments for another connected bot in %s", async threadId => {
       const f = await subscribedGitHubFixture(threadId);
       await addPeerGitHubBot(f);
@@ -2473,9 +2473,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       expect(f.wakeup).toHaveBeenCalledTimes(wakeCount);
       expect(await db.select().from(issueComments).where(eq(issueComments.issueId, f.conversation.issueId!))).toHaveLength(1);
     });
-    async function toolReplyFixture(threadId = "github:acmeai/paperclip:issue:418") {
+    async function toolReplyFixture(threadId = "github:acmeai/wardmote:issue:418") {
       const f = await reviewBotFixture();
-      const thread = makeThread({ channelId: "acmeai/paperclip", id: threadId }).thread;
+      const thread = makeThread({ channelId: "acmeai/wardmote", id: threadId }).thread;
       await deliverMessage({ callbacks: f.callbacks, endpointId: f.endpoint.id, provider: "github", thread,
         trigger: "mention", message: makeMessage({ id: "41801", text: "Are you there?", userId: "42", userName: "octocat", mentioned: true }) });
       const [conversation] = await db.select().from(chatConversations).where(eq(chatConversations.endpointId, f.endpoint.id));
@@ -2504,7 +2504,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         });
         return null;
       });
-      const thread = makeThread({ channelId: "acmeai/paperclip", id: "github:acmeai/paperclip:issue:418" }).thread;
+      const thread = makeThread({ channelId: "acmeai/wardmote", id: "github:acmeai/wardmote:issue:418" }).thread;
       await deliverMessage({ callbacks: f.callbacks, endpointId: f.endpoint.id, provider: "github", thread,
         trigger: "mention", message: makeMessage({ id: "41801", text: "Are you there?", userId: "42", userName: "octocat", mentioned: true }) });
       const [action] = await db.select().from(chatActions).where(and(eq(chatActions.endpointId, f.endpoint.id), eq(chatActions.kind, "inbound_wakeup")));
@@ -2521,7 +2521,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         provider: async () => ({ ...(outcome === "failed" ? { errorCode: "invalid_output", noProviderWork: true } : { text: "I’ll check the border styling." }), receipt: fastResponseReceipt({ usage: { inputTokens: 80, outputTokens: 8 } }) }) });
       await fast.configure(f.companyId, "owner-user", { enabled: true, ...binding, model: "openai/gpt-oss-120b", allowSponsored: true });
       const now = vi.spyOn(Date, "now").mockReturnValue(Date.now()); onTestFinished(() => now.mockRestore());
-      const thread = makeThread({ channelId: "acmeai/paperclip", id: "github:acmeai/paperclip:issue:418" }).thread;
+      const thread = makeThread({ channelId: "acmeai/wardmote", id: "github:acmeai/wardmote:issue:418" }).thread;
       await deliverMessage({ callbacks: f.callbacks, endpointId: f.endpoint.id, provider: "github", thread,
         trigger: "mention", message: makeMessage({ id: "41801", text: "Fix the border styling", userId: "42", userName: "octocat", mentioned: true }) });
       const [job] = await db.select().from(fastResponseRequests).where(eq(fastResponseRequests.companyId, f.companyId));
@@ -2550,7 +2550,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     it("acknowledges a GitHub request after a durable scheduler retry succeeds", async () => {
       const f = await reviewBotFixture();
       f.wakeup.mockRejectedValueOnce(new Error("Temporary scheduler outage"));
-      const thread = makeThread({ channelId: "acmeai/paperclip", id: "github:acmeai/paperclip:issue:418" }).thread;
+      const thread = makeThread({ channelId: "acmeai/wardmote", id: "github:acmeai/wardmote:issue:418" }).thread;
       await deliverMessage({ callbacks: f.callbacks, endpointId: f.endpoint.id, provider: "github", thread,
         trigger: "mention", message: makeMessage({ id: "41801", text: "Are you there?", userId: "42", userName: "octocat", mentioned: true }) });
       const [action] = await db.select().from(chatActions).where(and(eq(chatActions.endpointId, f.endpoint.id), eq(chatActions.kind, "inbound_wakeup")));
@@ -2565,7 +2565,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     it("finalizes every working comment in a coalesced GitHub run", async () => {
       const f = await toolReplyFixture();
-      const thread = makeThread({ channelId: "acmeai/paperclip", id: f.conversation.externalThreadId }).thread;
+      const thread = makeThread({ channelId: "acmeai/wardmote", id: f.conversation.externalThreadId }).thread;
       await deliverMessage({ callbacks: f.callbacks, endpointId: f.endpoint.id, provider: "github", thread,
         trigger: "mention", message: makeMessage({ id: "41802", text: "And this too", userId: "42", userName: "octocat", mentioned: true }) });
       // Acknowledgements use a best-effort publication lane. Establish both
@@ -2602,7 +2602,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     it("settles a deleted coalesced working comment without blocking the current GitHub response", async () => {
       const f = await toolReplyFixture();
-      const thread = makeThread({ channelId: "acmeai/paperclip", id: f.conversation.externalThreadId }).thread;
+      const thread = makeThread({ channelId: "acmeai/wardmote", id: f.conversation.externalThreadId }).thread;
       await deliverMessage({ callbacks: f.callbacks, endpointId: f.endpoint.id, provider: "github", thread,
         trigger: "mention", message: makeMessage({ id: "41802", text: "And this too", userId: "42", userName: "octocat", mentioned: true }) });
       await expect.poll(async () => { await githubResponseCommentService(db, f.providerFetch).processPending(); return f.responseComments.size; }, { timeout: 10_000 }).toBe(2);
@@ -2646,8 +2646,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       await expect(githubRunReplyState(db, { ...f.session, endpointId: f.endpoint.id })).resolves.toBe("unsettled");
     });
     it("loads an old GitHub review directly without crossing endpoint or company boundaries", async () => {
-      const f = await toolReplyFixture("github:acmeai/paperclip:418");
-      const event = githubAutomaticReviewEvent({ action: "opened", repository: { id: 97531, full_name: "acmeai/paperclip" }, sender: { id: 42, login: "octocat" },
+      const f = await toolReplyFixture("github:acmeai/wardmote:418");
+      const event = githubAutomaticReviewEvent({ action: "opened", repository: { id: 97531, full_name: "acmeai/wardmote" }, sender: { id: 42, login: "octocat" },
         pull_request: { number: 418, title: "Review", body: "", draft: false, base: { sha: "a".repeat(40), ref: "master" }, head: { sha: "b".repeat(40) }, user: { id: 42, login: "octocat" }, labels: [] } }, randomUUID())!;
       const records = await db.insert(chatGitHubReviews).values(Array.from({ length: 101 }, (_, index) => ({ companyId: f.companyId, endpointId: f.endpoint.id,
         issueId: f.conversation.issueId!, repositoryId: "97531", repository: event.repository, pullNumber: 418, headSha: event.headSha,
@@ -2659,7 +2659,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const other = await reviewBotFixture();
       await expect(other.management.review(other.endpoint.id, records[0].id)).rejects.toMatchObject({ status: 404 });
     });
-    it.each(["github:acmeai/paperclip:issue:418", "github:acmeai/paperclip:418", "github:acmeai/paperclip:418:rc:41799"])(
+    it.each(["github:acmeai/wardmote:issue:418", "github:acmeai/wardmote:418", "github:acmeai/wardmote:418:rc:41799"])(
       "updates one GitHub acknowledgement through progress and final answer in %s", async threadId => {
       const f = await toolReplyFixture(threadId);
       const service = githubChatReviewService(db, f.providerFetch);
@@ -2755,9 +2755,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       expect([...f.responseComments.values()][0].body).toContain("Done");
     });
     it.each([false, true])("closes an inline-only GitHub review when an earlier working comment was deleted: %s", async deletedSibling => {
-      const f = await toolReplyFixture("github:acmeai/paperclip:418");
+      const f = await toolReplyFixture("github:acmeai/wardmote:418");
       if (deletedSibling) {
-        const thread = makeThread({ channelId: "acmeai/paperclip", id: f.conversation.externalThreadId }).thread;
+        const thread = makeThread({ channelId: "acmeai/wardmote", id: f.conversation.externalThreadId }).thread;
         await deliverMessage({ callbacks: f.callbacks, endpointId: f.endpoint.id, provider: "github", thread,
           trigger: "mention", message: makeMessage({ id: "41802", text: "Review this too", userId: "42", userName: "octocat", mentioned: true }) });
         await expect.poll(async () => { await githubResponseCommentService(db, f.providerFetch).processPending(); return f.responseComments.size; }, { timeout: 10_000 }).toBe(2);
@@ -2782,7 +2782,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         if (url.includes("/pulls/418/comments?")) return Response.json([]);
         if (url.endsWith("/pulls/418/comments") && init?.method === "POST") {
           inlineWrites.push(JSON.parse(String(init.body)));
-          return Response.json({ id: 420, html_url: "https://github.com/acmeai/paperclip/pull/418#discussion_r420" });
+          return Response.json({ id: 420, html_url: "https://github.com/acmeai/wardmote/pull/418#discussion_r420" });
         }
         return undefined;
       });
@@ -2798,13 +2798,13 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       expect(f.responseComments.size).toBe(1);
       const comment = [...f.responseComments.values()][0];
       expect(comment.body).toContain("Review complete.");
-      expect(comment.body).toContain("https://github.com/acmeai/paperclip/pull/418");
+      expect(comment.body).toContain("https://github.com/acmeai/wardmote/pull/418");
       expect(comment.body).not.toContain("Disabled summary");
       expect(comment.body).toContain("wardmote-response-state:final");
       await expect(githubRunReplyState(db, { ...f.session, endpointId: f.endpoint.id })).resolves.toBe("confirmed");
     });
     it.each(["during_summary", "after_summary"] as const)("keeps partial review delivery authoritative when the head changes %s", async phase => {
-      const f = await toolReplyFixture("github:acmeai/paperclip:418");
+      const f = await toolReplyFixture("github:acmeai/wardmote:418");
       const original = "b".repeat(40);
       let head = original;
       let summaryDelivered = false;
@@ -2867,7 +2867,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             status: scenario === "unsettled" ? "processing" : scenario === "denied" || scenario === "cancelled_after_ambiguous" ? "cancelled" : scenario === "ambiguous_exhausted" ? "failed" : "processed",
             result: scenario === "check_only" || scenario === "missing_receipt" ? {} : scenario === "denied" ? { code: "authorization_changed", attempts: 1 } : scenario === "cancelled_after_ambiguous" ? { code: "authorization_changed", attempts: 2 }
               : scenario === "ambiguous_exhausted" ? { code: "publication_failed", retryable: false, attempts: 8 }
-              : { id: "41802", url: "https://github.com/acmeai/paperclip/issues/418#issuecomment-41802" },
+              : { id: "41802", url: "https://github.com/acmeai/wardmote/issues/418#issuecomment-41802" },
           });
         }
         const unresolved = ["unsettled", "ambiguous_exhausted", "cancelled_after_ambiguous", "missing_receipt"].includes(scenario);
@@ -3239,8 +3239,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       context.setRepositories([
         {
           id: 97531,
-          full_name: "acmeai/paperclip",
-          html_url: "https://github.com/acmeai/paperclip",
+          full_name: "acmeai/wardmote",
+          html_url: "https://github.com/acmeai/wardmote",
           owner: { id: 1357, login: "acmeai" },
           private: false,
         },
@@ -3652,8 +3652,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         "owner-user",
       );
       const thread = makeThread({
-        channelId: "acmeai/paperclip",
-        id: "github:acmeai/paperclip:94",
+        channelId: "acmeai/wardmote",
+        id: "github:acmeai/wardmote:94",
         name: "Guest review",
       }).thread;
       await deliverMessage({
@@ -3743,7 +3743,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         const payload = {
           action: event.includes("comment") ? "created" : event === "pull_request_review" ? "submitted" : "opened",
           installation: { id: 2468 },
-          repository: { id: 97531, full_name: "AcmeAI/Paperclip", name: "paperclip", owner: { id: 1357, login: "acmeai" } },
+          repository: { id: 97531, full_name: "AcmeAI/Wardmote", name: "wardmote", owner: { id: 1357, login: "acmeai" } },
           sender: target.user, issue: target, pull_request: target, comment, review: comment,
         };
         const delivery = randomUUID();
@@ -3753,9 +3753,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         await expect.poll(async () => (await db.select().from(chatConversations).where(eq(chatConversations.endpointId, f.endpoint.id))).length, { timeout: 10_000 }).toBe(1);
         await send();
         const [conversation] = await db.select().from(chatConversations).where(eq(chatConversations.endpointId, f.endpoint.id));
-        expect(conversation.externalThreadId).toBe(`github:AcmeAI/Paperclip:${event === "issues" || event === "issue_comment" ? "issue:" : ""}83${event === "pull_request_review_comment" ? ":rc:83000" : ""}`);
+        expect(conversation.externalThreadId).toBe(`github:AcmeAI/Wardmote:${event === "issues" || event === "issue_comment" ? "issue:" : ""}83${event === "pull_request_review_comment" ? ":rc:83000" : ""}`);
         expect(conversation.providerUrl).not.toContain("mention-event");
-        if (event === "issues") expect(conversation.providerUrl).toBe("https://github.com/acmeai/paperclip/issues/83");
+        if (event === "issues") expect(conversation.providerUrl).toBe("https://github.com/acmeai/wardmote/issues/83");
         const [task] = await db.select().from(issues).where(eq(issues.id, conversation.issueId!));
         expect(task).toMatchObject({ assigneeAgentId: f.assignedAgentId, responsibleUserId: "owner-user" });
         const comments = await db.select().from(issueComments).where(eq(issueComments.issueId, task.id));
@@ -3782,7 +3782,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const file = "https://github.com/user-attachments/files/31917991/proof.txt";
       const body = `@${f.endpoint.botUsername!} read [this proof](${file})`;
       const payload = { action, installation: { id: 2468 },
-        repository: { id: 97531, full_name: "acmeai/paperclip", name: "paperclip", owner: { id: 1357, login: "acmeai" } },
+        repository: { id: 97531, full_name: "acmeai/wardmote", name: "wardmote", owner: { id: 1357, login: "acmeai" } },
         sender: { id: 42, login: "octocat", type: "User" }, issue: { number: 83, body: "", title: "Proof", user: { id: 42, login: "octocat" } },
         comment: { id: 83001, body, user: { id: 42, login: "octocat" }, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
         ...(action === "edited" ? { changes: { body: { from: "No mention" } } } : {}) };
@@ -3798,7 +3798,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const body = `@${f.endpoint.botUsername!} help`;
       const payload = {
         action: "edited", installation: { id: 2468 },
-        repository: { id: 97531, full_name: "acmeai/paperclip", name: "paperclip", owner: { id: 1357, login: "acmeai" } },
+        repository: { id: 97531, full_name: "acmeai/wardmote", name: "wardmote", owner: { id: 1357, login: "acmeai" } },
         sender: { id: 77, login: "unlinked-editor", type: "User" },
         issue: { number: 84, title: "Say hello", body, user: { id: 42, login: "octocat", type: "User" }, labels: [] },
         changes: { body: { from: "No mention" } },
@@ -3825,7 +3825,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const target = { number: 83, title: "Say hello", body: "Description", user: { id: 42, login: "octocat", type: "User" } };
       const payload = {
         action: "edited", installation: { id: 2468 },
-        repository: { id: 97531, full_name: "acmeai/paperclip", name: "paperclip", owner: { id: 1357, login: "acmeai" } },
+        repository: { id: 97531, full_name: "acmeai/wardmote", name: "wardmote", owner: { id: 1357, login: "acmeai" } },
         sender: target.user, issue: target, pull_request: target,
         comment: { id: 83001, body: `@${f.endpoint.botUsername!} help`, user: target.user, updated_at: new Date().toISOString() },
         changes: { body: { from: "No mention" } },
@@ -3850,7 +3850,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       await f.management.saveConfiguration(f.endpoint.id, { expectedRevision: saved.revision, configuration: { ...saved.configuration, defaults: { ...saved.configuration.defaults, invocation: "mentions_only" } } }, "owner-user");
       const payload = {
         action: "opened", installation: { id: 2468 },
-        repository: { id: 97531, full_name: "acmeai/paperclip", name: "paperclip", owner: { id: 1357, login: "acmeai" } },
+        repository: { id: 97531, full_name: "acmeai/wardmote", name: "wardmote", owner: { id: 1357, login: "acmeai" } },
         sender: { id: 42, login: "octocat" },
         issue: { number: 86, title: "Private title", body: "Private body", user: { id: 42, login: "octocat", type: "User" }, labels: [] },
       };
@@ -3878,7 +3878,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const instruction = `Use [/automatic-playbook](${buildSkillMentionHref(skill.id, skill.slug)}).`;
       const payload = {
         action: "opened", installation: { id: 2468 },
-        repository: { id: 97531, full_name: "acmeai/paperclip", name: "paperclip", owner: { id: 1357, login: "acmeai" } },
+        repository: { id: 97531, full_name: "acmeai/wardmote", name: "wardmote", owner: { id: 1357, login: "acmeai" } },
         sender: { id: 77, login: "maintainer" },
         issue: { number: 83, title: "Say hello", body: "Untrusted issue body", user: { id: 42, login: "octocat", type: "User" }, labels: [] },
       };
@@ -3899,7 +3899,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const [conversation] = await db.select().from(chatConversations).where(eq(chatConversations.endpointId, f.endpoint.id));
       const [task] = await db.select().from(issues).where(eq(issues.id, conversation.issueId!));
       expect(task).toMatchObject({ title: "GitHub issue #83: Say hello", assigneeAgentId: f.assignedAgentId, responsibleUserId: "owner-user", originKind: "chat_channel" });
-      expect(conversation.providerUrl).toBe("https://github.com/acmeai/paperclip/issues/83");
+      expect(conversation.providerUrl).toBe("https://github.com/acmeai/wardmote/issues/83");
       const comments = await db.select().from(issueComments).where(eq(issueComments.issueId, task.id));
       expect(comments).toHaveLength(1);
       expect(comments[0].body).toContain(instruction);
@@ -3933,7 +3933,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         event: "issues", delivery: randomUUID(), webhookSecret: f.webhookSecret,
         payload: {
           action: "opened", installation: { id: 2468 },
-          repository: { id: 97531, full_name: "acmeai/paperclip", name: "paperclip", owner: { id: 1357, login: "acmeai" } },
+          repository: { id: 97531, full_name: "acmeai/wardmote", name: "wardmote", owner: { id: 1357, login: "acmeai" } },
           sender: { id: 42, login: "octocat" },
           issue: { number: 84, title: "No authority", body: "", user: { id: 999, login: "unknown", type: "User" }, labels: [] },
         },
@@ -3959,8 +3959,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         installation: { id: 2468 },
         repository: {
           id: 97531,
-          full_name: "acmeai/paperclip",
-          name: "paperclip",
+          full_name: "acmeai/wardmote",
+          name: "wardmote",
           owner: { id: 1357, login: "acmeai" },
         },
         sender: { id: 77, login: "maintainer" },
@@ -4016,7 +4016,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         originKind: "chat_channel",
       });
       const [conversation] = await db.select().from(chatConversations).where(eq(chatConversations.issueId, task.id));
-      expect(conversation.providerUrl).toBe("https://github.com/acmeai/paperclip/pull/81");
+      expect(conversation.providerUrl).toBe("https://github.com/acmeai/wardmote/pull/81");
       expect(reviews[0].event.sender.id).toBe("77");
       expect(reviews[0].event.author.id).toBe("42");
       expect(reviews[0].policySnapshot.ratingThreshold).toBe(5);
@@ -4052,7 +4052,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const payload = {
         action: "synchronize",
         installation: { id: 2468 },
-        repository: { id: 97531, full_name: "acmeai/paperclip", name: "paperclip", owner: { id: 1357, login: "acmeai" } },
+        repository: { id: 97531, full_name: "acmeai/wardmote", name: "wardmote", owner: { id: 1357, login: "acmeai" } },
         sender: { id: 42, login: "octocat" },
         pull_request: {
           number: 82, title: "Rapid pushes", body: "", draft: false,
@@ -4096,7 +4096,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const head = "b".repeat(40);
       const event = githubAutomaticReviewEvent({
         action: "opened", installation: { id: 2468 },
-        repository: { id: 97531, full_name: "acmeai/paperclip", name: "paperclip", owner: { id: 1357, login: "acmeai" } },
+        repository: { id: 97531, full_name: "acmeai/wardmote", name: "wardmote", owner: { id: 1357, login: "acmeai" } },
         sender: { id: 42, login: "octocat" },
         pull_request: {
           number: 83, title: "Manual review required", body: "", draft: false,
@@ -4131,8 +4131,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const f = await reviewBotFixture();
       const [company] = await db.select().from(companies).where(eq(companies.id, f.companyId));
       const thread = makeThread({
-        channelId: "acmeai/paperclip",
-        id: "github:acmeai/paperclip:91",
+        channelId: "acmeai/wardmote",
+        id: "github:acmeai/wardmote:91",
         name: "Review PR",
       }).thread;
       await deliverMessage({
@@ -4212,7 +4212,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       });
       f.setSupplementalProviderFetch(async (input, init) => {
         const url = String(input);
-        if (!url.includes("/repos/acmeai/paperclip/")) return undefined;
+        if (!url.includes("/repos/acmeai/wardmote/")) return undefined;
         const commentId = /\/issues\/comments\/([1-9][0-9]*)$/.exec(url)?.[1];
         if (commentId && init?.method === "GET") return Response.json(comments.get(Number(commentId)));
         if (init?.method === "POST" || init?.method === "PATCH") {
@@ -4284,7 +4284,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       expect(await db.select().from(chatGitHubReviews).where(eq(chatGitHubReviews.endpointId, f.endpoint.id))).toHaveLength(1);
       await githubReviewCheckService(db, f.providerFetch).processPending();
       expect(mutations.at(-1)).toMatchObject({
-        url: "https://api.github.com/repos/acmeai/paperclip/check-runs",
+        url: "https://api.github.com/repos/acmeai/wardmote/check-runs",
         body: {
           status: "in_progress", external_id: `${f.endpoint.id}:91:${head}`,
           details_url: `https://current-vanity.example/${company.issuePrefix}/issues/${conversation.issueId}`,
@@ -5179,11 +5179,11 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       ...(event === "issue_comment"
         ? {
             issue_url:
-              "https://api.github.com/repos/acmeai/paperclip/issues/91",
+              "https://api.github.com/repos/acmeai/wardmote/issues/91",
           }
         : {
             pull_request_url:
-              "https://api.github.com/repos/acmeai/paperclip/pulls/91",
+              "https://api.github.com/repos/acmeai/wardmote/pulls/91",
           }),
     };
     const payload = {
@@ -5191,8 +5191,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       installation: { id: 2468 },
       repository: {
         id: 97531,
-        full_name: "acmeai/paperclip",
-        name: "paperclip",
+        full_name: "acmeai/wardmote",
+        name: "wardmote",
         owner: { id: 1357, login: "acmeai" },
       },
       ...(event === "issue_comment"
@@ -5225,7 +5225,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     let beforePost: (() => Promise<void>) | undefined;
     const requests: Array<{ method: string; pathname: string }> = [];
     const posts: string[] = [];
-    const commentPath = `/repos/acmeai/paperclip/${event === "issue_comment" ? "issues" : "pulls"}/comments/9191`;
+    const commentPath = `/repos/acmeai/wardmote/${event === "issue_comment" ? "issues" : "pulls"}/comments/9191`;
     // Emit the actual unsafe JSON numeric literal, not a string-only mock.
     const json = (value: unknown) =>
       new Response(
@@ -6235,7 +6235,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     await fast.configure(fixture.companyId, "owner-user", { enabled: true, ...binding, model: "openai/gpt-oss-120b", allowSponsored: true });
     const now = vi.spyOn(Date, "now").mockReturnValue(Date.now()); onTestFinished(() => now.mockRestore());
     const current = await service.get(endpoint.id);
-    const channel = makeThread(channelProvider === "github" ? { channelId: "acmeai/paperclip", id: "github:acmeai/paperclip:903" } : { channelId: "CFAST", id: "slack:CFAST:9000.1", name: "fast response test" });
+    const channel = makeThread(channelProvider === "github" ? { channelId: "acmeai/wardmote", id: "github:acmeai/wardmote:903" } : { channelId: "CFAST", id: "slack:CFAST:9000.1", name: "fast response test" });
     await deliverMessage({ callbacks, provider: channelProvider, endpointId: endpoint.id, thread: channel.thread,
       message: makeMessage({ id: "9000.1", text: `@${current.botUsername ?? "maya"} fix the border styling`, mentioned: true, ...(channelProvider === "github" ? { userId: "42", userName: "octocat" } : {}) }), trigger: "mention" });
     const [job] = await db.select().from(fastResponseRequests).where(eq(fastResponseRequests.companyId, fixture.companyId));
@@ -8063,15 +8063,15 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               repositories: [
                 {
                   id: 97531,
-                  full_name: "acmeai/paperclip",
-                  html_url: "https://github.com/acmeai/paperclip",
+                  full_name: "acmeai/wardmote",
+                  html_url: "https://github.com/acmeai/wardmote",
                   owner: { id: 1357, login: "acmeai" },
                   private: false,
                 },
                 {
                   id: 97532,
-                  full_name: "acmeai/paperclip-disabled",
-                  html_url: "https://github.com/acmeai/paperclip-disabled",
+                  full_name: "acmeai/wardmote-disabled",
+                  html_url: "https://github.com/acmeai/wardmote-disabled",
                   owner: { id: 1357, login: "acmeai" },
                   private: false,
                 },
@@ -8204,12 +8204,12 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       })),
     ).toEqual([
       {
-        providerResourceId: "acmeai/paperclip",
+        providerResourceId: "acmeai/wardmote",
         availability: "available",
         enabled: false,
       },
       {
-        providerResourceId: "acmeai/paperclip-disabled",
+        providerResourceId: "acmeai/wardmote-disabled",
         availability: "available",
         enabled: false,
       },
@@ -8221,9 +8221,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       endpointId: endpoint.id,
       provider: "github",
       thread: makeThread({
-        channelId: "AcmeAI/Paperclip",
-        id: "github:AcmeAI/Paperclip:issue:17",
-        name: "acmeai/paperclip",
+        channelId: "AcmeAI/Wardmote",
+        id: "github:AcmeAI/Wardmote:issue:17",
+        name: "acmeai/wardmote",
       }).thread,
       message: makeMessage({
         id: "github-root-17",
@@ -8244,9 +8244,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         enabled: resource.enabled,
       })),
     ).toEqual([
-      { providerResourceId: "acmeai/paperclip", enabled: true },
+      { providerResourceId: "acmeai/wardmote", enabled: true },
       {
-        providerResourceId: "acmeai/paperclip-disabled",
+        providerResourceId: "acmeai/wardmote-disabled",
         enabled: false,
       },
     ]);
@@ -8262,8 +8262,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           repositories_removed: [
             {
               id: 97531,
-              full_name: "acmeai/paperclip",
-              html_url: "https://github.com/acmeai/paperclip",
+              full_name: "acmeai/wardmote",
+              html_url: "https://github.com/acmeai/wardmote",
               owner: { id: 1357, login: "acmeai" },
             },
           ],
@@ -8273,12 +8273,12 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     );
     await expect(service.listResources(endpoint.id)).resolves.toEqual([
       expect.objectContaining({
-        providerResourceId: "acmeai/paperclip",
+        providerResourceId: "acmeai/wardmote",
         availability: "available",
         enabled: true,
       }),
       expect.objectContaining({
-        providerResourceId: "acmeai/paperclip-disabled",
+        providerResourceId: "acmeai/wardmote-disabled",
         availability: "available",
         enabled: false,
       }),
@@ -8326,8 +8326,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       installation: { id: 2468 },
       repository: {
         id: 97531,
-        full_name: "acmeai/paperclip",
-        name: "paperclip",
+        full_name: "acmeai/wardmote",
+        name: "wardmote",
         owner: { id: 1357, login: "acmeai" },
       },
       issue: { number: issueNumber },
@@ -8373,7 +8373,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     expect(accepted.status).toBe(202);
     await expect(service.listResources(endpoint.id)).resolves.toEqual([
       expect.objectContaining({
-        providerResourceId: "acmeai/paperclip",
+        providerResourceId: "acmeai/wardmote",
         enabled: true,
       }),
     ]);
@@ -8388,8 +8388,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       await configuredGitHubEndpoint(fixture);
     const current = await service.get(endpoint.id);
     const { thread, subscribe } = makeThread({
-      channelId: "acmeai/paperclip",
-      id: "github:acmeai/paperclip:903",
+      channelId: "acmeai/wardmote",
+      id: "github:acmeai/wardmote:903",
     });
     let release!: () => void;
     let acquired!: () => void;
@@ -8481,20 +8481,20 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       companyId: endpoint.companyId,
       endpointId: endpoint.id,
       type: "repository",
-      providerResourceId: "acmeai/paperclip-second",
-      label: "acmeai/paperclip-second",
+      providerResourceId: "acmeai/wardmote-second",
+      label: "acmeai/wardmote-second",
       availability: "available",
       enabled: false,
     });
     const roots = [
       {
-        channelId: "acmeai/paperclip",
+        channelId: "acmeai/wardmote",
         issueNumber: 901,
         messageId: 901001,
         repositoryId: 97531,
       },
       {
-        channelId: "acmeai/paperclip-second",
+        channelId: "acmeai/wardmote-second",
         issueNumber: 902,
         messageId: 902001,
         repositoryId: 97532,
@@ -8546,7 +8546,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       .select({ title: issues.title })
       .from(issues)
       .where(eq(issues.id, conversations[0]!.issueId));
-    expect(issue?.title).toMatch(/^GitHub: acmeai\/paperclip(-second)? - investigate this race$/);
+    expect(issue?.title).toMatch(/^GitHub: acmeai\/wardmote(-second)? - investigate this race$/);
   });
 
   it("rejects caller-controlled GitHub setup secrets and arbitrary credential fields", async () => {
@@ -8677,8 +8677,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             repositories: [
               {
                 id: 97531,
-                full_name: "acmeai/paperclip",
-                html_url: "https://github.com/acmeai/paperclip",
+                full_name: "acmeai/wardmote",
+                html_url: "https://github.com/acmeai/wardmote",
                 owner: { id: 1357, login: "acmeai" },
                 private: false,
               },
@@ -8719,7 +8719,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     await expect(service.listResources(endpoint.id)).resolves.toEqual([
       expect.objectContaining({
-        providerResourceId: "acmeai/paperclip",
+        providerResourceId: "acmeai/wardmote",
         availability: "available",
       }),
     ]);
@@ -9254,9 +9254,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const { callbacks, endpoint, service } =
       await configuredGitHubEndpoint(fixture);
     const setupThread = makeThread({
-      channelId: "acmeai/paperclip",
-      id: "github:acmeai/paperclip:issue:811",
-      name: "acmeai/paperclip",
+      channelId: "acmeai/wardmote",
+      id: "github:acmeai/wardmote:issue:811",
+      name: "acmeai/wardmote",
     });
     await deliverMessage({
       callbacks,
@@ -9637,9 +9637,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       receiptReactionTransportBarrier: async () => { reactionTransportCalls += 1; },
     });
     const thread = makeThread({
-      channelId: "github:acmeai/paperclip",
-      id: "github:acmeai/paperclip:issue:909",
-      name: "acmeai/paperclip",
+      channelId: "github:acmeai/wardmote",
+      id: "github:acmeai/wardmote:issue:909",
+      name: "acmeai/wardmote",
     });
     await deliverMessage({
       callbacks, endpointId: endpoint.id, provider: "github", thread: thread.thread,
@@ -9664,9 +9664,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const obsoleteRuntime = runtime.endpoints.get(endpoint.id);
     if (!obsoleteRuntime) throw new Error("Expected initial GitHub runtime");
     const thread = makeThread({
-      channelId: "github:acmeai/paperclip",
-      id: "github:acmeai/paperclip:issue:910",
-      name: "acmeai/paperclip",
+      channelId: "github:acmeai/wardmote",
+      id: "github:acmeai/wardmote:issue:910",
+      name: "acmeai/wardmote",
     });
     await deliverMessage({
       callbacks,
@@ -9785,20 +9785,20 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const { callbacks, endpoint } = await configuredGitHubEndpoint(fixture);
     const cases = [
       {
-        id: "github:acmeai/paperclip:issue:51",
+        id: "github:acmeai/wardmote:issue:51",
         rootId: "51001",
       },
-      { id: "github:acmeai/paperclip:52", rootId: "52001" },
+      { id: "github:acmeai/wardmote:52", rootId: "52001" },
       {
-        id: "github:acmeai/paperclip:52:rc:88001",
+        id: "github:acmeai/wardmote:52:rc:88001",
         rootId: "88001",
       },
     ];
     for (const item of cases) {
       const thread = makeThread({
-        channelId: "github:acmeai/paperclip",
+        channelId: "github:acmeai/wardmote",
         id: item.id,
-        name: "acmeai/paperclip",
+        name: "acmeai/wardmote",
       });
       const rootDelivery = {
         callbacks,
@@ -9865,9 +9865,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     );
     const githubUserId = "18446744073709551";
     const thread = makeThread({
-      channelId: "acmeai/paperclip",
-      id: "github:acmeai/paperclip:issue:59",
-      name: "acmeai/paperclip",
+      channelId: "acmeai/wardmote",
+      id: "github:acmeai/wardmote:issue:59",
+      name: "acmeai/wardmote",
     });
     const send = (
       id: string,
@@ -10005,9 +10005,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         scheduleDeferredWork: (task) => deferred.push(task),
       });
     const thread = makeThread({
-      channelId: "github:acmeai/paperclip",
-      id: "github:acmeai/paperclip:issue:71",
-      name: "acmeai/paperclip",
+      channelId: "github:acmeai/wardmote",
+      id: "github:acmeai/wardmote:issue:71",
+      name: "acmeai/wardmote",
     });
     const providerSentAt = new Date("2026-09-05T18:00:00.000Z");
     const laterReply = makeMessage({
@@ -10091,9 +10091,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         scheduleDeferredWork: (task) => deferred.push(task),
       });
     const thread = makeThread({
-      channelId: "github:acmeai/paperclip",
-      id: "github:acmeai/paperclip:issue:72",
-      name: "acmeai/paperclip",
+      channelId: "github:acmeai/wardmote",
+      id: "github:acmeai/wardmote:issue:72",
+      name: "acmeai/wardmote",
     });
     const laterReply = makeMessage({
       id: "72002",
@@ -10203,9 +10203,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         scheduleDeferredWork: (task) => deferred.push(task),
       });
     const thread = makeThread({
-      channelId: "github:acmeai/paperclip",
-      id: "github:acmeai/paperclip:issue:73",
-      name: "acmeai/paperclip",
+      channelId: "github:acmeai/wardmote",
+      id: "github:acmeai/wardmote:issue:73",
+      name: "acmeai/wardmote",
     });
     await deliverMessage({
       callbacks,
@@ -10254,9 +10254,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const context = await configuredGitHubEndpoint(fixture);
     const { callbacks, endpoint, runtime, service, webhookSecret } = context;
     const thread = makeThread({
-      channelId: "github:acmeai/paperclip",
-      id: "github:acmeai/paperclip:issue:61",
-      name: "acmeai/paperclip",
+      channelId: "github:acmeai/wardmote",
+      id: "github:acmeai/wardmote:issue:61",
+      name: "acmeai/wardmote",
     });
     await deliverMessage({
       callbacks,
@@ -10362,7 +10362,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     await expect(service.listResources(endpoint.id)).resolves.toEqual([
       expect.objectContaining({
-        providerResourceId: "acmeai/paperclip",
+        providerResourceId: "acmeai/wardmote",
         availability: "available",
         enabled: true,
       }),
@@ -10398,9 +10398,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const context = await configuredGitHubEndpoint(fixture);
     const { callbacks, endpoint, runtime, service, webhookSecret } = context;
     const thread = makeThread({
-      channelId: "github:acmeai/paperclip",
-      id: "github:acmeai/paperclip:issue:62",
-      name: "acmeai/paperclip",
+      channelId: "github:acmeai/wardmote",
+      id: "github:acmeai/wardmote:issue:62",
+      name: "acmeai/wardmote",
     });
     await deliverMessage({
       callbacks,
@@ -10515,9 +10515,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const context = await configuredGitHubEndpoint(fixture);
     const { callbacks, endpoint, service, webhookSecret } = context;
     const thread = makeThread({
-      channelId: "github:acmeai/paperclip",
-      id: "github:acmeai/paperclip:issue:63",
-      name: "acmeai/paperclip",
+      channelId: "github:acmeai/wardmote",
+      id: "github:acmeai/wardmote:issue:63",
+      name: "acmeai/wardmote",
     });
     await deliverMessage({
       callbacks,
@@ -10591,8 +10591,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const { endpoint, runtime, service, webhookSecret } = context;
     const repository = {
       id: 97531,
-      full_name: "acmeai/paperclip",
-      html_url: "https://github.com/acmeai/paperclip",
+      full_name: "acmeai/wardmote",
+      html_url: "https://github.com/acmeai/wardmote",
       owner: { id: 1357, login: "acmeai" },
       private: false,
     };
@@ -10620,7 +10620,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     );
     await expect(service.listResources(endpoint.id)).resolves.toEqual([
       expect.objectContaining({
-        providerResourceId: "acmeai/paperclip",
+        providerResourceId: "acmeai/wardmote",
         availability: "removed",
         enabled: true,
       }),
@@ -10654,7 +10654,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     await expect(service.listResources(endpoint.id)).resolves.toEqual([
       expect.objectContaining({
-        providerResourceId: "acmeai/paperclip",
+        providerResourceId: "acmeai/wardmote",
         availability: "available",
         enabled: true,
       }),
@@ -10976,7 +10976,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     await expect(service.listResources(endpoint.id)).resolves.toEqual([
       expect.objectContaining({
-        providerResourceId: "acmeai/paperclip",
+        providerResourceId: "acmeai/wardmote",
         availability: "unavailable",
       }),
     ]);
@@ -11019,7 +11019,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     await expect(service.listResources(endpoint.id)).resolves.toEqual([
       expect.objectContaining({
-        providerResourceId: "acmeai/paperclip",
+        providerResourceId: "acmeai/wardmote",
         availability: "available",
       }),
     ]);
@@ -11445,8 +11445,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           installation: { id: 2468 },
           repository: {
             id: 97531,
-            full_name: "acmeai/paperclip",
-            name: "paperclip",
+            full_name: "acmeai/wardmote",
+            name: "wardmote",
             owner: { id: 1357, login: "acmeai" },
           },
           issue: { number: 91 },
@@ -11490,8 +11490,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           installation: { id: 2468 },
           repository: {
             id: 97531,
-            full_name: "acmeai/paperclip",
-            name: "paperclip",
+            full_name: "acmeai/wardmote",
+            name: "wardmote",
             owner: { id: 1357, login: "acmeai" },
           },
           issue: { number: 91 },
@@ -11565,8 +11565,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           installation: { id: 2468 },
           repository: {
             id: 97531,
-            full_name: "acmeai/paperclip",
-            name: "paperclip",
+            full_name: "acmeai/wardmote",
+            name: "wardmote",
             owner: { id: 1357, login: "acmeai" },
           },
           issue: { number: 91 },
@@ -12299,8 +12299,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         installation: { id: 2468 },
         repository: {
           id: 97531,
-          full_name: "acmeai/paperclip",
-          name: "paperclip",
+          full_name: "acmeai/wardmote",
+          name: "wardmote",
           owner: { id: 1357, login: "acmeai" },
         },
         issue: { number: 91 },
@@ -12366,8 +12366,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           installation: { id: 2468 },
           repository: {
             id: 97531,
-            full_name: "acmeai/paperclip",
-            name: "paperclip",
+            full_name: "acmeai/wardmote",
+            name: "wardmote",
             owner: { id: 1357, login: "acmeai" },
           },
           issue: { number: 91, body: marker },
@@ -12914,9 +12914,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       endpointId: endpoint.id,
       provider: "github",
       thread: makeThread({
-        channelId: "AcmeAI/Paperclip",
-        id: "github:AcmeAI/Paperclip:issue:77",
-        name: "AcmeAI/Paperclip",
+        channelId: "AcmeAI/Wardmote",
+        id: "github:AcmeAI/Wardmote:issue:77",
+        name: "AcmeAI/Wardmote",
       }).thread,
       message: makeMessage({
         id: "github-rename-root",
@@ -12933,8 +12933,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
 
     const renamedRepository = {
       id: 97531,
-      full_name: "acmeai/paperclip-renamed",
-      html_url: "https://github.com/acmeai/paperclip-renamed",
+      full_name: "acmeai/wardmote-renamed",
+      html_url: "https://github.com/acmeai/wardmote-renamed",
       owner: { id: 1357, login: "acmeai" },
       private: false,
     };
@@ -12957,7 +12957,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     await expect(service.listResources(endpoint.id)).resolves.toEqual([
       expect.objectContaining({
         id: originalResource.id,
-        providerResourceId: "acmeai/paperclip-renamed",
+        providerResourceId: "acmeai/wardmote-renamed",
         enabled: true,
         metadata: expect.objectContaining({ providerRepositoryId: "97531" }),
       }),
@@ -23184,13 +23184,13 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         scheduleDeferredWork: (work) => deferred.push(work),
       });
       const { service, endpoint, callbacks } = context;
-      const sourceThreadId = "github:acmeai/paperclip:issue:93";
+      const sourceThreadId = "github:acmeai/wardmote:issue:93";
       const sourceUrl =
         "https://github.com/user-attachments/files/31917991/public-proof.txt";
       const thread = makeThread({
         id: sourceThreadId,
-        channelId: "github:acmeai/paperclip",
-        name: "acmeai/paperclip",
+        channelId: "github:acmeai/wardmote",
+        name: "acmeai/wardmote",
       });
       const publicBody = Buffer.from("exact current GitHub public file");
       const batch = new AbortController();
@@ -23229,7 +23229,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               type: "issue_comment",
               threadType: "issue",
               prNumber: 93,
-              repository: { full_name: "acmeai/paperclip" },
+              repository: { full_name: "acmeai/wardmote" },
               comment: {
                 id: Number(id),
                 body: urls.map((url) => `[file](${url})`).join("\n"),
@@ -23428,7 +23428,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         scheduleDeferredWork: () => {},
       });
       const { service, endpoint, callbacks } = context;
-      const sourceThreadId = "github:acmeai/paperclip:issue:93";
+      const sourceThreadId = "github:acmeai/wardmote:issue:93";
       const sourceUrl =
         "https://github.com/user-attachments/assets/11111111-2222-3333-4444-555555555555";
       const signedUrl =
@@ -23451,9 +23451,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         .spyOn(FakeEndpointRuntime.prototype, "resolveGitHubAttachmentComment")
         .mockResolvedValue({
           id: 93002,
-          url: "https://api.github.com/repos/acmeai/paperclip/issues/comments/93002",
+          url: "https://api.github.com/repos/acmeai/wardmote/issues/comments/93002",
           issue_url:
-            "https://api.github.com/repos/acmeai/paperclip/issues/93",
+            "https://api.github.com/repos/acmeai/wardmote/issues/93",
           body,
           body_html:
             `<a href="${["signed_anchor", "ambiguous_anchor"].includes(revokeAt) ? signedUrl : sourceUrl}"><img src="${signedUrl}"></a>`.repeat(
@@ -23554,8 +23554,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       try {
         const thread = makeThread({
           id: sourceThreadId,
-          channelId: "github:acmeai/paperclip",
-          name: "acmeai/paperclip",
+          channelId: "github:acmeai/wardmote",
+          name: "acmeai/wardmote",
         });
         const message = makeMessage({
           id: "93002",
@@ -23566,7 +23566,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             type: "issue_comment",
             threadType: "issue",
             prNumber: 93,
-            repository: { full_name: "acmeai/paperclip" },
+            repository: { full_name: "acmeai/wardmote" },
             comment: { id: 93002, body, user: { id: 42 } },
           },
         });
@@ -23602,7 +23602,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         if (receiptMutation) expect(await receiptMutation).toBeNull();
         expect(resolve).toHaveBeenCalledExactlyOnceWith(
           {
-            url: "https://api.github.com/repos/acmeai/paperclip/issues/comments/93002",
+            url: "https://api.github.com/repos/acmeai/wardmote/issues/comments/93002",
             accept: "application/vnd.github.full+json",
           },
           expect.any(AbortSignal),
@@ -25709,8 +25709,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         .set({ status: "active" })
         .where(eq(chatEndpoints.id, endpoint.id));
       const thread = makeThread({
-        channelId: "github:acmeai/paperclip",
-        id: "github:acmeai/paperclip:issue:5",
+        channelId: "github:acmeai/wardmote",
+        id: "github:acmeai/wardmote:issue:5",
       });
       await deliverLegacyGitHubReceipt({
         callbacks,
@@ -25974,8 +25974,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const originalRuntime = runtime.endpoints.get(endpoint.id)!;
       attach(originalRuntime);
       const thread = makeThread({
-        channelId: "github:acmeai/paperclip",
-        id: "github:acmeai/paperclip:issue:5",
+        channelId: "github:acmeai/wardmote",
+        id: "github:acmeai/wardmote:issue:5",
       });
       const runId = randomUUID();
       const publish = async () => {
@@ -26265,9 +26265,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const endpointRuntime = runtime.endpoints.get(endpoint.id);
       if (!endpointRuntime) throw new Error("Expected GitHub runtime");
       const github = makeThread({
-        channelId: "github:acmeai/paperclip",
-        id: "github:acmeai/paperclip:issue:receipt-reaction",
-        name: "acmeai/paperclip",
+        channelId: "github:acmeai/wardmote",
+        id: "github:acmeai/wardmote:issue:receipt-reaction",
+        name: "acmeai/wardmote",
       });
       for (const failure of failures) {
         endpointRuntime.reactionErrors.push(failure);
@@ -28352,7 +28352,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   it("suppresses persisted GitHub queued, progress and completion comments on replay", async () => {
     const fixture = await seedCompany();
     const { callbacks, endpoint, runtime, service } = await configuredGitHubEndpoint(fixture);
-    const thread = makeThread({ channelId: "github:acmeai/paperclip", id: "github:acmeai/paperclip:issue:417" });
+    const thread = makeThread({ channelId: "github:acmeai/wardmote", id: "github:acmeai/wardmote:issue:417" });
     await deliverMessage({ callbacks, endpointId: endpoint.id, provider: "github", thread: thread.thread,
       message: makeMessage({ id: "41701", text: "@maya produce one quiet response", mentioned: true }), trigger: "mention" });
     const config = await githubChatManagementService(db).configuration(endpoint.id, "owner-user");
@@ -28388,7 +28388,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   it("preserves automatic final replies for legacy GitHub connections without saved review configuration", async () => {
     const fixture = await seedCompany();
     const { callbacks, endpoint, runtime, service } = await configuredGitHubEndpoint(fixture);
-    const thread = makeThread({ channelId: "github:acmeai/paperclip", id: "github:acmeai/paperclip:issue:417" });
+    const thread = makeThread({ channelId: "github:acmeai/wardmote", id: "github:acmeai/wardmote:issue:417" });
     await deliverMessage({ callbacks, endpointId: endpoint.id, provider: "github", thread: thread.thread,
       message: makeMessage({ id: "41701", text: "@maya answer", mentioned: true }), trigger: "mention" });
     const [conversation] = await db.select().from(chatConversations).where(eq(chatConversations.endpointId, endpoint.id));
@@ -30588,12 +30588,12 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         channelId:
           provider === "slack"
             ? "C-MULTI-FINAL"
-            : "github:acmeai/paperclip",
+            : "github:acmeai/wardmote",
         id:
           provider === "slack"
             ? "slack:C-MULTI-FINAL:4045.1"
-            : "github:acmeai/paperclip:issue:418",
-        name: provider === "slack" ? "multi-final" : "acmeai/paperclip",
+            : "github:acmeai/wardmote:issue:418",
+        name: provider === "slack" ? "multi-final" : "acmeai/wardmote",
       });
       await deliverMessage({
         callbacks,
@@ -43074,9 +43074,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const { callbacks, endpoint, runtime, service } =
         await configuredGitHubEndpoint(fixture);
       const thread = makeThread({
-        channelId: "acmeai/paperclip",
-        id: "github:acmeai/paperclip:issue:451",
-        name: "acmeai/paperclip",
+        channelId: "acmeai/wardmote",
+        id: "github:acmeai/wardmote:issue:451",
+        name: "acmeai/wardmote",
       });
       await deliverMessage({
         callbacks,
@@ -43201,9 +43201,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const { callbacks, endpoint, runtime, service } =
         await configuredGitHubEndpoint(fixture, { wakeup });
       const thread = makeThread({
-        channelId: "acmeai/paperclip",
-        id: "github:acmeai/paperclip:issue:455",
-        name: "acmeai/paperclip",
+        channelId: "acmeai/wardmote",
+        id: "github:acmeai/wardmote:issue:455",
+        name: "acmeai/wardmote",
       });
       await deliverMessage({
         callbacks,
@@ -43379,9 +43379,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const { callbacks, endpoint, runtime, service, wakeup } =
       await configuredGitHubEndpoint(fixture);
     const thread = makeThread({
-      channelId: "acmeai/paperclip",
-      id: "github:acmeai/paperclip:issue:454",
-      name: "acmeai/paperclip",
+      channelId: "acmeai/wardmote",
+      id: "github:acmeai/wardmote:issue:454",
+      name: "acmeai/wardmote",
     });
     await deliverMessage({
       callbacks,
@@ -43537,9 +43537,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           storage: storage.storage,
         });
       const thread = makeThread({
-        channelId: "acmeai/paperclip",
-        id: "github:acmeai/paperclip:issue:452",
-        name: "acmeai/paperclip",
+        channelId: "acmeai/wardmote",
+        id: "github:acmeai/wardmote:issue:452",
+        name: "acmeai/wardmote",
       });
       await deliverMessage({
         callbacks,
@@ -43882,9 +43882,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const thread =
         provider === "github"
           ? makeThread({
-              channelId: "acmeai/paperclip",
-              id: "github:acmeai/paperclip:issue:97",
-              name: "acmeai/paperclip",
+              channelId: "acmeai/wardmote",
+              id: "github:acmeai/wardmote:issue:97",
+              name: "acmeai/wardmote",
             })
           : makeThread({
               channelId: "teams-personal-cleanup",
@@ -56162,8 +56162,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             installation: { id: 2468 },
             repository: {
               id: 97531,
-              full_name: "acmeai/paperclip",
-              name: "paperclip",
+              full_name: "acmeai/wardmote",
+              name: "wardmote",
               owner: { id: 1357, login: "acmeai" },
             },
             issue: { number: mode === "wrong_thread" ? 792 : 791 },
@@ -60703,9 +60703,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           })
         : provider === "github"
           ? makeThread({
-              channelId: "github:acmeai/paperclip",
-              id: `github:acmeai/paperclip:issue:${700 + Number(suffix)}`,
-              name: "acmeai/paperclip",
+              channelId: "github:acmeai/wardmote",
+              id: `github:acmeai/wardmote:issue:${700 + Number(suffix)}`,
+              name: "acmeai/wardmote",
             })
           : provider === "discord"
             ? makeThread({
@@ -60775,7 +60775,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         type: "issue_comment",
         threadType: "issue",
         prNumber: 700 + Number(suffix),
-        repository: { full_name: "acmeai/paperclip" },
+        repository: { full_name: "acmeai/wardmote" },
         comment: {
           id: Number(messageId),
           body: sourceMessage.text,
@@ -64097,12 +64097,12 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const fixtureWakeups = () =>
         wakeup.mock.calls.filter((call) => call[0] === fixture.assignedAgentId);
       const thread = makeThread({
-        channelId: "acmeai/paperclip",
+        channelId: "acmeai/wardmote",
         id:
           mode === "outbound_review_link"
-            ? "github:acmeai/paperclip:84:rc:99080"
-            : "github:acmeai/paperclip:issue:84",
-        name: "acmeai/paperclip",
+            ? "github:acmeai/wardmote:84:rc:99080"
+            : "github:acmeai/wardmote:issue:84",
+        name: "acmeai/wardmote",
       });
       try {
         await deliverMessage({
@@ -64137,7 +64137,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
                     .values({
                       ...conversation!,
                       id: randomUUID(),
-                      externalThreadId: "github:acmeai/paperclip:issue:85",
+                      externalThreadId: "github:acmeai/wardmote:issue:85",
                     })
                     .returning()
                 )[0]!
@@ -64188,8 +64188,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
                 pull_request: { number: 84 },
                 repository: {
                   id: 97531,
-                  full_name: "acmeai/paperclip",
-                  name: "paperclip",
+                  full_name: "acmeai/wardmote",
+                  name: "wardmote",
                   owner: { id: 1357, login: "acmeai" },
                 },
                 sender: {
@@ -64491,9 +64491,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const { service, wakeup, endpoint, webhookSecret, callbacks } =
       await configuredGitHubEndpoint(fixture);
     const thread = makeThread({
-      channelId: "acmeai/paperclip",
-      id: "github:acmeai/paperclip:issue:42",
-      name: "acmeai/paperclip",
+      channelId: "acmeai/wardmote",
+      id: "github:acmeai/wardmote:issue:42",
+      name: "acmeai/wardmote",
     });
     await deliverMessage({
       callbacks,
@@ -64510,18 +64510,18 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     for (const item of [
       {
-        id: "github:acmeai/paperclip:43",
+        id: "github:acmeai/wardmote:43",
         messageId: "77002",
       },
       {
-        id: "github:acmeai/paperclip:43:rc:88001",
+        id: "github:acmeai/wardmote:43:rc:88001",
         messageId: "88001",
       },
     ]) {
       const nativeThread = makeThread({
-        channelId: "acmeai/paperclip",
+        channelId: "acmeai/wardmote",
         id: item.id,
-        name: "acmeai/paperclip",
+        name: "acmeai/wardmote",
       });
       await deliverMessage({
         callbacks,
@@ -64577,8 +64577,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             pull_request: { number: input.number },
             repository: {
               id: 97531,
-              full_name: "acmeai/paperclip",
-              name: "paperclip",
+              full_name: "acmeai/wardmote",
+              name: "wardmote",
               owner: { id: 1357, login: "acmeai" },
             },
             sender: { id: 7001, login: "alex-e2e" },
@@ -64659,9 +64659,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       await configuredGitHubEndpoint(fixture);
     try {
       const thread = makeThread({
-        channelId: "acmeai/paperclip",
-        id: "github:acmeai/paperclip:issue:91",
-        name: "acmeai/paperclip",
+        channelId: "acmeai/wardmote",
+        id: "github:acmeai/wardmote:issue:91",
+        name: "acmeai/wardmote",
       });
       await deliverMessage({
         callbacks,
@@ -64777,8 +64777,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             issue: { number: 91 },
             repository: {
               id: 97531,
-              full_name: "acmeai/paperclip",
-              name: "paperclip",
+              full_name: "acmeai/wardmote",
+              name: "wardmote",
               owner: { id: 1357, login: "acmeai" },
             },
             sender: { id: 7001, login: "alex-e2e" },
@@ -72522,13 +72522,13 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             provider === "slack"
               ? "C-LONG-BOARD"
               : provider === "github"
-                ? "acmeai/paperclip"
+                ? "acmeai/wardmote"
                 : teamsChannel,
           id:
             provider === "slack"
               ? "slack:C-LONG-BOARD:9900.1"
               : provider === "github"
-                ? "github:acmeai/paperclip:issue:9900"
+                ? "github:acmeai/wardmote:issue:9900"
                 : `teams:${Buffer.from("19:long-publication@thread.tacv2;messageid=99001").toString("base64url")}:${Buffer.from("https://smba.trafficmanager.net/amer/").toString("base64url")}`,
           name: "long-board",
         });

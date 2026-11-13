@@ -323,7 +323,7 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
       if (!row || row.request.resource !== config.resource) throw new McpOAuthError("invalid_request", "This code is expired, already decided, or invalid. Start a new connection from your assistant.", 404);
       return { agentConnection, id: row.request.id, clientName: row.client.name, redirectOrigin: "", clientOrigin: row.client.id.startsWith("https://") ? new URL(row.client.id).origin : null,
         requestedConfigure: row.request.scopes.includes("wardmote:configure"), requestedWrite: row.request.scopes.includes("wardmote:write"), offlineAccess: row.request.scopes.includes("offline_access"), requestedCompanyId: row.request.requestedCompanyId,
-        setupUrl: null, ...await consentContext(actor, row.request.requestedCompanyId) };
+        ...await consentContext(actor, row.request.requestedCompanyId) };
     },
     async consentDevice(userCode: string, actor: Request["actor"], input: { decision: "approve" | "deny"; companyId?: string; allowWrites: boolean; allowConfiguration?: boolean }) {
       await assertEnabled();
@@ -385,7 +385,7 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
       });
       return authorizationOrigin + (agentConnection ? "/dot-connect/" : "/mcp-connect/") + id;
     },
-    async describeRequest(id: string, actor: Request["actor"], setupUrl: string | null): Promise<McpConnectionRequest> {
+    async describeRequest(id: string, actor: Request["actor"]): Promise<McpConnectionRequest> {
       await assertEnabled();
       const [row] = await db.select({ request: mcpOauthRequests, client: mcpOauthClients })
         .from(mcpOauthRequests).innerJoin(mcpOauthClients, eq(mcpOauthClients.id, mcpOauthRequests.clientId))
@@ -396,7 +396,7 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
         clientOrigin: row.client.id.startsWith("https://") ? new URL(row.client.id).origin : null,
         requestedConfigure: row.request.scopes.includes("wardmote:configure"), requestedWrite: row.request.scopes.includes("wardmote:write"), offlineAccess: row.request.scopes.includes("offline_access"),
         requestedCompanyId: row.request.requestedCompanyId,
-        ...await consentContext(actor, row.request.requestedCompanyId), setupUrl,
+        ...await consentContext(actor, row.request.requestedCompanyId),
       };
     },
     async consent(id: string, actor: Request["actor"], input: { decision: "approve" | "deny"; companyId?: string; allowWrites: boolean; allowConfiguration?: boolean }) {

@@ -1392,6 +1392,7 @@
     ["server/src/services/plugin-local-folders.ts",1,"belum-diganti"],
     ["server/src/services/railway.ts",1,"nama-lama-ditolak"],
     ["server/src/services/remote-agent-profiles.test.ts",1,"belum-diganti"],
+    ["server/src/services/retired-accounting-receipt-schema.ts",1,"migrasi-otomatis"],
     ["server/src/services/retired-discord-command-name.ts",1,"migrasi-otomatis"],
     ["server/src/services/retired-github-marker.ts",1,"migrasi-otomatis"],
     ["server/src/services/retired-header-names.ts",2,"nama-lama-ditolak"],

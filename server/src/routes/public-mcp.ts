@@ -165,10 +165,7 @@ export function publicMcpIngressRoutes(oauth: PublicMcpOAuth, execute: ReturnTyp
             result = { events: events.definitions }; break;
           case "events/subscribe": {
             if (!events) { fail(-32601, "Events are unavailable."); return; }
-            // The broker supplies its original access proof only for hosted subscriptions.
-            // It is validated against the fixed Cloud origin before being retained encrypted.
-            const authority = z.object({ token: z.string().max(24000), expiresAt: z.number() }).safeParse(meta["ai.paperclip/cloudAuthority"]);
-            result = await events.subscribe(principal!, params, authority.success ? authority.data : undefined); break;
+            result = await events.subscribe(principal!, params); break;
           }
           case "events/unsubscribe":
             if (!events) { fail(-32601, "Events are unavailable."); return; }
@@ -226,12 +223,7 @@ export function publicMcpManagementRoutes(oauth: PublicMcpOAuth, agentOAuth?: Pu
     res.json(await (await deviceOAuth(parsed.data.userCode)).consentDevice(parsed.data.userCode, req.actor, parsed.data));
   });
   router.get(["/mcp/requests/:id", "/dot-mcp/requests/:id"], async (req, res) => {
-    let setupUrl: string | null = null;
-    if (process.env.WARDMOTE_CLOUD_API_ORIGIN) {
-      const base = new URL(process.env.WARDMOTE_CLOUD_API_ORIGIN);
-      if (base.protocol === "https:") setupUrl = new URL("/orgs/new", base).toString();
-    }
-    res.json(await (await requestOAuth(String(req.params.id), req.path.startsWith("/dot-mcp/"))).describeRequest(String(req.params.id), req.actor, setupUrl));
+    res.json(await (await requestOAuth(String(req.params.id), req.path.startsWith("/dot-mcp/"))).describeRequest(String(req.params.id), req.actor));
   });
   router.post(["/mcp/requests/:id/dot-pairing/preview", "/dot-mcp/requests/:id/dot-pairing/preview"], sameOrigin, authRateLimit(), async (req, res) => {
     const parsed = z.object({ pairingCode: z.string().regex(/^[A-Za-z0-9_-]{32}$/) }).strict().safeParse(req.body);
