@@ -2415,7 +2415,7 @@ export class CapabilityLiveSession {
       lifecyclePolicy: this.#config.lifecyclePolicy ?? { mode: "per_turn", idleTimeoutMs: null },
       resumeActiveTurnId: resume ? this.#activeTurnId : null,
       ...(resume ? { resumeDynamicTools: semanticTools } : {}),
-      stateDirectory: resolve(this.#config.workingDirectory, ".paperclip-runner-prp", identityDigest),
+      stateDirectory: resolve(this.#config.workingDirectory, ".wardmote-runner-prp", identityDigest),
       prpIdentity: {
         runnerInstanceId: `runner_lab_${identityDigest}`,
         environmentLeaseId: `lease_lab_${identityDigest}`,

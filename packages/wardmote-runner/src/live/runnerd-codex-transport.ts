@@ -3460,7 +3460,7 @@ export function createRunnerdCodexAppServerArgs(input: {
 }
 
 export function unwrapToolResponse(response: Record<string, unknown>, preserveEnvelope = false): {
-  readonly __paperclipSemanticToolOutcome: true;
+  readonly __wardmoteSemanticToolOutcome: true;
   readonly result: unknown;
   readonly isError: boolean;
 } {
@@ -3475,7 +3475,7 @@ export function unwrapToolResponse(response: Record<string, unknown>, preserveEn
     result = response;
   }
   return {
-    __paperclipSemanticToolOutcome: true as const,
+    __wardmoteSemanticToolOutcome: true as const,
     result,
     isError: response.success === false,
   };

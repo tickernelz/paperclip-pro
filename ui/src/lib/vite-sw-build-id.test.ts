@@ -7,7 +7,7 @@ import { SERVICE_WORKER_BUILD_ID_PLACEHOLDER, stampServiceWorkerBuildId } from "
 
 const swSource = () =>
   `const BUILD_ID = "${SERVICE_WORKER_BUILD_ID_PLACEHOLDER}";\n` +
-  "const CACHE_NAME = `paperclip-${BUILD_ID}`;\n";
+  "const CACHE_NAME = `wardmote-${BUILD_ID}`;\n";
 
 describe("stampServiceWorkerBuildId", () => {
   it("replaces the placeholder with the build id and leaves no placeholder", () => {

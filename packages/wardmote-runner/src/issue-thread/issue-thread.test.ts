@@ -204,7 +204,7 @@ describe("Capability issue-thread fixtures", () => {
     expect(item.reference).toMatchObject({
       schema: "wardmote.workspace.file_reference.v1",
       source: "runner_verified",
-      path: "docs/paperclip-runner-protocol.md",
+      path: "docs/wardmote-runner-protocol.md",
       presentation: "document",
     });
     expect(item.reference.preview).toContain("# Wardmote Runner Protocol");

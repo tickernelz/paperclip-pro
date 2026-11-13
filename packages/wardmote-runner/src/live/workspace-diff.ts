@@ -43,8 +43,8 @@ export type WardmoteWorkspaceSnapshot = Map<string, WorkspaceFileSnapshot>;
 
 const IGNORED_DIRECTORY_NAMES = new Set([
   ".git",
-  ".paperclip-runner-prp",
-  ".paperclip-runner",
+  ".wardmote-runner-prp",
+  ".wardmote-runner",
   ".next",
   ".turbo",
   "build",

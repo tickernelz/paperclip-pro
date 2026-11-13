@@ -620,7 +620,7 @@ function networkGuardRecord(
     id: `network-guard-${snapshot.sessionId}`,
     turnId: "turn-0",
     category: "session",
-    outcome: realWardmoteRequests === 0 ? "no_real_wardmote_request" : "real_paperclip_request",
+    outcome: realWardmoteRequests === 0 ? "no_real_wardmote_request" : "real_wardmote_request",
     reason:
       `Real Wardmote API requests: ${realWardmoteRequests}. ` +
       `Child WARDMOTE_* environment keys: ${

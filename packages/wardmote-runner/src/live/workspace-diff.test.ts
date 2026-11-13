@@ -9,14 +9,14 @@ import { captureWardmoteWorkspace, diffWardmoteWorkspace } from "./workspace-dif
 describe("runner-verified workspace diffs", () => {
   it("captures create, modify, delete, and rename without runner-owned noise", async () => {
     const root = await mkdtemp(join(tmpdir(), "wardmote-workspace-diff-"));
-    await mkdir(join(root, ".paperclip-runner-prp"));
-    await writeFile(join(root, ".paperclip-runner-prp", "state.json"), "before");
+    await mkdir(join(root, ".wardmote-runner-prp"));
+    await writeFile(join(root, ".wardmote-runner-prp", "state.json"), "before");
     await writeFile(join(root, "modify.txt"), "old\n");
     await writeFile(join(root, "delete.txt"), "gone\n");
     await writeFile(join(root, "rename.txt"), "same\n");
     const before = await captureWardmoteWorkspace(root);
 
-    await writeFile(join(root, ".paperclip-runner-prp", "state.json"), "after");
+    await writeFile(join(root, ".wardmote-runner-prp", "state.json"), "after");
     await writeFile(join(root, "modify.txt"), "new\n");
     await writeFile(join(root, "create.txt"), "created\n");
     await writeFile(join(root, "delete.txt"), "");
@@ -33,7 +33,7 @@ describe("runner-verified workspace diffs", () => {
       ["renamed.txt", "rename"],
     ]);
     expect(diff?.files.find((file) => file.path === "renamed.txt")?.previousPath).toBe("rename.txt");
-    expect(JSON.stringify(diff)).not.toContain(".paperclip-runner-prp");
+    expect(JSON.stringify(diff)).not.toContain(".wardmote-runner-prp");
   });
 
   it("returns no record when the workspace did not change", async () => {

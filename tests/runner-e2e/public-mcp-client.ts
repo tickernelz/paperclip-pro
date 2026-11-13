@@ -79,7 +79,7 @@ export async function connect(context: BrowserContext, team: Team, write = true,
 }
 
 export async function mcp(tokens: Tokens) {
-  const client = new Client({ name: "paperclip-product-eval", version: "1.0.0" });
+  const client = new Client({ name: "wardmote-product-eval", version: "1.0.0" });
   await client.connect(new StreamableHTTPClientTransport(new URL(resource), { requestInit: { headers: { Authorization: `Bearer ${tokens.access_token}` } } }));
   return {
     list: async () => await client.listTools() as { tools: Array<{ name: string; description: string; inputSchema: Record<string, unknown>; annotations: { readOnlyHint: boolean } }> },
