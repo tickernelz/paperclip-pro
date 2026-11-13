@@ -14827,7 +14827,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         artifacts: [],
       },
       terminal: {
-        schema: "paperclip.prp.terminal.v1",
+        schema: "wardmote.prp.terminal.v1",
         runTerminalState: "succeeded",
         turnTerminalState: "completed",
         reportedWorkDisposition: "yielded",
@@ -16005,7 +16005,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         artifacts: [],
       },
       terminal: {
-        schema: "paperclip.prp.terminal.v1",
+        schema: "wardmote.prp.terminal.v1",
         runTerminalState: "succeeded",
         turnTerminalState: "completed",
         reportedWorkDisposition: "blocked",
@@ -16645,7 +16645,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(proof).not.toBeNull();
     const result = semanticFinish ? { ...proof!.result, reportedWorkDisposition: "done" as const, summary: "Explicit semantic finish wins", continuation: undefined,
       completionClaim: { contractRevision: "1", objectiveSatisfied: true, criteria: [{ criterionId: "objective", status: "satisfied" as const, evidenceRefs: [] }], remainingWork: [] } } : proof!.result;
-    await port.completeRun({ result, turnId: "turn", terminal: { schema: "paperclip.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed", reportedWorkDisposition: result.reportedWorkDisposition } });
+    await port.completeRun({ result, turnId: "turn", terminal: { schema: "wardmote.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed", reportedWorkDisposition: result.reportedWorkDisposition } });
     return { ...f, interactionId, deliveryId: delivery!.id, proof: proof! };
   }
 

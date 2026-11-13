@@ -32,7 +32,7 @@
       "sourceKind": "runner", "runId": "run_budget_stop", "normalizedSessionId": "session_budget_stop", "turnId": "turn_budget_stop",
       "eventType": "run.terminal", "schemaVersion": 1, "priority": 0, "emittedAt": "2026-08-11T10:40:00.010Z",
       "payload": {
-        "schema": "paperclip.prp.terminal.v1", "turnTerminalState": "cancelled", "runTerminalState": "cancelled", "reportedWorkDisposition": "blocked",
+        "schema": "wardmote.prp.terminal.v1", "turnTerminalState": "cancelled", "runTerminalState": "cancelled", "reportedWorkDisposition": "blocked",
         "workAssessmentId": "assessment_budget_stop", "statusDecisionId": "decision_budget_stop",
         "stopReason": {
           "schema": "wardmote.prp.stop_reason.v1", "schemaVersion": 1, "receiptId": "stop_receipt_budget", "kind": "budget",

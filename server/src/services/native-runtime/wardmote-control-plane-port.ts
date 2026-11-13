@@ -64,7 +64,7 @@ function record(value: unknown): Record<string, unknown> {
 function assertTerminal(value: unknown): asserts value is PrpTerminalState {
   const terminal = value as Partial<PrpTerminalState> | null;
   if (
-    terminal?.schema !== "paperclip.prp.terminal.v1"
+    terminal?.schema !== "wardmote.prp.terminal.v1"
     || !["completed", "failed", "interrupted", "cancelled"].includes(String(terminal.turnTerminalState))
     || !["succeeded", "failed", "cancelled"].includes(String(terminal.runTerminalState))
     || !["done", "blocked", "needs_review", "yielded"].includes(String(terminal.reportedWorkDisposition))

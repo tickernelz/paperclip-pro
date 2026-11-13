@@ -57,7 +57,7 @@ describe("Pi operator setup read", () => {
       f.append("tool.execution.completed", { ...f.tool, status: "failed", output: "Pi operation was denied or cancelled" });
       f.append("turn.completed", { status: "completed", error: null }); f.run.status = "succeeded"; f.issue.status = "done";
       f.append("run.result.accepted", { result: { schema: "wardmote.run_result.v1", reportedWorkDisposition: "done", summary: f.marker } }, { sourceKind: "control_plane", sourceInstanceId: "source:control", sourceSeq: 1, sourceEventId: "source:control:run:1" });
-      f.append("run.terminal", { schema: "paperclip.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed", reportedWorkDisposition: "done" }, { sourceKind: "control_plane", sourceInstanceId: "source:control", sourceSeq: 2, sourceEventId: "source:control:run:2" });
+      f.append("run.terminal", { schema: "wardmote.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed", reportedWorkDisposition: "done" }, { sourceKind: "control_plane", sourceInstanceId: "source:control", sourceSeq: 2, sourceEventId: "source:control:run:2" });
       expect(readPiSteeringSettlement({ ...f.state(), pending, commentId: f.commentId, queueId: f.queueId, marker: f.marker, finalMessage: f.marker }).marker).toBe(f.marker);
     }
   });

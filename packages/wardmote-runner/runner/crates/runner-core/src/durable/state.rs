@@ -80,7 +80,7 @@ impl Command {
             "wardmote.prp.command.v3" => 3,
             _ => {
                 return Err(DurableRunnerError::invalid(
-                    "command requires a supported paperclip.prp.command schema",
+                    "command requires a supported wardmote.prp.command schema",
                 ));
             }
         };
@@ -3379,7 +3379,7 @@ mod tests {
         let original_digest = semantic_value_digest(&once_sanitized);
         let tampered_schema_payload = json!({
             "semantic_tool": {
-                "schema": "paperclip.prp.semantic_tool.tampered",
+                "schema": "wardmote.prp.semantic_tool.tampered",
                 "phase": "input",
                 "operationId": "wardmote_finish",
                 "content": {"digest": original_digest.clone()},

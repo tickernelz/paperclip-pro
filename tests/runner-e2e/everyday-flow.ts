@@ -1579,7 +1579,7 @@ export async function runEverydayFlow(input: Input) {
         .every(
           (r) =>
             (r.resultJson?.nativeTerminal as Row | undefined)?.schema ===
-            "paperclip.prp.terminal.v1",
+            "wardmote.prp.terminal.v1",
         ),
       "Successful runs retain the native terminal contract.",
     );

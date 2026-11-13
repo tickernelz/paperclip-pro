@@ -270,7 +270,7 @@ describe("qualified ACPX runtime sidecar", () => {
     const receipt = appendSemanticToolReceipt({ tool: "get_task_context", callId: "1", arguments: {} }, { content: [{ type: "text", text: "{}" }] }).receipt;
     captured(receipt);
     expect(events).toHaveLength(1);
-    expect(events[0]).toMatchObject({ payload: { category: "paperclip_semantic_tool_receipt_v2", provenance: { sessionId: "session-a", turnId: "turn-a" } } });
+    expect(events[0]).toMatchObject({ payload: { category: "wardmote_semantic_tool_receipt_v2", provenance: { sessionId: "session-a", turnId: "turn-a" } } });
     active = false; captured(receipt); expect(events).toHaveLength(1);
     for (const agent of ["cursor", "codex", "pi"]) expect(create({ agent, tools: [] }, evidence, () => undefined).captureSemanticReceipt).toBeUndefined();
   });
@@ -298,7 +298,7 @@ describe("qualified ACPX runtime sidecar", () => {
       }
       const body = await (await response).json();
       const receipt = readNativeSemanticReceipt({ contents: body.result.content });
-      expect(receipt).toMatchObject({ schema: "paperclip.semantic_tool_receipt.v2", inputSha256: semanticInputSha256(raw),
+      expect(receipt).toMatchObject({ schema: "wardmote.semantic_tool_receipt.v2", inputSha256: semanticInputSha256(raw),
         normalizedInputSha256: mode === "forwarded" ? semanticInputSha256(emitted[0].input) : null,
         outcome: mode === "forwarded" ? "returned" : "error" });
       expect(semanticInputSha256(raw)).not.toBe(semanticInputSha256(validated.result));
@@ -307,7 +307,7 @@ describe("qualified ACPX runtime sidecar", () => {
       const details = Object.fromEntries(notices.at(-1).payload.details.map((d: any) => [d.name, d.value]));
       expect(details).toMatchObject({ semanticInputSha256: semanticInputSha256(raw),
         semanticNormalizedInputSha256: mode === "forwarded" ? semanticInputSha256(emitted[0].input) : "null" });
-      expect(notices.find(event => event.payload.category === "paperclip_semantic_tool_receipt_v2").payload.details).toHaveLength(8);
+      expect(notices.find(event => event.payload.category === "wardmote_semantic_tool_receipt_v2").payload.details).toHaveLength(8);
     } finally {
       for (const pending of tools.values()) pending.cleanup();
       await bridge.close();

@@ -8375,7 +8375,7 @@ async function executeWardmoteNativeSessionWithinScope(
         if (input.onLog)
           await input.onLog(
             "stdout",
-            `${JSON.stringify({ type: "paperclip.prp.event", event })}\n`,
+            `${JSON.stringify({ type: "wardmote.prp.event", event })}\n`,
           );
         if (
           input.onEvent &&
@@ -9956,10 +9956,10 @@ export function mayUsePreinstalledRunnerArtifact(
 }
 
 const RUNNERD_BUILD_METADATA_SCHEMA =
-  "paperclip-runner/runnerd-build-metadata/v1";
+  "wardmote-runner/runnerd-build-metadata/v1";
 const RUNNERD_BINARY_CONTRACT_VERSION = 2;
 
-const REMOTE_PROVIDER_PACK_SCHEMA = "paperclip-runner/remote-provider-pack/v1";
+const REMOTE_PROVIDER_PACK_SCHEMA = "wardmote-runner/remote-provider-pack/v1";
 const REMOTE_PROVIDER_PACK_PINS = {
   nodeMinimum: "24.11.0",
   codex: QUALIFIED_ACPX_PROFILES.codex.agentRuntimeVersion,

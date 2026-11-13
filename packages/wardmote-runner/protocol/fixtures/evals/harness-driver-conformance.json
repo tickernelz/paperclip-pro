@@ -1,11 +1,11 @@
 {
   "schema": "paperclip-runner/harness-driver-conformance-fixture/v1",
   "validConfig": {
-    "schema": "paperclip-runner/deterministic-harness-driver-config/v1",
+    "schema": "wardmote-runner/deterministic-harness-driver-config/v1",
     "scenario": "semantic-tool-success"
   },
   "invalidConfig": {
-    "schema": "paperclip-runner/deterministic-harness-driver-config/v1",
+    "schema": "wardmote-runner/deterministic-harness-driver-config/v1",
     "scenario": "unknown"
   },
   "completionMessage": "Run deterministic semantic-tool conformance.",

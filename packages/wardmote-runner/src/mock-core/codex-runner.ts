@@ -499,7 +499,7 @@ export async function runCodexCodexTracer(input: CodexCodexTracerInput): Promise
       ? providerRuntime
       : { ...providerRuntime, runTerminalState: "failed" as const };
     controlEvents.push(controlEvent("run.terminal", {
-      schema: "paperclip.prp.terminal.v1",
+      schema: "wardmote.prp.terminal.v1",
       ...runtime,
       reportedWorkDisposition:
         resultDecision.status === "accepted" && runtime.runTerminalState === "succeeded"

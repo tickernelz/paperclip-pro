@@ -117,7 +117,7 @@ export const WARDMOTE_PUBLIC_SCHEMA_IDS = new Set([
   "wardmote.prp.semantic_tools.v1",
   "wardmote.prp.session-snapshot.v1",
   "wardmote.prp.stop_reason.v1",
-  "paperclip.prp.terminal.v1",
+  "wardmote.prp.terminal.v1",
   "wardmote.question_adapter_fixture.v1",
   "wardmote.question_response.v1",
   "wardmote.question_response_delivery.v1",

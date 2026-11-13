@@ -64,7 +64,7 @@ export function retainRunnerQualificationPackages({ repo, output, sourceRevision
     writeFileSync(join(runner, 'package.json'), JSON.stringify(runnerManifest));
     pack(runner, runnerManifest.name, true);
     assert.equal(new Set(archives.map(a => a.name)).size, archives.length);
-    const receipt = { schema: 'paperclip.runner.qualification-packages/v1', sourceRevision, releaseVersion, publicInstallationVerified: true, piAdmissionVerified: true, providerCalls: 0, archives };
+    const receipt = { schema: 'wardmote.runner.qualification-packages/v1', sourceRevision, releaseVersion, publicInstallationVerified: true, piAdmissionVerified: true, providerCalls: 0, archives };
     writeFileSync(join(output, 'manifest.json'), JSON.stringify(receipt, null, 2) + '\n');
     return receipt;
   } finally {

@@ -920,7 +920,7 @@ class OpenCodeHarnessSession implements HarnessSession {
 
   async transcript(): Promise<HarnessTranscriptSnapshot> {
     return {
-      schema: "paperclip-runner/harness-transcript/v1",
+      schema: "wardmote-runner/harness-transcript/v1",
       complete: true,
       eventCount: this.#transcript.length,
       events: structuredClone(this.#transcript),

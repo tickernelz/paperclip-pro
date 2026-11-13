@@ -47,7 +47,7 @@ async function fixture() {
     checks: [{ id: "context", kind: "semantic_operation" }],
   };
   const roster = {
-    schema: "paperclip-runner/live-roster/v1",
+    schema: "wardmote-runner/live-roster/v1",
     id: "protocol-live-opencode-model",
     model: config.model,
     config: "../configs/live-opencode-model.json",
@@ -69,7 +69,7 @@ async function fixture() {
     writeFile(
       join(program, "campaigns/live-direct-full.json"),
       JSON.stringify({
-        schema: "paperclip-runner/live-campaign/v1",
+        schema: "wardmote-runner/live-campaign/v1",
         lanes: [
           {
             id: "opencode-model",
@@ -203,7 +203,7 @@ test("catalogs roster plus case cells and emits bounded balanced shards", async 
 test("all selects the maintained enabled campaign and explicit diagnostics can select disabled rosters", async () => {
   const { root, program, config, evalCase } = await fixture();
   const disabledRoster = {
-    schema: "paperclip-runner/live-roster/v1",
+    schema: "wardmote-runner/live-roster/v1",
     id: "protocol-live-disabled-model",
     model: config.model,
     config: "../configs/live-opencode-model.json",
@@ -217,7 +217,7 @@ test("all selects the maintained enabled campaign and explicit diagnostics can s
     writeFile(
       join(program, "campaigns/live-direct-full.json"),
       JSON.stringify({
-        schema: "paperclip-runner/live-campaign/v1",
+        schema: "wardmote-runner/live-campaign/v1",
         lanes: [
           {
             id: "opencode-model",
@@ -394,7 +394,7 @@ test("public run projection removes raw evidence and gives unverified recordings
     writeFile(
       join(source, "artifact.json"),
       JSON.stringify({
-        schema: "paperclip-runner/eval-session-artifact/v1",
+        schema: "wardmote-runner/eval-session-artifact/v1",
         attemptId,
         createdAt: "2026-09-05T00:00:00.000Z",
         requestedModel: config.model,
@@ -422,7 +422,7 @@ test("public run projection removes raw evidence and gives unverified recordings
     writeFile(
       join(source, "score.json"),
       JSON.stringify({
-        schema: "paperclip-runner/eval-score/v1",
+        schema: "wardmote-runner/eval-score/v1",
         attemptId,
         caseId: evalCase.id,
         disposition: "passed",
@@ -490,7 +490,7 @@ test("public run projection redacts remote profile version identities", async ()
     writeFile(
       join(source, "artifact.json"),
       JSON.stringify({
-        schema: "paperclip-runner/eval-session-artifact/v1",
+        schema: "wardmote-runner/eval-session-artifact/v1",
         attemptId,
         createdAt: "2026-09-05T00:00:00.000Z",
         requestedModel: "claude-sonnet-5",
@@ -508,7 +508,7 @@ test("public run projection redacts remote profile version identities", async ()
     writeFile(
       join(source, "score.json"),
       JSON.stringify({
-        schema: "paperclip-runner/eval-score/v1",
+        schema: "wardmote-runner/eval-score/v1",
         attemptId,
         caseId: evalCase.id,
         disposition: "passed",

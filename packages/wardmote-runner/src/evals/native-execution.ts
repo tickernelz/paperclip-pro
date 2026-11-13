@@ -292,8 +292,8 @@ export function parseWardmoteNativeExecution(
   if (events.length === 0) fail("bundle.events", "must contain native events");
 
   const terminal = record(bundle.terminal, "bundle.terminal") as unknown as PrpTerminalState;
-  if (terminal.schema !== "paperclip.prp.terminal.v1") {
-    fail("bundle.terminal.schema", "must be paperclip.prp.terminal.v1");
+  if (terminal.schema !== "wardmote.prp.terminal.v1") {
+    fail("bundle.terminal.schema", "must be wardmote.prp.terminal.v1");
   }
   const terminalEvents = events.filter((event) => event.eventType === "run.terminal");
   if (terminalEvents.length !== 1) {

@@ -85,7 +85,7 @@ describe("harness-driver conformance V1", () => {
       reason: "deterministic_active_turn_recovered_without_live_producer",
     });
     await expect(recovered.transcript?.()).resolves.toMatchObject({
-      schema: "paperclip-runner/harness-transcript/v1",
+      schema: "wardmote-runner/harness-transcript/v1",
       complete: false,
       eventCount: 3,
       events: events.map((event) => expect.objectContaining({

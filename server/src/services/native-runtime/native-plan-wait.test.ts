@@ -9,7 +9,7 @@ import { hasCommittedNativePlanWait, nativePlanWaitFromFacts, type PlanWaitFacts
 
 function committedDb(f: PlanWaitFacts, source: unknown, result: unknown, legacy = false) {
   const sourceRecord = source as any;
-  const resultJson = { result, terminal: { schema: "paperclip.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed", reportedWorkDisposition: "yielded" } };
+  const resultJson = { result, terminal: { schema: "wardmote.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed", reportedWorkDisposition: "yielded" } };
   const canonicalSha256 = nativeSha256(resultJson);
   const identity = { resultId: "result", resultSha256: canonicalSha256 };
   const decisionJson = legacy ? { cursorPlanWait: source, cursorPlanWaitResult: identity } : { planWait: source, planWaitResult: identity };
@@ -189,7 +189,7 @@ describe("accepted Cursor plan passive-wait authority", () => {
       created: payload("runtime_request.created"), resolved: payload("runtime_request.resolved"), terminal: payload("turn.completed"),
       interaction, delivery, resolvedAt: interaction.resolvedAt!.toISOString(), acknowledgedAt: delivery.acknowledgedAt!.toISOString(), toolBinding }) };
     proof.result.continuation!.idempotencyKey = proof.result.continuation!.idempotencyKey.replace("native-plan-wait:", "cursor-plan-wait:");
-    const resultJson = { result: proof.result, terminal: { schema: "paperclip.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed", reportedWorkDisposition: "yielded" } };
+    const resultJson = { result: proof.result, terminal: { schema: "wardmote.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed", reportedWorkDisposition: "yielded" } };
     const canonicalSha256 = nativeSha256(resultJson);
     const db = () => {
       const rows = [

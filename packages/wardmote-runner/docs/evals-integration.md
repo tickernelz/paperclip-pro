@@ -33,7 +33,7 @@ provider process starts:
 | PRP | Package, runnerd, and consumer version ranges have a common version. |
 | Semantic catalog | Contract version and canonical content digest both match. |
 | Harness driver | Contract and negotiated PRP versions match and every required capability is explicitly true. |
-| Native output | Consumer and runnerd both select `paperclip-runner/native-execution/v1`. |
+| Native output | Consumer and runnerd both select `wardmote-runner/native-execution/v1`. |
 
 Failures use `wardmote_runner_eval_incompatible` and include all detected
 component issues with expected and received values. A catalog, driver, or PRP
@@ -41,7 +41,7 @@ mismatch cannot degrade into an attempted run.
 
 ## Native attempt bundle
 
-`paperclip-runner/native-execution/v1` is the App-owned raw attempt. Its checked
+`wardmote-runner/native-execution/v1` is the App-owned raw attempt. Its checked
 schema is `protocol/schemas/native-execution.schema.json`; the no-spend seeded
 fixture is `protocol/fixtures/evals/native-execution-seeded.json`.
 

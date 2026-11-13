@@ -58,7 +58,7 @@ function origin(events: readonly unknown[], scope: PiControlScope, bootstrapAppr
       && x.event.turnId === card.event.turnId && x.event.normalizedSessionId === card.event.normalizedSessionId
       && (x.event.eventType === "run.result.accepted"
         ? rec(rec(x.event.payload).result).schema === "wardmote.run_result.v1"
-        : rec(x.event.payload).schema === "paperclip.prp.terminal.v1"))
+        : rec(x.event.payload).schema === "wardmote.prp.terminal.v1"))
     && (control.length !== 2 || (control[0]!.event.eventType === "run.result.accepted" && control[1]!.event.eventType === "run.terminal")),
   "foreign, duplicate or premature control-plane settlement");
   const executionId = bootstrapReadExecutionId(request.details.toolCallId);

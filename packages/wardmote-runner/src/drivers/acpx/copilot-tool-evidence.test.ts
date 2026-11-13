@@ -132,7 +132,7 @@ describe("Copilot authoritative semantic receipt correlation", () => {
     h.projector.tool({ ...tool("native", args, "other"), title: "unrelated display" });
     h.projector.captureSemanticReceipt()!(bound.receipt);
     h.projector.tool(terminal("native", bound.result.content));
-    const authoritative = h.events.find(e => e.payload.category === "paperclip_semantic_tool_receipt_v2")!;
+    const authoritative = h.events.find(e => e.payload.category === "wardmote_semantic_tool_receipt_v2")!;
     expect(details(authoritative)).toMatchObject({ operationId: operation, callIdentitySha256: bound.receipt.callIdentitySha256, outcome: "returned" });
     expect(authoritative.payload.provenance).toMatchObject({ method: "paperclip/semantic_tool_result", sessionId: "session", turnId: "turn" });
     expect(details(h.events.at(-1)!)).toMatchObject({ semanticOperationId: operation, semanticOutcome: "returned", semanticResultSha256: bound.receipt.resultSha256 });

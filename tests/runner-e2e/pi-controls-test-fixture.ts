@@ -56,7 +56,7 @@ export function piControlFixture(target = "target.txt") {
     append("run.result.accepted", { result: { schema: "wardmote.run_result.v1", reportedWorkDisposition: "done", summary: finalMarker } }, {
       sourceKind: "control_plane", sourceInstanceId: "source:control", sourceSeq: 1, sourceEventId: "source:control:run:1",
     });
-    append("run.terminal", { schema: "paperclip.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed", reportedWorkDisposition: "done" }, {
+    append("run.terminal", { schema: "wardmote.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed", reportedWorkDisposition: "done" }, {
       sourceKind: "control_plane", sourceInstanceId: "source:control", sourceSeq: 2, sourceEventId: "source:control:run:2",
     });
   }

@@ -123,7 +123,7 @@ describe("deterministic PRP session reducer", () => {
       payload: { requestId: "request_interrupted_permission", requestKind: "permission_approval", requestType: "permission",
         reason: status === "expired" ? "provider_process_lost" : "explicit_cancellation", replayAllowed: false } };
     const terminal: PrpEvent = { ...base, sourceEventId: "acpx-terminal", sourceSeq: 3, eventType: "run.terminal",
-      payload: { schema: "paperclip.prp.terminal.v1", status: "failed", turnTerminalState: "failed", runTerminalState: "failed", reportedWorkDisposition: "unknown" } };
+      payload: { schema: "wardmote.prp.terminal.v1", status: "failed", turnTerminalState: "failed", runTerminalState: "failed", reportedWorkDisposition: "unknown" } };
     const events = [created, ended, terminal];
     const result = reduceSessionEvents(createSessionSnapshot(fixture), events);
     expect(result.requests).toEqual([expect.objectContaining({ requestId: "request_interrupted_permission", status })]);

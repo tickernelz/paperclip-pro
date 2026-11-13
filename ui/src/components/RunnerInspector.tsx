@@ -605,7 +605,7 @@ function ProductionSurfacePreview({ event, runId }: { event: HeartbeatRunEvent; 
   const prp = eventPrp(event);
   const ts = new Date(event.createdAt).toISOString();
   const entries = parseWardmoteRunnerStdoutLine(
-    JSON.stringify({ type: "paperclip.prp.event", event: prp }),
+    JSON.stringify({ type: "wardmote.prp.event", event: prp }),
     ts,
   );
   const item = transcriptToTaskChatItems(entries, {

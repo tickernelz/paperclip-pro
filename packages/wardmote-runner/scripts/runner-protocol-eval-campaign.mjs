@@ -99,7 +99,7 @@ async function maintainedRosterSelection(programRoot) {
   const campaignPath = resolve(programRoot, "campaigns/live-direct-full.json");
   const campaign = await loadObject(campaignPath);
   if (
-    campaign.schema !== "paperclip-runner/live-campaign/v1" ||
+    campaign.schema !== "wardmote-runner/live-campaign/v1" ||
     !Array.isArray(campaign.lanes)
   ) {
     throw new Error(`Unsupported live campaign schema in ${campaignPath}`);
@@ -160,7 +160,7 @@ export async function buildProtocolEvalCatalog({
     if (selected && !selected.has(rosterId) && !selected.has(rosterFile)) {
       continue;
     }
-    if (roster.schema !== "paperclip-runner/live-roster/v1") {
+    if (roster.schema !== "wardmote-runner/live-roster/v1") {
       throw new Error(`Unsupported live roster schema in ${rosterFile}`);
     }
     if (!Array.isArray(roster.cases) || roster.cases.length === 0) {
@@ -338,7 +338,7 @@ async function syntheticAttempt({ evalsRoot, runsOut, cell, campaignId }) {
   await mkdir(directory, { recursive: false, mode: 0o700 });
   const createdAt = new Date().toISOString();
   const artifact = {
-    schema: "paperclip-runner/eval-session-artifact/v1",
+    schema: "wardmote-runner/eval-session-artifact/v1",
     attemptId,
     createdAt,
     requestedModel: config.model,
@@ -364,7 +364,7 @@ async function syntheticAttempt({ evalsRoot, runsOut, cell, campaignId }) {
     },
   };
   const score = {
-    schema: "paperclip-runner/eval-score/v1",
+    schema: "wardmote-runner/eval-score/v1",
     attemptId,
     caseId: cell.caseId,
     disposition: "infrastructure_failure",

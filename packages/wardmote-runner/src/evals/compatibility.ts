@@ -137,7 +137,7 @@ export function assertWardmoteRunnerEvalCompatibility(
       "nativeExecution",
       expected.contracts.nativeExecution,
       `${requirement.nativeExecutionVersion}/${requirement.runnerd.nativeExecutionVersion}`,
-      "consumer and runnerd must both emit paperclip-runner/native-execution/v1",
+      "consumer and runnerd must both emit wardmote-runner/native-execution/v1",
     );
   }
 

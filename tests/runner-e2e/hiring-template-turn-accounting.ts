@@ -96,7 +96,7 @@ export function gradeHiringCompletionActions(notifications: JsonRecord[], readRu
     const terminalEnvelope = eventEnvelope(terminals[0] ?? {}), terminal = object(terminalEnvelope.payload);
     const acceptedEnvelope = eventEnvelope(acceptedResults[0] ?? {});
     if (!events.length || terminals.length !== 1 || acceptedResults.length !== 1
-      || terminalEnvelope.sourceKind !== "control_plane" || terminal.schema !== "paperclip.prp.terminal.v1"
+      || terminalEnvelope.sourceKind !== "control_plane" || terminal.schema !== "wardmote.prp.terminal.v1"
       || terminal.runTerminalState !== "succeeded" || terminal.turnTerminalState !== "completed"
       || acceptedEnvelope.sourceKind !== "control_plane" || object(object(acceptedEnvelope.payload).result).schema !== "wardmote.run_result.v1"
       || !events.every((event, i) => Number.isSafeInteger(event.seq) && event.seq === i + 1)) { unresolved(); continue; }

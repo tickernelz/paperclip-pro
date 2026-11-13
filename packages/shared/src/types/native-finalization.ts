@@ -11,7 +11,7 @@ export interface NativeFinalizationResultV1 {
   companyId: string;
   result: Record<string, unknown>;
   terminal: {
-    schema: "paperclip.prp.terminal.v1";
+    schema: "wardmote.prp.terminal.v1";
     turnTerminalState: "completed" | "failed" | "interrupted" | "cancelled";
     runTerminalState: NativeRunTerminalState;
     reportedWorkDisposition: NativeReportedWorkDisposition;

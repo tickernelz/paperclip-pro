@@ -127,7 +127,7 @@ fn enum_field<'a>(value: &'a Value, key: &str, allowed: &[&str]) -> Option<&'a s
 }
 
 fn valid_terminal_proposal(value: &Value) -> bool {
-    value.get("schema").and_then(Value::as_str) == Some("paperclip.prp.terminal.v1")
+    value.get("schema").and_then(Value::as_str) == Some("wardmote.prp.terminal.v1")
         && enum_field(
             value,
             "turnTerminalState",
@@ -202,7 +202,7 @@ fn reconcile_terminal(
     let harness_terminal_proposal = proposal.unwrap_or(Value::Null);
 
     json!({
-        "schema": "paperclip.prp.terminal.v1",
+        "schema": "wardmote.prp.terminal.v1",
         "turnTerminalState": turn_terminal_state,
         "runTerminalState": run_terminal_state,
         "reportedWorkDisposition": reported_work_disposition,
@@ -827,7 +827,7 @@ mod tests {
     fn nonzero_exit_overrides_a_success_terminal_proposal() {
         let terminal = reconcile_terminal(
             Some(json!({
-                "schema": "paperclip.prp.terminal.v1",
+                "schema": "wardmote.prp.terminal.v1",
                 "turnTerminalState": "completed",
                 "runTerminalState": "succeeded",
                 "reportedWorkDisposition": "done"
@@ -857,7 +857,7 @@ mod tests {
     fn successful_process_and_result_override_a_failed_terminal_proposal() {
         let terminal = reconcile_terminal(
             Some(json!({
-                "schema": "paperclip.prp.terminal.v1",
+                "schema": "wardmote.prp.terminal.v1",
                 "turnTerminalState": "failed",
                 "runTerminalState": "failed",
                 "reportedWorkDisposition": "yielded"

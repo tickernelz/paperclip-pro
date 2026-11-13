@@ -245,7 +245,7 @@ describeEmbeddedPostgres("native Codex server vertical slice", () => {
             },
           },
           terminal: {
-            schema: "paperclip.prp.terminal.v1",
+            schema: "wardmote.prp.terminal.v1",
             runTerminalState: "succeeded",
           },
         },

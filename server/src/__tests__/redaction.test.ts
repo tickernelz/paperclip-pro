@@ -30,10 +30,10 @@ import { appendSemanticToolReceipt } from "../../../packages/wardmote-runner/src
 function receiptNotice(version: 1 | 2 = 1): Record<string, any> {
   return {
     schema: "wardmote.provider.notice.v1", noticeId: `copilot-evidence-${"a".repeat(24)}-1`,
-    severity: "info", category: `paperclip_semantic_tool_receipt_v${version}`, scope: "turn",
+    severity: "info", category: `wardmote_semantic_tool_receipt_v${version}`, scope: "turn",
     recoverable: true, userActionable: false, summary: "Wardmote returned a semantic tool result.",
     provenance: { method: "paperclip/semantic_tool_result", eventType: "semantic_result", sessionId: "session", turnId: "turn" },
-    details: Object.entries({ stage: "semantic_result", schema: `paperclip.semantic_tool_receipt.v${version}`,
+    details: Object.entries({ stage: "semantic_result", schema: `wardmote.semantic_tool_receipt.v${version}`,
       operationId: "finish_task", callIdentitySha256: "a".repeat(64), inputSha256: "b".repeat(64),
       resultSha256: "c".repeat(64), outcome: "returned", ...(version === 2 ? { normalizedInputSha256: "d".repeat(64) } : {}),
     }).map(([name, value]) => ({ name, value })),
@@ -60,10 +60,10 @@ describe("redaction", () => {
       active: () => true, emit: event => events.push(event) });
     const receipt = appendSemanticToolReceipt({ tool: "finish_task", callId: "call", arguments: {} },
       { content: [{ type: "text", text: "accepted" }] }).receipt;
-    expect(receipt.schema).toBe("paperclip.semantic_tool_receipt.v2");
+    expect(receipt.schema).toBe("wardmote.semantic_tool_receipt.v2");
     projector.captureSemanticReceipt()!(receipt);
     expect(events).toHaveLength(1);
-    expect(events[0]!.payload.category).toBe("paperclip_semantic_tool_receipt_v2");
+    expect(events[0]!.payload.category).toBe("wardmote_semantic_tool_receipt_v2");
     expect(events[0]!.payload.details).toHaveLength(8);
     const input = { prpEvent: { schema: "wardmote.prp.event.v1", schemaVersion: 1,
       eventType: "provider.notice.recorded", payload: events[0]!.payload } };
@@ -76,8 +76,8 @@ describe("redaction", () => {
     expect(redactEventPayload(notice)).toEqual(notice);
     // Master's JWT detector recognizes encoded headers, so a dotted public
     // identifier needs no receipt-shaped exemption to survive redaction.
-    expect(redactEventPayload({ value: `paperclip.semantic_tool_receipt.v${version}` }))
-      .toEqual({ value: `paperclip.semantic_tool_receipt.v${version}` });
+    expect(redactEventPayload({ value: `wardmote.semantic_tool_receipt.v${version}` }))
+      .toEqual({ value: `wardmote.semantic_tool_receipt.v${version}` });
   });
 
   it("redacts credentials in receipt-shaped data and every adjacent field", () => {
@@ -86,7 +86,7 @@ describe("redaction", () => {
     notice.details.find((d: any) => d.name === "operationId").value = jwt;
     notice.provenance.sessionId = jwt;
     const redacted = redactEventPayload(notice)! as Record<string, any>;
-    expect(receiptSchemaValue(redacted)).toBe("paperclip.semantic_tool_receipt.v1");
+    expect(receiptSchemaValue(redacted)).toBe("wardmote.semantic_tool_receipt.v1");
     expect(redacted.details.find((d: any) => d.name === "operationId").value).toBe(REDACTED_EVENT_VALUE);
     expect(redacted.provenance.sessionId).toBe(REDACTED_EVENT_VALUE);
     expect(redactEventPayload({ notice, password: "canary", arbitrary: jwt }))

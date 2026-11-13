@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip-runner/remote-provider-pack/v1",
+  "schema": "wardmote-runner/remote-provider-pack/v1",
   "digest": "sha256:38bc6dd39c13b0f5478a1018e26deb61b0333ab0242f3d857e3c79d3a34b7682",
   "payload": {
     "pins": {

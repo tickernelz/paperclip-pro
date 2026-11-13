@@ -287,11 +287,11 @@ required capabilities, and the native-execution version. It reports
 `wardmote_runner_eval_incompatible` with expected/received values for every
 mismatch and must run before launching a provider.
 
-runnerd itself reports `paperclip-runner/runnerd-build-metadata/v1` from
+runnerd itself reports `wardmote-runner/runnerd-build-metadata/v1` from
 `--build-metadata`. The consumer passes its path and expected content digest to
 `resolveWardmoteRunnerdArtifact`; implicit PATH or source-tree discovery is
 not part of the contract. Native attempt output is
-`paperclip-runner/native-execution/v1`, whose parser accepts unknown additive
+`wardmote-runner/native-execution/v1`, whose parser accepts unknown additive
 fields but rejects unknown required versions and inconsistent terminal,
 semantic-denial, usage, or transcript facts. Full fields and the deterministic
 gate are exercised by the package-local deterministic conformance suite.

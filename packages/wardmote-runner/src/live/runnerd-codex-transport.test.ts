@@ -3859,7 +3859,7 @@ it("does not retry a real memoized transport close whose suspension proof is una
   };
 
   const terminal: PrpTerminalState = {
-    schema: "paperclip.prp.terminal.v1",
+    schema: "wardmote.prp.terminal.v1",
     turnTerminalState: "completed",
     runTerminalState: "succeeded",
     reportedWorkDisposition: "done",

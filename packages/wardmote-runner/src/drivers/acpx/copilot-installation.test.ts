@@ -103,12 +103,21 @@ describe("Copilot build-owned installation", () => {
     expect(current.commandDigest).not.toBe(prior.commandDigest);
   });
 
-  it("admits the current v23 declaration and binds its source policy, receipts and patch hashes", () => {
-    const identity = JSON.parse(readFileSync(new URL("../../../test/fixtures/copilot-profile-v23-identity.json", import.meta.url), "utf8"));
+  it("preserves v23 history while binding the sources that carry the renamed receipt contract", () => {
+    const prior = JSON.parse(readFileSync(new URL("../../../test/fixtures/copilot-profile-v23-identity.json", import.meta.url), "utf8"));
+    const current = JSON.parse(readFileSync(new URL("../../../test/fixtures/copilot-profile-v24-identity.json", import.meta.url), "utf8"));
+    expect(Object.keys(current.declaration).filter(key => current.declaration[key] !== prior.declaration[key]).sort()).toEqual(["agentProfileVersion", "semanticDirectDriverSourceSha256", "semanticReceiptSourceSha256", "semanticSchemaBundleSourceSha256", "semanticToolReceiptContract", "semanticValidatorsSourceSha256", "toolEvidenceSourceSha256"]);
+    expect(prior.declaration.semanticToolReceiptContract).toBe("paperclip.semantic_tool_receipt.v2");
+    expect(current.declaration.agentProfileVersion).toBe(prior.declaration.agentProfileVersion + 1);
+    expect(current.commandDigest).not.toBe(prior.commandDigest);
+  });
+
+  it("admits the current v24 declaration and binds its source policy, receipts and patch hashes", () => {
+    const identity = JSON.parse(readFileSync(new URL("../../../test/fixtures/copilot-profile-v24-identity.json", import.meta.url), "utf8"));
     expect(identity.declaration.systemInstructionDelivery).toBe(COPILOT_SYSTEM_INSTRUCTION_DELIVERY);
     expect(identity.declaration.sharedRuntimeContract).toBe("paperclip.acpx-runtime-contract.v1");
     expect(identity.declaration.permissionContextContract).toBe(COPILOT_PERMISSION_CONTEXT_CONTRACT);
-    expect(identity.declaration.semanticToolReceiptContract).toBe("paperclip.semantic_tool_receipt.v2");
+    expect(identity.declaration.semanticToolReceiptContract).toBe("wardmote.semantic_tool_receipt.v2");
     expect(identity.declaration.semanticNormalizedInputContract).toBe("validated-forwarded-input-commit-v1");
     expect(identity.declaration.semanticSidecarReceiptCommitContract).toBe("correlated-tool-resolve-v1");
     expect(identity.declaration.messageIdentityContract).toBe("copilot-native-message-id-v1");

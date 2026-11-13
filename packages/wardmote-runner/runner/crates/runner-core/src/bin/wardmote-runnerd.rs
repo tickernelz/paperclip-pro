@@ -15,7 +15,7 @@ use wardmote_runner_core::durable::{
 use wardmote_runner_core::local_runner::{run_local_runner, LocalRunnerError, RunnerConfig};
 use wardmote_runner_core::native_provider_backend::NativeProviderCommandExecutor;
 
-const RUNNERD_BUILD_METADATA_SCHEMA: &str = "paperclip-runner/runnerd-build-metadata/v1";
+const RUNNERD_BUILD_METADATA_SCHEMA: &str = "wardmote-runner/runnerd-build-metadata/v1";
 const RUNNER_DIAGNOSTIC_MAX_BYTES: usize = 64 * 1024;
 const RUNNER_DIAGNOSTIC_TEMP_ATTEMPTS: usize = 32;
 

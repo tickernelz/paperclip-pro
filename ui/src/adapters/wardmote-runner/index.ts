@@ -804,7 +804,7 @@ function parseWardmoteRunnerLine(line: string, ts: string, state: WardmoteRunner
     return parseCodexStdoutLine(line, ts);
   }
   const envelope = record(parsed);
-  if (envelope.type !== "paperclip.prp.event") {
+  if (envelope.type !== "wardmote.prp.event") {
     state.previousPiRuntimeFailure = null;
     return parseCodexStdoutLine(line, ts);
   }

@@ -188,7 +188,7 @@ class DotSession implements HarnessSession {
       this.#emit("run.result.proposed", this.#result);
       this.#emit("turn.completed", {});
       this.#emit("run.terminal", {
-        schema: "paperclip.prp.terminal.v1", turnTerminalState: "completed", runTerminalState: "succeeded",
+        schema: "wardmote.prp.terminal.v1", turnTerminalState: "completed", runTerminalState: "succeeded",
         reportedWorkDisposition: this.#result.reportedWorkDisposition,
       });
       return { accepted: true, disposition: this.#result.reportedWorkDisposition };

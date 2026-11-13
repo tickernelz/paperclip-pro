@@ -20,7 +20,7 @@
     "failure"
   ],
   "properties": {
-    "schema": { "const": "paperclip-runner/native-execution/v1" },
+    "schema": { "const": "wardmote-runner/native-execution/v1" },
     "provenance": { "enum": ["seeded", "replay", "live"] },
     "identity": {
       "type": "object",

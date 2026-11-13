@@ -500,7 +500,7 @@ describe("Copilot semantic receipt opt-in", () => {
       const body = await (await rpc(bridge, request)).json();
       expect(receipts).toHaveLength(1);
       expect(readNativeSemanticReceipt({ contents: body.result.content })).toEqual(receipts[0]);
-      expect(receipts[0]).toMatchObject({ schema: "paperclip.semantic_tool_receipt.v2", inputSha256: semanticInputSha256(rawFinish),
+      expect(receipts[0]).toMatchObject({ schema: "wardmote.semantic_tool_receipt.v2", inputSha256: semanticInputSha256(rawFinish),
         normalizedInputSha256: mode === "committed" ? semanticInputSha256(capturedInput) : null });
       expect(semanticInputSha256(rawFinish)).not.toBe(semanticInputSha256(capturedInput));
       expect(await (await rpc(bridge, request)).json()).toEqual(body);

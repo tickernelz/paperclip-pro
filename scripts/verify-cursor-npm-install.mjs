@@ -124,7 +124,7 @@ const remotePack = JSON.parse(readFileSync(bundledRemoteProviderPackManifestPath
 assert.equal(remotePack.digest, manifest.remoteProviderPack.digest);
 assert.equal(remotePack.payload.providers.cursor.qualification, 'qualified');
 const metadata = JSON.parse(execFileSync(binary, ['--build-metadata'], { encoding: 'utf8' }));
-assert.equal(metadata.schema, 'paperclip-runner/runnerd-build-metadata/v1');
+assert.equal(metadata.schema, 'wardmote-runner/runnerd-build-metadata/v1');
 assert.equal(metadata.binaryContractVersion, 2);
 console.log('All three packaged daemon identities verified; the ordinary installed resolver launched Linux x64');
 console.log('Installed Cursor closure and command lease verified without credentials or candidate overrides');`;

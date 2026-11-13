@@ -1,7 +1,7 @@
 # Copilot 1.0.88 rich ACP capability audit
 
-Current integration (2026-10-08): **Copilot profile v23 remains pending** with
-digest `sha256:9761ce967e55600c3525fdddc83549024f554685a3984c4f9e00b8bff07a74e7`.
+Current integration (2026-10-08): **Copilot profile v24 remains pending** with
+digest `sha256:94a06b3f0da0933908d222ff6b88a8660b31de3bbe7e44add175bad5cdc3f9f7`.
 It binds master's shared protocol-validation sources without changing the
 executable or supplying new paid qualification. Historical checkpoints below
 retain their original identities and outcomes.
@@ -43,7 +43,7 @@ actual parsed sidecar command handler and the Rust subprocess transport,
 including rejection of a 300 KiB payload before pending-tool admission.
 
 Historical source candidate (2026-10-01): **Copilot profile v10 was unqualified**.
-Admitted Wardmote MCP calls append a bounded `paperclip.semantic_tool_receipt.v1`
+Admitted Wardmote MCP calls append a bounded `wardmote.semantic_tool_receipt.v1`
 text block after the original result blocks. It records the operation, call-ID
 hash, canonical argument hash, result hash and transport outcome. An invocation
 callback bound to the active turn emits matching durable evidence. Native tool

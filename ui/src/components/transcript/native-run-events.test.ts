@@ -151,7 +151,7 @@ describe("nativeRunEventsToTranscript", () => {
       };
       const accepted = event(2, "run.result.accepted", { result });
       const terminal = event(3, "run.terminal", {
-        schema: "paperclip.prp.terminal.v1",
+        schema: "wardmote.prp.terminal.v1",
         turnTerminalState: "completed",
         runTerminalState: "succeeded",
         reportedWorkDisposition: "yielded",
@@ -982,7 +982,7 @@ describe("nativeRunEventsToTranscript", () => {
     (turnTerminalState, runTerminalState, expectedRunState) => {
       expect(nativeRunEventsToTranscript([
         event(1, "run.terminal", {
-          schema: "paperclip.prp.terminal.v1",
+          schema: "wardmote.prp.terminal.v1",
           turnTerminalState,
           runTerminalState,
           reportedWorkDisposition: "needs_review",
@@ -1006,7 +1006,7 @@ describe("nativeRunEventsToTranscript", () => {
   it("fails closed instead of presenting malformed terminal state as success", () => {
     expect(nativeRunEventsToTranscript([
       event(1, "run.terminal", {
-        schema: "paperclip.prp.terminal.v1",
+        schema: "wardmote.prp.terminal.v1",
         turnTerminalState: "mystery",
         runTerminalState: "successful-ish",
         reportedWorkDisposition: "done",

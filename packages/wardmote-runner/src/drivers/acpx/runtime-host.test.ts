@@ -760,8 +760,8 @@ describe("ACPX runtime host", () => {
       const receipt = readNativeSemanticReceipt({ contents: body.result.content });
       expect(receipt).not.toBeNull();
       expect(events).toHaveLength(1);
-      expect(events[0]!.payload).toMatchObject({ category: "paperclip_semantic_tool_receipt_v2", provenance: { sessionId: "backend-1", turnId: "turn-1" },
-        details: expect.arrayContaining([{ name: "schema", value: "paperclip.semantic_tool_receipt.v2" }, { name: "normalizedInputSha256", value: "null" }, { name: "callIdentitySha256", value: receipt!.callIdentitySha256 }, { name: "resultSha256", value: receipt!.resultSha256 }]) });
+      expect(events[0]!.payload).toMatchObject({ category: "wardmote_semantic_tool_receipt_v2", provenance: { sessionId: "backend-1", turnId: "turn-1" },
+        details: expect.arrayContaining([{ name: "schema", value: "wardmote.semantic_tool_receipt.v2" }, { name: "normalizedInputSha256", value: "null" }, { name: "callIdentitySha256", value: receipt!.callIdentitySha256 }, { name: "resultSha256", value: receipt!.resultSha256 }]) });
     } finally { await host.close({ reason: "receipt forwarding verified" }); }
     await expect(fetch(bridge!.url)).rejects.toThrow();
   });

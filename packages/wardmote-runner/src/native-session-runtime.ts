@@ -313,7 +313,7 @@ function terminalFromEvent(
               runTerminalState: "cancelled" as const,
             };
   return {
-    schema: "paperclip.prp.terminal.v1",
+    schema: "wardmote.prp.terminal.v1",
     ...states,
     reportedWorkDisposition: disposition,
   };
@@ -2606,7 +2606,7 @@ export async function executeNativeSession(
                         consumed.governedResult.reportedWorkDisposition,
                       )
                     : {
-                        schema: "paperclip.prp.terminal.v1",
+                        schema: "wardmote.prp.terminal.v1",
                         turnTerminalState: "completed",
                         runTerminalState: "succeeded",
                         reportedWorkDisposition: consumed.governedResult.reportedWorkDisposition,
