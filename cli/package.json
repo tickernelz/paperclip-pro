@@ -7,7 +7,7 @@
     "wardmote": "./dist/index.js"
   },
   "keywords": [
-    "paperclip",
+    "wardmote",
     "ai",
     "agents",
     "orchestration",

@@ -200,7 +200,7 @@ describe("teams CLI commands", () => {
       .mockResolvedValueOnce(jsonResponse([
         installedCatalogTeam(),
         installedCatalogTeam({
-          catalogId: "paperclipai:removed:team",
+          catalogId: "tickernelz:removed:team",
           catalogKey: "tickernelz/removed/team",
           present: false,
           currentContentHash: null,
@@ -231,7 +231,7 @@ describe("teams CLI commands", () => {
         outOfDate: false,
       },
       {
-        catalogId: "paperclipai:removed:team",
+        catalogId: "tickernelz:removed:team",
         catalogKey: "tickernelz/removed/team",
         installedStatus: "installed_missing",
         installedAgentCount: 2,
