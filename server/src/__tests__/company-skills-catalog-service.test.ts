@@ -306,7 +306,7 @@ describeEmbeddedPostgres("companySkillService.installFromCatalog", () => {
         'slug: "review"',
         'name: "review"',
         "metadata:",
-        "  paperclip:",
+        "  wardmote:",
         `    skillKey: "${sampleCatalogSkill.key}"`,
         '    slug: "review"',
         "    catalog:",

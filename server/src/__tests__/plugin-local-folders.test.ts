@@ -217,7 +217,7 @@ describe("plugin local folders", () => {
 
     await expect(readPluginLocalFolderText(root, "nested/page.md")).resolves.toBe("updated");
     const leftovers = await fs.readdir(path.join(root, "nested"));
-    expect(leftovers.filter((name) => name.includes(".paperclip-"))).toEqual([]);
+    expect(leftovers.filter((name) => name.includes(".wardmote-"))).toEqual([]);
   });
 
   it("creates missing nested parent directories for atomic writes", async () => {

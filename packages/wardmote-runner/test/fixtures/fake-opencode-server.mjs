@@ -178,7 +178,7 @@ async function callFirstWardmoteTool() {
   if (tool)
     mcpEvidence.calls.push(
       await mcpRequest("tools/call", {
-        name: `paperclip_${tool.name}`,
+        name: `wardmote_${tool.name}`,
         arguments: {},
       }),
     );
