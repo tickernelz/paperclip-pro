@@ -23,7 +23,7 @@ vi.mock("../api/client", () => ({ api: {
     companies: route.unavailable ? [] : [
       { id: route.companyId ?? "company-one", name: "Acme Research", logoUrl: "/api/assets/acme-logo/content", canWrite: route.canWrite },
       ...(!route.companyId ? [{ id: "company-two", name: "Design Partners", logoUrl: null, canWrite: true }] : []),
-    ].filter(item => !route.hideFirst || item.id !== "company-one").sort((a, b) => route.reverseCompanies ? b.id.localeCompare(a.id) : a.id.localeCompare(b.id)), setupUrl: route.setupUrl,
+    ].filter(item => !route.hideFirst || item.id !== "company-one").sort((a, b) => route.reverseCompanies ? b.id.localeCompare(a.id) : a.id.localeCompare(b.id)),
   })),
   post: vi.fn(() => new Promise(() => {})),
 } }));
