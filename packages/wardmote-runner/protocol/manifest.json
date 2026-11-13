@@ -40,12 +40,12 @@
     {
       "path": "schemas/conformance-fixture.schema.json",
       "id": "https://wardmote.dev/schemas/prp/v1/conformance-fixture.schema.json",
-      "sha256": "ee524843596443df1371e777afb0e2be76d94b4e16648bd75183b9aad8028fbe"
+      "sha256": "2bb3176e1d000bb3d7dd92fbde5d0501fd6145a8f2b58204425d18d98ea6ecc5"
     },
     {
       "path": "schemas/conformance-output.schema.json",
       "id": "https://wardmote.dev/schemas/prp/v1/conformance-output.schema.json",
-      "sha256": "74b797141182d36458c0537ce598eddf18c13ef86678d498b944f7e19067cca8"
+      "sha256": "a97c88f8e1ef3baba77a2d07fd93445f6cb1df2b1e5774f36ed33ef0f2dcb61e"
     },
     {
       "path": "schemas/event-v2.schema.json",
@@ -75,7 +75,7 @@
     {
       "path": "schemas/native-execution.schema.json",
       "id": "https://wardmote.dev/schemas/prp/v1/native-execution.schema.json",
-      "sha256": "4cd2f762300e22597f69e367d2e0affd7a700952ae8e57fd1a402a50c95e0154"
+      "sha256": "0a313f2a146d1768edd3fce307775db831107dded5c9360e6b7e2ddbc4783752"
     },
     {
       "path": "schemas/provider-descriptor.schema.json",
@@ -85,7 +85,7 @@
     {
       "path": "schemas/provider-event.schema.json",
       "id": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json",
-      "sha256": "bf3a994d9355c1326d11a2c99166d1ade5ca0a43d9e7a73112cab9794967d379"
+      "sha256": "ec6cc3b53d06938414cfc4e86e992c75de1abc4e2bd2e96972e8da9ef17694b5"
     },
     {
       "path": "schemas/question-adapter-fixture.schema.json",
@@ -95,12 +95,12 @@
     {
       "path": "schemas/question-response.schema.json",
       "id": "https://wardmote.dev/schemas/prp/v1/question-response.schema.json",
-      "sha256": "e2c9c28d56db0490eaa551b1e606c05f9afe263590a9574d5f7933768950ed0c"
+      "sha256": "fb8dcc7b45d58998a785673591f30738f638948ccfc4d6ad4850a21ac6fb4675"
     },
     {
       "path": "schemas/question-set.schema.json",
       "id": "https://wardmote.dev/schemas/prp/v1/question-set.schema.json",
-      "sha256": "72dfd41d476d602f85ee58ae51dfa6ab1c2d4636f9a97a147daa4d32c2df24c8"
+      "sha256": "6293b0b2a569df83fc7745b407236b18c5c54ccbd422b59ec3403a3bcd7a711b"
     },
     {
       "path": "schemas/request.schema.json",
@@ -140,12 +140,12 @@
     {
       "path": "schemas/workspace-diff.schema.json",
       "id": "https://wardmote.dev/schemas/prp/v1/workspace-diff.schema.json",
-      "sha256": "a794dcf93a41cbd9f21cd34d7b3c0d2370f94f4a285cbf992d35475fff0abb0a"
+      "sha256": "843a60c27b772b72101a35c51ccdc72cf80ad3254460b9c15f8bc4d366e2b49f"
     },
     {
       "path": "schemas/workspace-file-reference.schema.json",
       "id": "https://wardmote.dev/schemas/prp/v1/workspace-file-reference.schema.json",
-      "sha256": "e86784e24b5216c19574b8d3954d926d0ebb1e04e0b484e4d989a65a6d8df68d"
+      "sha256": "802cdfedb0d40c902fdeaa1c7159720bda7a48b915ff3921096f5bbcb9810e57"
     }
   ],
   "fixtures": [

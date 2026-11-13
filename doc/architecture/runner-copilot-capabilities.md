@@ -1,7 +1,7 @@
 # Copilot 1.0.88 rich ACP capability audit
 
-Current integration (2026-10-08): **Copilot profile v24 remains pending** with
-digest `sha256:94a06b3f0da0933908d222ff6b88a8660b31de3bbe7e44add175bad5cdc3f9f7`.
+Current integration (2026-10-08): **Copilot profile v25 remains pending** with
+digest `sha256:80aceaa0e47d48a43437fb6342263e2c9b89c74b262464341cd3106be9ad394a`.
 It binds master's shared protocol-validation sources without changing the
 executable or supplying new paid qualification. Historical checkpoints below
 retain their original identities and outcomes.

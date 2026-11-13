@@ -4626,7 +4626,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           runtimeSettlement = {
             mode: "direct",
             handle: syntheticCloseHandle(),
-            reason: "paperclip missing-handle cleanup",
+            reason: "wardmote missing-handle cleanup",
             discardPersistentState: false,
             dropWarmEntry: false,
             recordCloseError: true,
@@ -5015,7 +5015,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           // both the close call and the drain it unblocks before this step
           // returns, so no late runtime event can still mutate shared state
           // (output segments, tool inventory) after finalization reads it.
-          await turn.closeStream({ reason: "paperclip duplex loss cancel deadline" }).catch(() => {});
+          await turn.closeStream({ reason: "wardmote duplex loss cancel deadline" }).catch(() => {});
           await drainEvents.catch(() => {});
           flushOutputSegment();
           return LOSS_DEADLINE_TERMINAL;

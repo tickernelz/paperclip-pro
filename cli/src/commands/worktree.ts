@@ -3642,7 +3642,7 @@ export async function worktreeListCommand(opts: WorktreeListOptions): Promise<vo
   for (const choice of choices) {
     const flags = [
       choice.isCurrent ? "current" : null,
-      choice.hasWardmoteConfig ? "paperclip" : "no-paperclip-config",
+      choice.hasWardmoteConfig ? "wardmote" : "no-wardmote-config",
     ].filter((value): value is string => value !== null);
     p.log.message(`${choice.branchLabel}  ${choice.worktree}  [${flags.join(", ")}]`);
   }

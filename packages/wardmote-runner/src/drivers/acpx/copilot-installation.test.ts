@@ -112,8 +112,16 @@ describe("Copilot build-owned installation", () => {
     expect(current.commandDigest).not.toBe(prior.commandDigest);
   });
 
-  it("admits the current v24 declaration and binds its source policy, receipts and patch hashes", () => {
-    const identity = JSON.parse(readFileSync(new URL("../../../test/fixtures/copilot-profile-v24-identity.json", import.meta.url), "utf8"));
+  it("preserves v24 history while binding the sources that carry the renamed runner prose", () => {
+    const prior = JSON.parse(readFileSync(new URL("../../../test/fixtures/copilot-profile-v24-identity.json", import.meta.url), "utf8"));
+    const current = JSON.parse(readFileSync(new URL("../../../test/fixtures/copilot-profile-v25-identity.json", import.meta.url), "utf8"));
+    expect(Object.keys(current.declaration).filter(key => current.declaration[key] !== prior.declaration[key]).sort()).toEqual(["agentProfileVersion", "semanticBridgeSourceSha256", "semanticDirectDriverSourceSha256", "semanticSchemaBundleSourceSha256", "semanticSidecarSourceSha256", "semanticValidatorsSourceSha256", "toolEvidenceSourceSha256"]);
+    expect(current.declaration.agentProfileVersion).toBe(prior.declaration.agentProfileVersion + 1);
+    expect(current.commandDigest).not.toBe(prior.commandDigest);
+  });
+
+  it("admits the current v25 declaration and binds its source policy, receipts and patch hashes", () => {
+    const identity = JSON.parse(readFileSync(new URL("../../../test/fixtures/copilot-profile-v25-identity.json", import.meta.url), "utf8"));
     expect(identity.declaration.systemInstructionDelivery).toBe(COPILOT_SYSTEM_INSTRUCTION_DELIVERY);
     expect(identity.declaration.sharedRuntimeContract).toBe("paperclip.acpx-runtime-contract.v1");
     expect(identity.declaration.permissionContextContract).toBe(COPILOT_PERMISSION_CONTEXT_CONTRACT);
