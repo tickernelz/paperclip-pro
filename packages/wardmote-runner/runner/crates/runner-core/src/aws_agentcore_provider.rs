@@ -36,12 +36,40 @@ use crate::managed_provider::{
 };
 use crate::provider_bridge::{AuthorizedTool, ToolResult};
 use crate::retired_agentcore_names::{
-    RETIRED_AGENTCORE_COST_SOURCE, RETIRED_AGENTCORE_DIGEST_METADATA,
+    RETIRED_AGENTCORE_ACTOR_PREFIX, RETIRED_AGENTCORE_COST_SOURCE,
+    RETIRED_AGENTCORE_DIGEST_METADATA,
 };
 
 const AGENTCORE_COST_SOURCE: &str = "wardmote_estimate";
 const AGENTCORE_DIGEST_METADATA: &str = "wardmote-sha256";
 const MAX_AGENTCORE_TOOLS: usize = 64;
+
+fn memory_actor_ids(session_id: &str) -> [String; 2] {
+    let digest = sha_hex(session_id, 32);
+    [
+        format!("wardmote-{digest}"),
+        format!("{RETIRED_AGENTCORE_ACTOR_PREFIX}{digest}"),
+    ]
+}
+
+fn resumed_actor_id(session_id: &str, retired_actor_has_events: bool) -> String {
+    let [current, retired] = memory_actor_ids(session_id);
+    if retired_actor_has_events {
+        retired
+    } else {
+        current
+    }
+}
+
+fn asset_digest_metadata(metadata: Option<&HashMap<String, String>>) -> Option<&str> {
+    metadata
+        .and_then(|metadata| {
+            metadata
+                .get(AGENTCORE_DIGEST_METADATA)
+                .or_else(|| metadata.get(RETIRED_AGENTCORE_DIGEST_METADATA))
+        })
+        .map(String::as_str)
+}
 // Harness invocations can spend substantial time starting a new runtime before
 // response headers (and therefore the event stream) are available. Allow a
 // bounded cold start, but leave enough of the eval's outer deadline for the
@@ -255,30 +283,33 @@ impl NetworkWorker {
     fn start(
         config: AwsAgentCoreProviderConfig,
         session_id: String,
-        actor_id: String,
-    ) -> Result<Self, LocalRunnerError> {
+        resumed: bool,
+    ) -> Result<(Self, String), LocalRunnerError> {
         let (command_tx, command_rx) = mpsc::sync_channel(32);
         let (event_tx, event_rx) = mpsc::sync_channel(256);
         let (ready_tx, ready_rx) = mpsc::channel();
         let join = thread::Builder::new()
             .name("wardmote-aws-agentcore-network".to_owned())
             .spawn(move || {
-                network_loop(config, session_id, actor_id, command_rx, event_tx, ready_tx)
+                network_loop(config, session_id, resumed, command_rx, event_tx, ready_tx)
             })
             .map_err(|error| {
                 LocalRunnerError::invalid(format!(
                     "failed to start AgentCore network worker: {error}"
                 ))
             })?;
-        ready_rx
+        let actor_id = ready_rx
             .recv_timeout(Duration::from_secs(30))
             .map_err(|_| LocalRunnerError::invalid("AgentCore credential setup timed out"))?
             .map_err(LocalRunnerError::invalid)?;
-        Ok(Self {
-            commands: command_tx,
-            events: event_rx,
-            join: Some(join),
-        })
+        Ok((
+            Self {
+                commands: command_tx,
+                events: event_rx,
+                join: Some(join),
+            },
+            actor_id,
+        ))
     }
 
     fn invoke(
@@ -456,14 +487,7 @@ async fn upload_context_directory(
             .send()
             .await
         {
-            let metadata_digest = existing
-                .metadata()
-                .and_then(|metadata| {
-                    metadata
-                        .get(AGENTCORE_DIGEST_METADATA)
-                        .or_else(|| metadata.get(RETIRED_AGENTCORE_DIGEST_METADATA))
-                })
-                .map(String::as_str);
+            let metadata_digest = asset_digest_metadata(existing.metadata());
             if existing.content_length() != Some(bytes.len() as i64)
                 || metadata_digest != Some(content_digest.as_str())
                 || existing.server_side_encryption()
@@ -630,10 +654,10 @@ fn agentcore_system_instructions(config: &AwsAgentCoreProviderConfig) -> Result<
 fn network_loop(
     config: AwsAgentCoreProviderConfig,
     session_id: String,
-    actor_id: String,
+    resumed: bool,
     commands: Receiver<NetworkCommand>,
     events: SyncSender<NetworkEvent>,
-    ready: mpsc::Sender<Result<(), String>>,
+    ready: mpsc::Sender<Result<String, String>>,
 ) {
     let runtime = match tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -683,7 +707,24 @@ fn network_loop(
             return;
         }
     };
-    let _ = ready.send(Ok(()));
+    let actor_id = if resumed {
+        let retired = memory_actor_ids(&session_id)[1].clone();
+        match runtime.block_on(memory_actor_has_events(
+            &client,
+            &config,
+            &session_id,
+            &retired,
+        )) {
+            Ok(found) => resumed_actor_id(&session_id, found),
+            Err(error) => {
+                let _ = ready.send(Err(error));
+                return;
+            }
+        }
+    } else {
+        memory_actor_ids(&session_id)[0].clone()
+    };
+    let _ = ready.send(Ok(actor_id.clone()));
     while let Ok(command) = commands.recv() {
         match command {
             NetworkCommand::Invoke {
@@ -811,12 +852,12 @@ fn network_loop(
                 let _ = reply.send(result);
             }
             NetworkCommand::DeleteMemory { reply } => {
-                let result = runtime.block_on(delete_all_memory_events(
-                    &client,
-                    &config,
-                    &session_id,
-                    &actor_id,
-                ));
+                let result = runtime.block_on(async {
+                    for actor in memory_actor_ids(&session_id) {
+                        delete_all_memory_events(&client, &config, &session_id, &actor).await?;
+                    }
+                    Ok(())
+                });
                 let _ = reply.send(result);
             }
             NetworkCommand::Shutdown => break,
@@ -1074,6 +1115,25 @@ async fn delete_all_memory_events(
     .await
 }
 
+async fn memory_actor_has_events(
+    client: &aws_sdk_bedrockagentcore::Client,
+    config: &AwsAgentCoreProviderConfig,
+    session_id: &str,
+    actor_id: &str,
+) -> Result<bool, String> {
+    client
+        .list_events()
+        .memory_id(config.memory_id.clone())
+        .session_id(session_id)
+        .actor_id(actor_id)
+        .include_payloads(false)
+        .max_results(1)
+        .send()
+        .await
+        .map(|page| !page.events().is_empty())
+        .map_err(|error| redact_aws_error(&error.to_string()))
+}
+
 async fn latest_memory_event_id(
     client: &aws_sdk_bedrockagentcore::Client,
     config: &AwsAgentCoreProviderConfig,
@@ -1153,8 +1213,11 @@ impl AwsAgentCoreHarnessProvider {
         let session_id = resume_session_id
             .map(str::to_owned)
             .unwrap_or_else(new_runtime_session_id);
-        let actor_id = format!("wardmote-{}", sha_hex(&session_id, 32));
-        let worker = NetworkWorker::start(config.clone(), session_id.clone(), actor_id.clone())?;
+        let (worker, actor_id) = NetworkWorker::start(
+            config.clone(),
+            session_id.clone(),
+            resume_session_id.is_some(),
+        )?;
         let (encoded, allowed, reverse, schemas) = encode_tools(&tools)?;
         Ok(Self {
             config: config.clone(),
@@ -2470,6 +2533,36 @@ mod tests {
             restored_usage_snapshot(Some(&conservative)).unwrap(),
             conservative
         );
+    }
+
+    #[test]
+    fn resumed_sessions_keep_the_memory_actor_their_history_was_written_under() {
+        let [current, retired] = memory_actor_ids("session-1");
+        assert!(current.starts_with("wardmote-"));
+        assert!(retired.starts_with(RETIRED_AGENTCORE_ACTOR_PREFIX));
+        assert_eq!(
+            current["wardmote-".len()..],
+            retired[RETIRED_AGENTCORE_ACTOR_PREFIX.len()..]
+        );
+        assert_eq!(resumed_actor_id("session-1", true), retired);
+        assert_eq!(resumed_actor_id("session-1", false), current);
+    }
+
+    #[test]
+    fn context_asset_verification_reads_the_digest_written_before_the_rename() {
+        let digest = "a".repeat(64);
+        let retired =
+            HashMap::from([(RETIRED_AGENTCORE_DIGEST_METADATA.to_owned(), digest.clone())]);
+        assert_eq!(asset_digest_metadata(Some(&retired)), Some(digest.as_str()));
+        let both = HashMap::from([
+            (AGENTCORE_DIGEST_METADATA.to_owned(), "b".repeat(64)),
+            (RETIRED_AGENTCORE_DIGEST_METADATA.to_owned(), digest.clone()),
+        ]);
+        assert_eq!(
+            asset_digest_metadata(Some(&both)),
+            Some("b".repeat(64).as_str())
+        );
+        assert_eq!(asset_digest_metadata(None), None);
     }
 
     #[test]
