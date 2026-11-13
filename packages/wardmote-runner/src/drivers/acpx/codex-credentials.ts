@@ -12,6 +12,10 @@ import {
 import { createServer, type Server } from "node:net";
 import { isAbsolute, join, resolve } from "node:path";
 
+import {
+  RETIRED_CREDENTIAL_CLEANUP_INTENT,
+  RETIRED_CREDENTIAL_STAGING_FILE,
+} from "./retired-codex-credential-names.js";
 import { verifiedRuntimeExecutableHandoff } from "./verified-runtime-executable.js";
 
 const MAX_CODEX_CREDENTIAL_BYTES = 256 * 1024;
@@ -19,8 +23,8 @@ const PRIVATE_FILE_MODE = 0o600;
 const MAX_DIRECTORY_SYNC_ATTEMPTS = 8;
 const DIRECTORY_SYNC_OPERATION_TIMEOUT_MS = 1_000;
 const MAX_AUTONOMOUS_CREDENTIAL_CLEANUP_ATTEMPTS = 8;
-const CREDENTIAL_CLEANUP_INTENT = ".paperclip-auth-cleanup-required";
-const CREDENTIAL_STAGING_FILE = ".paperclip-auth-staging-v1";
+const CREDENTIAL_CLEANUP_INTENT = ".wardmote-auth-cleanup-required";
+const CREDENTIAL_STAGING_FILE = ".wardmote-auth-staging-v1";
 const CREDENTIAL_LEASE_HOST = "127.0.0.1";
 const CREDENTIAL_LEASE_PORT_MIN = 61_000;
 const CREDENTIAL_LEASE_PORT_COUNT = 65_536 - CREDENTIAL_LEASE_PORT_MIN;
@@ -81,10 +85,10 @@ const quarantinedCredentialCleanups = new Map<
   QuarantinedCredentialCleanup
 >();
 const processDirectorySyncHelperState = globalThis as typeof globalThis & {
-  __paperclipDirectorySyncHelperRegistryV1?: DirectorySyncHelperRegistry;
+  __wardmoteDirectorySyncHelperRegistryV1?: DirectorySyncHelperRegistry;
 };
 const directorySyncHelperRegistry =
-  processDirectorySyncHelperState.__paperclipDirectorySyncHelperRegistryV1 ?? {
+  processDirectorySyncHelperState.__wardmoteDirectorySyncHelperRegistryV1 ?? {
     activeChildren: new Set<ChildProcess>(),
     childDirectories: new Map<ChildProcess, string>(),
     activeParentOperations: new Set<symbol>(),
@@ -94,7 +98,7 @@ const directorySyncHelperRegistry =
     pendingCleanups: new Map<string, Promise<void>>(),
     stuckChildren: new Map<string, ChildProcess>(),
   };
-processDirectorySyncHelperState.__paperclipDirectorySyncHelperRegistryV1 =
+processDirectorySyncHelperState.__wardmoteDirectorySyncHelperRegistryV1 =
   directorySyncHelperRegistry;
 const pendingDirectorySyncCleanups =
   directorySyncHelperRegistry.pendingCleanups;
@@ -244,11 +248,20 @@ async function stageClaimedManagedCodexCredential(
     home,
     intentPath,
   );
+  await recoverPersistedCredentialCleanup(
+    destination,
+    join(home, RETIRED_CREDENTIAL_STAGING_FILE),
+    home,
+    join(home, RETIRED_CREDENTIAL_CLEANUP_INTENT),
+  );
   // The isolated home is itself the durable recovery anchor. Scrub both the
   // installed credential and the deterministic staging pathname before every
   // admission, even when a prior cleanup-intent entry was lost with a runner
   // crash. Only after their absence is durable may a new intent be created.
-  await removeCredentialArtifacts([destination, stagingPath], home);
+  await removeCredentialArtifacts(
+    [destination, stagingPath, join(home, RETIRED_CREDENTIAL_STAGING_FILE)],
+    home,
+  );
   const environment = input.environment ?? {};
   const hasApiKey = Boolean(
     environment.CODEX_API_KEY || environment.OPENAI_API_KEY,
@@ -478,7 +491,7 @@ function credentialLeasePorts(home: string): readonly [number, number, number] {
   const userScope =
     typeof process.getuid === "function" ? String(process.getuid()) : "win32";
   const digest = createHash("sha256")
-    .update("paperclip-managed-codex-lease-v2:")
+    .update("wardmote-managed-codex-lease-v2:")
     .update(userScope)
     .update("\0")
     .update(home)
@@ -740,7 +753,7 @@ async function createCredentialCleanupIntent(
       PRIVATE_FILE_MODE,
     );
     await handle.chmod(PRIVATE_FILE_MODE);
-    await handle.writeFile("paperclip-managed-codex-cleanup-v1\n", "utf8");
+    await handle.writeFile("wardmote-managed-codex-cleanup-v1\n", "utf8");
     await handle.sync();
     await handle.close();
     handle = undefined;
