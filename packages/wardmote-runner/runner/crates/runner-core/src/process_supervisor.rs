@@ -214,7 +214,7 @@ impl NamedExecutableSnapshot {
             ));
         }
         let basename = std::ffi::OsString::from(format!(
-            ".paperclip-verified-executable-{}",
+            ".wardmote-verified-executable-{}",
             Uuid::new_v4().simple()
         ));
         let path = parent_path.join(&basename);
@@ -318,10 +318,10 @@ fn sealed_snapshot(
     use rustix::fs::{MemfdFlags, Mode, SealFlags};
 
     let flags = MemfdFlags::CLOEXEC | MemfdFlags::ALLOW_SEALING | MemfdFlags::EXEC;
-    let fd = match rustix::fs::memfd_create("paperclip-verified-launch", flags) {
+    let fd = match rustix::fs::memfd_create("wardmote-verified-launch", flags) {
         Ok(fd) => fd,
         Err(rustix::io::Errno::INVAL) => rustix::fs::memfd_create(
-            "paperclip-verified-launch",
+            "wardmote-verified-launch",
             MemfdFlags::CLOEXEC | MemfdFlags::ALLOW_SEALING,
         )
         .map_err(|error| snapshot_error(display_path, error))?,
@@ -352,7 +352,7 @@ fn unlinked_snapshot(
     expected_sha256: &str,
 ) -> Result<File, LocalRunnerError> {
     let temporary_path = std::env::temp_dir().join(format!(
-        ".paperclip-verified-launch-{}",
+        ".wardmote-verified-launch-{}",
         Uuid::new_v4().simple()
     ));
     let mut writable = OpenOptions::new()
@@ -656,7 +656,7 @@ fn materialize_executable(
 ) -> Result<TemporaryExecutable, LocalRunnerError> {
     let directory = verified_executable_parent(artifact)?;
     let path = directory.join(format!(
-        ".paperclip-verified-executable-{}",
+        ".wardmote-verified-executable-{}",
         Uuid::new_v4().simple()
     ));
     materialize_executable_at(artifact, path, None)
@@ -668,7 +668,7 @@ fn materialize_bound_executable(
 ) -> Result<TemporaryExecutable, LocalRunnerError> {
     let parent = verified_executable_parent(artifact)?;
     let directory = parent.join(format!(
-        ".paperclip-verified-executable-{}",
+        ".wardmote-verified-executable-{}",
         Uuid::new_v4().simple()
     ));
     fs::create_dir(&directory).map_err(|error| snapshot_error(&artifact.display_path, error))?;
@@ -1404,7 +1404,7 @@ mod tests {
                         entry
                             .file_name()
                             .to_string_lossy()
-                            .starts_with(".paperclip-verified-executable-")
+                            .starts_with(".wardmote-verified-executable-")
                     })
                     .count()
             }
@@ -1682,7 +1682,7 @@ mod tests {
             .file_name()
             .unwrap()
             .to_string_lossy()
-            .starts_with(".paperclip-verified-executable-"));
+            .starts_with(".wardmote-verified-executable-"));
         assert_eq!(
             fs::symlink_metadata(&private_directory)
                 .unwrap()

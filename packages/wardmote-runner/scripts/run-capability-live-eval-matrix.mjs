@@ -144,7 +144,7 @@ const report = {
   providerModel: liveModel,
   matrix,
 };
-const evidenceDirectory = resolve(packageRoot, ".paperclip-local/evidence/capability");
+const evidenceDirectory = resolve(packageRoot, ".wardmote-local/evidence/capability");
 const output = resolve(evidenceDirectory, "live-codex-matrix.json");
 const markdown = resolve(evidenceDirectory, "live-codex-matrix.md");
 const liveSliceJson = resolve(evidenceDirectory, "live-eval-slice-report.json");

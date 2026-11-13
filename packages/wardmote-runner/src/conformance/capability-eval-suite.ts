@@ -11,7 +11,7 @@ import { CapabilityLiveSessionService } from "../live/live-session.js";
 
 const GENERATED_HEADER = "# GENERATED FILE — DO NOT EDIT. Run pnpm generate:capability-inventory.\n";
 const PACKAGE_ROOT = resolve(import.meta.dirname, "../..");
-const REPORT_DIRECTORY = resolve(PACKAGE_ROOT, ".paperclip-local/evidence/capability");
+const REPORT_DIRECTORY = resolve(PACKAGE_ROOT, ".wardmote-local/evidence/capability");
 
 type AssertionClass =
   | "control_plane_invariant"

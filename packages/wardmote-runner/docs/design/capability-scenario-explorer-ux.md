@@ -7,7 +7,7 @@ Companion records: [Capability contract](../capability-contract.md),
 `spec/capability/eval-traceability.yaml`, the Capability plan (TASK-16897),
 [Live console interaction map](live-console-interaction-map.md),
 [SDK component decisions](sdk-component-decisions.md).
-(annotated desktop + mobile renders in `.paperclip-local/evidence/capability/`).
+(annotated desktop + mobile renders in `.wardmote-local/evidence/capability/`).
 
 This map is the interaction contract for the Capability browser scenario
 explorer. The explorer is a **read surface over records the runtime already
@@ -385,7 +385,7 @@ Determinism contract for screenshot/CI use:
 
 ## 9. Screenshot acceptance matrix
 
-Evidence lands in `.paperclip-local/evidence/capability/` as
+Evidence lands in `.wardmote-local/evidence/capability/` as
 `<slug>-<viewport>.png`, at both **1440×900** and **390×844**, captured from
 the §7 routes after `data-run-state="settled"`. These twelve shots are the
 UX acceptance set for 7F (they also cover the plan’s human-checkpoint

@@ -334,7 +334,7 @@ Follow the Wardmote design language without importing the product `ui/` package:
 ### 10.2 Required matrix (12 slugs × 2 viewports = 24 PNGs)
 
 Viewports: desktop `1440×900`, mobile `390×844`. Output path:
-`.paperclip-local/evidence/capability/ui/<slug>--<desktop|mobile>.png` (package-local). Every capture
+`.wardmote-local/evidence/capability/ui/<slug>--<desktop|mobile>.png` (package-local). Every capture
 also asserts `scrollWidth <= clientWidth` on the scrolling element at 390×844.
 
 | Slug | Seeded state | Must be visible |
@@ -359,7 +359,7 @@ locale-dependent renders from fixture data.
 ### 10.3 Evidence naming
 
 Per-eval-case evidence (7F/7K scope) reuses `browserEvidenceRecipe` verbatim:
-`.paperclip-local/evidence/capability/cases/<group>/<case-id>--<viewport>.png`. The §10.2 matrix is
+`.wardmote-local/evidence/capability/cases/<group>/<case-id>--<viewport>.png`. The §10.2 matrix is
 the UI acceptance set; case evidence is additive and follows the same settle/determinism
 rules.
 

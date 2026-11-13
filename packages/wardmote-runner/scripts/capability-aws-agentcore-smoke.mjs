@@ -12,7 +12,7 @@ const { readCapabilityTurnStream, CAPABILITY_TURN_STREAM_ACCEPT } = await import
   new URL("../dist/live/index.js", import.meta.url).href
 );
 
-const envPath = new URL("../.paperclip-local/aws-agentcore.env", import.meta.url);
+const envPath = new URL("../.wardmote-local/aws-agentcore.env", import.meta.url);
 
 function assert(condition, message) {
   if (!condition) throw new Error(`assertion failed: ${message}`);

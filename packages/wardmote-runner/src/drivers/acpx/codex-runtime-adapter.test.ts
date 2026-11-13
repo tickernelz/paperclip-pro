@@ -377,7 +377,7 @@ describe("Codex ACPX runtime adapter", () => {
     const port = await openCodexAcpxRuntime(openOptions(command), {
       createRegistry: ({ overrides }) => {
         expect(overrides).toEqual({
-          codex: ["paperclip-verified-acpx-command"],
+          codex: ["wardmote-verified-acpx-command"],
         });
         return registry();
       },
@@ -430,7 +430,7 @@ describe("Codex ACPX runtime adapter", () => {
       await openCodexAcpxRuntime(options, {
         createRegistry: ({ overrides }) => {
           expect(overrides).toEqual({
-            [agent]: [agent === "claude" ? "/paperclip-verified/claude-agent-acp" : "paperclip-verified-acpx-command"],
+            [agent]: [agent === "claude" ? "/wardmote-verified/claude-agent-acp" : "wardmote-verified-acpx-command"],
           });
           return registry();
         },
