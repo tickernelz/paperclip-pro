@@ -1258,7 +1258,7 @@ class CodexAcpxSession implements HarnessSession {
 
   async transcript(): Promise<HarnessTranscriptSnapshot> {
     return {
-      schema: "paperclip-runner/harness-transcript/v1",
+      schema: "wardmote-runner/harness-transcript/v1",
       complete: !this.#transcriptOmitted,
       eventCount: this.#transcriptEventCount,
       events: structuredClone(this.#transcript.map(({ event }) => event)),

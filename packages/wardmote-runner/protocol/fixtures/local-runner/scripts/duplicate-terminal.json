@@ -25,7 +25,7 @@
     {
       "kind": "terminal",
       "payload": {
-        "schema": "paperclip.prp.terminal.v1",
+        "schema": "wardmote.prp.terminal.v1",
         "turnTerminalState": "completed",
         "runTerminalState": "succeeded",
         "reportedWorkDisposition": "done"
@@ -34,7 +34,7 @@
     {
       "kind": "terminal",
       "payload": {
-        "schema": "paperclip.prp.terminal.v1",
+        "schema": "wardmote.prp.terminal.v1",
         "turnTerminalState": "failed",
         "runTerminalState": "failed",
         "reportedWorkDisposition": "yielded"

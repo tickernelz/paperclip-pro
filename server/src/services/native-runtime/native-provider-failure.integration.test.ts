@@ -106,7 +106,7 @@ describe("native completed failure diagnostics", () => {
       }
       const turnId = scenario === "different-turn" ? "later-turn" : native.turnId;
       const terminal: PrpTerminalState = {
-        schema: "paperclip.prp.terminal.v1", turnTerminalState: scenario === "succeeded" ? "completed" : scenario === "cancelled" ? "cancelled" : "failed",
+        schema: "wardmote.prp.terminal.v1", turnTerminalState: scenario === "succeeded" ? "completed" : scenario === "cancelled" ? "cancelled" : "failed",
         runTerminalState: scenario === "succeeded" ? "succeeded" : scenario === "cancelled" ? "cancelled" : "failed", reportedWorkDisposition: "blocked",
       };
       const result = { ...CONTROL_PLANE_CONFORMANCE_RESULT, reportedWorkDisposition: "blocked" as const,

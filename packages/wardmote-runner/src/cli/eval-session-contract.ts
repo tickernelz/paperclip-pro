@@ -13,7 +13,7 @@ import {
 export const EVAL_SESSION_REQUEST_SCHEMA =
   "paperclip-runner/eval-session-request/v1" as const;
 export const EVAL_SESSION_ARTIFACT_SCHEMA =
-  "paperclip-runner/eval-session-artifact/v1" as const;
+  "wardmote-runner/eval-session-artifact/v1" as const;
 
 export type EvalSessionProvider =
   | "codex"

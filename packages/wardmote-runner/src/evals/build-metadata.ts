@@ -11,11 +11,11 @@ import { canonicalCapabilitySemanticCatalog } from "../semantic-tools/catalog.js
 export const WARDMOTE_RUNNER_BUILD_METADATA_SCHEMA =
   "paperclip-runner/build-metadata/v1" as const;
 export const WARDMOTE_RUNNER_NATIVE_EXECUTION_SCHEMA =
-  "paperclip-runner/native-execution/v1" as const;
+  "wardmote-runner/native-execution/v1" as const;
 export const WARDMOTE_RUNNER_EVAL_INTEGRATION_SCHEMA =
   "paperclip-runner/evals-integration/v1" as const;
 export const WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA =
-  "paperclip-runner/runnerd-build-metadata/v1" as const;
+  "wardmote-runner/runnerd-build-metadata/v1" as const;
 
 export const WARDMOTE_RUNNER_SEMANTIC_CATALOG_SHA256 =
   `sha256:${createHash("sha256")

@@ -200,7 +200,7 @@ try {
       usage = { inputTokens: 0, outputTokens: 0, cachedInputTokens: 0, estimatedCostNanodollars: 0, providerRequests: 0, accountingProvenance: "No provider turn/start was dispatched" };
     }
     const artifact = {
-      schema: "paperclip-runner/eval-session-artifact/v1", attemptId: request.attemptId,
+      schema: "wardmote-runner/eval-session-artifact/v1", attemptId: request.attemptId,
       requestedModel: request.calls ? "provider-free" : request.model ?? "provider-free", provider: request.calls ? "none" : provider, driver: request.calls ? "direct-authority-contract" : "real-server-api-tools",
       evidenceMode: request.calls ? "provider-free-contract" : "live-provider",
       providerSessionId: record(thread.thread).id ?? null, effectiveModel: record(thread.thread).model ?? null,

@@ -91,7 +91,7 @@
       "sourceInstanceId": "runner_replay", "sourceKind": "runner", "runId": "run_replay_failed",
       "normalizedSessionId": "session_replay_failed", "eventType": "run.terminal", "schemaVersion": 1,
       "priority": 0, "emittedAt": "2026-08-07T12:10:00.070Z",
-      "payload": { "schema": "paperclip.prp.terminal.v1", "turnTerminalState": "failed", "runTerminalState": "failed", "reportedWorkDisposition": "yielded" }
+      "payload": { "schema": "wardmote.prp.terminal.v1", "turnTerminalState": "failed", "runTerminalState": "failed", "reportedWorkDisposition": "yielded" }
     }
   ],
   "requests": [],

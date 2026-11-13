@@ -353,7 +353,7 @@ try {
     },
   };
   const manifest = {
-    schema: "paperclip-runner/remote-provider-pack/v1",
+    schema: "wardmote-runner/remote-provider-pack/v1",
     digest: `sha256:${createHash("sha256")
       .update(canonicalJson(payload))
       .digest("hex")}`,

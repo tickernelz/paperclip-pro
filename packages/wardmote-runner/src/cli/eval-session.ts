@@ -462,7 +462,7 @@ export async function runEvalSessionCli(
     snapshot = session.snapshot();
 
     await writeFile(cli.outputPath, `${JSON.stringify({
-      schema: "paperclip-runner/eval-session-artifact/v1",
+      schema: "wardmote-runner/eval-session-artifact/v1",
       attemptId: request.attemptId,
       build: WARDMOTE_RUNNER_BUILD_METADATA,
       runnerd: { path: "[withheld]", sha256: `sha256:${actualDigest}` },
@@ -539,7 +539,7 @@ export async function runEvalSessionCli(
     }
     const usage = usageIfAvailable(request, snapshot);
     await writeFile(cli.outputPath, `${JSON.stringify({
-      schema: "paperclip-runner/eval-session-artifact/v1",
+      schema: "wardmote-runner/eval-session-artifact/v1",
       attemptId: request.attemptId,
       infrastructureError: error instanceof Error ? error.message : String(error),
       infrastructureFailure: failureClass(error),

@@ -401,7 +401,7 @@ describe("HarnessDriverBackend", () => {
 
   it("does not resurrect a settled turn across repeated backend recovery", async () => {
     const terminal: PrpTerminalState = {
-      schema: "paperclip.prp.terminal.v1",
+      schema: "wardmote.prp.terminal.v1",
       turnTerminalState: "completed",
       runTerminalState: "succeeded",
       reportedWorkDisposition: "done",
@@ -547,7 +547,7 @@ describe("HarnessDriverBackend", () => {
     };
     const backend = new HarnessDriverBackend(recoveryDriver);
     const terminal = {
-      schema: "paperclip.prp.terminal.v1" as const,
+      schema: "wardmote.prp.terminal.v1" as const,
       turnTerminalState: "completed" as const,
       runTerminalState: "succeeded" as const,
       reportedWorkDisposition: "done" as const,
@@ -627,7 +627,7 @@ describe("HarnessDriverBackend", () => {
     await expect(recovery.session!.result()).resolves.toEqual({
       result,
       terminal: {
-        schema: "paperclip.prp.terminal.v1",
+        schema: "wardmote.prp.terminal.v1",
         turnTerminalState: "completed",
         runTerminalState: "succeeded",
         reportedWorkDisposition: "done",
@@ -667,7 +667,7 @@ describe("HarnessDriverBackend", () => {
       },
       semanticResult: result,
       terminal: {
-        schema: "paperclip.prp.terminal.v1",
+        schema: "wardmote.prp.terminal.v1",
         turnTerminalState: "cancelled",
         runTerminalState: "cancelled",
         reportedWorkDisposition: "yielded",
@@ -694,7 +694,7 @@ describe("HarnessDriverBackend", () => {
     await expect(recovery.session!.result()).resolves.toEqual({
       result,
       terminal: {
-        schema: "paperclip.prp.terminal.v1",
+        schema: "wardmote.prp.terminal.v1",
         turnTerminalState: "completed",
         runTerminalState: "succeeded",
         reportedWorkDisposition: "done",
@@ -1070,7 +1070,7 @@ describe("HarnessDriverBackend", () => {
         yield prpEvent(1, "item.delta", { text: "before stop" });
         yield prpEvent(2, "turn.completed", { status: "completed" });
         yield prpEvent(3, "run.terminal", {
-          schema: "paperclip.prp.terminal.v1", turnTerminalState: "completed",
+          schema: "wardmote.prp.terminal.v1", turnTerminalState: "completed",
           runTerminalState: "succeeded", reportedWorkDisposition: "done",
         });
       }

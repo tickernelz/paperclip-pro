@@ -23,7 +23,7 @@ function fixture() {
       path: "provider-assets/cursor/linux-x64", sha256: digest } } };
   return payload;
 }
-function seal(payload) { return { schema: "paperclip-runner/remote-provider-pack/v1", payload,
+function seal(payload) { return { schema: "wardmote-runner/remote-provider-pack/v1", payload,
   digest: `sha256:${createHash("sha256").update(canonical(payload)).digest("hex")}` }; }
 
 test("accepts a pack whose source and profiles match the assembled release", () => {

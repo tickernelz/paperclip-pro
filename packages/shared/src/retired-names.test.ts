@@ -38,7 +38,8 @@ describe("rewriteRetiredNames", () => {
       text: 'Answer with {"schema":"wardmote.question_set.v1"} or wardmote.prp.command.v3.',
       replacements: 2,
     });
-    expect(rewriteRetiredNames("paperclip.prp.terminal.v1 paperclip.pi.permission.v1:x paperclip.dev paperclip.question_set.v1x").replacements).toBe(0);
+    expect(rewriteRetiredNames("paperclip.prp.terminal.v1").text).toBe("wardmote.prp.terminal.v1");
+    expect(rewriteRetiredNames("paperclip.pi.permission.v1:x paperclip.dev paperclip.question_set.v1x").replacements).toBe(0);
   });
 
   it("maps lowercase OMP tool names through the irregular renames", () => {

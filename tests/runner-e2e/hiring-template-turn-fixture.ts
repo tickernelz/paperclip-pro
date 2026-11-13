@@ -42,7 +42,7 @@ export function hiringNotificationActionEvents() {
       result: { apiOperationId: "GET /api/issues/{id}/documents", ok: true, status: 200 } } } },
     { eventType: "tool.execution.completed", payload: { ...payload, status: "completed" } },
     { eventType: "run.result.accepted", payload: { result: { schema: "wardmote.run_result.v1" } } },
-    { eventType: "run.terminal", payload: { schema: "paperclip.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed" } },
+    { eventType: "run.terminal", payload: { schema: "wardmote.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed" } },
   ];
   return items.map((event, i) => ({ seq: i + 1, eventType: event.eventType, payload: { prpEvent: {
     schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: event.eventType.startsWith("run.") ? "control_plane" : "runner", payload: event.payload,

@@ -26,7 +26,7 @@ export type HarnessDriverConfigValidation =
   | { ok: false; config: null; issues: HarnessDriverConfigIssue[] };
 
 export interface HarnessTranscriptSnapshot {
-  schema: "paperclip-runner/harness-transcript/v1";
+  schema: "wardmote-runner/harness-transcript/v1";
   complete: boolean;
   eventCount: number;
   events: PrpEvent[];

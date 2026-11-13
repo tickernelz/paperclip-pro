@@ -708,7 +708,7 @@ fn terminal_events(
         "failed"
     };
     let terminal = json!({
-        "schema": "paperclip.prp.terminal.v1",
+        "schema": "wardmote.prp.terminal.v1",
         "provider": provider,
         "turnTerminalState": turn_terminal_state,
         "runTerminalState": if succeeded { "succeeded" } else if cancelled || disposition == "yielded" { "cancelled" } else { "failed" },

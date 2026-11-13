@@ -397,7 +397,7 @@ describe("CapabilityMockControlPlaneAdapter", () => {
     });
 
     const terminal = {
-      schema: "paperclip.prp.terminal.v1" as const,
+      schema: "wardmote.prp.terminal.v1" as const,
       turnTerminalState: "completed" as const,
       runTerminalState: "succeeded" as const,
       reportedWorkDisposition: "done" as const,

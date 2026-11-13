@@ -77,7 +77,7 @@ const result: PrpStructuredRunResult = {
 };
 
 const terminal: PrpTerminalState = {
-  schema: "paperclip.prp.terminal.v1",
+  schema: "wardmote.prp.terminal.v1",
   turnTerminalState: "completed",
   runTerminalState: "succeeded",
   reportedWorkDisposition: "done",

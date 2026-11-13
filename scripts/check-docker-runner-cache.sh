@@ -66,7 +66,7 @@ docker buildx create --name "$rebuild_builder" --driver docker-container
 python3 - <<'CHECK'
 from pathlib import Path
 p=Path('packages/wardmote-runner/runner/crates/runner-core/src/bin/wardmote-runnerd.rs')
-s=p.read_text(); needle='paperclip-runner/runnerd-build-metadata/v1'
+s=p.read_text(); needle='wardmote-runner/runnerd-build-metadata/v1'
 assert s.count(needle)==1
 p.write_text(s.replace(needle,needle+'-cache-probe'))
 CHECK
@@ -77,7 +77,7 @@ from pathlib import Path
 root=Path(os.environ['PROBE_DIR'])
 before=json.loads((root/'baseline/metadata.json').read_text())
 after=json.loads((root/'source-change/metadata.json').read_text())
-assert before['schema']=='paperclip-runner/runnerd-build-metadata/v1'
+assert before['schema']=='wardmote-runner/runnerd-build-metadata/v1'
 assert after['schema']==before['schema']+'-cache-probe'
 assert (root/'baseline/recipe.json').read_bytes()==(root/'source-change/recipe.json').read_bytes()
 log=(root/'source-change.log').read_text()

@@ -790,7 +790,7 @@ Exactly one proposed body must hash to that normalized digest and equal exactly
 one accepted body; identical duplicate proposals or receipts still fail.
 
 Suite 8 writes `wardmote.e2e.copilot-semantic-completion.v2` and requires
-`paperclip.semantic_tool_receipt.v2` under `paperclip_semantic_tool_receipt_v2`.
+`wardmote.semantic_tool_receipt.v2` under `wardmote_semantic_tool_receipt_v2`.
 The authority has exactly eight bounded details. An explicit null normalized
 digest is diagnostic only and cannot qualify a successful finish. Legacy v1
 receipts do not qualify fresh runs. This fixture depends on the corresponding

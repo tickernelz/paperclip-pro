@@ -955,7 +955,7 @@ impl AcpxCommandExecutor {
                 event_type: "run.terminal".to_owned(),
                 priority: EventPriority::P0,
                 payload: json!({
-                    "schema": "paperclip.prp.terminal.v1",
+                    "schema": "wardmote.prp.terminal.v1",
                     "status": "failed",
                     "turnTerminalState": "failed",
                     "runTerminalState": "failed",
@@ -1988,7 +1988,7 @@ impl AcpxCommandExecutor {
                             payload: json!({"provider":"acpx","providerTurnId":turn_id,"status":"failed","providerTerminalObserved":false,
                                 "code":"acpx_provider_transport_failed","message":crate::durable::redact_text(&error.to_string())}) })?;
                         state.push(NormalizedProviderEvent { event_type: "run.terminal".to_owned(), priority: EventPriority::P0,
-                            payload: json!({"schema":"paperclip.prp.terminal.v1","status":"failed","turnTerminalState":"failed","runTerminalState":"failed","reportedWorkDisposition":"unknown","provider":"acpx"}) })?;
+                            payload: json!({"schema":"wardmote.prp.terminal.v1","status":"failed","turnTerminalState":"failed","runTerminalState":"failed","reportedWorkDisposition":"unknown","provider":"acpx"}) })?;
                     }
                     self.context.provider_turn_id = None;
                     // A failed transport cannot attest escaped provider cleanup.
@@ -2094,7 +2094,7 @@ impl AcpxCommandExecutor {
                         event_type: "run.terminal".to_owned(),
                         priority: EventPriority::P0,
                         payload: json!({
-                            "schema": "paperclip.prp.terminal.v1",
+                            "schema": "wardmote.prp.terminal.v1",
                             "status": status,
                             "turnTerminalState": turn_terminal_state,
                             "runTerminalState": status,
@@ -4180,7 +4180,7 @@ mod tests {
         assert_eq!(events[1].event_type, "turn.failed");
         assert_eq!(events[1].payload["providerShutdownFailed"], true);
         assert_eq!(events[2].event_type, "run.terminal");
-        assert_eq!(events[2].payload["schema"], "paperclip.prp.terminal.v1");
+        assert_eq!(events[2].payload["schema"], "wardmote.prp.terminal.v1");
         assert_eq!(events[2].payload["turnTerminalState"], "failed");
         assert_eq!(recovered.poll_events().unwrap(), events);
         let cleanup_error = recovered

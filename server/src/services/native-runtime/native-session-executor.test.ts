@@ -1149,7 +1149,7 @@ describe("remote provider pack manifest", () => {
       distDigest: digest, artifacts,
       bridgeDigest: "sha256:" + createHash("sha256").update(digest + "\n" + digest + "\n" + digest).digest("hex"),
     };
-    const manifest = { schema: "paperclip-runner/remote-provider-pack/v1", payload,
+    const manifest = { schema: "wardmote-runner/remote-provider-pack/v1", payload,
       digest: "sha256:" + createHash("sha256").update(canonical(payload)).digest("hex") };
     state.bundledPackManifestPath = join(root, "provider-pack.json");
     state.bundledRunnerBinary = join(root, "linux-wardmote-runnerd");
@@ -1283,7 +1283,7 @@ describe("remote provider pack manifest", () => {
       writeFile(
         join(root, "provider-pack.json"),
         JSON.stringify({
-          schema: "paperclip-runner/remote-provider-pack/v1",
+          schema: "wardmote-runner/remote-provider-pack/v1",
           digest: `sha256:${createHash("sha256").update(canonical(payload)).digest("hex")}`,
           payload,
         }),
@@ -2574,7 +2574,7 @@ describe("remote runner build metadata", () => {
   });
 
   const current = {
-    schema: "paperclip-runner/runnerd-build-metadata/v1",
+    schema: "wardmote-runner/runnerd-build-metadata/v1",
     binaryName: "wardmote-runnerd",
     packageName: "@tickernelz/wardmote-runner",
     binaryContractVersion: 2,
@@ -3154,7 +3154,7 @@ describe("retained native cleanup activation", () => {
       resultJson: {
         result: validatedResult.result,
         terminal: {
-          schema: "paperclip.prp.terminal.v1",
+          schema: "wardmote.prp.terminal.v1",
           turnTerminalState: "completed",
           runTerminalState: "succeeded",
           reportedWorkDisposition: "yielded",
@@ -12652,7 +12652,7 @@ describe("runnerd provider runtime wiring", () => {
     const remoteExecute = vi.fn(async (command: { command: string; args?: string[] }) => {
       if (command.args?.[0] === "--build-metadata") return {
         exitCode: 0, timedOut: false, stdout: JSON.stringify({
-          schema: "paperclip-runner/runnerd-build-metadata/v1", binaryName: "wardmote-runnerd",
+          schema: "wardmote-runner/runnerd-build-metadata/v1", binaryName: "wardmote-runnerd",
           packageName: "@tickernelz/wardmote-runner", binaryContractVersion: 2,
           durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
           prpTransportModes: ["listen_ws"],
@@ -12729,7 +12729,7 @@ describe("runnerd provider runtime wiring", () => {
       }
       if (command.args?.[0] === "--build-metadata") return {
         exitCode: 0, timedOut: false, stdout: JSON.stringify({
-          schema: "paperclip-runner/runnerd-build-metadata/v1", binaryName: "wardmote-runnerd",
+          schema: "wardmote-runner/runnerd-build-metadata/v1", binaryName: "wardmote-runnerd",
           packageName: "@tickernelz/wardmote-runner", binaryContractVersion: 2,
           durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
           prpTransportModes: ["listen_ws"],
@@ -12848,7 +12848,7 @@ describe("runnerd provider runtime wiring", () => {
           };
         } else if (command.args?.[0] === "--build-metadata") {
           stdout = JSON.stringify({
-            schema: "paperclip-runner/runnerd-build-metadata/v1",
+            schema: "wardmote-runner/runnerd-build-metadata/v1",
             binaryName: "wardmote-runnerd",
             packageName: "@tickernelz/wardmote-runner",
             binaryContractVersion: 2,
@@ -12992,7 +12992,7 @@ describe("runnerd provider runtime wiring", () => {
         const script = command.args?.[1] ?? "";
         if (command.args?.[0] === "--build-metadata") {
           stdout = JSON.stringify({
-            schema: "paperclip-runner/runnerd-build-metadata/v1",
+            schema: "wardmote-runner/runnerd-build-metadata/v1",
             binaryName: "wardmote-runnerd",
             packageName: "@tickernelz/wardmote-runner",
             binaryContractVersion: 2,

@@ -457,7 +457,7 @@ impl DotCommandExecutor {
                 state.push("run.result.proposed", result.clone())?;
                 state.push("item.completed", json!({"provider":"openai_dot","item":{"id":id,"type":"agentMessage","text":result["summary"],"phase":"final_answer"}}))?;
                 state.push("turn.completed", json!({"provider":"openai_dot","providerTurnId":state.turn_id,"status":"completed"}))?;
-                state.push("run.terminal", json!({"schema":"paperclip.prp.terminal.v1","turnTerminalState":"completed","runTerminalState":"succeeded","reportedWorkDisposition":result["reportedWorkDisposition"]}))?;
+                state.push("run.terminal", json!({"schema":"wardmote.prp.terminal.v1","turnTerminalState":"completed","runTerminalState":"succeeded","reportedWorkDisposition":result["reportedWorkDisposition"]}))?;
                 json!({"status":"completed"})
             }
             _ => return Err(invalid("Dot action is unsupported")),
@@ -621,7 +621,7 @@ impl DotCommandExecutor {
                         .map_err(|e| invalid(e.to_string()))?;
                     s.push("external_provider.dispatch_requested", json!({"binding":s.binding(),"kind":"authority_revoked","externalStopConfirmed":false}))?;
                     s.push("turn.cancelled", json!({"provider":"openai_dot","providerTurnId":s.turn_id,"externalStopConfirmed":false}))?;
-                    s.push("run.terminal", json!({"schema":"paperclip.prp.terminal.v1","turnTerminalState":"cancelled","runTerminalState":"cancelled","reportedWorkDisposition":"needs_review"}))?;
+                    s.push("run.terminal", json!({"schema":"wardmote.prp.terminal.v1","turnTerminalState":"cancelled","runTerminalState":"cancelled","reportedWorkDisposition":"needs_review"}))?;
                 }
                 Ok(
                     json!({"status":"authority_revoked","externalStopConfirmed":false,"unsettledTools":s.tools.pending_calls().count()}),
@@ -681,7 +681,7 @@ impl CommandExecutor for DotCommandExecutor {
                 s.tools.settle_turn("authority_expired").map_err(|e| invalid(e.to_string()))?;
                 s.push("external_provider.dispatch_requested", json!({"binding":s.binding(),"kind":"authority_revoked","reason":"authority_expired","externalStopConfirmed":false}))?;
                 s.push("turn.failed", json!({"provider":"openai_dot","providerTurnId":s.turn_id,"error":{"code":"dot_assignment_expired","message":"Dot assignment acceptance or execution authority expired."}}))?;
-                s.push("run.terminal", json!({"schema":"paperclip.prp.terminal.v1","turnTerminalState":"failed","runTerminalState":"failed","reportedWorkDisposition":"needs_review"}))?;
+                s.push("run.terminal", json!({"schema":"wardmote.prp.terminal.v1","turnTerminalState":"failed","runTerminalState":"failed","reportedWorkDisposition":"needs_review"}))?;
                 Ok(())
             })().and_then(|_| self.save());
             if let Err(error) = expiry {

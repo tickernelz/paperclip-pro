@@ -75,7 +75,7 @@
       "sourceInstanceId": "runner_replay", "sourceKind": "runner", "runId": "run_replay_interrupted",
       "normalizedSessionId": "session_replay_interrupted", "eventType": "run.terminal", "schemaVersion": 1,
       "priority": 0, "emittedAt": "2026-08-07T12:20:00.080Z",
-      "payload": { "schema": "paperclip.prp.terminal.v1", "turnTerminalState": "interrupted", "runTerminalState": "cancelled", "reportedWorkDisposition": "yielded" }
+      "payload": { "schema": "wardmote.prp.terminal.v1", "turnTerminalState": "interrupted", "runTerminalState": "cancelled", "reportedWorkDisposition": "yielded" }
     }
   ],
   "requests": [

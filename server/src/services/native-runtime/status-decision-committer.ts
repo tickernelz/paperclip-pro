@@ -1790,7 +1790,7 @@ export async function commitNativeStatusDecision(input: {
         const envelope = record(accepted?.resultJson), terminal = record(envelope.terminal);
         if (!accepted || accepted.completionContractId !== planWait.source.contractId || accepted.turnId !== planWait.source.turnId ||
           nativeSha256(envelope.result) !== nativeSha256(planWait.result) ||
-          terminal.schema !== "paperclip.prp.terminal.v1" || terminal.runTerminalState !== "succeeded" || terminal.turnTerminalState !== "completed" || terminal.reportedWorkDisposition !== "yielded") throw new NativeStatusRaceError();
+          terminal.schema !== "wardmote.prp.terminal.v1" || terminal.runTerminalState !== "succeeded" || terminal.turnTerminalState !== "completed" || terminal.reportedWorkDisposition !== "yielded") throw new NativeStatusRaceError();
         // completeRun hashes its full private binding, not the stored resultJson.
         // Preserve that accepted identity instead of inventing a new digest.
         planWaitResult = { resultId: accepted.id, resultSha256: accepted.canonicalSha256 };

@@ -333,7 +333,7 @@ function wireTrace(): PrpEvent[] {
       priority: 0,
       emittedAt: "2026-08-11T00:00:01.000Z",
       payload: {
-        schema: "paperclip.prp.terminal.v1",
+        schema: "wardmote.prp.terminal.v1",
         turnTerminalState: "completed",
         runTerminalState: "succeeded",
         reportedWorkDisposition: "done",

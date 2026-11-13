@@ -160,7 +160,7 @@ export function createCopilotToolEvidence(binding: {
           fields.semanticOperationId = candidate.operationId;
           fields.semanticCallIdentitySha256 = candidate.callIdentitySha256;
           fields.semanticInputSha256 = candidate.inputSha256;
-          if (candidate.schema === "paperclip.semantic_tool_receipt.v2") fields.semanticNormalizedInputSha256 = candidate.normalizedInputSha256;
+          if (candidate.schema === "wardmote.semantic_tool_receipt.v2") fields.semanticNormalizedInputSha256 = candidate.normalizedInputSha256;
           fields.semanticResultSha256 = candidate.resultSha256;
           fields.semanticOutcome = candidate.outcome;
         }
@@ -198,7 +198,7 @@ export function createCopilotToolEvidence(binding: {
           return;
         }
         semanticReceipts.set(parsed.callIdentitySha256, parsed);
-        notice("semantic_result", undefined, { ...parsed }, "paperclip/semantic_tool_result", parsed.schema === "paperclip.semantic_tool_receipt.v2" ? "paperclip_semantic_tool_receipt_v2" : "paperclip_semantic_tool_receipt_v1");
+        notice("semantic_result", undefined, { ...parsed }, "paperclip/semantic_tool_result", parsed.schema === "wardmote.semantic_tool_receipt.v2" ? "wardmote_semantic_tool_receipt_v2" : "wardmote_semantic_tool_receipt_v1");
       }); };
     },
     tool: (event: unknown) => { safely(() => projection.tool(event)); },

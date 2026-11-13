@@ -63,9 +63,6 @@ const PINNED_RETIRED_SCHEMA_ID_SUFFIXES: ReadonlySet<string> = new Set([
   "pi-security-closure-proof.v1",
   "pi-session-open-diagnostic.v1",
   "pi.permission.v1",
-  "prp.terminal.v1",
-  "semantic_tool_receipt.v1",
-  "semantic_tool_receipt.v2",
 ]);
 
 export function retiredSchemaId(current: string): string {

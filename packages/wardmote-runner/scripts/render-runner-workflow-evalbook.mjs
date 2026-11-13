@@ -163,7 +163,7 @@ export function runnerWorkflowEvalbookAttempt({
     },
   };
   const score = {
-    schema: "paperclip-runner/eval-score/v1",
+    schema: "wardmote-runner/eval-score/v1",
     attemptId,
     caseId: result.scenarioId,
     checks,

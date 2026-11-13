@@ -9,7 +9,7 @@ const canonical = value => Array.isArray(value) ? `[${value.map(canonical).join(
 /** Release assembly must reject a self-consistent pack built for another release. */
 export function verifyReleaseProviderPack(identity, sourceRevision) {
   const payload = identity?.payload;
-  if (identity?.schema !== "paperclip-runner/remote-provider-pack/v1" || !payload
+  if (identity?.schema !== "wardmote-runner/remote-provider-pack/v1" || !payload
     || payload.target?.platform !== "linux" || payload.target?.architecture !== "x64"
     || payload.runnerSourceRevision !== sourceRevision) throw new Error("Remote provider pack must match the release source and Linux x64 target");
   if (identity.digest !== `sha256:${createHash("sha256").update(canonical(payload)).digest("hex")}`) {

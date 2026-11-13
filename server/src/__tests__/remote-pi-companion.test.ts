@@ -27,7 +27,7 @@ async function fixture() {
   // Synthetic ELF header; these tests never launch it or claim native qualification.
   const elf = Buffer.alloc(128); Buffer.from([127, 69, 76, 70, 2, 1]).copy(elf); elf.writeUInt16LE(62, 18); writeFileSync(join(directory, "bin/wardmote-runnerd"), elf, { mode: 0o755 });
   const payload = { runnerSourceRevision: source, target: { platform: "linux", architecture: "x64" }, candidateProviders: { pi: { qualification: "qualified", profileDigest: QUALIFIED_ACPX_PROFILES.pi.commandDigest, path: "provider-assets/pi/linux-x64" } } };
-  writeFileSync(join(directory, "provider-pack/provider-pack.json"), JSON.stringify({ schema: "paperclip-runner/remote-provider-pack/v1", digest: `sha256:${hash(canonical(payload))}`, payload }));
+  writeFileSync(join(directory, "provider-pack/provider-pack.json"), JSON.stringify({ schema: "wardmote-runner/remote-provider-pack/v1", digest: `sha256:${hash(canonical(payload))}`, payload }));
   const manifest = await createRemotePiCompanionManifest(directory, source); const bytes = JSON.stringify(manifest); writeFileSync(join(directory, "companion.json"), bytes); return { root, directory, serverRoot, sha256: hash(bytes), manifest, source };
 }
 it("imports the release-generated closure and resolves target bytes without environment overrides", async () => {

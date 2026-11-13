@@ -17,7 +17,8 @@
     "Replaced only params.sessionId in each selected frame with captured-fixture-session.",
     "Excluded all other wire frames and model/configuration discovery.",
     "Selected update objects and rawOutput preserved exactly.",
-    "authoritativeReceipt copied from owned fixture carrier.json; it is not an authority inferred from native output."
+    "authoritativeReceipt copied from owned fixture carrier.json; it is not an authority inferred from native output.",
+    "Product rename (ZHA-5833): the owned receipt schema id and event category moved to the wardmote.* prefix; the native wire frames are unchanged."
   ],
   "originalEvidence": [
     {
@@ -45,5 +46,5 @@
       "sha256": "e9859debd7274b42f5e58c28cc025bb2e3a090bb583e71ad460f2f482f6c3dae"
     }
   ],
-  "fixtureSha256": "4af7345f219463813b382e4c6863003f9f957e147a96dc9c197b97ecd3e20cfb"
+  "fixtureSha256": "98c21be7181c901943804f54113b8a1931ec05bab8153074a19b40b073140577"
 }

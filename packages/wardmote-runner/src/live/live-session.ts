@@ -293,7 +293,7 @@ export interface CapabilityLiveSessionSnapshot {
   usageUnavailable?: CapabilityLiveUnavailableUsage[];
   /** Process-level evidence for an interrupted Codex semantic-call resume. */
   nativeResume?: {
-    schema: "paperclip.runner.native-resume-proof/v1";
+    schema: "wardmote.runner.native-resume-proof/v1";
     triggered: true;
     runnerRestarts: number;
     runnerProcessPids: number[];

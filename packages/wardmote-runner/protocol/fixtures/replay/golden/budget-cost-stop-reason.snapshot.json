@@ -71,7 +71,7 @@
     "artifacts": []
   },
   "terminal": {
-    "schema": "paperclip.prp.terminal.v1",
+    "schema": "wardmote.prp.terminal.v1",
     "turnTerminalState": "cancelled",
     "runTerminalState": "cancelled",
     "reportedWorkDisposition": "blocked",

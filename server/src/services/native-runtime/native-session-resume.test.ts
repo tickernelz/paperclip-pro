@@ -395,7 +395,7 @@ function previousRun(overrides: Record<string, unknown> = {}) {
           summary: "old",
         },
         terminal: {
-          schema: "paperclip.prp.terminal.v1",
+          schema: "wardmote.prp.terminal.v1",
           turnTerminalState: "completed",
           runTerminalState: "succeeded",
           reportedWorkDisposition: "done",

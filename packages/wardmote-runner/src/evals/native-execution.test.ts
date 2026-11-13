@@ -17,7 +17,7 @@ import {
 import { WARDMOTE_RUNNER_BUILD_METADATA } from "./build-metadata.js";
 import { serializeCapabilityGeneratedSemanticContracts } from "../semantic-tools/provider-neutral.js";
 
-describe("paperclip-runner/native-execution/v1", () => {
+describe("wardmote-runner/native-execution/v1", () => {
   it("refreshes a stale seeded catalog and its manifest with one semantic generator invocation", async () => {
     const root = await mkdtemp(join(tmpdir(), "wardmote-semantic-generator-"));
     const packageRoot = fileURLToPath(new URL("../../", import.meta.url));

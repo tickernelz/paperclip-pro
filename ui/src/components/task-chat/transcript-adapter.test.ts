@@ -151,7 +151,7 @@ describe("accepted native response-wake answers", () => {
         ? []
         : [
             event(4, "run.terminal", {
-              schema: "paperclip.prp.terminal.v1",
+              schema: "wardmote.prp.terminal.v1",
               turnTerminalState: "completed",
               runTerminalState:
                 mode === "failed_terminal" ? "failed" : "succeeded",

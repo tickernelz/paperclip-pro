@@ -10,7 +10,7 @@
     "reportedWorkDisposition"
   ],
   "properties": {
-    "schema": { "const": "paperclip.prp.terminal.v1" },
+    "schema": { "const": "wardmote.prp.terminal.v1" },
     "turnTerminalState": {
       "enum": ["completed", "failed", "interrupted", "cancelled"]
     },

@@ -228,7 +228,7 @@ export async function hasCommittedNativePlanWait(db: Db, binding: Binding): Prom
   const envelope = record(receipt.result.resultJson), terminal = record(envelope.terminal);
   const acceptedIdentity = committed.identity;
   if (!proof || receipt.result.completionContractId !== proof.source.contractId || receipt.result.turnId !== proof.source.turnId || acceptedIdentity.resultId !== receipt.result.id || acceptedIdentity.resultSha256 !== receipt.result.canonicalSha256 || !same(committedSource, proof.source) || !same(envelope.result, proof.result) ||
-    terminal.schema !== "paperclip.prp.terminal.v1" || terminal.runTerminalState !== "succeeded" || terminal.turnTerminalState !== "completed" || terminal.reportedWorkDisposition !== "yielded") return false;
+    terminal.schema !== "wardmote.prp.terminal.v1" || terminal.runTerminalState !== "succeeded" || terminal.turnTerminalState !== "completed" || terminal.reportedWorkDisposition !== "yielded") return false;
   const [run] = await db.select().from(heartbeatRuns).where(and(eq(heartbeatRuns.id, binding.runId), eq(heartbeatRuns.companyId, binding.companyId))).limit(1);
   if (!run || run.status !== "succeeded") return false;
   // Settings for future runs cannot authorize work on this accepted plan.

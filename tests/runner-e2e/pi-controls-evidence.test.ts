@@ -123,7 +123,7 @@ describe("Pi same-turn steering", () => {
     ["foreign control session", s => { event(s.f.events.at(-1)!).normalizedSessionId = "foreign"; }],
     ["unknown control event", s => { s.f.events.at(-1)!.eventType = event(s.f.events.at(-1)!).eventType = "runtime_request.resolved"; }],
     ["reordered control sequence", s => { event(s.f.events.at(-1)!).sourceSeq = 1; event(s.f.events.at(-1)!).sourceEventId = "source:control:run:1"; }],
-    ["duplicate control terminal", s => { s.f.append("run.terminal", { schema: "paperclip.prp.terminal.v1" }, { sourceKind: "control_plane", sourceInstanceId: "source:control", sourceSeq: 3, sourceEventId: "source:control:run:3" }); }],
+    ["duplicate control terminal", s => { s.f.append("run.terminal", { schema: "wardmote.prp.terminal.v1" }, { sourceKind: "control_plane", sourceInstanceId: "source:control", sourceSeq: 3, sourceEventId: "source:control:run:3" }); }],
     ["unbound control result", s => { event(s.f.events.at(-2)!).payload.result.schema = "foreign"; }],
     ["both control records missing", s => { s.f.events.splice(-2); }],
     ["accepted result missing", s => { s.f.events.splice(-2, 1); }],

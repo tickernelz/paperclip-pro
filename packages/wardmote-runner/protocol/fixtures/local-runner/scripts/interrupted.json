@@ -47,7 +47,7 @@
     {
       "kind": "terminal",
       "payload": {
-        "schema": "paperclip.prp.terminal.v1",
+        "schema": "wardmote.prp.terminal.v1",
         "turnTerminalState": "interrupted",
         "runTerminalState": "cancelled",
         "reportedWorkDisposition": "yielded"

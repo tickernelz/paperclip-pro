@@ -90,7 +90,7 @@ function isItemIdentityEvent(eventType: string): boolean {
 
 const TOOL_EXECUTION_SCHEMA = "wardmote.tool.execution.v1";
 const RUN_RESULT_SCHEMA = "wardmote.run_result.v1";
-const RUN_TERMINAL_SCHEMA = "paperclip.prp.terminal.v1";
+const RUN_TERMINAL_SCHEMA = "wardmote.prp.terminal.v1";
 
 function canonicalQuestionSet(
   value: unknown,

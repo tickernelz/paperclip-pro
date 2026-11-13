@@ -14,7 +14,7 @@ const event: PrpEvent = {
   payload: { status: "failed", error: { message: JSON.stringify(response), codexErrorInfo: "other" } },
 };
 const terminal: PrpTerminalState = {
-  schema: "paperclip.prp.terminal.v1", turnTerminalState: "failed", runTerminalState: "failed", reportedWorkDisposition: "blocked",
+  schema: "wardmote.prp.terminal.v1", turnTerminalState: "failed", runTerminalState: "failed", reportedWorkDisposition: "blocked",
 };
 const observation = () => createNativeProviderFailureObservation({ kind: "codex", model });
 

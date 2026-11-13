@@ -19,7 +19,7 @@ import type {
 } from "../protocol/replay-contract.js";
 
 export const DETERMINISTIC_HARNESS_DRIVER_CONFIG_SCHEMA =
-  "paperclip-runner/deterministic-harness-driver-config/v1" as const;
+  "wardmote-runner/deterministic-harness-driver-config/v1" as const;
 
 export interface DeterministicHarnessDriverConfig {
   schema: typeof DETERMINISTIC_HARNESS_DRIVER_CONFIG_SCHEMA;
@@ -340,7 +340,7 @@ class DeterministicHarnessSession implements HarnessSession {
 
   async transcript(): Promise<HarnessTranscriptSnapshot> {
     return {
-      schema: "paperclip-runner/harness-transcript/v1",
+      schema: "wardmote-runner/harness-transcript/v1",
       complete: this.#transcriptOmissionReason === null,
       eventCount: this.#events.length,
       events: structuredClone(this.#events),
@@ -440,7 +440,7 @@ function completedTerminal(
   disposition: PrpTerminalState["reportedWorkDisposition"] = "done",
 ): PrpTerminalState {
   return {
-    schema: "paperclip.prp.terminal.v1",
+    schema: "wardmote.prp.terminal.v1",
     turnTerminalState: "completed",
     runTerminalState: "succeeded",
     reportedWorkDisposition: disposition,
@@ -475,7 +475,7 @@ function interruptedResult(runId: string, summary: string): PrpStructuredRunResu
 
 function cancelledTerminal(): PrpTerminalState {
   return {
-    schema: "paperclip.prp.terminal.v1",
+    schema: "wardmote.prp.terminal.v1",
     turnTerminalState: "interrupted",
     runTerminalState: "cancelled",
     reportedWorkDisposition: "yielded",

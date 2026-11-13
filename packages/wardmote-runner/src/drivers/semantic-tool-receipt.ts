@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
-export const SEMANTIC_RECEIPT_SCHEMA = "paperclip.semantic_tool_receipt.v2";
-const LEGACY_SEMANTIC_RECEIPT_SCHEMA = "paperclip.semantic_tool_receipt.v1";
+export const SEMANTIC_RECEIPT_SCHEMA = "wardmote.semantic_tool_receipt.v2";
+const LEGACY_SEMANTIC_RECEIPT_SCHEMA = "wardmote.semantic_tool_receipt.v1";
 export const MAX_SEMANTIC_RECEIPT_BYTES = 2048;
 const MAX_NATIVE_BYTES = 256 * 1024;
 interface SemanticToolReceiptFields {

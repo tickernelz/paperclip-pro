@@ -263,7 +263,7 @@ const report = await testing.runControlPlanePortConformance({
 if (report.eventCount !== 3) throw new Error("packed conformance kit returned the wrong event count");
 
 const nativeBundle = await evals.loadWardmoteNativeExecutionFixture();
-if (nativeBundle.schema !== "paperclip-runner/native-execution/v1") {
+if (nativeBundle.schema !== "wardmote-runner/native-execution/v1") {
   throw new Error("packed native execution fixture is unavailable");
 }
 if (nativeBundle.semanticTools.results[0]?.outcome !== "denied") {

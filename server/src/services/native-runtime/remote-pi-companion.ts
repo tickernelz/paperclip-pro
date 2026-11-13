@@ -88,7 +88,7 @@ async function validate(root: string, manifest: RemotePiCompanionManifest, ident
   const elf = (await readStable(join(root, daemon.path), MAX_FILE, false, check)).header; require(elf.subarray(0, 4).equals(Buffer.from([127, 69, 76, 70])) && elf[4] === 2 && elf[5] === 1 && elf.readUInt16LE(18) === 62, "Linux x64 ELF required");
   const pack = JSON.parse((await readOwned(join(root, "provider-pack/provider-pack.json"), 16 * 1024 ** 2, check)).toString());
   const canonical = (v: unknown): string => Array.isArray(v) ? `[${v.map(canonical).join(",")}]` : v && typeof v === "object" ? `{${Object.keys(v).sort().map(k => `${JSON.stringify(k)}:${canonical((v as Record<string, unknown>)[k])}`).join(",")}}` : JSON.stringify(v);
-  require(pack.schema === "paperclip-runner/remote-provider-pack/v1" && pack.digest === manifest.providerPackDigest && pack.digest === `sha256:${digest(canonical(pack.payload))}`, "pack manifest digest");
+  require(pack.schema === "wardmote-runner/remote-provider-pack/v1" && pack.digest === manifest.providerPackDigest && pack.digest === `sha256:${digest(canonical(pack.payload))}`, "pack manifest digest");
   require(pack.payload.runnerSourceRevision === identity.source && pack.payload.target.platform === "linux" && pack.payload.target.architecture === "x64", "pack source/target");
   const pi = pack.payload.candidateProviders?.pi; require(pi?.qualification === "qualified" && pi.profileDigest === identity.profileDigest && pi.path === "provider-assets/pi/linux-x64", "normal Pi pack required");
 }

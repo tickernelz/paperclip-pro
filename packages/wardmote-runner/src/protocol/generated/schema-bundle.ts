@@ -3198,7 +3198,7 @@ export const terminalSchema = {
   ],
   "properties": {
     "schema": {
-      "const": "paperclip.prp.terminal.v1"
+      "const": "wardmote.prp.terminal.v1"
     },
     "turnTerminalState": {
       "enum": [

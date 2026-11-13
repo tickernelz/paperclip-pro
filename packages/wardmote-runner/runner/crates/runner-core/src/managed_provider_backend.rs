@@ -2023,7 +2023,7 @@ fn terminal_events(state: &ManagedDurableState, event_type: &str) -> Vec<Normali
             event_type: "run.terminal".to_owned(),
             priority: EventPriority::P0,
             payload: json!({
-                "schema": "paperclip.prp.terminal.v1",
+                "schema": "wardmote.prp.terminal.v1",
                 "provider": provider,
                 "turnTerminalState": turn_terminal_state,
                 "runTerminalState": if succeeded { "succeeded" } else if cancelled { "cancelled" } else { "failed" },

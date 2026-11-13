@@ -79,17 +79,17 @@ describe("Codex ACPX harness driver", () => {
     oldCallback?.(bound.receipt);
     fixture.finishTurn({ status: "completed" });
     const firstEvents = await collectUntil(session.events(), "turn.completed");
-    const receipts = firstEvents.filter(e => e.eventType === "provider.notice.recorded" && e.payload.category === "paperclip_semantic_tool_receipt_v2");
+    const receipts = firstEvents.filter(e => e.eventType === "provider.notice.recorded" && e.payload.category === "wardmote_semantic_tool_receipt_v2");
     expect(receipts).toHaveLength(agent === "copilot" ? 1 : 0);
     if (agent === "copilot") expect(receipts[0]).toMatchObject({ runId: "run-receipt", turnId: first.turnId, payload: { provenance: { sessionId: "backend-1", turnId: first.turnId } } });
     const transcript = JSON.parse(JSON.stringify(await session.transcript!()));
     for (const event of transcript.events) validatePrpEvent(event);
-    expect(transcript.events.filter((e: PrpEvent) => e.payload.category === "paperclip_semantic_tool_receipt_v2")).toEqual(receipts);
+    expect(transcript.events.filter((e: PrpEvent) => e.payload.category === "wardmote_semantic_tool_receipt_v2")).toEqual(receipts);
     await session.startTurn({ message: { role: "user", text: "Second" } });
     oldCallback?.(bound.receipt);
     fixture.finishTurn({ status: "completed" });
     const secondEvents = await collectUntil(session.events(), "turn.completed");
-    expect(secondEvents.filter(e => e.payload.category === "paperclip_semantic_tool_receipt_v2")).toEqual([]);
+    expect(secondEvents.filter(e => e.payload.category === "wardmote_semantic_tool_receipt_v2")).toEqual([]);
     await session.close({ reason: "receipt turn scope verified" });
   });
 

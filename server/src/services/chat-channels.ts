@@ -13100,7 +13100,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         !Array.isArray(result.attentionRequests) ||
         result.attentionRequests.length !== 0 ||
         continuation?.kind !== "response_wake" ||
-        terminal?.schema !== "paperclip.prp.terminal.v1" ||
+        terminal?.schema !== "wardmote.prp.terminal.v1" ||
         terminal.turnTerminalState !== "completed" ||
         terminal.runTerminalState !== "succeeded" ||
         terminal.reportedWorkDisposition !== "yielded"

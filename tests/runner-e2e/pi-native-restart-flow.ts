@@ -123,7 +123,7 @@ export function gradePiRestartCompletion(state: State, events: readonly Row[], p
     && digest(proposed[0]!.event.payload) === digest(result)
     && proposed[0]!.row.seq > resolved[0]!.row.seq && proposed[0]!.row.seq < terminal[0]!.row.seq
     && accepted[0]!.row.seq > terminal[0]!.row.seq && runTerminal[0]!.row.seq > accepted[0]!.row.seq
-    && digest(runTerminal[0]!.event.payload) === digest({ schema: "paperclip.prp.terminal.v1", turnTerminalState: "completed", runTerminalState: "succeeded", reportedWorkDisposition: "done" }),
+    && digest(runTerminal[0]!.event.payload) === digest({ schema: "wardmote.prp.terminal.v1", turnTerminalState: "completed", runTerminalState: "succeeded", reportedWorkDisposition: "done" }),
   "control-plane completion does not accept the original successful native result");
   requireProof(card.status === "answered" && Array.isArray(card.result?.answers) && card.result.answers.length === 1
     && card.result.answers[0].questionId === pending.questionId && card.result.answers[0].otherText === answer, "durable interaction answer missing or wrong");

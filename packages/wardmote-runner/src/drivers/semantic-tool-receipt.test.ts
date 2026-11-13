@@ -46,17 +46,17 @@ describe("bounded semantic receipt carrier", () => {
   it("keeps raw and forwarded input identities separate and versions historical receipts honestly", () => {
     const normalizedInputSha256 = semanticInputSha256({ ...call.arguments, schema: "wardmote.run_result.v1" });
     const { receipt, result } = appendSemanticToolReceipt({ ...call, normalizedInputSha256 }, original);
-    expect(receipt).toMatchObject({ schema: "paperclip.semantic_tool_receipt.v2", normalizedInputSha256,
+    expect(receipt).toMatchObject({ schema: "wardmote.semantic_tool_receipt.v2", normalizedInputSha256,
       inputSha256: semanticInputSha256(call.arguments) });
     expect(receipt.inputSha256).not.toBe(normalizedInputSha256);
     expect(readNativeSemanticReceipt({ contents: result.content })).toEqual(receipt);
     expect(appendSemanticToolReceipt(call, original).receipt).toHaveProperty("normalizedInputSha256", null);
     const { normalizedInputSha256: _, ...legacyFields } = receipt as typeof receipt & { normalizedInputSha256: unknown };
-    const legacy = { ...legacyFields, schema: "paperclip.semantic_tool_receipt.v1" };
+    const legacy = { ...legacyFields, schema: "wardmote.semantic_tool_receipt.v1" };
     expect(parseSemanticToolReceipt(legacy)).toEqual(legacy);
     expect(parseSemanticToolReceipt({ ...legacy, normalizedInputSha256 })).toBeNull();
     expect(parseSemanticToolReceipt({ ...receipt, normalizedInputSha256: "null" })).toBeNull();
     expect(parseSemanticToolReceipt({ ...receipt, normalizedInputSha256: "a".repeat(65) })).toBeNull();
-    expect(parseSemanticToolReceipt({ ...legacyFields, schema: "paperclip.semantic_tool_receipt.v2" })).toBeNull();
+    expect(parseSemanticToolReceipt({ ...legacyFields, schema: "wardmote.semantic_tool_receipt.v2" })).toBeNull();
   });
 });

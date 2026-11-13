@@ -91,7 +91,7 @@ export class HarnessDriverBackend implements NativeSessionBackend {
     const recoveredTerminal =
       recoveredSemanticTurn && snapshot.semanticResult
         ? {
-            schema: "paperclip.prp.terminal.v1" as const,
+            schema: "wardmote.prp.terminal.v1" as const,
             turnTerminalState: "completed" as const,
             runTerminalState: "succeeded" as const,
             reportedWorkDisposition:
@@ -592,7 +592,7 @@ class HarnessNativeSession implements NativeSession {
             snapshot.semanticResult?.result.reportedWorkDisposition ??
             "yielded";
           this.#terminal = {
-            schema: "paperclip.prp.terminal.v1",
+            schema: "wardmote.prp.terminal.v1",
             turnTerminalState:
               event.eventType === "turn.completed"
                 ? "completed"
@@ -675,7 +675,7 @@ class HarnessNativeSession implements NativeSession {
         synthesizedProviderFailure = true;
         sawTerminal = true;
         this.#terminal = {
-          schema: "paperclip.prp.terminal.v1",
+          schema: "wardmote.prp.terminal.v1",
           turnTerminalState: "failed",
           runTerminalState: "failed",
           reportedWorkDisposition: "yielded",

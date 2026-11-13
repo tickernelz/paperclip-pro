@@ -112,7 +112,7 @@ const cursorPlanQuestions: WardmoteQuestionSet = {
 function NativeCursorPlan() {
   const [receipt, setReceipt] = useState<{ requestId: string; decision: TaskChatRuntimeRequestDecision } | null>(null);
   const entries = wardmoteRunnerUIAdapter.parseStdoutLine(JSON.stringify({
-    type: "paperclip.prp.event", event: { eventType: "runtime_request.created", turnId: "cursor-plan-turn", payload: {
+    type: "wardmote.prp.event", event: { eventType: "runtime_request.created", turnId: "cursor-plan-turn", payload: {
       request: { requestId: "cursor-create-plan-revision-7", requestKind: "runtime", type: "input", status: "pending", prompt: "Review Cursor's plan", input: cursorPlanQuestions },
     } },
   }), "2026-09-28T12:00:00.000Z");

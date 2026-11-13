@@ -40,7 +40,7 @@ function fixture(adapter = "acpx-runtime-sidecar") {
     events.push(wrap("runtime_request.resolved", 2, { requestId: "request", turnId: "turn", itemId: "request", action: "submit",
       response: { schema: "wardmote.question_response.v1", answers: { answer: { text: answer } } } }), wrap("turn.completed", 4, { status: "completed" }),
       wrap("run.result.proposed", 3, structuredClone(result)), control("run.result.accepted", 1, { result: structuredClone(result) }),
-      control("run.terminal", 2, { schema: "paperclip.prp.terminal.v1", turnTerminalState: "completed", runTerminalState: "succeeded", reportedWorkDisposition: "done" }));
+      control("run.terminal", 2, { schema: "wardmote.prp.terminal.v1", turnTerminalState: "completed", runTerminalState: "succeeded", reportedWorkDisposition: "done" }));
     return { status: "answered", value: answer };
   }
   return { state, events, request, wrap, control, finish };

@@ -75,7 +75,7 @@
     {
       "path": "schemas/native-execution.schema.json",
       "id": "https://wardmote.dev/schemas/prp/v1/native-execution.schema.json",
-      "sha256": "ee33998e46d3781e5ff5bf880da93ecdb5701091e3771d16817f28239da7028c"
+      "sha256": "4cd2f762300e22597f69e367d2e0affd7a700952ae8e57fd1a402a50c95e0154"
     },
     {
       "path": "schemas/provider-descriptor.schema.json",
@@ -130,7 +130,7 @@
     {
       "path": "schemas/terminal.schema.json",
       "id": "https://wardmote.dev/schemas/prp/v1/terminal.schema.json",
-      "sha256": "f45ef512544d7def1edc2efff8eea9886cb6e39aee2ec5b70a3cde2ab0888f25"
+      "sha256": "ed569074f7e30457aebb49e3a97d308807936d9fdf2882a4c11835a7f173886d"
     },
     {
       "path": "schemas/usage.schema.json",
@@ -169,37 +169,37 @@
     },
     {
       "path": "fixtures/evals/harness-driver-conformance.json",
-      "sha256": "ce84eb64faa6af78e17a156cde352a951db7c108c8819a20109b732b23a5bec5",
+      "sha256": "d059aa7c0d215832589212b9d0fbdb2b9ecdc310a0b02fc7836eb1a3bc91b3a4",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/evals/native-execution-seeded.json",
-      "sha256": "06a6aa38cd93b6423f8721785685476f356567e1b9488a2f89246c61343f94dc",
+      "sha256": "67f676d87ccf9b58194e77427d532310759bfbaa4507093634f64480e839c8d8",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/local-runner/scripts/duplicate-terminal.json",
-      "sha256": "7f0c3db9d762a183bd833776f7494c16a5ad0bdedc7f1f7f2a1900d14f0a4c83",
+      "sha256": "09e028f628febffbb906f652bbf3d6720e84a517e18375caf9ef3dab25d78869",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/local-runner/scripts/error.json",
-      "sha256": "3feac73730f5f1c4edaea6b0425acc497bd184bd28089ce060d7d03bb38d4180",
+      "sha256": "b50e03fd07c391dafd2260b4e42b8509bd4c14467e8cee3e7e55941220cf3bba",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/local-runner/scripts/happy-path.json",
-      "sha256": "b85dcc4520161dae460325e1906781e028e8e13addd35cf5b13321450fff7e4f",
+      "sha256": "649b7b812ec7eeb449b93cc8e14b60e14dcc55c52b0bc2faa2049ed5304392e5",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/local-runner/scripts/interrupted.json",
-      "sha256": "a054aa889e84901d1d76da059f8ca48b1965cc593d8437735c61e96ff67a814e",
+      "sha256": "8b5a8a8a4d594decd392c24c501aadd4399ed4377de15b8171148585ef25b7a3",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
@@ -217,13 +217,13 @@
     },
     {
       "path": "fixtures/local-runner/scripts/permission-input.json",
-      "sha256": "88881aaf3659166f66f36d50a7caf7c102cbd9b997560981099df7837c25040f",
+      "sha256": "82f071b64e266bd7e1ac1065bc51ac8e90be7bc49498badc88ed32befd51bb6c",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/provider-boundary/local-integrity.json",
-      "sha256": "eb5884156230ac71d16aad30dc37ccda04d50a9df177a6d32654090d434663de",
+      "sha256": "62aa4cdfa4fb86c4e5da993113c4046598574e64442acf713c2159e5194b1292",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
@@ -247,25 +247,25 @@
     },
     {
       "path": "fixtures/replay/budget-cost-stop-reason.json",
-      "sha256": "960aa5e500614982fed35b2ca1115ab9906cd2ae17f892c32814e98b2a7216e0",
+      "sha256": "d0de9e07ea350a3c2cb05d4966a7f3b807db301ede6fe528d39310afe56b3d64",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/replay/duplicate-event.json",
-      "sha256": "56ddfa3b9da9bc8a1b01ef455b4d199cf58bb4797e91a99b2d3fe1ebdb8152d1",
+      "sha256": "7e73a3741c23ac6381746a6c2565bcfdfcb2cf4bf525aeeb137046ecf3915ae1",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/replay/failed-run.json",
-      "sha256": "21dba7a740d6ea2951a5314abd9e00713b2ab888986764f34c4a3cfa5b9daaf4",
+      "sha256": "e470e5c731f0cf440aba4c2ea48ef37cef44bcbe9330552d0cabda7410115083",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/replay/golden/budget-cost-stop-reason.snapshot.json",
-      "sha256": "38e2ab15985ce1139956d612a82eca71519102f87e839c63a4242e2e58fb8c49",
+      "sha256": "2fcdf53132ab85af633fcafda7f6e1d754b20c0eb18c4e37b04193f67359a8b3",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },
@@ -277,7 +277,7 @@
     },
     {
       "path": "fixtures/replay/golden/duplicate-event.snapshot.json",
-      "sha256": "46950d9d25749272384d64c3671dfd2947d421d5ad0e39dc458a24bd82049d85",
+      "sha256": "5c78bfb538001d7deb1d14d213c266bb37678353551dbb0f0eb80daf5d87efdf",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },
@@ -289,7 +289,7 @@
     },
     {
       "path": "fixtures/replay/golden/failed-run.snapshot.json",
-      "sha256": "0464429ca6bd0eb321b3cbdf2720adf471d9ab19d7bb3ed13120ddf309dda512",
+      "sha256": "f4343ad8fe30aba74282cb55fff39fbbdf32ad2756caea463ffe855f18929a76",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },
@@ -301,7 +301,7 @@
     },
     {
       "path": "fixtures/replay/golden/happy-path.snapshot.json",
-      "sha256": "0a69c17e768e6776c8d7287a9fb8807348472a635a5b1fe1f0e9ebf452f83c08",
+      "sha256": "e4bf95ac0116a3f0102ccbd2bd0ba99092b5c8b2e62f797cb6e8473d90976d1d",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },
@@ -313,7 +313,7 @@
     },
     {
       "path": "fixtures/replay/golden/interrupted-run.snapshot.json",
-      "sha256": "a170a7d9c8ff334986fc0115453a29f47a098cfdf2c0d37312bbe5db2e45a9f0",
+      "sha256": "7f0c959e709451e971b91e0b0b731dfd5d6f9805a3cc21508ca91ea3a282724e",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },
@@ -325,7 +325,7 @@
     },
     {
       "path": "fixtures/replay/golden/semantic-tool-artifact-happy-path.snapshot.json",
-      "sha256": "f2b65d38e461773aa221dd70b89baed1d49b412b936df1770bb4eeb354b16c60",
+      "sha256": "8273c1f883d4b7f82cb091c0ba5fdb278375feb6568b6392480979f7488f450e",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },
@@ -337,7 +337,7 @@
     },
     {
       "path": "fixtures/replay/golden/semantic-tool-conflict-duplicate-retry.snapshot.json",
-      "sha256": "6138a030f643074a4d039fc7ab0302b17e087389a5d795ab93c15b3c9647173a",
+      "sha256": "c4a467c8717a7c96833121c052f2fb25304e1d93efab9433cda5ded8e394daf1",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },
@@ -349,7 +349,7 @@
     },
     {
       "path": "fixtures/replay/golden/semantic-tool-denial-redaction.snapshot.json",
-      "sha256": "2bd547de7ef2b948c370fdaf2106013e1ee71b6a3260d08fbc41111fd7507bfe",
+      "sha256": "77b835988e82a3e9f331ad139b8825a5356b6406247053d93b4b9b9f5f06e012",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },
@@ -361,7 +361,7 @@
     },
     {
       "path": "fixtures/replay/golden/semantic-tool-governance-wake-monitor.snapshot.json",
-      "sha256": "9cb0360183268de20d64d06584b86394bb3eeac053d2eef9e06d0c0668a1ad3d",
+      "sha256": "3dc7b988a0517e43a780b6f897f1794d2073170b7da653cc2fd1e46059e2a9bd",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },
@@ -373,7 +373,7 @@
     },
     {
       "path": "fixtures/replay/golden/semantic-tool-unknown-optional-envelope.snapshot.json",
-      "sha256": "501038faa645ef30a507c73069807cd3d99296b7782c913caf3e58f55be55645",
+      "sha256": "5e1eaef0c10e1d1e05ed14abfe76a6139219d7dcf21d4da44668533871da89bf",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },
@@ -385,7 +385,7 @@
     },
     {
       "path": "fixtures/replay/golden/source-gap.snapshot.json",
-      "sha256": "931beeed650cfc38f40fdd9706c38888c4e98e31778247e962d1f347cd244640",
+      "sha256": "6edd2d3efb6ab8426d321f3aeb4df3b71659a96b15e0ec5754adde34c20fe80d",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },
@@ -397,7 +397,7 @@
     },
     {
       "path": "fixtures/replay/golden/unknown-optional-fields.snapshot.json",
-      "sha256": "2defe8a2316d5cc0e5d3f351f9d662d43748a2a0a8bdacc52012eaf2576d37af",
+      "sha256": "de2540eba5c5704fce02329395b194a30fd66a33eebf95f6eab7165e7ec5bb3e",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },
@@ -409,67 +409,67 @@
     },
     {
       "path": "fixtures/replay/happy-path.json",
-      "sha256": "75c0a9ba68636956fd4dcbe7ea62f90380559c44594272d78b2aaaac728d8e62",
+      "sha256": "b0f93fe791805baa7fa905d31d73ab0fd94ee3793457a1d6f3ccd18ef17efd83",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/replay/interrupted-run.json",
-      "sha256": "6b5a2632d579a90b2001e0e020c6d12e66ee9e0160d4bae7c10b3b2c5e6b5dec",
+      "sha256": "83bf5f19a9754f51515b5e72ddfd2ef4ea2a70447a7d3b19b0b5094aba00f0d0",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/replay/semantic-tool-artifact-happy-path.json",
-      "sha256": "68a0399bbf1bbb4570f26ff323bf50e60c58ebd1e888fd843f8c8a663443f4f6",
+      "sha256": "d7a38912baaee2e9b7cbf5b62cb9f7c99ca152e4cc8d586a07eda994a3d50f18",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/replay/semantic-tool-conflict-duplicate-retry.json",
-      "sha256": "f623727cb950e7cbb3734cfc6d716de9e9fa8b9b0a0cc064a9e95d4db8cc8af5",
+      "sha256": "a85016475d9e17cd89791fd1cac18bd9788eb080a95c6e01beb50ddaf6534fd5",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/replay/semantic-tool-denial-redaction.json",
-      "sha256": "dfa0f0ea0c7ce0bb0cf8a2f3221f5e27e999d35d264979221f7dfd7d5b1a5efd",
+      "sha256": "f1241f792a6e03dbb61618adeff3faaaa1267ab5a986e464713ed14efb56ccf7",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/replay/semantic-tool-governance-wake-monitor.json",
-      "sha256": "53ee3e4fdd54d475828bdcd93b8452abe3d8561c0547c5831385521b374f026b",
+      "sha256": "a970e9fd13d2efbbf8a0958b82bc893fcdb6f32178c0fb2bbd586882ee721dcf",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/replay/semantic-tool-unknown-optional-envelope.json",
-      "sha256": "0039864a924a6a775a723f53ffc625a6ebc9551887fe369dd98b1a31fcf31714",
+      "sha256": "cb25b451ad63d47887baff1e25ed768e2e9f7848676d1fe701e721f6c8c2aba2",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/replay/semantic-tool-unsupported-required-version.json",
-      "sha256": "af90bd11cf87db6b7b6786e754b08ea4a663ee72169edc82da5c0ecb3e776a99",
+      "sha256": "0c21be8c6f107c87d6b339d2cfe317caf01a54f48f2086d540ef85061b4ae3d9",
       "expectation": "reject",
       "compatibilityCase": "unknown-required-version"
     },
     {
       "path": "fixtures/replay/source-gap.json",
-      "sha256": "0b736672848682ee928f0e0c06dbde41181df02ec454c0c7c9bec0fc4250d346",
+      "sha256": "2263ff83b48f71766fe80a47e36a1ea3a04739cb24a655e8a8d75fd09386594c",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/replay/unknown-optional-fields.json",
-      "sha256": "4392b90d2790304628dc0528877c1413228a26272c956bdfb84cbc3f315a6961",
+      "sha256": "b033f352bc68b5183f5dab246e082123a171785ea24d98463350da19d01d0c43",
       "expectation": "accept",
       "compatibilityCase": "additive-optional-fields"
     },
     {
       "path": "fixtures/replay/unsupported-required-version.json",
-      "sha256": "6aed5c1e135edd5c4ede7218b937773699afc3a21c60c6df643b205ae291d993",
+      "sha256": "9f7ab8071564f5b7d1381f9fd5b08ca3d24fd9e83de27697f1e746b68cc88731",
       "expectation": "reject",
       "compatibilityCase": "unknown-required-version"
     }

@@ -202,7 +202,7 @@
       "priority": 0,
       "emittedAt": "2026-08-07T12:00:00.110Z",
       "payload": {
-        "schema": "paperclip.prp.terminal.v1",
+        "schema": "wardmote.prp.terminal.v1",
         "turnTerminalState": "completed",
         "runTerminalState": "succeeded",
         "reportedWorkDisposition": "done",
