@@ -441,8 +441,6 @@
     ["packages/wardmote-runner/src/drivers/acpx/native-distribution-integrity.test.ts",1,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/native-distribution-integrity.ts",3,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/permission-policy.test.ts",6,"belum-diganti"],
-    ["packages/wardmote-runner/src/drivers/acpx/recovery-identity.test.ts",1,"belum-diganti"],
-    ["packages/wardmote-runner/src/drivers/acpx/recovery-identity.ts",1,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/retired-codex-credential-names.ts",2,"migrasi-otomatis"],
     ["packages/wardmote-runner/src/drivers/acpx/usage-accounting.test.ts",1,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/usage-accounting.ts",2,"belum-diganti"],

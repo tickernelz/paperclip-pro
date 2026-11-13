@@ -1,0 +1,50 @@
+{
+  "commandDigest": "sha256:5636781fd7ac18f218ea9d8d631c08fb2d6b5e4c7ec33abbeb70a40317ea4ed6",
+  "declaration": {
+    "schema": "wardmote.acpx_profile_declaration.v1",
+    "agent": "pi",
+    "agentProfileVersion": 29,
+    "acpxVersion": "0.13.1",
+    "agentServerVersion": "0.0.33",
+    "agentRuntimeVersion": "1.0.0",
+    "nodeVersion": "24.21.0",
+    "closure": {
+      "darwin-arm64": "806bfaf8f69bae8fe6804567335d0ed5df1cb7b89f1120f557e419a7b69e70ff",
+      "darwin-x64": "820985dfcc92e387b7d13ba67d219dfa9e0c2dcea126fd7dbf1022fe158662eb",
+      "linux-x64": "afb6d58a0ae42da1896827117104f6153ab3d5fa1cff91f37f58838a382f1967"
+    },
+    "wrapperSha256": "e64bd04183eac42095be7ad7df81a0f603c11fb640777e5e8318d72d6550bfc1",
+    "helperSha256": "02b9f5553f941b3c839590b9687557b69427fe2ba5619b33f772672aa80abe91",
+    "extensionSha256": "97f666fc35f0978dcd882c68dbafa01dc3de6509752fd5f8abaac794b9dff4d2",
+    "agentFilesBinding": "registered-runtime-context-v1",
+    "nativeQuestions": "select-confirm-input-editor-v4-root-field-types",
+    "pathPolicy": "sdk-normalization-v1",
+    "mcpToolNames": "provider-safe-exact-source-v1",
+    "acpxPatchSha256": "87350d875e2d1c3b3e330edbb4658827e4d85232826058ef35f9bbb52b46900a",
+    "nativeAssistantMessages": "pi1-rpc-deltas-v3-bound-message-and-tool-receipts",
+    "nativeNotices": "session-extension-v2-bounded-runtime-failure",
+    "messageProjectionSha256": "17d1e91b948dfa6a56e1905645add52b502041ad843c8d50a13b07956f22aadd",
+    "noticeProjectionSha256": "d2535ff62c3a10365a0d144cab759a011208771efd4d5147bef75bd25e16af10",
+    "sharedRuntimeContract": "wardmote.acpx-runtime-contract.v1",
+    "nativeInputDisposition": "queued-only-v1",
+    "cacheWarming": "disabled-owned-decision-v1",
+    "thinkingLevel": {
+      "supported": [
+        "off",
+        "low",
+        "high",
+        "max"
+      ],
+      "newConfigurationDefault": "low",
+      "admission": "explicit-native-effective-before-prompt-v1",
+      "recovery": "mode-bound-v1"
+    },
+    "modelSelection": "caller-selected-native-verified-v1",
+    "providerConfigurationSourceSha256": "ecfd3b1223dad1ba14565285db65de13491463addc1511979d7fa42a72fa7989",
+    "credentialEnvironmentSourceSha256": "eff089fe12730f55d65af8e4bf8a0779240a2beb48ccc10b370e551d69c028d7",
+    "runtimeSandboxSourceSha256": "40bb83a31d4d880718c47ad0c8c5e449863aa9e8ec1c28362bac4f97e16b6a7c",
+    "recoveryIdentitySourceSha256": "b4f2d4d4bf3a35489c80d80dad337e95f32004bc484446b7f6ee05c17c0e6325",
+    "nativeCancellation": "acknowledged-cancelled-terminal-preserves-usage-v1",
+    "dependencySecurityPatchSha256": "5273a195b952f233336122842faaf650193c04f36b9359d20d4d63079b0ce814"
+  }
+}

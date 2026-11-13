@@ -105,7 +105,7 @@ export async function createAcpxRecoveryBinding(input: {
       ...(mode ? { mode } : {}),
       ...(piThinkingLevel ? { piThinkingLevel } : {}),
     }),
-  ).replace("sha256:", "paperclip-");
+  ).replace("sha256:", "wardmote-");
   return {
     normalizedSessionId: input.normalizedSessionId,
     workspacePath,
