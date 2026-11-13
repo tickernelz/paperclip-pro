@@ -169,7 +169,7 @@ export function scaffoldPluginProject(options: ScaffoldPluginOptions): string {
       worker: "./dist/worker.js",
       ui: "./dist/ui/"
     },
-    keywords: ["paperclip", "plugin", category],
+    keywords: ["wardmote", "plugin", category],
     author,
     license: "MIT",
     ...(packedSharedTarball

@@ -8109,7 +8109,7 @@ async function executeWardmoteNativeSessionWithinScope(
     if (input.onLog)
       await input.onLog(
         "stdout",
-        `${JSON.stringify({ type: "paperclip.plan.synchronization", synchronization })}\n`,
+        `${JSON.stringify({ type: "wardmote.plan.synchronization", synchronization })}\n`,
       );
   };
   let nativeSessionExecuteStartedAtMs = Date.now();
@@ -8407,7 +8407,7 @@ async function executeWardmoteNativeSessionWithinScope(
           await input.onLog(
             "stdout",
             `${JSON.stringify({
-              type: "paperclip.runtime_input.metric",
+              type: "wardmote.runtime_input.metric",
               ...inputMetric,
             })}\n`,
           );
@@ -8423,7 +8423,7 @@ async function executeWardmoteNativeSessionWithinScope(
             await input.onLog(
               "stdout",
               `${JSON.stringify({
-                type: "paperclip.runtime_input.metric",
+                type: "wardmote.runtime_input.metric",
                 outcome:
                   record(event.payload).reason === "durable_handoff"
                     ? "durable_handoff_materialized"

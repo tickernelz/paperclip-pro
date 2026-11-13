@@ -25,7 +25,7 @@ export interface WardmoteEvalResult<TOutput = unknown, TScore = unknown> {
 }
 
 export class WardmoteEvalKernelConfigurationError extends Error {
-  readonly code = "paperclip_eval_kernel_configuration_invalid" as const;
+  readonly code = "wardmote_eval_kernel_configuration_invalid" as const;
 
   constructor(message: string) {
     super(message);

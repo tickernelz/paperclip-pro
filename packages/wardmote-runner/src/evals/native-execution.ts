@@ -110,7 +110,7 @@ export interface WardmoteNativeExecutionV1 {
 }
 
 export class WardmoteNativeExecutionError extends Error {
-  readonly code = "paperclip_native_execution_invalid" as const;
+  readonly code = "wardmote_native_execution_invalid" as const;
 
   constructor(
     message: string,
