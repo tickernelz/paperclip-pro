@@ -70,7 +70,6 @@
     [".agents/skills/deal-with-security-advisory/SKILL.md",18,"repo-eksternal"],
     [".agents/skills/pr-gardening/SKILL.md",8,"repo-eksternal"],
     [".agents/skills/prepare-wardmote-pr/SKILL.md",4,"repo-eksternal"],
-    [".agents/skills/release-changelog-discord-message/SKILL.md",16,"belum-diganti"],
     [".agents/skills/release-changelog/SKILL.md",2,"repo-eksternal"],
     [".agents/skills/terminal-bench-loop/SKILL.md",4,"repo-eksternal"],
     [".agents/skills/wardmote-evals/SKILL.md",3,"repo-eksternal"],
@@ -593,7 +592,6 @@
     ["scripts/extract-proposed-events.mjs",8,"artefak-eksternal"],
     ["scripts/fork/rename-to-paperclip-pro.mjs",47,"upstream"],
     ["scripts/ingest-app-definitions.mjs",1,"repo-eksternal"],
-    ["scripts/release.sh",1,"belum-diganti"],
     ["scripts/standard-image-contract.mjs",4,"artefak-eksternal"],
     ["scripts/test-upgrade-path.sh",9,"migrasi-otomatis"],
     ["scripts/verify-cursor-npm-install.mjs",3,"belum-diganti"],
@@ -654,7 +652,7 @@
     ["server/src/services/voice/voice-inbound-service.ts",3,"artefak-eksternal"],
     ["skills/complain/LICENSE",1,"lisensi"],
     ["skills/suggestion-box/LICENSE",1,"lisensi"],
-    ["tests/e2e/chat-adapters-ui.shared.ts",3,"belum-diganti"],
+    ["tests/e2e/chat-adapters-ui.shared.ts",3,"artefak-eksternal"],
     ["tests/e2e/runner-e2e-dashboard.spec.ts",1,"belum-diganti"],
     ["tests/hiring-ai-connections/README.md",2,"artefak-eksternal"],
     ["tests/lifecycle-baseline/README.md",28,"repo-eksternal"],
@@ -717,7 +715,7 @@
     ["ui/src/lib/retired-storage-keys.test.ts",11,"migrasi-otomatis"],
     ["ui/src/lib/retired-storage-keys.ts",2,"migrasi-otomatis"],
     ["ui/src/lib/sw-offline-data.test.ts",1,"uji-regresi"],
-    ["ui/src/pages/apps/chat/ChatEndpointSetup.tsx",1,"belum-diganti"],
-    ["ui/src/pages/apps/chat/chat-ui-contract.test.ts",2,"belum-diganti"]
+    ["ui/src/pages/apps/chat/ChatEndpointSetup.tsx",1,"artefak-eksternal"],
+    ["ui/src/pages/apps/chat/chat-ui-contract.test.ts",2,"artefak-eksternal"]
   ]
 }
