@@ -91,7 +91,7 @@ Host prod-web
 
 ### Which agents can use these hosts
 
-Agents that run on this server as the Wardmote user with the normal home directory read the same `~/.ssh/config`, so `ssh -o BatchMode=yes <name> true` works for them once the key is accepted by the server. Agents running in a sandbox get a managed `HOME` and agents on an SSH environment run on another machine; neither sees this file.
+Agents that run directly on this server as the Wardmote user (`omp_local` without a sandbox or SSH environment) read the same `~/.ssh/config`: OpenSSH takes `~` from the user's passwd entry, not from `$HOME`, so a per-run `HOME` does not change it. Such an agent can run `ssh -o BatchMode=yes <name> true` once the server accepts the key. Agents in a sandbox run inside a container, and agents on an SSH environment run on that machine; neither sees this file.
 
 All SSH host, key and connection-test routes need local terminal access (instance admin or `local_trusted`), the same as a local shell, because `ssh_config` can run commands as the Wardmote user.
 
