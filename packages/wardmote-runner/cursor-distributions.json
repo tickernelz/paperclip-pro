@@ -5,7 +5,7 @@
     "darwin-arm64": {
       "url": "https://downloads.cursor.com/lab/2026.09.26-dd393fe/darwin/arm64/agent-cli-package.tar.gz",
       "archiveSha256": "538827d96a779bab854a865c8e42859e8e87db34b5f69770261b90fc8cfff191",
-      "closureSha256": "257424bd48e35412091c6adfc61e4648e836757ec1d240d890bba81a24918c30",
+      "closureSha256": "48c1ded408190e7f36f9bb25478465547f2e46e38b616f1e4d0c417d6bcfe7d5",
       "executable": "node",
       "entrypoint": "index.js",
       "vendorClosureSha256": "77394184a89b0e7384971181da19c3c82d83a399b04e7944b3f94fe3d7e62b25"
@@ -13,7 +13,7 @@
     "darwin-x64": {
       "url": "https://downloads.cursor.com/lab/2026.09.26-dd393fe/darwin/x64/agent-cli-package.tar.gz",
       "archiveSha256": "ed1771c44cbf0f8059c67cac0d939e6a60eb730bd066d7dc4cbb14de314cfb6e",
-      "closureSha256": "6f28c799c5afdc64fbdff8a2157f565f17ae7615efe014ac389d63bf70cf2be2",
+      "closureSha256": "d4aac8a84e91c7fe65777ed775204bcd337f1cc8b9d4d822e299ca48cee98594",
       "executable": "node",
       "entrypoint": "index.js",
       "vendorClosureSha256": "7c8775160af74e5fb8d25a30e8412c1a6476b0661529078a686e5118fd1c5e5f"
