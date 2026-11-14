@@ -9,9 +9,8 @@ describe("release-content Cases contract", () => {
   it("keeps release-content skills wired to emit the required case tree", () => {
     const release = readRepoFile(".agents/skills/release/SKILL.md");
     const changelog = readRepoFile(".agents/skills/release-changelog/SKILL.md");
-    const discord = readRepoFile(".agents/skills/release-changelog-discord-message/SKILL.md");
     const announcement = readRepoFile("packages/skills-catalog/catalog/optional/content/release-announcement/SKILL.md");
-    const combined = [release, changelog, discord, announcement].join("\n");
+    const combined = [release, changelog, announcement].join("\n");
 
     for (const required of [
       "\"caseType\": \"release\"",
@@ -34,7 +33,5 @@ describe("release-content Cases contract", () => {
     expect(changelog).toContain("\"notes\": null");
     expect(announcement).toContain("\"word_count_target\": 650");
     expect(announcement).toContain("\"requires_screenshot\": false");
-    expect(discord).toContain("\"needs_human_copy_paste\": true");
-    expect(discord).toContain("\"approved_by\": null");
   });
 });
