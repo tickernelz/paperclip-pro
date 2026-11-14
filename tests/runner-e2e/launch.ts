@@ -409,7 +409,7 @@ function syntheticResult(
 ): RunnerE2EResult {
   const finishedAtMs = Date.now();
   return {
-    schema: "paperclip.runner-e2e.result/v2",
+    schema: "wardmote.runner-e2e.result/v2",
     executionId: execution.id,
     suiteId: execution.suite.id,
     suiteDefinitionHash: execution.suiteDefinitionHash,

@@ -273,7 +273,7 @@ export interface RunnerE2EBillingSummary {
 }
 
 export interface RunnerE2EResult {
-  schema: "paperclip.runner-e2e.result/v1" | "paperclip.runner-e2e.result/v2";
+  schema: "wardmote.runner-e2e.result/v1" | "wardmote.runner-e2e.result/v2";
   executionId: string;
   suiteId?: string;
   suiteDefinitionHash?: string;
@@ -380,7 +380,7 @@ export interface RunnerE2EAggregateBillingSummary {
 }
 
 export interface RunnerE2ECampaign {
-  schema: "paperclip.runner-e2e.campaign/v2";
+  schema: "wardmote.runner-e2e.campaign/v2";
   campaignId: string;
   generatedAt: string;
   source: {
@@ -442,7 +442,7 @@ export interface RunnerE2EHistoryCampaign {
 }
 
 export interface RunnerE2EHistoryIndex {
-  schema: "paperclip.runner-e2e.history/v1";
+  schema: "wardmote.runner-e2e.history/v1";
   updatedAt: string;
   latestCampaignId: string | null;
   latestGreenCampaignId: string | null;

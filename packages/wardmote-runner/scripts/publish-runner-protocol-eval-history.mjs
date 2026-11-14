@@ -231,7 +231,7 @@ export async function validatePublicProtocolEvalReport(
   }
   const campaign = await loadObject(join(root, "campaign.json"));
   if (
-    campaign.schema !== "paperclip.runner-protocol-eval.campaign/v1" ||
+    campaign.schema !== "wardmote.runner-protocol-eval.campaign/v1" ||
     !SAFE_CAMPAIGN.test(String(campaign.campaignId ?? ""))
   ) {
     throw new Error("Public report campaign metadata is invalid");
@@ -267,7 +267,7 @@ export async function createProtocolEvalBundleManifest(
     }),
   );
   return {
-    schema: "paperclip.runner-protocol-eval.bundle/v1",
+    schema: "wardmote.runner-protocol-eval.bundle/v1",
     campaignId,
     bundleDigest: createHash("sha256")
       .update(JSON.stringify(entries))
@@ -278,7 +278,7 @@ export async function createProtocolEvalBundleManifest(
 
 export function emptyProtocolEvalHistory() {
   return {
-    schema: "paperclip.runner-protocol-eval.history/v1",
+    schema: "wardmote.runner-protocol-eval.history/v1",
     updatedAt: new Date(0).toISOString(),
     latestCampaignId: null,
     latestGreenCampaignId: null,
@@ -303,7 +303,7 @@ export function protocolEvalHistoryRecord(campaign, publicRoot) {
 }
 
 export function mergeProtocolEvalHistory(history, record) {
-  if (history.schema !== "paperclip.runner-protocol-eval.history/v1") {
+  if (history.schema !== "wardmote.runner-protocol-eval.history/v1") {
     throw new Error("Unsupported protocol eval history schema");
   }
   const existing = history.campaigns.find(
@@ -352,19 +352,19 @@ export function buildProtocolEvalPointers(history) {
           campaignId: campaign.campaignId,
           generatedAt: campaign.generatedAt,
           publicUrl: campaign.publicUrl,
-          wardmoteSha: campaign.source?.paperclip?.sha ?? null,
+          wardmoteSha: campaign.source?.wardmote?.sha ?? null,
           evalsSha: campaign.source?.evals?.sha ?? null,
         }
       : null;
   };
   return {
     latest: {
-      schema: "paperclip.runner-protocol-eval.pointer/v1",
+      schema: "wardmote.runner-protocol-eval.pointer/v1",
       updatedAt: history.updatedAt,
       campaign: project(history.latestCampaignId),
     },
     latestGreen: {
-      schema: "paperclip.runner-protocol-eval.pointer/v1",
+      schema: "wardmote.runner-protocol-eval.pointer/v1",
       updatedAt: history.updatedAt,
       campaign: project(history.latestGreenCampaignId),
     },

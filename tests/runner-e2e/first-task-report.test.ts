@@ -106,7 +106,7 @@ function recording(): FirstTaskEvidence {
 }
 function result(): RunnerE2EResult {
   return {
-    schema: "paperclip.runner-e2e.result/v2",
+    schema: "wardmote.runner-e2e.result/v2",
     suiteId: "first-task",
     executionId: "first-task.legacy-codex.local.clear-task-first-response",
     attempt: 1,
