@@ -191,6 +191,9 @@ export interface WorkerRpcHost {
    * should have already been called via the `shutdown` RPC method).
    */
   stop(): void;
+
+  /** Permanently dispose retained handlers, sessions, pending calls, and timers. */
+  dispose(): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -338,6 +341,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
   let initialized = false;
   const idleDrain = createPluginIdleDrain();
   const unsettledHostCalls = new Map<string | number, () => void>();
+  const MAX_UNSETTLED_HOST_CALLS = 256;
   let manifest: WardmotePluginManifestV1 | null = null;
   let currentConfig: Record<string, unknown> = {};
   // The company whose config was last applied via configChanged. Used to fail
@@ -396,6 +400,14 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
         return;
       }
 
+      if (pendingRequests.size >= MAX_UNSETTLED_HOST_CALLS) {
+        reject(new JsonRpcCallError({
+          code: PLUGIN_RPC_ERROR_CODES.WORKER_UNAVAILABLE,
+          message: `Worker RPC host has reached its ${MAX_UNSETTLED_HOST_CALLS} pending-call limit`,
+        }));
+        return;
+      }
+
       if (nextOutboundId >= MAX_OUTBOUND_ID) {
         nextOutboundId = 1;
       }
@@ -411,6 +423,8 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
         settled = true;
         clearTimeout(timer);
         pendingRequests.delete(id);
+        unsettledHostCalls.get(id)?.();
+        unsettledHostCalls.delete(id);
         fn(value);
       };
 
@@ -2352,6 +2366,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
   // -----------------------------------------------------------------------
 
   function cleanup(): void {
+    if (!running) return;
     running = false;
     idleDrain.close();
 
@@ -2361,9 +2376,11 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       readline = null;
     }
 
-    // Reject all pending outbound calls
+    // Reject all pending outbound calls and release every idle-drain token.
     for (const [id, pending] of pendingRequests) {
       clearTimeout(pending.timer);
+      unsettledHostCalls.get(id)?.();
+      unsettledHostCalls.delete(id);
       pending.resolve(
         createErrorResponse(
           id,
@@ -2373,7 +2390,19 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       );
     }
     pendingRequests.clear();
+    for (const finish of unsettledHostCalls.values()) finish();
+    unsettledHostCalls.clear();
     sessionEventCallbacks.clear();
+    eventHandlers.length = 0;
+    jobHandlers.clear();
+    launcherRegistrations.clear();
+    dataHandlers.clear();
+    actionHandlers.clear();
+    toolHandlers.clear();
+    manifest = null;
+    currentConfig = {};
+    configCompanyId = null;
+    databaseNamespace = null;
   }
 
   // -----------------------------------------------------------------------
@@ -2432,6 +2461,10 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
     },
 
     stop() {
+      cleanup();
+    },
+
+    dispose() {
       cleanup();
     },
   };

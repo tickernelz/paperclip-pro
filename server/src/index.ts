@@ -1158,8 +1158,9 @@ async function startServerWithDatabaseTeardown(
   }>) | null = null;
   let beginHeartbeatServerShutdown: ((signal: "SIGINT" | "SIGTERM") => void) | null = null;
   let heartbeatSchedulerStopped = false;
+  let serverDatabaseBackupInterval: ReturnType<typeof setInterval> | null = null;
   const attachmentRetention = attachmentRetentionService(db as any, { storage: storageService });
-  setInterval(() => {
+  const attachmentRetentionInterval = setInterval(() => {
     void attachmentRetention.scheduledTick().catch((err: unknown) => {
       logger.error({ err }, "scheduled attachment retention failed");
     });
@@ -1171,12 +1172,12 @@ async function startServerWithDatabaseTeardown(
   void diskGuard.tick().catch((err: unknown) => {
     logger.error({ err }, "disk guard check failed");
   });
-  setInterval(() => {
+  const diskGuardInterval = setInterval(() => {
     void diskGuard.tick().catch((err: unknown) => {
       logger.error({ err }, "disk guard check failed");
     });
   }, diskGuard.intervalMs);
-  setInterval(() => {
+  const runLogRetentionInterval = setInterval(() => {
     void runLogRetention.tick().catch((err: unknown) => {
       logger.error({ err }, "scheduled run log retention failed");
     });
@@ -1918,12 +1919,13 @@ async function startServerWithDatabaseTeardown(
     if (existsSync(idleBackupWakeMarker(config.databaseBackupDir))) {
       await runServerDatabaseBackup("scheduled").catch(() => {});
     }
-    setInterval(() => {
+    serverDatabaseBackupInterval = setInterval(() => {
       if (isIdleTaskDrainActive()) return;
       void runServerDatabaseBackup("scheduled").catch(() => {
         // runServerDatabaseBackup already logs the failure with context.
       });
     }, backupIntervalMs);
+    serverDatabaseBackupInterval.unref?.();
   }
   
   // Wait for external adapters to finish loading before accepting requests.
@@ -2006,10 +2008,17 @@ async function startServerWithDatabaseTeardown(
     unsubscribeChatCompletions();
     unsubscribeNotifications();
     await deliveryWork.stop();
+    clearInterval(attachmentRetentionInterval);
+    clearInterval(diskGuardInterval);
+    clearInterval(runLogRetentionInterval);
     clearInterval(executionControlInterval);
     if (heartbeatSchedulerInterval) {
       clearInterval(heartbeatSchedulerInterval);
       heartbeatSchedulerInterval = null;
+    }
+    if (serverDatabaseBackupInterval) {
+      clearInterval(serverDatabaseBackupInterval);
+      serverDatabaseBackupInterval = null;
     }
 
     const heartbeatShutdown = await coordinateHeartbeatSchedulerShutdown({
