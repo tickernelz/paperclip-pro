@@ -21,7 +21,7 @@ export function cursorNativeDistributionSpec(
   const distributionRoot = resolveCursorDistributionRoot(resolveRunnerProviderAssetsRoot(import.meta.url, "cursor"), distribution.closureSha256, platform, architecture);
   return {
     distributionRoot,
-    manifestPath: join(distributionRoot, ".paperclip-cursor-closure.json"),
+    manifestPath: join(distributionRoot, ".wardmote-cursor-closure.json"),
     expectedClosureSha256: distribution.closureSha256,
     executable: distribution.executable,
     entrypoint: distribution.entrypoint,

@@ -81,7 +81,7 @@ export async function qualifyCursorRuntimePatch(vendorRoot) {
     evaluate(new Error("Upgrade your plan to continue"));
     platforms.push({ instructions: await qualifyCursorInstructions(source, platform, vendorRoot), platform, file: pin.file, sourceSha256: pin.before, patchedSha256: pin.after, driftRejected: true, fullChunkCompiles: true, ambientMcpAccesses: 0, ownedMcpPreserved: true, hookConfigReads: 0, remoteTeamHookFetches: 0, typedActionErrors: true, assistantProseIgnored: true });
   }
-  return { schema: "paperclip.cursor.runtime-patch-proof.v1", patchVersion: CURSOR_RUNTIME_PATCH_VERSION, providerCalls: 0, qualification: "offline-only", platforms };
+  return { schema: "wardmote.cursor.runtime-patch-proof.v1", patchVersion: CURSOR_RUNTIME_PATCH_VERSION, providerCalls: 0, qualification: "offline-only", platforms };
 }
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
   assert.equal(process.argv.length, 3, `Usage: node ${fileURLToPath(import.meta.url)} <vendor-archive-root>`);

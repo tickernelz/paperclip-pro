@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.cursor_distribution.v1",
+  "schema": "wardmote.cursor_distribution.v1",
   "version": "2026.09.26-dd393fe",
   "platforms": {
     "darwin-arm64": {
@@ -21,11 +21,11 @@
     "linux-x64": {
       "url": "https://downloads.cursor.com/lab/2026.09.26-dd393fe/linux/x64/agent-cli-package.tar.gz",
       "archiveSha256": "8085fd120f5c71f4eae7fea26a043718e5644e3071e4fab3220a0e58c51f9593",
-      "closureSha256": "eadb8bb8ffb0450455b15b88c9b230307a9e149958a0c452d16dd157b4633d74",
+      "closureSha256": "61057c1ca16887205eab17ebe33c53189dc6a088445e3796006233fa34ab9f6d",
       "executable": "node",
       "entrypoint": "index.js",
       "vendorClosureSha256": "bf04ef8ea6a63191067a6b3e15139aa2c793d8419daab246aa3f0a012e1bbcd9"
     }
   },
-  "patchVersion": "paperclip-cursor-usage-v4"
+  "patchVersion": "wardmote-cursor-usage-v5"
 }

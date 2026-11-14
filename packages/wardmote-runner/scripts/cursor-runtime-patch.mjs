@@ -5,11 +5,11 @@ import cursorNativeUsageSource from "./cursor-native-usage-source.json" with { t
 
 // This is an owned ACP-only patch of the immutable vendor archive. The legacy
 // Cursor adapter and the vendor's interactive CLI are not changed.
-export const CURSOR_RUNTIME_PATCH_VERSION = "paperclip-cursor-usage-v4";
+export const CURSOR_RUNTIME_PATCH_VERSION = "wardmote-cursor-usage-v5";
 export const CURSOR_RUNTIME_PATCH_PINS = Object.freeze({
-  "darwin-arm64": { file: "5672.index.js", before: "7784c8b16d4e639814c13b12be2a687f5dc2cd98cbf29ed0a10820778ab1bf62", after: "35c5bf13b261ea884bb0e7b26ae7bd4c4999b0b4b08ab338bc22f2ccce2b8108" },
-  "darwin-x64": { file: "9841.index.js", before: "3c0aaf6ecc4fceb0f95e1731deec75384984570d14d0871cecec11972b948ac4", after: "5b2510248429febe1c9aead6ad43d35d89cdedc4dd057d4f07495efa33c7da55" },
-  "linux-x64": { file: "1699.index.js", before: "2de420f1b31e70ca74b083a1ce5b519c2abffa5789d71cc06e84d2c38acb7c07", after: "38fe96fa71463372bffdd9efa3e5608293ff075d079149fe20a1625783c4eb39" },
+  "darwin-arm64": { file: "5672.index.js", before: "7784c8b16d4e639814c13b12be2a687f5dc2cd98cbf29ed0a10820778ab1bf62", after: "fd33e97c480198cd46a638e70373988452cdc3c0a473dbc939305bd522692ff4" },
+  "darwin-x64": { file: "9841.index.js", before: "3c0aaf6ecc4fceb0f95e1731deec75384984570d14d0871cecec11972b948ac4", after: "e57db3426c82958407e707ed22f88da538cc52213377e949ff8ed73a055d30b8" },
+  "linux-x64": { file: "1699.index.js", before: "2de420f1b31e70ca74b083a1ce5b519c2abffa5789d71cc06e84d2c38acb7c07", after: "fe0083bcc4456557835b229fa7c023e894d5f6e4c0bf11a99f56fd8705f9299e" },
 });
 const digest = value => createHash("sha256").update(value).digest("hex");
 
@@ -48,11 +48,11 @@ if(wardmoteCursorInstructionSnapshot)return wardmoteCursorInstructionSnapshot;
 const raw=process.env.WARDMOTE_CURSOR_INSTRUCTIONS;
 if(typeof raw!=="string"||Buffer.byteLength(raw)>200000)throw new Error("Cursor instruction binding missing or oversized");
 let value;try{value=JSON.parse(raw)}catch{throw new Error("Cursor instruction binding invalid")}
-if(!value||typeof value!=="object"||Array.isArray(value)||Object.keys(value).sort().join(",")!=="content,digest,schema"||value.schema!=="paperclip.cursor.instructions.v1"||typeof value.content!=="string"||value.content.includes("\\0")||Buffer.byteLength(value.content)>32768||typeof value.digest!=="string"||!/^sha256:[a-f0-9]{64}$/.test(value.digest))throw new Error("Cursor instruction binding invalid");
+if(!value||typeof value!=="object"||Array.isArray(value)||Object.keys(value).sort().join(",")!=="content,digest,schema"||value.schema!=="wardmote.cursor.instructions.v1"||typeof value.content!=="string"||value.content.includes("\\0")||Buffer.byteLength(value.content)>32768||typeof value.digest!=="string"||!/^sha256:[a-f0-9]{64}$/.test(value.digest))throw new Error("Cursor instruction binding invalid");
 const digest="sha256:"+wardmoteCursorInstructionCrypto.createHash("sha256").update(value.content,"utf8").digest("hex");
 if(value.digest!==digest)throw new Error("Cursor instruction binding digest mismatch");
-const rules=value.content.length===0?[]:[new wardmoteCursorInstructionRules.DX({fullPath:"paperclip://runtime/instructions",content:value.content,type:new wardmoteCursorInstructionRules.f5({type:{case:"global",value:new wardmoteCursorInstructionRules.i9}})})];
-return wardmoteCursorInstructionSnapshot=Object.freeze({rules,ack:Object.freeze({schema:"paperclip.cursor.instructions.v1",digest,byteLength:Buffer.byteLength(value.content)})});
+const rules=value.content.length===0?[]:[new wardmoteCursorInstructionRules.DX({fullPath:"wardmote://runtime/instructions",content:value.content,type:new wardmoteCursorInstructionRules.f5({type:{case:"global",value:new wardmoteCursorInstructionRules.i9}})})];
+return wardmoteCursorInstructionSnapshot=Object.freeze({rules,ack:Object.freeze({schema:"wardmote.cursor.instructions.v1",digest,byteLength:Buffer.byteLength(value.content)})});
 }`);
   replace("cursorRulesService:n.cursorRulesService,", "cursorRulesService:n.cursorRulesService,additionalRules:wardmoteCursorInstructionState().rules,");
   replace("S={sessionId:o,modes:this.buildModesState(a),models:I,configOptions:w}", "S={sessionId:o,modes:this.buildModesState(a),models:I,configOptions:w,_meta:{wardmoteCursorInstructions:y.wardmoteInstructionState().ack}}");
@@ -67,17 +67,17 @@ return wardmoteCursorInstructionSnapshot=Object.freeze({rules,ack:Object.freeze(
   const sessionClass = platform === "darwin-arm64" ? "B" : "z";
   replace(`n.d(t,{m:()=>${sessionClass}});var s=n("node:fs/promises")`, `n.d(t,{m:()=>${sessionClass}});const ${errorType}=n(${JSON.stringify(sdk[0])}).GI;var s=n("node:fs/promises")`);
   const oldAction = 'if(e instanceof r.ao){const t=null!==(u={login:"Please sign in to continue",upgrade:"Upgrade your plan to continue",payment:"Add a payment method to continue",config:"Check your settings to continue"}[e.action])&&void 0!==u?u:e.message;return void(yield this.sendAgentMessageChunk(`\\n\\n${t}`))}';
-  const newAction = `if(e instanceof r.ao){const action=["login","upgrade","payment","config"].includes(e.action)?e.action:"unknown";throw new (${errorType})(action==="login"?-32000:-32603,"Cursor provider action required: "+action,{schema:"paperclip.cursor.provider-error.v1",kind:"action_required",action})}`;
+  const newAction = `if(e instanceof r.ao){const action=["login","upgrade","payment","config"].includes(e.action)?e.action:"unknown";throw new (${errorType})(action==="login"?-32000:-32603,"Cursor provider action required: "+action,{schema:"wardmote.cursor.provider-error.v1",kind:"action_required",action})}`;
   replace(oldAction, newAction);
   replace('if(e instanceof g.T&&e.code===m.C.Unauthenticated)return void(yield this.sendAgentMessageChunk("\\n\\nError: [unauthenticated] Backend rejected authentication. Verify this is a User API Key for the same endpoint/environment, then rerun with --debug for request-level auth logs."));'.replace('m.C.Unauthenticated', `${platform === "darwin-x64" ? "f" : "m"}.C.Unauthenticated`),
-    `if(e instanceof g.T&&e.code===${platform === "darwin-x64" ? "f" : "m"}.C.Unauthenticated)throw new (${errorType})(-32000,"Cursor provider authentication rejected",{schema:"paperclip.cursor.provider-error.v1",kind:"authentication_required"});`);
+    `if(e instanceof g.T&&e.code===${platform === "darwin-x64" ? "f" : "m"}.C.Unauthenticated)throw new (${errorType})(-32000,"Cursor provider authentication rejected",{schema:"wardmote.cursor.provider-error.v1",kind:"authentication_required"});`);
   // This diagnostic envelope never emits standard ACP usage or cost. Keep the
   // collector local to handlePrompt, including overlapping cancelled prompts.
   replace(`const ${errorType}=`, `const wardmoteCreateCursorUsage=${cursorNativeUsageSource};const ${errorType}=`);
   replace("handlePrompt(e){return V(this,void 0,void 0,(function*(){var t,n,o;", "handlePrompt(e){return V(this,void 0,void 0,(function*(){var t,n,o;const wardmoteUsage=wardmoteCreateCursorUsage(crypto.randomUUID());let wardmoteUsagePublisher,wardmoteUsageTurn;try{");
   replace("n.beginTurn(),d=()=>", "n.beginTurn();wardmoteUsagePublisher=this.subagentPublisher;wardmoteUsageTurn=l;if(wardmoteUsagePublisher&&l!==undefined){wardmoteUsagePublisher.wardmoteUsageCollectors??=new Map;wardmoteUsagePublisher.wardmoteUsageCollectors.set(l,wardmoteUsage)}const d=()=>");
   replace("yield this.processPrompt(e,s,l)", "yield this.processPrompt(e,s,l,wardmoteUsage)");
-  replace('{stopReason:"cancelled"}):{stopReason:"end_turn"}}))}claimTaskToolCall', '{stopReason:"cancelled",_meta:{paperclipCursorUsage:wardmoteUsage.finish()}}):{stopReason:"end_turn",_meta:{paperclipCursorUsage:wardmoteUsage.finish()}}}finally{wardmoteUsage.close();wardmoteUsagePublisher?.wardmoteUsageCollectors?.delete(wardmoteUsageTurn)}}))}claimTaskToolCall');
+  replace('{stopReason:"cancelled"}):{stopReason:"end_turn"}}))}claimTaskToolCall', '{stopReason:"cancelled",_meta:{wardmoteCursorUsage:wardmoteUsage.finish()}}):{stopReason:"end_turn",_meta:{wardmoteCursorUsage:wardmoteUsage.finish()}}}finally{wardmoteUsage.close();wardmoteUsagePublisher?.wardmoteUsageCollectors?.delete(wardmoteUsageTurn)}}))}claimTaskToolCall');
   replace("processPrompt(e,t,n){", "processPrompt(e,t,n,wardmoteUsage){");
   // A fresh sendUpdate closure for EACH native invocation prevents a delayed
   // callback from an earlier follow-up from being attributed to the next one.
@@ -95,7 +95,7 @@ export async function applyCursorRuntimePatch(directory, platform) {
   if (!pin) throw new Error("Cursor runtime patch platform is unsupported");
   const path = join(directory, pin.file);
   const patched = patchCursorRuntimeSource(await readFile(path, "utf8"), platform);
-  if (digest(patched) !== pin.after) throw new Error("Cursor runtime patch output digest mismatch");
+  if (digest(patched) !== pin.after) throw new Error(`Cursor runtime patch output digest mismatch for ${platform}: computed ${digest(patched)}`);
   await writeFile(path, patched);
   return { patchVersion: CURSOR_RUNTIME_PATCH_VERSION, file: pin.file, sha256: pin.after };
 }
