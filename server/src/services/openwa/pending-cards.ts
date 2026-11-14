@@ -16,6 +16,7 @@ import {
   openwaCardOriginChat,
   openwaCardRouteOf,
   openwaCardTarget,
+  openwaGroupStillPrivate,
   type OpenwaCardRoute,
 } from "./card-routing.js";
 
@@ -74,6 +75,13 @@ async function recipientsMayRead(
     if (!(await canActorReadIssuePrivacy(db, actor, issue))) return false;
   }
   return true;
+}
+
+/** Whether each card's staged route still holds in this chat: an origin_group card needs the group to still hold only owners and this number. */
+async function routesStillHold(db: DbOrTransaction, endpoint: EndpointRow, chatKey: string, routes: Record<string, unknown>): Promise<(cardId: string) => boolean> {
+  const privateGroupCards = new Set(Object.keys(routes).filter((id) => openwaCardRouteOf(routes[id])?.route === "origin_group"));
+  const groupPrivate = privateGroupCards.size > 0 ? await openwaGroupStillPrivate(db, endpoint, chatKey) : true;
+  return (cardId) => groupPrivate || !privateGroupCards.has(cardId);
 }
 
 /** Queues one owner-chat wake per active OpenWA endpoint for a new owner card, inside the card's transaction. */
@@ -223,8 +231,9 @@ export async function dispatchOpenwaPendingCardWake(db: Db, actionId: string): P
     }
     const [endpoint] = await db.select().from(chatEndpoints).where(and(eq(chatEndpoints.companyId, claimed.companyId), eq(chatEndpoints.id, claimed.endpointId))).limit(1);
     const recipients = endpoint ? await openwaCardChatRecipients(db, endpoint, String(payload.chatKey ?? "")) : [];
+    const sendable = endpoint ? await routesStillHold(db, endpoint, String(payload.chatKey ?? ""), record(openwa.cardRoutes)) : () => false;
     const readable = endpoint
-      ? await Promise.all(pendingCards.map((pending) => recipientsMayRead(db, endpoint, pending.issueId, recipients)))
+      ? await Promise.all(pendingCards.map(async (pending) => sendable(pending.id) && (await recipientsMayRead(db, endpoint, pending.issueId, recipients))))
       : [];
     if (!readable.some(Boolean)) {
       await settle("processed", { code: "openwa_pending_card_unreadable" });
@@ -335,8 +344,9 @@ export async function openwaPendingCardsForWake(
       ),
     )
     .orderBy(asc(issueThreadInteractions.createdAt));
+  const sendable = await routesStillHold(db, endpoint, input.chatKey, input.routes ?? {});
   const readable = await Promise.all(
-    rows.map(async (row) => openwaOwnerCard(row.card) && (await recipientsMayRead(db, endpoint, row.card.issueId, recipients))),
+    rows.map(async (row) => openwaOwnerCard(row.card) && sendable(row.card.id) && (await recipientsMayRead(db, endpoint, row.card.issueId, recipients))),
   );
   return rows.filter((_, index) => readable[index]).map(({ card, identifier, issueTitle, requestedBy }) => {
     const shape = pendingDecisionCardShape(card.kind, record(card.payload));

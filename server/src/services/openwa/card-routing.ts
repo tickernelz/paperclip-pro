@@ -245,6 +245,14 @@ export async function openwaCardTarget(
   return { ...dm, route: { route: "owner_dm", viaOwnerReport: false, sentTo: { chat: OWNER_DM_LABEL, kind: "dm" }, origin: summary } };
 }
 
+/** True while a group still holds only current owners and this number, as an origin_group card requires when it is sent. */
+export async function openwaGroupStillPrivate(db: DbOrTransaction, endpoint: EndpointRow, chatKey: string): Promise<boolean> {
+  const resource = await openwaChatResource(db, endpoint, chatKey);
+  const policy = openwaEndpointPolicySchema.parse(endpoint.policy ?? {});
+  if (!resource || resource.type !== "group_chat" || !openwaResourceGroupActive(policy, resource)) return false;
+  return onlyOwnersAndBot(endpoint, await openwaCurrentOwners(db, endpoint), resource);
+}
+
 export function openwaCardRouteOf(value: unknown): OpenwaCardRoute | null {
   const route = record(value);
   const sentTo = record(route.sentTo);
@@ -303,7 +311,7 @@ export async function openwaGroupAwaitsCardAnswer(db: DbOrTransaction, input: { 
       and exists (
         select 1 from issue_thread_interactions i
         where i.company_id = a.company_id and i.status = 'pending'
-          and i.id::text in (select jsonb_array_elements_text(coalesce(a.payload -> 'openwa' -> 'pendingCardIds', '[]'::jsonb)))
+          and i.id = any(array(select (jsonb_array_elements_text(coalesce(a.payload -> 'openwa' -> 'pendingCardIds', '[]'::jsonb)))::uuid))
       )
     limit 1`)) as unknown as unknown[];
   return rows.length > 0;

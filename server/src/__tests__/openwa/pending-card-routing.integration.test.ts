@@ -347,6 +347,23 @@ describe("OpenWA pending cards follow the task's origin chat (embedded Postgres 
     expect(dm.issueId).not.toBe(groupRun.issueId);
   }, 180_000);
 
+  it("(4) withholds an origin_group card when the group gains another member before the wake", async () => {
+    const t = await setup();
+    const groupRun = await runStart(t, await admitted(t, mention(BOT_GROUP, OWNER_PHONE, "tolong buatkan task invoice")));
+    await createCard(t, (await delegate(t, groupRun, "Fix invoice 42")).id);
+    const [action] = await cardActions(t);
+    expect(action!.conversationId).toBe((await chatConversation(t, BOT_GROUP)).id);
+    await db
+      .update(chatEndpointResources)
+      .set({ metadata: sql`${chatEndpointResources.metadata} || ${JSON.stringify({ participants: [jid(OWN_PHONE), jid(OWNER_PHONE), jid(MEMBER_A)], participantCount: 3 })}::jsonb` })
+      .where(and(eq(chatEndpointResources.endpointId, t.endpointId), sql`${chatEndpointResources.metadata}->>'chatKey' = ${BOT_GROUP}`));
+    await db.update(chatActions).set({ result: { retryAt: new Date(Date.now() - 1000).toISOString() } }).where(eq(chatActions.id, action!.id));
+    expect(await t.service.processPendingOpenwaPendingCards()).toBe(0);
+    const [settled] = await cardActions(t);
+    expect(settled).toMatchObject({ status: "processed", result: expect.objectContaining({ code: "openwa_pending_card_unreadable" }) });
+    expect(t.wakes.has(action!.id)).toBe(false);
+  }, 180_000);
+
   it("(2) sends a card from a crowded project group to that group's Report to owner via group, with its origin in the wake", async () => {
     const t = await setup();
     await ownerDm(t);
