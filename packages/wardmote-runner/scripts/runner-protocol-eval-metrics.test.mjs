@@ -12,7 +12,7 @@ function campaign(id, failed = [], overrides = {}) {
   }));
   return {
     campaignId: `gha-${id}-1`, generatedAt: `2026-09-${String(id).padStart(2, "0")}T00:00:00.000Z`,
-    source: { wardmote: { sha: "a".repeat(40), ref: "refs/heads/master" }, evals: { sha: "b".repeat(40) }, workflowRunUrl: `https://github.com/tickernelz/wardmote/actions/runs/${id}` },
+    source: { paperclip: { sha: "a".repeat(40), ref: "refs/heads/master" }, evals: { sha: "b".repeat(40) }, workflowRunUrl: `https://github.com/tickernelz/wardmote/actions/runs/${id}` },
     complete: true, allPassed: failed.length === 0, results,
     selection: { kind: "maintained_full" },
     totals: { selected: 3, passed: 3 - failed.length, behaviorFailures: failed.length, infrastructureFailures: 0 },

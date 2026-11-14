@@ -133,7 +133,7 @@ async function connectionAttempt(execution: MatrixExecution, config: ConnectionC
     target: { mode: config.target.mode, origin, commit: null, deploymentMode: null }, entry, method: mode, checkpoints: {}, waits: [] };
   const secrets: string[] = [];
   const checkpoint = async (phase: string) => { evidence.phase = phase; await safeWrite(path.join(summaryDir, "progress.json"), { executionId: execution.id, ...evidence }, secrets); };
-  const result: RunnerE2EResult = { schema: "wardmote.runner-e2e.result/v2", executionId: execution.id, suiteId: execution.suite.id, suiteDefinitionHash: execution.suiteDefinitionHash,
+  const result: RunnerE2EResult = { schema: "paperclip.runner-e2e.result/v2", executionId: execution.id, suiteId: execution.suite.id, suiteDefinitionHash: execution.suiteDefinitionHash,
     source: sourceRevision(repositoryRoot), attempt: 1, status: "failed", profileId: execution.profile.id, environmentId: execution.environment.id, caseId: execution.task.id,
     provider: execution.profile.provider, model: execution.profile.model, runtimeMode: execution.profile.generation, startedAt, finishedAt: startedAt, durationMs: 0, cleanup: "not_started", providerConnection: evidence };
   let browser: Awaited<ReturnType<typeof openConnectionBrowser>> | undefined;

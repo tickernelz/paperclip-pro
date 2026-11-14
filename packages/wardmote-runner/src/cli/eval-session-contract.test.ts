@@ -25,7 +25,7 @@ import {
 
 function request(overrides: Record<string, unknown> = {}): unknown {
   return {
-    schema: "wardmote-runner/eval-session-request/v1",
+    schema: "paperclip-runner/eval-session-request/v1",
     attemptId: "attempt-1",
     prompt: "Inspect the governed task.",
     model: "gpt-5.6-sol",
@@ -50,7 +50,7 @@ function agentCoreProfile(overrides: Record<string, unknown> = {}) {
     harnessArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:harness/test",
     harnessVersion: "1",
     endpointArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:harness-endpoint/test",
-    endpointQualifier: "wardmote",
+    endpointQualifier: "paperclip",
     agentRuntimeArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/test",
     memoryArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:memory/test",
     memoryId: "memory-test",

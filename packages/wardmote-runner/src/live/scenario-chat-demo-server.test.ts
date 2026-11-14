@@ -174,7 +174,7 @@ describe("Scenario chat deployment boundary", () => {
       expect(await request("/api/capability/sessions", {
         method: "POST",
         headers: mutationHeaders(),
-        body: JSON.stringify({ scenarioId: SCENARIO_ID, adapter: "wardmote" }),
+        body: JSON.stringify({ scenarioId: SCENARIO_ID, adapter: "paperclip" }),
       })).toMatchObject({ status: 422, body: { error: { code: "unexpected_field" } } });
     });
   });

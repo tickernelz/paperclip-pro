@@ -44,7 +44,7 @@ export function upgradeRunnerResult(result: RunnerE2EResult): RunnerE2EResult {
     suiteId: result.suiteId ?? execution.suite.id,
     suiteDefinitionHash:
       result.suiteDefinitionHash ?? execution.suiteDefinitionHash,
-    ...(result.schema === "wardmote.runner-e2e.result/v1"
+    ...(result.schema === "paperclip.runner-e2e.result/v1"
       ? {
           source: result.source ?? {
             sha: null,
@@ -166,7 +166,7 @@ export function buildRunnerCampaign(input: {
     ).values(),
   ];
   return {
-    schema: "wardmote.runner-e2e.campaign/v2",
+    schema: "paperclip.runner-e2e.campaign/v2",
     campaignId: input.campaignId,
     generatedAt: input.generatedAt,
     source,
@@ -230,7 +230,7 @@ export function campaignHistoryRecord(
 
 export function emptyRunnerHistory(): RunnerE2EHistoryIndex {
   return {
-    schema: "wardmote.runner-e2e.history/v1",
+    schema: "paperclip.runner-e2e.history/v1",
     updatedAt: new Date(0).toISOString(),
     latestCampaignId: null,
     latestGreenCampaignId: null,
@@ -245,7 +245,7 @@ export function mergeRunnerHistory(
   campaign: RunnerE2EHistoryCampaign,
 ): RunnerE2EHistoryIndex {
   const base =
-    current?.schema === "wardmote.runner-e2e.history/v1"
+    current?.schema === "paperclip.runner-e2e.history/v1"
       ? current
       : emptyRunnerHistory();
   const campaigns = [
@@ -268,7 +268,7 @@ export function mergeRunnerHistory(
     }
   }
   return {
-    schema: "wardmote.runner-e2e.history/v1",
+    schema: "paperclip.runner-e2e.history/v1",
     updatedAt: new Date().toISOString(),
     latestCampaignId: campaigns[0]?.campaignId ?? null,
     latestGreenCampaignId:

@@ -19,7 +19,7 @@ function resultFor(
   status: RunnerE2EResult["status"],
 ): RunnerDashboardEntry {
   const result: RunnerE2EResult = {
-    schema: "wardmote.runner-e2e.result/v1",
+    schema: "paperclip.runner-e2e.result/v1",
     executionId: execution.id,
     suiteId: execution.suite.id,
     attempt: 1,

@@ -44,7 +44,7 @@
               "allowOther": true,
               "options": [
                 {
-                  "id": "wardmote_text_answer",
+                  "id": "paperclip_text_answer",
                   "label": "Pi native restart",
                   "description": "Expected text input",
                   "freeText": true

@@ -7,7 +7,7 @@ recommendedForRoles:
   - engineer
   - product
 tags:
-  - wardmote
+  - paperclip
   - planning
   - issues
   - delegation

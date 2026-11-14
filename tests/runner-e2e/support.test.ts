@@ -971,12 +971,12 @@ describe("runner E2E server isolation", () => {
   });
 
   it("uses absolute repository paths for the Playwright web server", () => {
-    const command = runnerE2EWebServerCommand("/workspace/wardmote");
+    const command = runnerE2EWebServerCommand("/workspace/paperclip");
     expect(command).toContain(
-      "'/workspace/wardmote/cli/node_modules/tsx/dist/cli.mjs'",
+      "'/workspace/paperclip/cli/node_modules/tsx/dist/cli.mjs'",
     );
     expect(command).toContain(
-      "'/workspace/wardmote/tests/runner-e2e/server.ts'",
+      "'/workspace/paperclip/tests/runner-e2e/server.ts'",
     );
   });
 
@@ -1060,8 +1060,8 @@ describe("runner E2E evidence redaction", () => {
         apiKeyRef: "DAYTONA_API_KEY",
       },
     });
-    expect(sanitizeJson("wardmote.runner-e2e.evidence/v1", [secret])).toBe(
-      "wardmote.runner-e2e.evidence/v1",
+    expect(sanitizeJson("paperclip.runner-e2e.evidence/v1", [secret])).toBe(
+      "paperclip.runner-e2e.evidence/v1",
     );
   });
 

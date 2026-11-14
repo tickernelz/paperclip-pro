@@ -2012,7 +2012,7 @@ Installed Pi Daytona cells also require the published plugin fixture inputs
 `WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN` (canonical package root),
 `WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY` (canonical JSON file),
 and `WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256`.
-The authority schema `wardmote.e2e.installed-daytona-plugin/v1` pins a canonical
+The authority schema `paperclip.e2e.installed-daytona-plugin/v1` pins a canonical
 `graphRoot` and four public packages (`plugin`, `sdk`, `shared`, `daytona`).
 Each has `root`, `packageSha256`, `entry`, and `entrySha256`; `plugin` also has
 `manifestSha256` and `workerSha256`. Roots must be the named packages beneath

@@ -15,7 +15,7 @@ describe("external assistant evidence and billing", () => {
     recordAssistantUsage(usage, "gpt-5.4-nano", 1000, 100, 2000);
     expect(usage.estimatedCostUsd).toBeCloseTo(0.000365);
     const result: RunnerE2EResult = {
-      schema: "wardmote.runner-e2e.result/v2", executionId: "public-mcp.assistant-codex-mini.local.delegate-retrieve",
+      schema: "paperclip.runner-e2e.result/v2", executionId: "public-mcp.assistant-codex-mini.local.delegate-retrieve",
       attempt: 1, status: "passed", profileId: "assistant-codex-mini", caseId: "delegate-retrieve", provider: "codex", model: "gpt-5.4-mini", runtimeMode: "legacy",
       startedAt: "2026-09-30T00:00:00Z", finishedAt: "2026-09-30T00:00:01Z", cleanup: "passed",
       runIds: ["worker-run"], usage: { inputTokens: 100, outputTokens: 10, costUsd: 0.01 }, environmentId: "local", durationMs: 1000, publicMcp: usage,

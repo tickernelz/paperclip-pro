@@ -110,7 +110,7 @@ export function runnerWorkflowEvalbookAttempt({
       ? result.observation.failure
       : undefined;
   const artifact = {
-    schema: "wardmote-runner/workflow-eval-artifact/v1",
+    schema: "paperclip-runner/workflow-eval-artifact/v1",
     attemptId,
     createdAt: report.generatedAt,
     requestedModel: model,
@@ -173,7 +173,7 @@ export function runnerWorkflowEvalbookAttempt({
     digest: `sha256:${sha256(JSON.stringify({ identity, checks }))}`,
   };
   const evalCase = {
-    schema: "wardmote-runner/workflow-eval-case/v1",
+    schema: "paperclip-runner/workflow-eval-case/v1",
     id: result.scenarioId,
     title: caseDefinition?.title ?? result.scenarioId,
     description: caseDefinition
@@ -197,7 +197,7 @@ export function runnerWorkflowEvalbookAttempt({
       : { workflowDefinition: caseDefinition }),
   };
   const config = {
-    schema: "wardmote-runner/workflow-eval-config/v1",
+    schema: "paperclip-runner/workflow-eval-config/v1",
     id: result.candidateId,
     model,
     provider: result.observation.provider,
@@ -267,7 +267,7 @@ export async function resolveCanonicalEvalProgram(packageRoot, environment) {
   const program = await existingPath([
     environment.WARDMOTE_EVALBOOK_PROGRAM,
     fromRoot,
-    resolve(packageRoot, "../../.wardmote-evals", EVAL_PROGRAM_RELATIVE_PATH),
+    resolve(packageRoot, "../../.paperclip-evals", EVAL_PROGRAM_RELATIVE_PATH),
     resolve(
       packageRoot,
       "../../../paperclip-evals",

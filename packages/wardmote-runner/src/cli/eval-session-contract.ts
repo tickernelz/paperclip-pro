@@ -11,7 +11,7 @@ import {
 } from "../evals/model-pricing.js";
 
 export const EVAL_SESSION_REQUEST_SCHEMA =
-  "wardmote-runner/eval-session-request/v1" as const;
+  "paperclip-runner/eval-session-request/v1" as const;
 export const EVAL_SESSION_ARTIFACT_SCHEMA =
   "wardmote-runner/eval-session-artifact/v1" as const;
 

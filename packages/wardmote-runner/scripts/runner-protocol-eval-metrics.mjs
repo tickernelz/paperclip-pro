@@ -45,7 +45,7 @@ export function campaignAnalytics(campaign) {
         && (metric.nanodollars === null || typeof metric.nanodollars === "number" && Number.isFinite(metric.nanodollars) && metric.nanodollars >= 0);
     });
   return {
-    schema: "wardmote.runner-protocol-eval.analytics/v1",
+    schema: "paperclip.runner-protocol-eval.analytics/v1",
     suiteKey,
     selection: campaign.selection?.kind === "maintained_full" ? "maintained_full"
       : campaign.selection?.kind === "subset" ? "subset" : "recorded",
@@ -80,7 +80,7 @@ export async function enrichProtocolEvalHistory(history, { currentCampaign, load
   const sourceId = currentCampaign.reportRevision?.sourceCampaignId ?? currentCampaign.campaignId;
   for (const record of history.campaigns.filter((item) => !item.reportRevision)) {
     const refresh = record.campaignId === sourceId ? currentCampaign : null;
-    if (!refresh && analytics[record.campaignId]?.schema === "wardmote.runner-protocol-eval.analytics/v1") continue;
+    if (!refresh && analytics[record.campaignId]?.schema === "paperclip.runner-protocol-eval.analytics/v1") continue;
     const campaign = refresh ?? await loadCampaign(record.campaignId);
     if (!campaign) continue;
     if (!isDeepStrictEqual(campaign.source, record.source)

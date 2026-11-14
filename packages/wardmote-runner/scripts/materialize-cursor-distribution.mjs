@@ -9,7 +9,7 @@ import { applyCursorRuntimePatch, CURSOR_RUNTIME_PATCH_VERSION } from "./cursor-
 const MANIFEST_PATH = fileURLToPath(new URL("../cursor-distributions.json", import.meta.url));
 const MAX_ARCHIVE_BYTES = 256 * 1024 * 1024;
 const MAX_TREE_BYTES = 1024 * 1024 * 1024;
-const TREE_MANIFEST = ".paperclip-cursor-closure.json";
+const TREE_MANIFEST = ".wardmote-cursor-closure.json";
 const digest = bytes => createHash("sha256").update(bytes).digest("hex");
 
 export async function cursorDistribution(platform = process.platform, architecture = process.arch) {
@@ -52,7 +52,7 @@ export async function cursorDistributionClosure(directory) {
 
 export async function verifyCursorDistribution(directory, distribution) {
   const closure = await cursorDistributionClosure(directory);
-  if (closure.sha256 !== distribution.closureSha256) throw new Error("Cursor full execution closure digest mismatch");
+  if (closure.sha256 !== distribution.closureSha256) throw new Error(`Cursor full execution closure digest mismatch for ${distribution.platform}-${distribution.architecture}: computed ${closure.sha256}`);
   for (const required of [distribution.executable, distribution.entrypoint]) {
     if (!closure.entries.some(entry => entry.path === required)) throw new Error("Cursor execution closure is missing its entrypoint");
   }
@@ -110,7 +110,7 @@ export async function materializePinnedCursorDistribution(options = {}) {
     const closure = await verifyCursorDistribution(packageRoot, distribution);
     // Record the pinned inventory for a later runtime lease. Its digest must be
     // checked against the checked-in distribution pin before trusting entries.
-    await writeFile(join(packageRoot, TREE_MANIFEST), `${JSON.stringify({ schema: "paperclip.cursor_closure.v1", ...distribution, entries: closure.entries })}\n`, { mode: 0o600 });
+    await writeFile(join(packageRoot, TREE_MANIFEST), `${JSON.stringify({ schema: "wardmote.cursor_closure.v1", ...distribution, entries: closure.entries })}\n`, { mode: 0o600 });
     for (const entry of closure.entries) await chmod(join(packageRoot, ...entry.path.split("/")), entry.executable ? 0o500 : 0o400);
     await chmod(packageRoot, 0o700);
     await rename(packageRoot, destination);

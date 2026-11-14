@@ -216,7 +216,7 @@ export async function packageEvidence(input: {
       ]
     : [];
   const manifest = {
-    schema: "wardmote.runner-e2e.evidence/v1",
+    schema: "paperclip.runner-e2e.evidence/v1",
     files: [...files].sort(),
     leaks,
     missing,

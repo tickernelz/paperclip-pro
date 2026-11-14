@@ -226,7 +226,7 @@ export async function buildProtocolEvalCatalog({
     );
   }
   return {
-    schema: "wardmote.runner-protocol-eval.catalog/v1",
+    schema: "paperclip.runner-protocol-eval.catalog/v1",
     campaignId,
     source,
     selection: { kind: requested === null ? "maintained_full" : "subset", rosters: rosterSelection, grokAuthenticationMode },
@@ -395,7 +395,7 @@ export async function aggregateProtocolEvalCampaign({
   source,
 }) {
   const catalog = await loadObject(catalogPath);
-  if (catalog.schema !== "wardmote.runner-protocol-eval.catalog/v1") {
+  if (catalog.schema !== "paperclip.runner-protocol-eval.catalog/v1") {
     throw new Error("Unsupported protocol eval catalog");
   }
   await rm(runsOut, { recursive: true, force: true });
@@ -520,13 +520,13 @@ export async function aggregateProtocolEvalCampaign({
   };
   const generatedAt = new Date().toISOString();
   const campaign = {
-    schema: "wardmote.runner-protocol-eval.campaign/v1",
+    schema: "paperclip.runner-protocol-eval.campaign/v1",
     campaignId: catalog.campaignId,
     generatedAt,
     selection: catalog.selection,
     costs: sumAttemptCosts(attemptUsages),
     source: {
-      wardmote: source.wardmote,
+      paperclip: source.paperclip,
       evals: source.evals,
       workflowRunUrl: source.workflowRunUrl,
     },
@@ -721,7 +721,7 @@ async function main() {
       argument(args, "--output", "runner-protocol-eval-catalog.json"),
     );
     const catalog = await buildProtocolEvalCatalog({
-      evalsRoot: resolve(argument(args, "--evals-root", ".wardmote-evals")),
+      evalsRoot: resolve(argument(args, "--evals-root", ".paperclip-evals")),
       rosterSelection: argument(args, "--rosters", "all"),
       campaignId: argument(args, "--campaign-id", `local-${Date.now()}`),
       maxParallel: Number(argument(args, "--max-parallel", "100")),
@@ -757,7 +757,7 @@ async function main() {
       runsOut: resolve(argument(args, "--runs-out")),
       campaignOut: resolve(argument(args, "--campaign-out")),
       source: {
-        wardmote: {
+        paperclip: {
           sha: process.env.WARDMOTE_PROTOCOL_EVAL_SOURCE_SHA,
           ref: process.env.WARDMOTE_PROTOCOL_EVAL_SOURCE_REF,
         },

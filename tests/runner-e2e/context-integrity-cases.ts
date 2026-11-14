@@ -5,7 +5,7 @@ export const CONTEXT_INTEGRITY_CASES = [
   "assigned-skill-explicit-invocation",
 ] as const;
 
-export const WARDMOTE_DOCUMENT_CASE = "assigned-skill-wardmote-document" as const;
+export const WARDMOTE_DOCUMENT_CASE = "assigned-skill-paperclip-document" as const;
 export type ContextIntegrityCase = (typeof CONTEXT_INTEGRITY_CASES)[number] | typeof WARDMOTE_DOCUMENT_CASE;
 export function isAssignedSkillContext(id: string): boolean {
   return id === "assigned-skill-explicit-invocation" || id === WARDMOTE_DOCUMENT_CASE;

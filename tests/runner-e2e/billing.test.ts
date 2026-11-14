@@ -9,7 +9,7 @@ import type { RunnerE2EResult } from "./types.js";
 
 function result(overrides: Partial<RunnerE2EResult> = {}): RunnerE2EResult {
   return {
-    schema: "wardmote.runner-e2e.result/v1",
+    schema: "paperclip.runner-e2e.result/v1",
     executionId: "legacy-claude.local.message-marker",
     attempt: 1,
     status: "passed",

@@ -30,7 +30,7 @@ describe("runner E2E report aggregation", () => {
     const directory = path.join(root, "attempt-1");
     await mkdir(directory);
     const result: RunnerE2EResult = {
-      schema: "wardmote.runner-e2e.result/v2", executionId, suiteId: "core-compatibility",
+      schema: "paperclip.runner-e2e.result/v2", executionId, suiteId: "core-compatibility",
       attempt: 1, status: "passed", profileId: "runner-codex", environmentId: "local",
       caseId: "message-marker", provider: "codex", model: "fixture-model", runtimeMode: "native",
       startedAt: "2026-09-23T00:00:00Z", finishedAt: "2026-09-23T00:00:01Z", durationMs: 1000,
@@ -71,7 +71,7 @@ describe("runner E2E report aggregation", () => {
       const directory = path.join(root, caseId);
       await mkdir(directory);
       await writeFile(path.join(directory, "result.json"), JSON.stringify({
-        schema: "wardmote.runner-e2e.result/v2", executionId, suiteId: "first-task",
+        schema: "paperclip.runner-e2e.result/v2", executionId, suiteId: "first-task",
         attempt: 1, status: "failed", failureClass: "candidate_failure", error: "Recording stopped before acceptance",
         profileId: "runner-codex", environmentId: "local", caseId, provider: "codex", model: "fixture-model", runtimeMode: "native",
         startedAt: "2026-09-15T00:00:00Z", finishedAt: "2026-09-15T00:01:00Z", durationMs: 60_000, cleanup: "passed",
@@ -100,7 +100,7 @@ describe("runner E2E report aggregation", () => {
     cleanupDirectories.push(root);
     const executionId = "legacy-codex.local.message-marker";
     const base: RunnerE2EResult = {
-      schema: "wardmote.runner-e2e.result/v1",
+      schema: "paperclip.runner-e2e.result/v1",
       executionId,
       attempt: 2,
       status: "passed",
@@ -223,7 +223,7 @@ describe("runner E2E report aggregation", () => {
           GITHUB_SHA: "trusted-default-workflow-sha",
           GITHUB_REF: "refs/heads/master",
           GITHUB_SERVER_URL: "https://github.com",
-          GITHUB_REPOSITORY: "tickernelz/wardmote",
+          GITHUB_REPOSITORY: "paperclipai/paperclip",
           GITHUB_RUN_ID: "123456",
           WARDMOTE_RUNNER_E2E_HISTORY_PUBLIC_BASE_URL:
             "https://reports.example.test/",
@@ -235,7 +235,7 @@ describe("runner E2E report aggregation", () => {
       await readFile(path.join(output, "normalized-results.json"), "utf8"),
     );
     expect(normalized).toMatchObject({
-      schema: "wardmote.runner-e2e.campaign/v2",
+      schema: "paperclip.runner-e2e.campaign/v2",
       selected: 1,
       executed: 1,
       passed: 1,
@@ -246,7 +246,7 @@ describe("runner E2E report aggregation", () => {
         sha: "0123456789abcdef0123456789abcdef01234567",
         ref: "refs/heads/fix/runner-paid-source-attribution",
         workflowRunUrl:
-          "https://github.com/tickernelz/wardmote/actions/runs/123456",
+          "https://github.com/paperclipai/paperclip/actions/runs/123456",
       },
     });
     expect(normalized.billing).toMatchObject({
@@ -264,7 +264,7 @@ describe("runner E2E report aggregation", () => {
         sha: "0123456789abcdef0123456789abcdef01234567",
         ref: "refs/heads/fix/runner-paid-source-attribution",
         workflowRunUrl:
-          "https://github.com/tickernelz/wardmote/actions/runs/123456",
+          "https://github.com/paperclipai/paperclip/actions/runs/123456",
       },
     });
     const dashboard = await readFile(
@@ -353,10 +353,10 @@ describe("runner E2E report aggregation", () => {
       "[Open the exact interactive campaign report](https://reports.example.test/runner-e2e/campaigns/gha-123456-1/index.html)",
     );
     expect(summary).toContain(
-      "[Open the workflow run and per-cell job logs](https://github.com/tickernelz/wardmote/actions/runs/123456)",
+      "[Open the workflow run and per-cell job logs](https://github.com/paperclipai/paperclip/actions/runs/123456)",
     );
     expect(summary).toContain(
-      "[Download the merged report and per-cell evidence](https://github.com/tickernelz/wardmote/actions/runs/123456#artifacts)",
+      "[Download the merged report and per-cell evidence](https://github.com/paperclipai/paperclip/actions/runs/123456#artifacts)",
     );
     expect(summary).toContain(
       `[core-compatibility.${executionId}](https://reports.example.test/runner-e2e/campaigns/gha-123456-1/index.html#execution-core-compatibility.${executionId})`,
@@ -370,7 +370,7 @@ describe("runner E2E report aggregation", () => {
     cleanupDirectories.push(root);
     const executionId = "runner-opencode.local.ask-question";
     const common: RunnerE2EResult = {
-      schema: "wardmote.runner-e2e.result/v1",
+      schema: "paperclip.runner-e2e.result/v1",
       executionId,
       attempt: 2,
       status: "failed",
@@ -463,7 +463,7 @@ describe("runner E2E report aggregation", () => {
     await writeFile(
       path.join(directory, "result.json"),
       JSON.stringify({
-        schema: "wardmote.runner-e2e.result/v1",
+        schema: "paperclip.runner-e2e.result/v1",
         executionId,
         attempt: 1,
         status: "passed",
@@ -536,7 +536,7 @@ describe("runner E2E report aggregation", () => {
     await writeFile(
       path.join(directory, "result.json"),
       JSON.stringify({
-        schema: "wardmote.runner-e2e.result/v1",
+        schema: "paperclip.runner-e2e.result/v1",
         executionId,
         attempt: 1,
         status: "failed",

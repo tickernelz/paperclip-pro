@@ -22,7 +22,7 @@ const id = "branch-only-chat.branch-provider.local.conversation";
 const missingId = "branch-only-chat.branch-provider.local.reset";
 function result(): RunnerE2EResult {
   return {
-    schema: "wardmote.runner-e2e.result/v2",
+    schema: "paperclip.runner-e2e.result/v2",
     executionId: id,
     suiteId: "branch-only-chat",
     suiteDefinitionHash: "branch-definition",

@@ -65,7 +65,7 @@ describe("Wardmote Evals integration compatibility", () => {
 
   it("negotiates package, binary, PRP, catalog, and driver V1", () => {
     expect(assertWardmoteRunnerEvalCompatibility(compatible())).toMatchObject({
-      schema: "wardmote-runner/evals-integration/v1",
+      schema: "paperclip-runner/evals-integration/v1",
       consumer: "paperclip-evals",
       negotiatedPrpVersion: 1,
       driverKind: "wardmote-deterministic",

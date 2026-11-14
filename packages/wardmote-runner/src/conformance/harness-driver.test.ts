@@ -17,7 +17,7 @@ describe("harness-driver conformance V1", () => {
       fixture,
     });
     expect(report).toMatchObject({
-      schema: "wardmote-runner/harness-driver-conformance-report/v1",
+      schema: "paperclip-runner/harness-driver-conformance-report/v1",
       contractVersion: 1,
       eventCount: 7,
       semanticToolCallCount: 1,

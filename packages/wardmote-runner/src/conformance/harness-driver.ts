@@ -8,9 +8,9 @@ import {
 import { validatePrpEvent, type PrpEvent } from "../protocol/replay-contract.js";
 
 export const HARNESS_DRIVER_CONFORMANCE_FIXTURE_SCHEMA =
-  "wardmote-runner/harness-driver-conformance-fixture/v1" as const;
+  "paperclip-runner/harness-driver-conformance-fixture/v1" as const;
 export const HARNESS_DRIVER_CONFORMANCE_REPORT_SCHEMA =
-  "wardmote-runner/harness-driver-conformance-report/v1" as const;
+  "paperclip-runner/harness-driver-conformance-report/v1" as const;
 
 export const harnessDriverConformanceFixtureUrl = new URL(
   "../../protocol/fixtures/evals/harness-driver-conformance.json",

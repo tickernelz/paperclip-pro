@@ -293,7 +293,7 @@ test("aggregates retained attempts and synthesizes missing cells as infrastructu
     runsOut: join(root, "merged-runs"),
     campaignOut: join(root, "campaign.json"),
     source: {
-      wardmote: { sha: "a".repeat(40), ref: "refs/heads/master" },
+      paperclip: { sha: "a".repeat(40), ref: "refs/heads/master" },
       evals: { repository: "paperclipai/paperclip-evals", sha: "b".repeat(40) },
       workflowRunUrl: "https://example.test/actions/runs/42",
     },

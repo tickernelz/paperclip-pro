@@ -3091,7 +3091,7 @@ for (const execution of executions) {
         fallbackFinishedAt: new Date(finishedAtMs),
       });
       const resultWithoutBilling: RunnerE2EResult = {
-        schema: "wardmote.runner-e2e.result/v2",
+        schema: "paperclip.runner-e2e.result/v2",
         executionId: execution.id,
         suiteId: execution.suite.id,
         suiteDefinitionHash: execution.suiteDefinitionHash,

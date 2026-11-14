@@ -117,7 +117,7 @@ function commonAgent(
           ...(adapterType === "wardmote_runner"
             ? []
             : [
-                "Read the assigned wardmote skill before using the Wardmote API. Use its documented request payloads rather than guessing fields from memory.",
+                "Read the assigned paperclip skill before using the Wardmote API. Use its documented request payloads rather than guessing fields from memory.",
                 'For a planning task, do not inspect the OpenAPI schema. PUT /api/issues/$WARDMOTE_TASK_ID/documents/plan with {title:"Plan",format:"markdown",body,changeSummary}; read latestRevisionId and latestRevisionNumber from that response. Then POST /api/issues/$WARDMOTE_TASK_ID/interactions with {kind:"request_confirmation",continuationPolicy:"wake_assignee",payload:{version:1,prompt,acceptLabel:"Approve",rejectLabel:"Reject",rejectRequiresReason:true,target:{type:"issue_document",key:"plan",revisionId,revisionNumber}}}, and PATCH the issue to {status:"in_review"}. Include Authorization and X-Wardmote-Run-Id on every write.',
               ]),
           "Never print, persist, or expose credential values, and never create unrelated work.",

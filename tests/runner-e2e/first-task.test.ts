@@ -173,7 +173,7 @@ function rejectionRecording(): FirstTaskEvidence {
 
 function result(e = recording()): RunnerE2EResult {
   return {
-    schema: "wardmote.runner-e2e.result/v2",
+    schema: "paperclip.runner-e2e.result/v2",
     suiteId: "first-task",
     executionId: `first-task.legacy-codex.local.${e.caseId}`,
     attempt: 1,

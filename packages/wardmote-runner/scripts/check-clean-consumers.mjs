@@ -353,7 +353,7 @@ if (runnerdDigest !== process.env.WARDMOTE_RUNNERD_SHA256) {
 }
 
 await writeFile(process.env.WARDMOTE_CONFORMANCE_RECORD, JSON.stringify({
-  schema: "wardmote-runner/clean-consumer-conformance/v1",
+  schema: "paperclip-runner/clean-consumer-conformance/v1",
   recordedAt: new Date().toISOString(),
   sourceCommit: process.env.WARDMOTE_SOURCE_COMMIT,
   platform: { os: process.platform, arch: process.arch },

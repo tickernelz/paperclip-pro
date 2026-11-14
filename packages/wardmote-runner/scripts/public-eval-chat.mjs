@@ -1,6 +1,6 @@
 // Public replay is a new DTO, never a recursive copy of a provider artifact.
 export const PUBLIC_CHAT_SCHEMA =
-  "wardmote.runner-protocol-eval.public-chat/v1";
+  "paperclip.runner-protocol-eval.public-chat/v1";
 export const PUBLIC_CHAT_NOTICE =
   "Public replay of an isolated mock eval. Conversation text is scrubbed; provider identities, tool payloads, traces, and company-state snapshots are withheld. Full evidence remains in the access-controlled Actions artifact.";
 
