@@ -52,7 +52,7 @@ export async function qualifyCursorMode(source) {
   }
   const planHandler = segment(source, '"./src/acp/interaction-handlers/create-plan-handler.ts"(e,t,n)', '},"./src/acp/resource-link-security.ts"');
   assert.doesNotMatch(planHandler, /setMode\(|setMetadata\("mode"/);
-  return { schema: "paperclip.cursor.native-mode-offline-proof.v1", sourceSha256: hash(source), rows, planHandlerHasModeMutation: false, boundary: "pinned native config/session/UserMessage methods; storage, mode enum converter and transport doubled; no inference" };
+  return { schema: "wardmote.cursor.native-mode-offline-proof.v1", sourceSha256: hash(source), rows, planHandlerHasModeMutation: false, boundary: "pinned native config/session/UserMessage methods; storage, mode enum converter and transport doubled; no inference" };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

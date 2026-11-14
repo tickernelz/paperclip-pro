@@ -51,9 +51,9 @@ export async function qualifyCursorRuntimePatch(vendorRoot) {
     const ambient = { get mcpLease() { return trap(); } };
     assert.deepEqual(Object.keys((await make({}, ambient, { mcpServers: [] }, "/workspace")).value.value), []);
     assert.deepEqual(Object.keys((await make({}, ambient, { mcpServers: [{ valid: false }] }, "/workspace")).value.value), []);
-    const owned = (await make({}, ambient, { mcpServers: [{ name: "paperclip", config: "old" }, { name: "paperclip", config: "owned" }] }, "/workspace")).value.value;
-    assert.equal(owned.paperclip.serverConfig, "owned");
-    assert.deepEqual(Object.keys(owned), ["paperclip"]);
+    const owned = (await make({}, ambient, { mcpServers: [{ name: "wardmote", config: "old" }, { name: "wardmote", config: "owned" }] }, "/workspace")).value.value;
+    assert.equal(owned.wardmote.serverConfig, "owned");
+    assert.deepEqual(Object.keys(owned), ["wardmote"]);
     // The remote team fetch and local config read are never evaluated, even
     // after a caller mutates their simulated config during this active session.
     const localHooks = segment(source, "let ue={errors:[],configDirs:{}};", "const he=");

@@ -637,7 +637,7 @@ or publish the current source locally:
 ```bash
 content_id="$(pnpm --silent test:e2e:runner:image-id)"
 source_revision="$(git rev-parse HEAD)"
-image="ghcr.io/paperclipai/wardmote-daytona-runner:e2e-content-${content_id}"
+image="ghcr.io/tickernelz/wardmote-daytona-runner:e2e-content-${content_id}"
 if ! docker buildx imagetools inspect "$image" >/dev/null 2>&1; then
   docker buildx build \
     --platform linux/amd64 \
@@ -700,7 +700,7 @@ match. Docker must be running; the temporary container below is never started.
     *) echo "Use an immutable image digest" >&2; exit 1 ;;
   esac
   docker pull --platform linux/amd64 "$WARDMOTE_E2E_DAYTONA_IMAGE"
-  pack_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-e2e-provider-pack.XXXXXX")"
+  pack_dir="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-e2e-provider-pack.XXXXXX")"
   container_id="$(docker create --platform linux/amd64 --network none \
     --entrypoint /bin/true "$WARDMOTE_E2E_DAYTONA_IMAGE")"
   trap 'docker rm "$container_id" >/dev/null' EXIT

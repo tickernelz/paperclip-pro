@@ -40,7 +40,7 @@ class ProbeCleanupTests(unittest.TestCase):
             dumps = json.dumps
 
             def serialize(value, *args, **kwargs):
-                if broken_report and isinstance(value, dict) and value.get("schema") == "paperclip.copilot-acp-evidence/v1":
+                if broken_report and isinstance(value, dict) and value.get("schema") == "wardmote.copilot-acp-evidence/v1":
                     raise ValueError("report failed")
                 return dumps(value, *args, **kwargs)
 

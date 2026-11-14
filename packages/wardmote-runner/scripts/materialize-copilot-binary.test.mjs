@@ -45,7 +45,7 @@ const outputFiles = () => [
   { path: "copilot", bytes: Buffer.from("verified executable"), executable: true },
   { path: "distribution/nested/first.js", bytes: Buffer.from("verified first asset"), executable: false },
   { path: "distribution/nested/last.js", bytes: Buffer.from("verified last asset"), executable: false },
-  { path: ".paperclip-copilot-closure.json", bytes: Buffer.from("verified closure"), executable: false },
+  { path: ".wardmote-copilot-closure.json", bytes: Buffer.from("verified closure"), executable: false },
 ];
 
 test("partial inner writes roll back only owned entries and permit a clean retry", async t => {

@@ -94,9 +94,9 @@ export async function discoverCopilot(packInput, output, model, token) {
       child = lease.spawn([], { cwd: root, env, stdio: "pipe" });
       exitPromise = new Promise(resolve => child.once("close", (code, signal) => resolve({ code, signal })));
       rpc = createDiscoveryRpc(child);
-      const initialized = await rpc.request("initialize", { protocolVersion: 1, clientInfo: { name: "paperclip-authenticated-model-discovery", version: "1" }, clientCapabilities: COPILOT_ACP_CLIENT_CAPABILITIES });
+      const initialized = await rpc.request("initialize", { protocolVersion: 1, clientInfo: { name: "wardmote-authenticated-model-discovery", version: "1" }, clientCapabilities: COPILOT_ACP_CLIENT_CAPABILITIES });
       const opened = await rpc.request("session/new", { cwd: root, mcpServers: [] });
-      const safe = { schema: "paperclip.copilot-authenticated-discovery/v1", observedAt: new Date().toISOString(), harnessVersion: initialized.agentInfo?.version,
+      const safe = { schema: "wardmote.copilot-authenticated-discovery/v1", observedAt: new Date().toISOString(), harnessVersion: initialized.agentInfo?.version,
         sourceRevision: manifest.payload.runnerSourceRevision, providerPackDigest: manifest.digest, profileDigest: install.commandDigest,
         agentCapabilities: initialized.agentCapabilities, models: opened.models ?? null, configOptions: opened.configOptions ?? [], promptSent: false,
         promptRequestsSent: 0, inferenceVerified: false, qualification: "pending; metadata discovery only", observedMethods: rpc.observedMethods };

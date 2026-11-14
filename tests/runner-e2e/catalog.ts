@@ -1782,7 +1782,7 @@ export function validateRunnerCatalog(): MatrixExecution[] {
     const payload = environment.buildEnvironment({
       secretRefs: sampleRefs,
       daytonaImage:
-        "ghcr.io/paperclipai/paperclip-daytona-runner@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ghcr.io/tickernelz/wardmote-daytona-runner@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       executionId: "schema-validation",
     });
     createEnvironmentSchema.parse(payload);
