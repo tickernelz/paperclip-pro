@@ -99,7 +99,7 @@ def parse_closure_metadata(content, expected_pin):
         require(isinstance(path, str) and 0 < len(path) <= 4096 and not os.path.isabs(path)
                 and not re.search(r'[\x00-\x1f\x7f\\]', path)
                 and all(part not in ('', '.', '..') for part in path.split('/'))
-                and path > previous and path != 'manifest.json' and not path.startswith('.paperclip-'), 'closure_entry_path')
+                and path > previous and path != 'manifest.json' and not path.startswith('.wardmote-'), 'closure_entry_path')
         require(isinstance(entry['sha256'], str) and re.fullmatch(r'[a-f0-9]{64}', entry['sha256'])
                 and type(entry['size']) is int and 0 <= entry['size'] <= 384 * 1024 * 1024
                 and type(entry['executable']) is bool, 'closure_entry_metadata')
@@ -164,7 +164,7 @@ def inspect(config):
         if len(parent_args) != 4 or not parent_args[3].endswith('/distribution/pi-entry.cjs'):
             continue
         distribution = parent_args[3][:-len('/pi-entry.cjs')]
-        require(re.fullmatch(r'/tmp/paperclip-acpx-native-[A-Za-z0-9_-]+/distribution', distribution), 'snapshot_path')
+        require(re.fullmatch(r'/tmp/wardmote-acpx-native-[A-Za-z0-9_-]+/distribution', distribution), 'snapshot_path')
         require(parent_args[1:] == ['--require', distribution + '/' + GUARD, distribution + '/pi-entry.cjs'], 'wrapper_parent')
         descriptor = None
         if parent_args[0] != distribution + '/' + NODE:

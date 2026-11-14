@@ -341,7 +341,7 @@ describe("native ACPX execution closure", () => {
     expect(result.code, result.error).toBe(0);
     const observed = JSON.parse(result.text);
     expect(observed.owned).toMatch(/wardmote-acpx-native-.*\/distribution\/distribution$/);
-    expect(observed.dist).toBe(join(dirname(observed.owned), ".paperclip-copilot-entry"));
+    expect(observed.dist).toBe(join(dirname(observed.owned), ".wardmote-copilot-entry"));
     expect(observed.version).toBeNull(); expect(observed.options).toBeNull();
     await lease.close();
     await expect(readNativeAcpxDistributionEntries({ ...owned, copilotDistributionDirectory: "../ambient" })).rejects.toThrow("launch declaration");

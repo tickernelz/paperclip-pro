@@ -67,7 +67,7 @@ export async function runProbe(packInput, output, scenario, token) {
   const command = `sleep 3; printf '${markerText}' > qualification-marker.txt`;
   const start = performance.now();
   const elapsed = () => Math.round(performance.now() - start);
-  const evidence = { schema: "paperclip.copilot-live-risk-probe/v1", scenario, model, sourceRevision: manifest.payload.runnerSourceRevision,
+  const evidence = { schema: "wardmote.copilot-live-risk-probe/v1", scenario, model, sourceRevision: manifest.payload.runnerSourceRevision,
     providerPackDigest: manifest.digest, profileDigest: install.commandDigest, promptRequestsSent: 0, upstreamModelRequestCount: null,
     providerReportedCostUsd: null, qualificationStatus: "pending", activeTurnDeadlineSeconds: 120, outerDeadlineSeconds: 180,
     automaticRetries: 0, permissions: [], markerSamples: [], wire: [], detachedToolObserved: false,
@@ -145,7 +145,7 @@ export async function runProbe(packInput, output, scenario, token) {
         if (entry) { clearTimeout(entry.timer); pending.delete(message.id); message.error ? entry.reject(new Error(`provider_rpc_error:${message.error.code}`)) : entry.resolve(message.result); }
       }
     });
-    const initialized = await request("initialize", { protocolVersion: 1, clientInfo: { name: "paperclip-real-service-risk-qualification", version: "1" }, clientCapabilities: COPILOT_ACP_CLIENT_CAPABILITIES });
+    const initialized = await request("initialize", { protocolVersion: 1, clientInfo: { name: "wardmote-real-service-risk-qualification", version: "1" }, clientCapabilities: COPILOT_ACP_CLIENT_CAPABILITIES });
     assert.equal(initialized.agentInfo?.version, "1.0.88", "wrong provider version");
     evidence.agentCapabilities = initialized.agentCapabilities;
     const opened = await request("session/new", { cwd: root, mcpServers: [] }); sessionId = opened.sessionId;

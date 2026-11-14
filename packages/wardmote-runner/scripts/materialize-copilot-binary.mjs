@@ -51,8 +51,8 @@ export function materializePinnedCopilotBinary(options = {}) {
   }
   entries.sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
   const closureSha256 = createHash("sha256").update(JSON.stringify(entries)).digest("hex");
-  const manifestPath = join(output, ".paperclip-copilot-closure.json");
-  files.push({ path: ".paperclip-copilot-closure.json", bytes: Buffer.from(`${JSON.stringify({ schema: "paperclip.native_distribution_closure.v1", entries })}\n`), executable: false });
+  const manifestPath = join(output, ".wardmote-copilot-closure.json");
+  files.push({ path: ".wardmote-copilot-closure.json", bytes: Buffer.from(`${JSON.stringify({ schema: "wardmote.native_distribution_closure.v1", entries })}\n`), executable: false });
   writeCopilotMaterialization(output, files);
   return { packageName: distribution.packageName, version: COPILOT_VERSION, sourceDigest, target, manifestPath, closureSha256 };
 }

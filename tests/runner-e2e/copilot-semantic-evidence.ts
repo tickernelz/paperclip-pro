@@ -50,7 +50,7 @@ export function readCopilotSemanticCompletion(rows: readonly unknown[], expected
   if (authorityRows.length !== 1) fail("expected one authoritative finish receipt");
   const authorityRow = authorityRows[0]!, authority = frame(authorityRow, "runner"), payload = rec(authority.payload), origin = rec(payload.provenance);
   if (payload.category !== "wardmote_semantic_tool_receipt_v2" || payload.schema !== "wardmote.provider.notice.v1" || payload.scope !== "turn" || authorityRow.eventType !== "provider.notice.recorded"
-    || origin.method !== "paperclip/semantic_tool_result" || origin.eventType !== "semantic_result"
+    || origin.method !== "wardmote/semantic_tool_result" || origin.eventType !== "semantic_result"
     || origin.sessionId !== expected.nativeSessionId || origin.turnId !== expected.turnId || !Array.isArray(payload.details) || payload.details.length !== 8) fail("invalid receipt provenance");
   const fields: Record<string, string> = {};
   for (const d of payload.details) {

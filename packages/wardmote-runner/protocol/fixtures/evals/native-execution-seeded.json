@@ -10,7 +10,7 @@
   "input": {
     "caseSha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "configSha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "deterministicSeed": "paperclip-evals-v1-seed"
+    "deterministicSeed": "wardmote-evals-v1-seed"
   },
   "runner": {
     "package": {
@@ -247,7 +247,7 @@
     "uri": "artifact://native/attempt_semantic_denial_0001/",
     "sha256": "sha256:1212121212121212121212121212121212121212121212121212121212121212",
     "byteSize": 4096,
-    "mediaType": "application/vnd.paperclip.runner-artifact-root+json"
+    "mediaType": "application/vnd.wardmote.runner-artifact-root+json"
   },
   "artifacts": [
     {
