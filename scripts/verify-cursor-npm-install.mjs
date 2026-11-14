@@ -98,7 +98,7 @@ import { resolveQualifiedAcpxProfile } from '/consumer/node_modules/@tickernelz/
 import { CURSOR_DISTRIBUTION_PINS } from '/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/wardmote-runner/drivers/acpx/generated-profiles.js';
 const profile = resolveQualifiedAcpxProfile('cursor', 'gpt-5.6-luna[context=272k,reasoning=medium,fast=false]');
 const installation = await verifyAcpxProfileInstallation(profile);
-assert.equal(userInfo().homedir, '/home/paperclip');
+assert.equal(userInfo().homedir, '/home/wardmote');
 assert.equal(installation.agentServerPackageJsonPath,join(userInfo().homedir,'.wardmote/runtimes/cursor/linux-x64',CURSOR_DISTRIBUTION_PINS['linux-x64'].closureSha256,'.paperclip-cursor-closure.json'));
 assert.equal(installation.agentRuntimePackageJsonPath,null);
 assert.equal(installation.commandDigest,profile.commandDigest);

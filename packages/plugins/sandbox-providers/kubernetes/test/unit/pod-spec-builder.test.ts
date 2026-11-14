@@ -5,7 +5,7 @@ const baseInput = {
   namespace: "wardmote-acme",
   jobName: "r-01h00000000000000000000000",
   adapterType: "claude_local",
-  image: "ghcr.io/paperclipai/agent-runtime-claude:v1",
+  image: "ghcr.io/tickernelz/agent-runtime-claude:v1",
   envSecretName: "r-01h00000000000000000000000-env",
   serviceAccountName: "wardmote-tenant-sa",
   labels: { "wardmote.dev/run-id": "r1" },
@@ -47,14 +47,14 @@ describe("buildJobManifest", () => {
   it("wraps the entrypoint in tini for PID 1", () => {
     const job = buildJobManifest(baseInput);
     const container = job.spec.template.spec.containers[0];
-    expect(container.command).toEqual(["/usr/bin/tini", "--", "/usr/local/bin/paperclip-agent-shim"]);
+    expect(container.command).toEqual(["/usr/bin/tini", "--", "/usr/local/bin/wardmote-agent-shim"]);
   });
 
   it("declares explicit writable emptyDir mounts for the standard agent paths", () => {
     const job = buildJobManifest(baseInput);
     const mounts = job.spec.template.spec.containers[0].volumeMounts;
     const mountPaths = mounts.map((m: { mountPath: string }) => m.mountPath).sort();
-    expect(mountPaths).toEqual(["/home/paperclip", "/home/paperclip/.cache", "/tmp", "/workspace"]);
+    expect(mountPaths).toEqual(["/home/wardmote", "/home/wardmote/.cache", "/tmp", "/workspace"]);
 
     const volumes = job.spec.template.spec.volumes;
     expect(volumes.every((v: { emptyDir?: unknown }) => v.emptyDir !== undefined)).toBe(true);

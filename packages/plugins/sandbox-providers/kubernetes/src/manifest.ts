@@ -47,7 +47,7 @@ const manifest: WardmotePluginManifestV1 = {
           },
           imageRegistry: {
             type: "string",
-            description: "Override the default registry for agent runtime images (default: ghcr.io/paperclipai).",
+            description: "Override the default registry for agent runtime images (default: ghcr.io/tickernelz).",
           },
           imageAllowList: {
             type: "array",

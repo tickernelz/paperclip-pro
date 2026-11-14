@@ -17,5 +17,5 @@ RUN command -v gemini >/dev/null 2>&1 || (echo "gemini not on PATH"; exit 1)
 # schema generations are written (selectedAuthType = legacy, security.auth
 # .selectedType = current). Correct for managed-gateway AND BYOK api-key modes;
 # OAuth flows are interactive and out of scope for sandbox pods.
-RUN mkdir -p /home/paperclip/.gemini \
-    && printf '%s\n' '{"selectedAuthType":"gemini-api-key","security":{"auth":{"selectedType":"gemini-api-key"}}}' > /home/paperclip/.gemini/settings.json
+RUN mkdir -p /home/wardmote/.gemini \
+    && printf '%s\n' '{"selectedAuthType":"gemini-api-key","security":{"auth":{"selectedType":"gemini-api-key"}}}' > /home/wardmote/.gemini/settings.json
