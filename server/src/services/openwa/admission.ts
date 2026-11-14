@@ -16,6 +16,7 @@ import type { ChatSdkMessageTrigger } from "../chat-sdk-runtime.js";
 import { openwaThreadId, type OpenwaChatAdapter } from "./adapter.js";
 import { findNewestPendingOpenwaApprovalBubble, findOpenwaApprovalBubble, type OpenwaApprovalBubbleMatch, type OpenwaApprovalRequestStatus } from "./approvals.js";
 import { openwaOwnerMessageDecision } from "./approval-discussions.js";
+import { openwaGroupAwaitsCardAnswer } from "./card-routing.js";
 import type { OpenwaGatewayClient } from "./gateway.js";
 import type { OpenwaIngressHooks } from "./ingress.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
@@ -197,6 +198,7 @@ export interface OpenwaAdmissionStats {
   discoveries: number;
   discoveryFailures: number;
   quoteLookups: number;
+  cardAnswerLookups: number;
   approvalReplies: number;
   duplicates: number;
   rateLimited: number;
@@ -380,6 +382,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     discoveries: 0,
     discoveryFailures: 0,
     quoteLookups: 0,
+    cardAnswerLookups: 0,
     approvalReplies: 0,
     duplicates: 0,
     rateLimited: 0,
@@ -670,6 +673,13 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     return true;
   }
 
+  async function ownerCardAnswer(snapshot: OpenwaPolicySnapshot, event: OpenwaInboundEvent): Promise<boolean> {
+    if (event.chatKind !== "group" || event.quoted || event.phoneTyped || !openwaSenderOwner(snapshot, event)) return false;
+    if (openwaOwnerMessageDecision(event.body) === null) return false;
+    stats.cardAnswerLookups++;
+    return openwaGroupAwaitsCardAnswer(db, { companyId: snapshot.companyId, endpointId: snapshot.endpointId, chatKey: event.chatKey });
+  }
+
   async function admitOwnerReportAnswer(runtime: OpenwaAdmissionRuntime, snapshot: OpenwaPolicySnapshot, event: OpenwaInboundEvent): Promise<boolean> {
     if (event.chatKind !== "group" || event.quoted || openwaOwnerMessageDecision(event.body) === null) return false;
     if (!openwaIsOwnerReportChat(snapshot, event.chatKey)) return false;
@@ -738,7 +748,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     }
     if (event.chatKind === "group") await ensureLids(runtime, snapshot, lidCandidates(event));
     const fromAgent = event.quoted ? await quotedFromAgent(snapshot, event) : false;
-    const facts = { quotedFromAgent: fromAgent };
+    const facts = { quotedFromAgent: fromAgent, ownerCardAnswer: await ownerCardAnswer(snapshot, event) };
     if (event.chatKind === "group" && !snapshot.chats.has(event.chatKey)) {
       const discovery = discoverGroup(runtime, snapshot, event.chatKey);
       if (openwaTriggerCandidate(event, snapshot, facts)) {

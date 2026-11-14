@@ -33,7 +33,7 @@ function sessionOf(endpoint: Pick<EndpointRef, "providerAccountId">): string {
   return account.slice(account.lastIndexOf("#") + 1);
 }
 
-async function resourceOf(db: DbOrTransaction, endpoint: EndpointRef, chatKey: string): Promise<ResourceRow | null> {
+export async function openwaChatResource(db: DbOrTransaction, endpoint: EndpointRef, chatKey: string): Promise<ResourceRow | null> {
   let threadId: string | null = null;
   try {
     threadId = openwaThreadId({ sessionId: sessionOf(endpoint), chatId: chatKey, isGroup: chatKey.endsWith("@g.us") });
@@ -86,7 +86,7 @@ function chatOf(row: ResourceRow, chatKey: string): OpenwaOwnerReportChat {
 
 export async function openwaOwnerReportChatKey(db: DbOrTransaction, endpoint: EndpointRef, originChatKey: string): Promise<string | null> {
   const origin = openwaChatKey(originChatKey);
-  const row = await resourceOf(db, endpoint, origin);
+  const row = await openwaChatResource(db, endpoint, origin);
   const parsed = openwaChatSettingsSchema.safeParse(row?.settings ?? {});
   const key = parsed.success ? (parsed.data.ownerReportChatKey ?? null) : null;
   return key && key !== origin ? key : null;
@@ -100,7 +100,7 @@ export async function openwaOwnerReportRoute(
 ): Promise<OpenwaOwnerReportChat | null> {
   const key = await openwaOwnerReportChatKey(db, endpoint, originChatKey);
   if (!key) return null;
-  const row = await resourceOf(db, endpoint, key);
+  const row = await openwaChatResource(db, endpoint, key);
   const problem = problemOf(row);
   if (!problem) return chatOf(row!, key);
   if (audit)
@@ -120,7 +120,7 @@ export async function openwaOwnerReportRoute(
 
 export async function assertOpenwaOwnerReportChat(db: DbOrTransaction, endpoint: EndpointRef, chatKey: string, destinationKey: string): Promise<void> {
   const destination = openwaChatKey(destinationKey);
-  const problem = destination === openwaChatKey(chatKey) ? "self" : problemOf(await resourceOf(db, endpoint, destination));
+  const problem = destination === openwaChatKey(chatKey) ? "self" : problemOf(await openwaChatResource(db, endpoint, destination));
   if (problem)
     throw unprocessable(PROBLEM_MESSAGES[problem], { code: "openwa_owner_report_chat_invalid", reason: problem, ownerReportChatKey: destination });
 }
