@@ -166,7 +166,8 @@ export async function transcribeTaskAttachment(input: {
   if (!file) throw new Error("runner_attachment_not_found");
   const contentType = file.contentType.toLowerCase();
   if (!contentType.startsWith("audio/") && !contentType.startsWith("video/")) throw new Error("runner_attachment_not_audio");
-  const settings = (await instanceSettingsService(input.db).getGeneral()).speechToText;
+  const instanceSettings = instanceSettingsService(input.db);
+  const settings = (await instanceSettings.getGeneral()).speechToText;
   if (!settings.enabled) return { outcome: "failed", code: "stt_disabled", message: "Speech-to-text is not enabled for this instance." };
   let transcript: Awaited<ReturnType<typeof transcribeStoredAudio>>;
   try {
@@ -174,6 +175,7 @@ export async function transcribeTaskAttachment(input: {
       storage: input.storage ?? getStorageService(),
       file: { companyId: input.binding.companyId, objectKey: file.objectKey, sha256: file.sha256, byteSize: file.byteSize, contentType: file.contentType, originalFilename: file.filename },
       settings,
+      apiKey: await instanceSettings.getSpeechToTextApiKey(settings.provider),
     });
   } catch (error) {
     if (error instanceof SpeechToTextError) return { outcome: "failed", code: error.code, message: error.message };

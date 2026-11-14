@@ -13,6 +13,7 @@ import {
   SPEECH_TO_TEXT_KEYTERMS_MAX,
   SPEECH_TO_TEXT_KEYTERM_MAX_LENGTH,
   SPEECH_TO_TEXT_MAX_SPEAKERS,
+  SPEECH_TO_TEXT_API_KEY_MAX_LENGTH,
   SPEECH_TO_TEXT_GOOGLE_MAX_LANGUAGES,
   ATTACHMENT_MAX_MEGABYTES_MIN,
   ATTACHMENT_MAX_MEGABYTES_MAX,
@@ -88,6 +89,8 @@ const speechToTextApiKeyEnvVarSchema = z
     message: "Speech-to-text API key must name a server environment variable, not hold the key itself",
   });
 
+const speechToTextApiKeySchema = z.string().trim().min(1).max(SPEECH_TO_TEXT_API_KEY_MAX_LENGTH);
+
 const speechToTextKeytermSchema = z
   .string()
   .trim()
@@ -160,10 +163,9 @@ export const speechToTextSettingsSchema = z
   .strict()
   .refine(
     (value) =>
-      !value.enabled ||
-      (value.model !== "" && value.apiKeyEnvVar !== "" && (value.provider !== "openai_compatible" || value.baseUrl !== "")),
+      !value.enabled || (value.model !== "" && (value.provider !== "openai_compatible" || value.baseUrl !== "")),
     {
-      message: "Speech-to-text needs a model, an API key environment variable and, for OpenAI-compatible endpoints, a base URL before it can be enabled",
+      message: "Speech-to-text needs a model and, for OpenAI-compatible endpoints, a base URL before it can be enabled",
     },
   )
   .superRefine((value, ctx) => {
@@ -186,6 +188,7 @@ export const speechToTextModelListRequestSchema = z
     provider: speechToTextProviderSchema,
     baseUrl: speechToTextBaseUrlSchema.default(""),
     apiKeyEnvVar: speechToTextApiKeyEnvVarSchema.default(""),
+    apiKey: speechToTextApiKeySchema.optional(),
     google: z
       .object({
         location: speechToTextGoogleLocationSchema.default(SPEECH_TO_TEXT_DEFAULTS.google.location),
@@ -195,6 +198,8 @@ export const speechToTextModelListRequestSchema = z
       .optional(),
   })
   .strict();
+
+export const speechToTextApiKeyRequestSchema = z.object({ apiKey: speechToTextApiKeySchema }).strict();
 
 export const attachmentMaxMegabytesSchema = z
   .number()

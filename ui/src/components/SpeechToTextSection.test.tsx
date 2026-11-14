@@ -11,6 +11,8 @@ const mockInstanceSettingsApi = vi.hoisted(() => ({
   listSpeechToTextModels: vi.fn(),
   testSpeechToText: vi.fn(),
   getSpeechToTextCredentials: vi.fn(),
+  saveSpeechToTextKey: vi.fn(),
+  removeSpeechToTextKey: vi.fn(),
 }));
 vi.mock("@/api/instanceSettings", () => ({ instanceSettingsApi: mockInstanceSettingsApi }));
 
@@ -18,10 +20,10 @@ vi.mock("@/api/instanceSettings", () => ({ instanceSettingsApi: mockInstanceSett
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
 const CREDENTIALS = {
-  openai_compatible: { envVar: "OPENAI_API_KEY", set: false },
-  deepgram: { envVar: "DEEPGRAM_API_KEY", set: true },
-  elevenlabs: { envVar: "ELEVENLABS_API_KEY", set: false },
-  google: { envVar: "GOOGLE_APPLICATION_CREDENTIALS", set: true, usable: true, projectId: "proj-zha6055" },
+  openai_compatible: { envVar: "OPENAI_API_KEY", set: false, stored: false },
+  deepgram: { envVar: "DEEPGRAM_API_KEY", set: true, stored: false },
+  elevenlabs: { envVar: "ELEVENLABS_API_KEY", set: false, stored: false },
+  google: { envVar: "GOOGLE_APPLICATION_CREDENTIALS", set: true, stored: false, usable: true, projectId: "proj-zha6055" },
 };
 
 function setValue(element: HTMLInputElement | HTMLSelectElement, value: string) {
@@ -98,7 +100,7 @@ describe("SpeechToTextSection", () => {
     mockInstanceSettingsApi.testSpeechToText.mockResolvedValue({ ok: true, text: "halo dunia", language: "id", durationMs: 1200 });
     await render(SPEECH_TO_TEXT_DEFAULTS);
     await act(async () => setValue(byLabel<HTMLSelectElement>("Speech-to-text provider"), "deepgram"));
-    await vi.waitFor(() => expect(keyStatus()).toContain("DEEPGRAM_API_KEY is set on the server"));
+    await vi.waitFor(() => expect(keyStatus()).toBe("Not set here. Using DEEPGRAM_API_KEY from the server environment."));
     expect(byLabel<HTMLSelectElement>("Speech-to-text model").value).toBe("nova-3");
     act(() => setValue(byLabel<HTMLSelectElement>("Speech-to-text model"), "nova-3-medical"));
     expect(byLabel("Other model id")).toBeNull();
@@ -107,20 +109,60 @@ describe("SpeechToTextSection", () => {
     await act(async () => click(button("Test speech-to-text")));
     await vi.waitFor(() => expect(container.textContent).toContain("halo dunia"));
     const expected = expect.objectContaining({ provider: "deepgram", model: "nova-3-medical", language: "id", apiKeyEnvVar: "DEEPGRAM_API_KEY", baseUrl: "" });
-    expect(mockInstanceSettingsApi.testSpeechToText).toHaveBeenCalledWith(expected, file);
+    expect(mockInstanceSettingsApi.testSpeechToText).toHaveBeenCalledWith(expected, file, "");
     act(() => click(byLabel("Toggle speech-to-text")));
     act(() => click(button("Save speech-to-text")));
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ enabled: true, provider: "deepgram", model: "nova-3-medical", language: "id" }));
   });
 
-  it("points at the missing key and keeps the toggle and Test disabled", async () => {
+  it("asks for the key in place, tests and fetches with the typed key, then shows only that it is saved", async () => {
+    const saved = { ...CREDENTIALS, elevenlabs: { ...CREDENTIALS.elevenlabs, stored: true } };
+    mockInstanceSettingsApi.saveSpeechToTextKey.mockResolvedValue(saved);
+    mockInstanceSettingsApi.listSpeechToTextModels.mockResolvedValue({ models: [{ id: "scribe_v3" }], source: "curated" });
+    mockInstanceSettingsApi.testSpeechToText.mockResolvedValue({ ok: true, text: "halo", durationMs: 900 });
     await render(SPEECH_TO_TEXT_DEFAULTS);
     await act(async () => setValue(byLabel<HTMLSelectElement>("Speech-to-text provider"), "elevenlabs"));
-    await vi.waitFor(() => expect(keyStatus()).toContain("ELEVENLABS_API_KEY is not set on the server"));
-    expect(container.textContent).toContain("Set ELEVENLABS_API_KEY in the server environment, then restart Wardmote.");
+    await vi.waitFor(() => expect(keyStatus()).toBe("Not set"));
+    expect(container.textContent).toContain("Enter the API key.");
+    expect(container.textContent).not.toMatch(/restart|server environment, then|never stored/i);
     expect(byLabel<HTMLButtonElement>("Toggle speech-to-text").disabled).toBe(true);
-    chooseFile();
+    const file = chooseFile();
     expect(button("Test speech-to-text").disabled).toBe(true);
+
+    const input = byLabel<HTMLInputElement>("Speech-to-text API key");
+    expect(input.type).toBe("password");
+    act(() => setValue(input, "el-typed-zha6141"));
+    expect(container.textContent).not.toContain("Enter the API key.");
+    await act(async () => click(button("Fetch")));
+    expect(mockInstanceSettingsApi.listSpeechToTextModels).toHaveBeenCalledWith(expect.objectContaining({ provider: "elevenlabs", apiKey: "el-typed-zha6141" }));
+    await act(async () => click(button("Test speech-to-text")));
+    expect(mockInstanceSettingsApi.testSpeechToText).toHaveBeenCalledWith(expect.objectContaining({ provider: "elevenlabs" }), file, "el-typed-zha6141");
+
+    await act(async () => click(button("Save speech-to-text")));
+    expect(mockInstanceSettingsApi.saveSpeechToTextKey).toHaveBeenCalledWith("elevenlabs", "el-typed-zha6141");
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ provider: "elevenlabs" }));
+    await vi.waitFor(() => expect(keyStatus()).toBe("Saved"));
+    expect(byLabel("Speech-to-text API key")).toBeNull();
+    expect(button("Replace")).toBeTruthy();
+    expect(button("Remove")).toBeTruthy();
+    expect(container.innerHTML).not.toContain("el-typed-zha6141");
+  });
+
+  it("removes or replaces a saved key without touching the settings", async () => {
+    const stored = { ...CREDENTIALS, deepgram: { ...CREDENTIALS.deepgram, set: false, stored: true } };
+    mockInstanceSettingsApi.getSpeechToTextCredentials.mockResolvedValue(stored);
+    mockInstanceSettingsApi.removeSpeechToTextKey.mockResolvedValue({ ...stored, deepgram: { ...stored.deepgram, stored: false } });
+    await render({ ...SPEECH_TO_TEXT_DEFAULTS, provider: "deepgram", model: "nova-3", apiKeyEnvVar: "DEEPGRAM_API_KEY" });
+    await vi.waitFor(() => expect(keyStatus()).toBe("Saved"));
+    expect(button("Save speech-to-text").disabled).toBe(true);
+    act(() => click(button("Replace")));
+    expect(byLabel<HTMLInputElement>("Speech-to-text API key").value).toBe("");
+    act(() => click(button("Cancel")));
+    await act(async () => click(button("Remove")));
+    expect(mockInstanceSettingsApi.removeSpeechToTextKey).toHaveBeenCalledWith("deepgram");
+    await vi.waitFor(() => expect(keyStatus()).toBe("Not set"));
+    expect(byLabel("Speech-to-text API key")).toBeTruthy();
+    expect(onSave).not.toHaveBeenCalled();
   });
 
   it("fills the Google project from the service account and asks for a language on non-Chirp models", async () => {

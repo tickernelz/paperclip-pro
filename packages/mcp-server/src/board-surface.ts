@@ -78,6 +78,7 @@ export const ACTOR_NEUTRAL_GUARDS: Readonly<Record<string, true>> = {
   assertPluginManagementVisible: true,
   assertQueueMutationTarget: true,
   assertRuntimeManageAllowed: true,
+  assertSpeechToTextKeyShape: true,
   assertSpeechToTextSettingsVisible: true,
   assertWorkspacePrivacy: true,
   getActorInfo: true,

@@ -18,6 +18,7 @@ import {
   DEFAULT_LOCAL_RUN_LIMITS_SETTINGS,
   DEFAULT_MESSAGE_DELIVERY,
   SPEECH_TO_TEXT_DEFAULTS,
+  type SpeechToTextProvider,
   instanceGeneralSettingsSchema,
   type InstanceGeneralSettings,
   instanceExperimentalSettingsSchema,
@@ -42,8 +43,15 @@ import { and, eq, notExists, sql } from "drizzle-orm";
 import { logger } from "../middleware/logger.js";
 import { setAttachmentLimitSetting } from "../attachment-types.js";
 import { getOperatorSettingDefaults } from "./setting-defaults.js";
+import {
+  encryptSpeechToTextApiKey,
+  INSTANCE_SETTINGS_SINGLETON_KEY,
+  readSpeechToTextApiKey,
+  readSpeechToTextApiKeys,
+  type SpeechToTextApiKeys,
+} from "./speech-to-text-keys.js";
 
-const DEFAULT_SINGLETON_KEY = "default";
+const DEFAULT_SINGLETON_KEY = INSTANCE_SETTINGS_SINGLETON_KEY;
 const instanceGeneralSettingsStorageSchema = instanceGeneralSettingsSchema.strip();
 const instanceExperimentalSettingsStorageSchema = instanceExperimentalSettingsSchema.strip();
 const TRUTHY_RUNTIME_ENV_VALUES = new Set(["1", "true", "yes", "on"]);
@@ -451,6 +459,32 @@ export function instanceSettingsService(db: Db, options: InstanceSettingsService
     ): Promise<InstanceGeneralSettings> => {
       const row = await getOrCreateRow(readOptions?.db);
       return toGeneralView(row.general);
+    },
+
+    getSpeechToTextApiKeys: (): Promise<SpeechToTextApiKeys> => readSpeechToTextApiKeys(db),
+
+    getSpeechToTextApiKey: (provider: SpeechToTextProvider): Promise<string | null> => readSpeechToTextApiKey(db, provider),
+
+    setSpeechToTextApiKey: async (provider: SpeechToTextProvider, value: string): Promise<string> => {
+      const current = await getOrCreateRow();
+      const material = await encryptSpeechToTextApiKey(value);
+      await db
+        .update(instanceSettings)
+        .set({
+          speechToTextKeys: sql`${instanceSettings.speechToTextKeys} || jsonb_build_object(${provider}::text, ${JSON.stringify(material)}::jsonb)`,
+          updatedAt: new Date(),
+        })
+        .where(eq(instanceSettings.id, current.id));
+      return current.id;
+    },
+
+    removeSpeechToTextApiKey: async (provider: SpeechToTextProvider): Promise<string> => {
+      const current = await getOrCreateRow();
+      await db
+        .update(instanceSettings)
+        .set({ speechToTextKeys: sql`${instanceSettings.speechToTextKeys} - ${provider}::text`, updatedAt: new Date() })
+        .where(eq(instanceSettings.id, current.id));
+      return current.id;
     },
 
     getExperimental: async (): Promise<InstanceExperimentalSettings> => {

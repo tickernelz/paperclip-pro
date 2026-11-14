@@ -1,14 +1,16 @@
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { inspect } from "node:util";
 import express from "express";
 import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, eq } from "drizzle-orm";
 import {
+  activityLog,
   agents,
   assets,
   chatActions,
@@ -16,6 +18,7 @@ import {
   companies,
   createDb,
   issueAttachments,
+  instanceSettings,
   issueComments,
   issues,
   toolApplications,
@@ -33,6 +36,7 @@ import { SpeechToTextError, oggOpusDurationSeconds, transcribeAudio } from "../.
 import { instanceSettingsService } from "../../services/instance-settings.js";
 import { instanceSettingsRoutes } from "../../routes/instance-settings.js";
 import { errorHandler } from "../../middleware/index.js";
+import { logger } from "../../middleware/logger.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const SESSION_ID = "11111111-2222-4333-8444-555555555555";
@@ -543,6 +547,59 @@ describe("OpenWA media ingest and speech-to-text (embedded Postgres + fake gatew
         if (previous === undefined) delete process.env[STT_ENV];
         else process.env[STT_ENV] = previous;
         await request(app()).patch("/api/instance/settings/general").send({ speechToText: SPEECH_TO_TEXT_DEFAULTS });
+      }
+    });
+
+    it("saves a key per provider encrypted, prefers it over the variable and falls back to the variable after removal", async () => {
+      const marker = "sk-zha6141-" + randomUUID();
+      vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY", randomBytes(32).toString("base64"));
+      vi.stubEnv(STT_ENV, STT_SECRET);
+      const logged = (["trace", "debug", "info", "warn", "error", "fatal"] as const).map((level) => vi.spyOn(logger, level));
+      const voiceNote = async () => {
+        const target = await seed();
+        const media = openwaMediaService(db, { storage });
+        services.push(media);
+        const voice = event({ type: "voice", media: { mimetype: "audio/ogg", omitted: true } });
+        gateway.setMedia(PEER, voice.waMessageId!, { body: Buffer.concat([Buffer.from("OggS"), randomBytes(200)]), contentType: "audio/ogg" });
+        const [result] = await media.ingestOpenwaTriggerMedia({ ...target, client: client(), event: voice });
+        expect(result).toMatchObject({ transcriptStatus: "done" });
+        return stt.requests.at(-1)?.authorization;
+      };
+      try {
+        await request(app()).patch("/api/instance/settings/general").send({ speechToText: settings() });
+        expect(await voiceNote()).toBe("Bearer " + STT_SECRET);
+
+        const saved = await request(app()).put("/api/instance/settings/general/speech-to-text/keys/openai_compatible").send({ apiKey: marker });
+        expect(saved.status).toBe(200);
+        expect(saved.body.openai_compatible).toMatchObject({ stored: true });
+        const other = await request(app()).put("/api/instance/settings/general/speech-to-text/keys/deepgram").send({ apiKey: "dg-" + marker });
+        expect(other.body).toMatchObject({ openai_compatible: { stored: true }, deepgram: { stored: true }, elevenlabs: { stored: false } });
+        const badGoogle = await request(app()).put("/api/instance/settings/general/speech-to-text/keys/google").send({ apiKey: marker });
+        expect(badGoogle.status).toBe(400);
+
+        expect(await voiceNote()).toBe("Bearer " + marker);
+
+        const [row] = await db.select({ keys: instanceSettings.speechToTextKeys, general: instanceSettings.general }).from(instanceSettings);
+        expect(JSON.stringify(row)).not.toContain(marker);
+        expect(row?.keys).toMatchObject({ openai_compatible: { scheme: "local_encrypted_v1" }, deepgram: { scheme: "local_encrypted_v1" } });
+        const general = await request(app()).get("/api/instance/settings/general");
+        const credentials = await request(app()).get("/api/instance/settings/general/speech-to-text/credentials");
+        const activity = await db.select().from(activityLog).where(eq(activityLog.action, "instance.settings.speech_to_text_key_saved"));
+        expect(activity.length).toBeGreaterThan(0);
+        for (const entry of activity) expect(entry.details).toEqual({ provider: expect.stringMatching(/^(openai_compatible|deepgram)$/) });
+
+        const removed = await request(app()).delete("/api/instance/settings/general/speech-to-text/keys/openai_compatible");
+        expect(removed.body).toMatchObject({ openai_compatible: { stored: false }, deepgram: { stored: true } });
+        expect(await voiceNote()).toBe("Bearer " + STT_SECRET);
+
+        const exposed = JSON.stringify([saved.body, other.body, badGoogle.body, general.body, credentials.body, removed.body, activity]);
+        expect(exposed).not.toContain(marker);
+        expect(inspect(logged.map((spy) => spy.mock.calls), { depth: 10 })).not.toContain(marker);
+      } finally {
+        logged.forEach((spy) => spy.mockRestore());
+        await request(app()).delete("/api/instance/settings/general/speech-to-text/keys/deepgram");
+        await request(app()).patch("/api/instance/settings/general").send({ speechToText: SPEECH_TO_TEXT_DEFAULTS });
+        vi.unstubAllEnvs();
       }
     });
 

@@ -89,9 +89,38 @@ describe("registered run secret redaction", () => {
 
 const { resolveVersion } = vi.hoisted(() => ({ resolveVersion: vi.fn(async ({ material }) => material.value as string) }));
 vi.mock("../secrets/provider-registry.js", () => ({ getSecretProvider: () => ({ resolveVersion }) }));
+const { savedSpeechToTextKeys } = vi.hoisted(() => ({ savedSpeechToTextKeys: { current: {} as Record<string, string> } }));
+vi.mock("../services/speech-to-text-keys.js", () => ({ readSpeechToTextApiKeys: async () => savedSpeechToTextKeys.current }));
 
 describe("batched run secret redaction", () => {
-  beforeEach(() => { resolveVersion.mockClear(); });
+  beforeEach(() => {
+    resolveVersion.mockClear();
+    savedSpeechToTextKeys.current = {};
+  });
+
+  it("redacts the saved speech-to-text keys from every run, issue and single-run projection", async () => {
+    savedSpeechToTextKeys.current = { deepgram: "dg-saved-zha6141-key", elevenlabs: "el-saved-zha6141-key" };
+    const rows = [{ id: "a", contextSnapshot: { wardmoteSecretRedactions: [{ fingerprintSha256: "one", material: { value: secret } }] } }];
+    const { registry } = fixture(rows);
+    expect(await registry.redactForRuns("company", [
+      { id: "a", text: secret + " dg-saved-zha6141-key" },
+      { id: "b", text: "pasted el-saved-zha6141-key" },
+    ])).toEqual([
+      { id: "a", text: REDACTED_EVENT_VALUE + " " + REDACTED_EVENT_VALUE },
+      { id: "b", text: "pasted " + REDACTED_EVENT_VALUE },
+    ]);
+    expect(await registry.redactForRun("company", "a", { log: "dg-saved-zha6141-key" })).toEqual({ log: REDACTED_EVENT_VALUE });
+    expect(await registry.redactForIssue("company", "issue-1", "el-saved-zha6141-key")).toBe(REDACTED_EVENT_VALUE);
+  });
+
+  it("leaves ordinary text alone when a saved speech-to-text key is a short placeholder", async () => {
+    const body = "Transcription is none yet; the endpoint needs no key, so none was set.";
+    savedSpeechToTextKeys.current = { openai_compatible: "none", deepgram: "x".repeat(15), elevenlabs: "el-saved-zha6141-key" };
+    const { registry } = fixture([{ id: "a", contextSnapshot: {} }]);
+    expect(await registry.redactForRuns("company", [{ id: "a", body: body + " " + "x".repeat(15) }])).toEqual([{ id: "a", body: body + " " + "x".repeat(15) }]);
+    expect(await registry.redactForRun("company", "a", { body })).toEqual({ body });
+    expect(await registry.redactForIssue("company", "issue-1", body + " el-saved-zha6141-key")).toBe(body + " " + REDACTED_EVENT_VALUE);
+  });
 
   function fixture(rows: unknown[]) {
     const where = vi.fn(async (_predicate: import("drizzle-orm").SQL | undefined) => rows);
