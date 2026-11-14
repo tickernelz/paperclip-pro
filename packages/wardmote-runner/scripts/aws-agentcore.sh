@@ -15,15 +15,15 @@ AWS_REGION_NAME="${AWS_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}"
 AWS_PROFILE_EXPLICIT=false
 AWS_REGION_EXPLICIT=false
 DEPLOYMENT_MODE="development"
-STACK_NAME="paperclip-agentcore-development"
+STACK_NAME="wardmote-agentcore-development"
 STACK_NAME_EXPLICIT=false
-ENDPOINT_NAME="paperclip"
+ENDPOINT_NAME="wardmote"
 MODEL_ID="global.anthropic.claude-sonnet-4-6"
 MARKETPLACE_PRODUCT_ID="prod-ffvjxvh4ltq64"
 MARKETPLACE_PRODUCT_ID_EXPLICIT=false
 TRUSTED_PRINCIPAL=""
 GITHUB_OIDC_PROVIDER_ARN="${WARDMOTE_AWS_AGENTCORE_GITHUB_OIDC_PROVIDER_ARN:-}"
-GITHUB_REPOSITORY="paperclipai/paperclip"
+GITHUB_REPOSITORY="tickernelz/wardmote"
 GITHUB_ENVIRONMENT="runner-e2e-paid"
 CONTEXT_PREFIX=""
 DRY_RUN=false
@@ -110,7 +110,7 @@ if [[ ! "$GITHUB_REPOSITORY" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ || ! "$GITHUB_
   printf 'GitHub OIDC trust requires exact OWNER/REPO and environment names.\n' >&2
   exit 2
 fi
-if [[ -z "$CONTEXT_PREFIX" ]]; then CONTEXT_PREFIX="paperclip/agentcore/$STACK_NAME"; fi
+if [[ -z "$CONTEXT_PREFIX" ]]; then CONTEXT_PREFIX="wardmote/agentcore/$STACK_NAME"; fi
 if [[ ! "$CONTEXT_PREFIX" =~ ^[a-z0-9][a-z0-9/_-]{1,127}$ || "$CONTEXT_PREFIX" == /* || "$CONTEXT_PREFIX" == */ || "$CONTEXT_PREFIX" == *//* || "/$CONTEXT_PREFIX/" == */./* || "/$CONTEXT_PREFIX/" == */../* ]]; then
   printf 'Context prefix must be a safe, relative S3 key prefix.\n' >&2
   exit 2
@@ -241,7 +241,7 @@ write_teardown_metadata() {
 assume_runner_role() {
   local role_arn="$1"
   local response access secret token
-  if ! response="$(aws_cli sts assume-role --role-arn "$role_arn" --role-session-name paperclip-agentcore-probe --duration-seconds 900 --output json 2>&1)"; then
+  if ! response="$(aws_cli sts assume-role --role-arn "$role_arn" --role-session-name wardmote-agentcore-probe --duration-seconds 900 --output json 2>&1)"; then
     local caller
     caller="$(aws_cli sts get-caller-identity --query Arn --output text 2>/dev/null || printf '<caller-arn>')"
     printf 'Cannot assume %s. Add this statement to the caller policy for %s:\n' "$role_arn" "$caller" >&2
@@ -332,9 +332,9 @@ provision() {
     local existing_description existing_owned existing_environment existing_cost_center
     existing_status="$(printf '%s' "$existing_stack" | json_field Stacks.0.StackStatus)"
     existing_description="$(printf '%s' "$existing_stack" | json_field Stacks.0.Description)"
-    existing_owned="$(printf '%s' "$existing_stack" | stack_tag_value paperclip:owned)"
-    existing_environment="$(printf '%s' "$existing_stack" | stack_tag_value paperclip:environment)"
-    existing_cost_center="$(printf '%s' "$existing_stack" | stack_tag_value paperclip:cost-center)"
+    existing_owned="$(printf '%s' "$existing_stack" | stack_tag_value wardmote:owned)"
+    existing_environment="$(printf '%s' "$existing_stack" | stack_tag_value wardmote:environment)"
+    existing_cost_center="$(printf '%s' "$existing_stack" | stack_tag_value wardmote:cost-center)"
     if [[ -z "$existing_status" || "$existing_description" != "$STACK_DESCRIPTION" || "$existing_owned" != "true" || "$existing_environment" != "development" || "$existing_cost_center" != "runner-lab" ]]; then
       printf 'Refusing to modify stack %s: Wardmote ownership tags or template provenance do not match. Inspect or remove it manually, or choose another --stack-name.\n' "$STACK_NAME" >&2
       exit 1
@@ -375,7 +375,7 @@ provision() {
       "BedrockModelResourceArn=$model_resource_arn" \
       "BedrockFoundationModelResourceArn=$foundation_model_resource_arn" \
       "BedrockMarketplaceProductId=$MARKETPLACE_PRODUCT_ID" \
-    --tags paperclip:owned=true paperclip:environment=development paperclip:cost-center=runner-lab
+    --tags wardmote:owned=true wardmote:environment=development wardmote:cost-center=runner-lab
   # CloudFormation has created the billable resources at this point. Persist
   # the nonsecret coordinates needed by `destroy` before any qualification
   # API call can fail, then replace this checkpoint with the full qualified
@@ -402,8 +402,8 @@ provision() {
   else
     aws_cli bedrock-agentcore-control create-harness-endpoint --harness-id "$harness_id" --endpoint-name "$ENDPOINT_NAME" \
       --target-version "$harness_version" --description "Wardmote pinned Harness endpoint" \
-      --client-token "paperclip-create-$harness_id-$harness_version" \
-      --tags paperclip:owned=true,paperclip:environment=development >/dev/null
+      --client-token "wardmote-create-$harness_id-$harness_version" \
+      --tags wardmote:owned=true,wardmote:environment=development >/dev/null
   fi
   wait_for_endpoint_status "$harness_id" "$ENDPOINT_NAME"
   local endpoint_json endpoint_arn
@@ -475,7 +475,7 @@ destroy() {
   context_bucket="$(stack_output ContextBucketName)"
   context_prefix="$(stack_output ContextPrefix)"
   aws_cli bedrock-agentcore-control delete-harness-endpoint --harness-id "$harness_id" --endpoint-name "$ENDPOINT_NAME" \
-    --client-token "paperclip-delete-$harness_id-$ENDPOINT_NAME" >/dev/null 2>&1 || true
+    --client-token "wardmote-delete-$harness_id-$ENDPOINT_NAME" >/dev/null 2>&1 || true
   profile_save="$AWS_PROFILE_NAME"
   assume_runner_role "$(stack_output RunnerInvocationRoleArn)"
   aws --region "$AWS_REGION_NAME" --no-cli-pager s3 rm "s3://$context_bucket/$context_prefix/assets/" --recursive >/dev/null

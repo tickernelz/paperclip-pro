@@ -160,7 +160,7 @@ function resourceByProfile(
   const matches = resources.filter(
     (resource) =>
       typeof resource.id === "string"
-      && record(resource.metadata).paperclip_profile === profileKey,
+      && record(resource.metadata).wardmote_profile === profileKey,
   );
   if (matches.length > 1) {
     throw new Error(
@@ -260,7 +260,7 @@ async function resolveEnvironment(
         pip: [],
       },
     },
-    metadata: { paperclip_profile: options.profileKey },
+    metadata: { wardmote_profile: options.profileKey },
   });
   assertSafeManagedEnvironment(environment);
   return environment;
@@ -301,7 +301,7 @@ async function resolveAgent(
     tools: [],
     mcp_servers: [],
     skills: [],
-    metadata: { paperclip_profile: options.profileKey },
+    metadata: { wardmote_profile: options.profileKey },
   });
   assertSafeManagedAgent(agent);
   assertManagedAgentModel(agent, options.model);

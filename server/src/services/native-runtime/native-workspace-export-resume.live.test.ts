@@ -131,7 +131,7 @@ describeLive("live Daytona export-resume failure recovery", () => {
       expect(receipt.state).toBe("stopped");
       await db.update(environmentLeases).set({ status: "released", cleanupStatus: "success", releasedAt: new Date(),
         metadata: { ...metadata, remoteExecutionTermination: remoteTerminationReceipt(lease, receipt) } }).where(eq(environmentLeases.id, ids.lease));
-      await db.update(heartbeatRuns).set({ runnerProfileJson: { nativeWorkspaceSync: { schema: "paperclip.native-workspace-sync/v1", state: "prepared", descriptorSha256: "a".repeat(64), baselineSha256: "b".repeat(64), finalHostSha256: null, workspaceId: randomUUID(), leaseId: ids.lease, providerLeaseId: lease.providerLeaseId, remoteCwd: metadata.remoteCwd, resourceDisposition: "destroy" } } }).where(eq(heartbeatRuns.id, ids.run));
+      await db.update(heartbeatRuns).set({ runnerProfileJson: { nativeWorkspaceSync: { schema: "wardmote.native-workspace-sync/v1", state: "prepared", descriptorSha256: "a".repeat(64), baselineSha256: "b".repeat(64), finalHostSha256: null, workspaceId: randomUUID(), leaseId: ids.lease, providerLeaseId: lease.providerLeaseId, remoteCwd: metadata.remoteCwd, resourceDisposition: "destroy" } } }).where(eq(heartbeatRuns.id, ids.run));
     } catch (error) {
       evidence.setupFailure = { phase: setupPhase, errorType: (error as Error).name };
       throw new Error(`Live fixture setup failed at ${setupPhase}; provider details withheld`);

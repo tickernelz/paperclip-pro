@@ -226,7 +226,7 @@ describe("managed-agent CLI setup", () => {
         },
         packages: { apt: [], cargo: [], gem: [], go: [], npm: [], pip: [] },
       },
-      metadata: { paperclip_profile: "primary" },
+      metadata: { wardmote_profile: "primary" },
     });
 
     const agentCreate = calls.find(
@@ -237,7 +237,7 @@ describe("managed-agent CLI setup", () => {
       tools: [],
       mcp_servers: [],
       skills: [],
-      metadata: { paperclip_profile: "primary" },
+      metadata: { wardmote_profile: "primary" },
     });
 
     const wardmoteCreate = calls.find((call) => call.url.startsWith("http://localhost:3100"));

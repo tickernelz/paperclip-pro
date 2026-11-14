@@ -792,7 +792,7 @@ describeEmbeddedPostgres("native run finalizer / status decision committer — a
     const originalResults = await db.select().from(nativeRunResults).where(eq(nativeRunResults.runId, fixture.runId));
     await db.update(nativeRunFinalizations).set({ phase: "terminal_failure", failureCode: "native_workspace_sync_out_unsafe_archive" }).where(eq(nativeRunFinalizations.runId, fixture.runId));
     await db.update(heartbeatRuns).set({ status: "failed", nativePhase: "terminal_failure", errorCode: "native_workspace_sync_out_unsafe_archive",
-      runnerProfileJson: { nativeWorkspaceSync: { schema: "paperclip.native-workspace-sync/v1", state: "prepared",
+      runnerProfileJson: { nativeWorkspaceSync: { schema: "wardmote.native-workspace-sync/v1", state: "prepared",
         descriptorSha256: "a".repeat(64), baselineSha256: "b".repeat(64), finalHostSha256: null,
         workspaceId: randomUUID(), leaseId: randomUUID(), providerLeaseId: "missing-old-sandbox", remoteCwd: "/work", resourceDisposition: "destroy" } },
     }).where(eq(heartbeatRuns.id, fixture.runId));
