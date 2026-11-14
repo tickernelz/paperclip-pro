@@ -15,15 +15,15 @@
     },
     "lisensi": {
       "reason": "LICENSE MIT: notice hak cipta upstream \"Copyright (c) 2025 Paperclip AI\" wajib tetap ada pada salinan. Juga catatan modifikasi di LICENSE skill complain/suggestion-box (\"Paperclip adaptations\"): menyebut siapa yang mengubah salinan karya Warp, jadi atribusi itu tetap.",
-      "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833); sebelumnya: Wira, pengecekan lisensi di ZHA-5279 (2026-11-08)"
+      "approvedBy": "Kartu Zhafron 7b2d7ba2 diterima 2026-11-14 (ZHA-5833): lisensi dan migrasi tetap permanen; migrasi-otomatis dibuang satu rilis setelah PC, integron dan lab0 upgrade ke rilis yang memuat rename ini; sebelumnya: Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833); sebelumnya: Wira, pengecekan lisensi di ZHA-5279 (2026-11-08)"
     },
     "migrasi": {
       "reason": "Migrasi database yang sudah diterapkan bersifat append-only; pengenal baru hanya lewat migrasi baru.",
-      "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833); sebelumnya: Deskripsi ZHA-5279 bagian risiko (Wira atas permintaan Zhafron 2026-11-08)"
+      "approvedBy": "Kartu Zhafron 7b2d7ba2 diterima 2026-11-14 (ZHA-5833): lisensi dan migrasi tetap permanen; migrasi-otomatis dibuang satu rilis setelah PC, integron dan lab0 upgrade ke rilis yang memuat rename ini; sebelumnya: Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833); sebelumnya: Deskripsi ZHA-5279 bagian risiko (Wira atas permintaan Zhafron 2026-11-08)"
     },
     "migrasi-otomatis": {
       "reason": "Kode migrasi otomatis saat install/upgrade (home, nama skill di database, teks instruction bundle, kunci env lama di adapterConfig) harus mengenali nama lama untuk menggantinya; hanya modul migrasi dan tesnya. Dibuang satu rilis setelah PC, integron dan lab0 menjalankan rilis yang memuat rename ZHA-5833.",
-      "approvedBy": "Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833); sebelumnya: Keputusan Zhafron 2026-11-08 11:54 UTC (migrasi otomatis di install/upgrade), deskripsi ZHA-5279 butir keputusan 2"
+      "approvedBy": "Kartu Zhafron 7b2d7ba2 diterima 2026-11-14 (ZHA-5833): lisensi dan migrasi tetap permanen; migrasi-otomatis dibuang satu rilis setelah PC, integron dan lab0 upgrade ke rilis yang memuat rename ini; sebelumnya: Kartu Zhafron 1a487cb3 diterima 2026-11-13 14:27 UTC (ZHA-5833); sebelumnya: Keputusan Zhafron 2026-11-08 11:54 UTC (migrasi otomatis di install/upgrade), deskripsi ZHA-5279 butir keputusan 2"
     },
     "turunan": {
       "reason": "Teks yang harus sama persis dengan pengenal lama di tempat lain dan berubah bersamanya: jalur berkas tes di data durasi shard, user/database Postgres tertanam yang dipakai 22 berkas. Hilang saat pengenal asalnya diganti di fase rename.",
@@ -575,7 +575,7 @@
     ["tests/runner-e2e/PLAN-TASK-GUIDANCE.md",4,"repo-eksternal"],
     ["tests/runner-e2e/PROVIDER-CONNECTIONS.md",1,"repo-eksternal"],
     ["tests/runner-e2e/QUALIFICATION-2026-09-21.md",14,"repo-eksternal"],
-    ["tests/runner-e2e/README.md",12,"repo-eksternal"],
+    ["tests/runner-e2e/README.md",10,"repo-eksternal"],
     ["tests/runner-e2e/SECURITY.md",7,"repo-eksternal"],
     ["tests/runner-e2e/STOCK-HARNESS.md",10,"repo-eksternal"],
     ["tests/runner-e2e/catalog.test.ts",6,"artefak-eksternal"],
