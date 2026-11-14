@@ -1,12 +1,18 @@
 import {
   TERMINAL_MAX_UPLOAD_BYTES,
   terminalApiPaths,
+  type CreateSshKeyRequest,
   type CreateTerminalSessionRequest,
-  type CreateTerminalSshHostRequest,
+  type SshConfigHostSettings,
+  type SshConnectionTarget,
+  type SshConnectionTestResult,
+  type SshKeyInfo,
+  type SshKeyList,
   type TerminalAttachToken,
   type TerminalSession,
-  type TerminalSshHost,
   type TerminalSshHostList,
+  type TrustSshHostKeyRequest,
+  type TrustSshHostKeyResult,
   type TerminalUploadResult,
 } from "@tickernelz/wardmote-shared";
 import { api, ApiError } from "./client";
@@ -20,6 +26,7 @@ function clientPath(path: string): string {
 export const terminalQueryKeys = {
   sessions: (companyId: string) => ["terminal-sessions", companyId] as const,
   sshHosts: (companyId: string) => ["terminal-ssh-hosts", companyId] as const,
+  sshKeys: (companyId: string) => ["terminal-ssh-keys", companyId] as const,
 };
 
 export function terminalUploadTooLargeError(file: Blob): ApiError | null {
@@ -53,10 +60,22 @@ export const terminalApi = {
   },
   listSshHosts: (companyId: string) =>
     api.get<TerminalSshHostList>(clientPath(terminalApiPaths.sshHosts(companyId)), { cache: "no-store" }),
-  createSshHost: (companyId: string, body: CreateTerminalSshHostRequest) =>
-    api.post<TerminalSshHost>(clientPath(terminalApiPaths.sshHosts(companyId)), body),
-  removeSshHost: (companyId: string, hostId: string) =>
-    api.delete<void>(clientPath(terminalApiPaths.sshHost(companyId, hostId))),
+  moveSshHostToConfig: (companyId: string, hostId: string, body: SshConfigHostSettings) =>
+    api.post<SshConfigHostSettings>(clientPath(terminalApiPaths.moveSshHostToConfig(companyId, hostId)), body),
+  addConfigHost: (companyId: string, body: SshConfigHostSettings) =>
+    api.post<SshConfigHostSettings>(clientPath(terminalApiPaths.sshConfigHosts(companyId)), body),
+  updateConfigHost: (companyId: string, alias: string, body: SshConfigHostSettings) =>
+    api.put<SshConfigHostSettings>(clientPath(terminalApiPaths.sshConfigHost(companyId, alias)), body),
+  removeConfigHost: (companyId: string, alias: string) =>
+    api.delete<void>(clientPath(terminalApiPaths.sshConfigHost(companyId, alias))),
+  testConnection: (companyId: string, target: SshConnectionTarget) =>
+    api.post<SshConnectionTestResult>(clientPath(terminalApiPaths.sshConfigTest(companyId)), target),
+  trustHostKey: (companyId: string, body: TrustSshHostKeyRequest) =>
+    api.post<TrustSshHostKeyResult>(clientPath(terminalApiPaths.sshConfigTrustHostKey(companyId)), body),
+  listKeys: (companyId: string) =>
+    api.get<SshKeyList>(clientPath(terminalApiPaths.sshKeys(companyId)), { cache: "no-store" }),
+  createKey: (companyId: string, body: CreateSshKeyRequest) =>
+    api.post<SshKeyInfo>(clientPath(terminalApiPaths.sshKeys(companyId)), body),
   download: (companyId: string, sessionId: string, path: string) =>
     api.getBlob(`${clientPath(terminalApiPaths.download(companyId, sessionId))}?path=${encodeURIComponent(path)}`),
 };

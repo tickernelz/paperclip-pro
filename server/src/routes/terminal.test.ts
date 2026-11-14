@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import express from "express";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
@@ -17,7 +18,9 @@ import { localTerminalFiles } from "../services/terminal/files.js";
 import { TerminalSessionManager, type TerminalSessionManagerOptions } from "../services/terminal/manager.js";
 import type { TerminalOriginPolicy } from "../services/terminal/origin.js";
 import type { TerminalExit, TerminalProcess } from "../services/terminal/process.js";
+import { sshConfigWriter } from "../services/terminal/ssh-config-writer.js";
 import { savedSshHostId, type TerminalSshHostStore } from "../services/terminal/ssh-hosts.js";
+import { sshFingerprint, type SshRunner } from "../services/terminal/ssh-probe.js";
 import { systemSshArgs } from "../services/terminal/system-ssh.js";
 import { terminalRoutes } from "./terminal.js";
 
@@ -127,6 +130,16 @@ describe("terminal routes", () => {
   let savedHosts: TerminalSshHost[];
   let hostStarts: Array<{ host: TerminalSshHost; cols: number; rows: number }>;
   let hostCreators: Array<string | null>;
+  let sshCalls: string[][];
+  let sshScript: (args: string[]) => { code: number | null; stderr: string; hostKeyLine?: string };
+
+  const sshRunner: SshRunner = async (args) => {
+    sshCalls.push(args);
+    const outcome = sshScript(args);
+    const file = args.find((arg) => arg.startsWith("UserKnownHostsFile="))?.slice("UserKnownHostsFile=".length);
+    if (file && outcome.hostKeyLine) writeFileSync(file, `${outcome.hostKeyLine}\n`);
+    return { code: outcome.code, stderr: outcome.stderr, timedOut: false };
+  };
 
   function sshHostStore(): TerminalSshHostStore {
     return {
@@ -192,6 +205,8 @@ describe("terminal routes", () => {
           return start(workDir);
         },
         sshHosts: sshHostStore(),
+        sshConfigWriter: sshConfigWriter({ configPath: path.join(tempDir, "ssh", "config") }),
+        sshRunner,
         recordActivity: async (input) => {
           if (failNextActivity) {
             failNextActivity = false;
@@ -228,6 +243,8 @@ describe("terminal routes", () => {
     savedHosts = [];
     hostStarts = [];
     hostCreators = [];
+    sshCalls = [];
+    sshScript = () => ({ code: 0, stderr: "" });
   });
 
   afterEach(() => {
@@ -552,7 +569,11 @@ describe("terminal routes", () => {
     const app = createApp();
     const listed = await request(app).get(sshHostsPath());
     expect(listed.status).toBe(200);
-    expect(listed.body).toEqual({ hosts: configHosts, configPath: "/home/dev/.ssh/config", configError: null });
+    expect(listed.body).toEqual({
+      hosts: configHosts.map((host) => ({ ...host, managed: false, settings: null })),
+      configPath: "/home/dev/.ssh/config",
+      configError: null,
+    });
 
     const saved = await request(app).post(sshHostsPath()).send({ name: "prod", destination: "root@prod.test", port: 2200 });
     expect(saved.status).toBe(201);
@@ -654,5 +675,148 @@ describe("terminal routes", () => {
     expect(res.status).toBe(404);
     expect(hostStarts).toHaveLength(0);
     expect(manager.list(COMPANY_ID)).toEqual([]);
+  });
+
+  describe("ssh config, keys and connection tests", () => {
+    const configFile = () => path.join(tempDir, "ssh", "config");
+    const configHostsPath = (companyId = COMPANY_ID) => `/api/companies/${companyId}/terminal/ssh-config/hosts`;
+    const testPath = `/api/companies/${COMPANY_ID}/terminal/ssh-config/test`;
+    const trustPath = `/api/companies/${COMPANY_ID}/terminal/ssh-config/trust-host-key`;
+    const keysPath = `/api/companies/${COMPANY_ID}/terminal/ssh-keys`;
+    const BLOB = "AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl";
+    const box = {
+      alias: "box",
+      hostName: "203.0.113.10",
+      user: "deploy",
+      port: 2222,
+      identityFile: null,
+      proxyJump: null,
+      serverAliveInterval: 30,
+      serverAliveCountMax: null,
+    };
+
+    it("lets an instance admin add, list, rename and remove a managed host", async () => {
+      const app = createApp();
+      const created = await request(app).post(configHostsPath()).send(box);
+      expect(created.status).toBe(201);
+      expect(created.body).toEqual(box);
+      expect(readFileSync(configFile(), "utf8")).toContain("Host box\n    HostName 203.0.113.10\n    User deploy\n    Port 2222\n");
+      expect(statSync(configFile()).mode & 0o777).toBe(0o600);
+
+      configHosts.push({ id: "config:box", source: "config", name: "box", destination: "deploy@203.0.113.10", port: 2222 });
+      const listed = await request(app).get(sshHostsPath());
+      expect(listed.body.hosts).toContainEqual({ ...configHosts[1], managed: true, settings: box });
+      expect(listed.body.hosts).toContainEqual({ ...configHosts[0], managed: false, settings: null });
+
+      expect((await request(app).post(configHostsPath()).send(box)).status).toBe(409);
+      const renamed = await request(app).put(`${configHostsPath()}/box`).send({ ...box, alias: "box2", port: null });
+      expect(renamed.status).toBe(200);
+      expect((await request(app).put(`${configHostsPath()}/box`).send(box)).status).toBe(404);
+      expect((await request(app).delete(`${configHostsPath()}/box2`)).status).toBe(204);
+      expect(readFileSync(configFile(), "utf8")).toBe("");
+      expect(activity.map((entry) => entry.action)).toEqual([
+        "terminal.ssh_config_host_added",
+        "terminal.ssh_config_host_updated",
+        "terminal.ssh_config_host_removed",
+      ]);
+      expect(activity[1]).toMatchObject({ entityType: "terminal_ssh_config_host", entityId: "box2", details: { previousAlias: "box" } });
+    });
+
+    it("rejects options outside the whitelist before touching the file", async () => {
+      const app = createApp();
+      for (const body of [
+        { ...box, proxyCommand: "nc %h %p" },
+        { ...box, localCommand: "id" },
+        { ...box, hostName: "203.0.113.10\nProxyCommand nc %h %p" },
+        { ...box, alias: "*" },
+      ]) {
+        expect((await request(app).post(configHostsPath()).send(body)).status).toBe(400);
+      }
+      expect(existsSync(configFile())).toBe(false);
+    });
+
+    it("refuses config, key and probe routes to everyone except instance admins", async () => {
+      const mcpOauthActor: Actor = { ...adminActor, source: "mcp_oauth" };
+      for (const denied of [memberActor, viewerActor, agentKeyActor, ownerAgentActor, boardKeyActor, mcpOauthActor]) {
+        actor = denied;
+        const app = createApp();
+        const responses = [
+          await request(app).post(configHostsPath()).send(box),
+          await request(app).put(`${configHostsPath()}/box`).send(box),
+          await request(app).delete(`${configHostsPath()}/box`),
+          await request(app).post(testPath).send({ alias: "web" }),
+          await request(app).post(trustPath).send({ target: { alias: "web" }, fingerprints: [sshFingerprint(BLOB)] }),
+          await request(app).get(keysPath),
+          await request(app).post(keysPath).send({ mode: "generate", name: "id_x" }),
+          await request(app).post(`${sshHostsPath()}/${savedSshHostId(SAVED_HOST_ID)}/move-to-config`).send(box),
+        ];
+        expect(responses.map((res) => res.status)).toEqual(Array(responses.length).fill(403));
+      }
+      expect(existsSync(path.join(tempDir, "ssh"))).toBe(false);
+      expect(sshCalls).toEqual([]);
+      expect(activity).toEqual([]);
+    });
+
+    it("lets the local implicit board manage hosts and requires a trusted origin", async () => {
+      actor = localActor;
+      const app = createApp(authenticatedPolicy);
+      expect((await request(app).post(configHostsPath()).send(box).set("Origin", "https://evil.example")).status).toBe(403);
+      expect(existsSync(configFile())).toBe(false);
+      expect((await request(createApp()).post(configHostsPath()).send(box)).status).toBe(201);
+    });
+
+    it("stores a pasted private key without ever returning or logging it", async () => {
+      const app = createApp();
+      const source = path.join(tempDir, "pasted");
+      execFileSync("ssh-keygen", ["-q", "-t", "ed25519", "-N", "", "-C", "", "-f", source]);
+      const privateKey = readFileSync(source, "utf8");
+      const imported = await request(app).post(keysPath).send({ mode: "import", name: "id_pasted", privateKey });
+      expect(imported.status).toBe(201);
+      expect(imported.body).toMatchObject({ name: "id_pasted", path: "~/.ssh/id_pasted", type: "ssh-ed25519", encrypted: false });
+      expect(imported.text).not.toContain("PRIVATE KEY");
+      expect(JSON.stringify(activity)).not.toContain("PRIVATE KEY");
+      expect(readFileSync(path.join(tempDir, "ssh", "id_pasted"), "utf8")).toBe(privateKey);
+      const listed = await request(app).get(keysPath);
+      expect(listed.text).not.toContain("PRIVATE KEY");
+      expect(listed.body.keys.map((key: { name: string }) => key.name)).toEqual(["id_pasted"]);
+      const bad = await request(app).post(keysPath).send({ mode: "import", name: "id_bad", privateKey: "not a key" });
+      expect(bad.status).toBe(422);
+      expect((await request(app).post(keysPath).send({ mode: "import", name: "id_pasted", privateKey })).status).toBe(409);
+    });
+
+    it("tests a draft host and trusts only the confirmed host key", async () => {
+      const app = createApp();
+      sshScript = (args) =>
+        args.includes("StrictHostKeyChecking=accept-new")
+          ? { code: 255, stderr: "", hostKeyLine: `[203.0.113.10]:2222 ssh-ed25519 ${BLOB}` }
+          : { code: 255, stderr: "Host key verification failed.\n" };
+      const tested = await request(app).post(testPath).send({ host: box });
+      expect(tested.status).toBe(200);
+      expect(tested.body).toMatchObject({ status: "host_key_unknown", hostKeys: [{ type: "ssh-ed25519", fingerprint: sshFingerprint(BLOB) }] });
+      expect(existsSync(configFile())).toBe(false);
+      const trusted = await request(app).post(trustPath).send({ target: { host: box }, fingerprints: [sshFingerprint(BLOB)] });
+      expect(trusted.status).toBe(200);
+      expect(readFileSync(path.join(tempDir, "ssh", "known_hosts"), "utf8")).toBe(`[203.0.113.10]:2222 ssh-ed25519 ${BLOB}\n`);
+      expect(activity.map((entry) => entry.action)).toEqual(["terminal.ssh_host_key_trusted"]);
+      const wrong = await request(app).post(trustPath).send({ target: { host: box }, fingerprints: [`SHA256:${"B".repeat(43)}`] });
+      expect(wrong.status).toBe(409);
+    });
+
+    it("moves a saved destination into the ssh config and drops the saved entry", async () => {
+      const app = createApp();
+      await request(app).post(sshHostsPath()).send({ name: "prod", destination: "root@prod.test", port: 2200 });
+      await request(app).post(sshHostsPath()).send({ name: "other", destination: "other.test" });
+      const savedId = savedSshHostId(SAVED_HOST_ID);
+      const clash = await request(app).post(`${sshHostsPath()}/${savedId}/move-to-config`).send({ ...box, alias: "other" });
+      expect(clash.status).toBe(409);
+      const moved = await request(app)
+        .post(`${sshHostsPath()}/${savedId}/move-to-config`)
+        .send({ ...box, alias: "prod", hostName: "prod.test", user: "root", port: 2200 });
+      expect(moved.status).toBe(201);
+      expect(savedHosts.map((host) => host.name)).toEqual(["other"]);
+      expect(readFileSync(configFile(), "utf8")).toContain("Host prod\n    HostName prod.test\n    User root\n    Port 2200\n");
+      expect(activity.at(-1)).toMatchObject({ action: "terminal.ssh_host_moved_to_config", details: { savedHostId: savedId, savedName: "prod" } });
+      expect((await request(app).post(`${sshHostsPath()}/${savedId}/move-to-config`).send(box)).status).toBe(404);
+    });
   });
 });

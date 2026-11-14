@@ -93,7 +93,7 @@ function remoteArgs(host: TerminalSshHost, command: string): string[] {
   ];
 }
 
-function sshEnv(): Record<string, string> {
+export function sshEnv(): Record<string, string> {
   return buildLocalTerminalEnv(resolveLoginShell());
 }
 

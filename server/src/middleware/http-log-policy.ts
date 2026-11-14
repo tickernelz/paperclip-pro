@@ -46,6 +46,7 @@ const SECRET_SENSITIVE_HTTP_PATHS = [
   PUBLIC_MCP_SECRET_PATH,
   /^\/api\/mcp(?:\/|$)/,
   /^\/api\/chat-endpoints\/[^/]+\/setup(?:-secret)?(?:\/|$)/,
+  /^\/api\/companies\/[^/]+\/terminal\/ssh-keys(?:\/|$)/,
 ];
 const SECRET_SENSITIVE_HTTP_METHODS = new Set(["POST", "PUT", "PATCH"]);
 

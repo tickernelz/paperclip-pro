@@ -53,12 +53,80 @@ export interface CreateTerminalSessionRequest {
 
 export type TerminalSshHostSource = "config" | "saved";
 
+export interface SshConfigHostSettings {
+  alias: string;
+  hostName: string;
+  user: string | null;
+  port: number | null;
+  identityFile: string | null;
+  proxyJump: string | null;
+  serverAliveInterval: number | null;
+  serverAliveCountMax: number | null;
+}
+
 export interface TerminalSshHost {
   id: string;
   source: TerminalSshHostSource;
   name: string;
   destination: string;
   port: number | null;
+  managed?: boolean;
+  settings?: SshConfigHostSettings | null;
+}
+
+export interface SshKeyInfo {
+  name: string;
+  path: string;
+  type: string | null;
+  fingerprint: string | null;
+  comment: string | null;
+  encrypted: boolean | null;
+  publicKey: string | null;
+}
+
+export interface SshKeyList {
+  keys: SshKeyInfo[];
+  sshDir: string;
+}
+
+export type CreateSshKeyRequest =
+  | { mode: "generate"; name: string; comment?: string }
+  | { mode: "import"; name: string; privateKey: string };
+
+export type SshConnectionTarget = { alias: string } | { host: SshConfigHostSettings };
+
+export type SshConnectionTestStatus =
+  | "ok"
+  | "host_key_unknown"
+  | "host_key_changed"
+  | "auth_failed"
+  | "dns_failed"
+  | "unreachable"
+  | "timeout"
+  | "key_unusable"
+  | "failed";
+
+export interface SshHostKey {
+  type: string;
+  fingerprint: string;
+}
+
+export interface SshConnectionTestResult {
+  status: SshConnectionTestStatus;
+  message: string;
+  detail: string | null;
+  hostKeys: SshHostKey[];
+  durationMs: number;
+}
+
+export interface TrustSshHostKeyRequest {
+  target: SshConnectionTarget;
+  fingerprints: string[];
+}
+
+export interface TrustSshHostKeyResult {
+  added: SshHostKey[];
+  knownHostsPath: string;
 }
 
 export interface TerminalSshHostList {
@@ -121,6 +189,15 @@ export const terminalApiPaths = {
   sshHosts: (companyId: string) => `/api/companies/${encodeURIComponent(companyId)}/terminal/ssh-hosts`,
   sshHost: (companyId: string, hostId: string) =>
     `/api/companies/${encodeURIComponent(companyId)}/terminal/ssh-hosts/${encodeURIComponent(hostId)}`,
+  moveSshHostToConfig: (companyId: string, hostId: string) =>
+    `/api/companies/${encodeURIComponent(companyId)}/terminal/ssh-hosts/${encodeURIComponent(hostId)}/move-to-config`,
+  sshConfigHosts: (companyId: string) => `/api/companies/${encodeURIComponent(companyId)}/terminal/ssh-config/hosts`,
+  sshConfigHost: (companyId: string, alias: string) =>
+    `/api/companies/${encodeURIComponent(companyId)}/terminal/ssh-config/hosts/${encodeURIComponent(alias)}`,
+  sshConfigTest: (companyId: string) => `/api/companies/${encodeURIComponent(companyId)}/terminal/ssh-config/test`,
+  sshConfigTrustHostKey: (companyId: string) =>
+    `/api/companies/${encodeURIComponent(companyId)}/terminal/ssh-config/trust-host-key`,
+  sshKeys: (companyId: string) => `/api/companies/${encodeURIComponent(companyId)}/terminal/ssh-keys`,
   download: (companyId: string, sessionId: string) =>
     `/api/companies/${encodeURIComponent(companyId)}/terminal/sessions/${encodeURIComponent(sessionId)}/download`,
 } as const;
