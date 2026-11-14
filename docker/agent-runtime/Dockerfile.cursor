@@ -1,0 +1,18 @@
+# syntax=docker/dockerfile:1.6
+ARG BASE_TAG=dev
+FROM wardmote/agent-runtime-base:${BASE_TAG}
+
+ARG CURSOR_AGENT_URL=https://downloads.cursor.com/lab/2026.09.26-dd393fe/linux/x64/agent-cli-package.tar.gz
+ARG CURSOR_AGENT_SHA256=8085fd120f5c71f4eae7fea26a043718e5644e3071e4fab3220a0e58c51f9593
+
+USER root
+RUN curl -fsSL "${CURSOR_AGENT_URL}" -o /tmp/cursor-agent.tar.gz \
+    && echo "${CURSOR_AGENT_SHA256}  /tmp/cursor-agent.tar.gz" | sha256sum -c - \
+    && mkdir -p /opt/cursor-agent \
+    && tar -xzf /tmp/cursor-agent.tar.gz -C /opt/cursor-agent --strip-components=1 --no-same-owner \
+    && rm /tmp/cursor-agent.tar.gz \
+    && ln -s /opt/cursor-agent/cursor-agent /usr/local/bin/cursor-agent
+
+USER 1000:1000
+
+RUN cursor-agent --version

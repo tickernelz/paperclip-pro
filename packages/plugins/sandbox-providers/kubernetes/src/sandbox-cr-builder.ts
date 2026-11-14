@@ -75,7 +75,7 @@ export function buildSandboxCrManifest(
                // HOME=/home/node is inside the readOnly root filesystem.
                // Claude (and most agent runtimes) silently exit with code 0
                // and no output when HOME is unwritable, so set this explicitly.
-              env: [{ name: "HOME", value: "/home/paperclip" }],
+              env: [{ name: "HOME", value: "/home/wardmote" }],
               envFrom: [{ secretRef: { name: input.envSecretName } }],
               securityContext: {
                 runAsNonRoot: true,
@@ -97,8 +97,8 @@ export function buildSandboxCrManifest(
               },
               volumeMounts: [
                 { name: "workspace", mountPath: "/workspace" },
-                { name: "home", mountPath: "/home/paperclip" },
-                { name: "cache", mountPath: "/home/paperclip/.cache" },
+                { name: "home", mountPath: "/home/wardmote" },
+                { name: "cache", mountPath: "/home/wardmote/.cache" },
                 { name: "tmp", mountPath: "/tmp" },
               ],
             },

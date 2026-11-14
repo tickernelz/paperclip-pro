@@ -1,6 +1,6 @@
 # Agent Runtime Image Family
 
-Container images for running coding-agent harnesses in sandboxed environments (for example the kubernetes sandbox provider, stage 1 of the k8s contribution). Images are named `agent-runtime-{harness}:{version}` and published to `ghcr.io/paperclipai/` by the `agent-runtime-images` workflow. The registry is overridable: every reference flows through the `REGISTRY` bake variable.
+Container images for running coding-agent harnesses in sandboxed environments (for example the kubernetes sandbox provider, stage 1 of the k8s contribution). Images are named `agent-runtime-{harness}:{version}` and published to `ghcr.io/tickernelz/` by the `agent-runtime-images` workflow. The registry is overridable: every reference flows through the `REGISTRY` bake variable.
 
 ## Image Lineup
 
@@ -8,6 +8,7 @@ Container images for running coding-agent harnesses in sandboxed environments (f
 - **`agent-runtime-opencode`**: Extends base with `opencode-ai` globally installed.
 - **`agent-runtime-pi`**: Extends base with `@mariozechner/pi-coding-agent`.
 - **`agent-runtime-codex`**: Extends base with `@openai/codex`.
+- **`agent-runtime-cursor`**: Extends base with the pinned Cursor agent CLI archive (`packages/wardmote-runner/cursor-distributions.json`, linux-x64), verified by SHA-256.
 - **`agent-runtime-gemini`**: Extends base with `@google/gemini-cli` plus headless auth-mode settings.
 - **`agent-runtime-claude`**: Extends base with `@anthropic-ai/claude-code` (symlinked as `claude-code`).
 
@@ -29,13 +30,13 @@ exec path sources `nvm`. For the full exec-path contract, see
 `packages/plugins/sandbox-providers/SANDBOX-REQUIREMENTS.md`.
 
 **Wardmote Binaries:**
-- `/usr/local/bin/paperclip-agent-shim`: Go binary compiled from `tools/agent-shim/`. Reads `/run/paperclip/runtime-command.json` and `syscall.Exec`s the harness CLI.
+- `/usr/local/bin/wardmote-agent-shim`: Go binary compiled from `tools/agent-shim/`. Reads `/run/wardmote/runtime-command.json` and `syscall.Exec`s the harness CLI.
 
 **Defaults:**
 - `USER`: 1000:1000 (wardmote, non-root)
 - `WORKDIR`: `/workspace` (mount workspace volumes here)
 - `ENTRYPOINT`: `/usr/bin/tini --` (PID-1 reaper, forwards signals)
-- `CMD`: `/usr/local/bin/paperclip-agent-shim`
+- `CMD`: `/usr/local/bin/wardmote-agent-shim`
 
 ## Building Locally
 
@@ -58,14 +59,14 @@ Build and verify the `agent-runtime-claude` image runs locally:
 
 ```bash
 docker buildx bake -f docker/agent-runtime/buildx-bake.hcl base claude --load
-docker run --rm ghcr.io/paperclipai/agent-runtime-claude:dev claude-code --version
+docker run --rm ghcr.io/tickernelz/agent-runtime-claude:dev claude-code --version
 ```
 
-## Agent Container (paperclip-agent-shim)
+## Agent Container (wardmote-agent-shim)
 
 The main agent process runs as the shim (PID 1 under tini). The shim:
 
-1. Reads `/run/paperclip/runtime-command.json` (path overridable via `-spec`), a JSON file mounted by whatever schedules the run
+1. Reads `/run/wardmote/runtime-command.json` (path overridable via `-spec`), a JSON file mounted by whatever schedules the run
 2. Parses `{ "command", "args" }`: the harness CLI and arguments
 3. Resolves the command on PATH and `syscall.Exec`s it, replacing itself
 4. SIGTERM from the kubelet propagates directly to the harness (no zombie processes)
