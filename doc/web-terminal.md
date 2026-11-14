@@ -1,6 +1,6 @@
 # Web Terminal
 
-Wardmote has a browser terminal: a full xterm session in the app, opened from **Terminal** in the sidebar or from the task drawer. It runs a shell on the Wardmote host, an SSH session to a registered environment, or the host's own `ssh` client to a host from `~/.ssh/config` or a saved destination.
+Wardmote has a browser terminal: a full xterm session in the app, opened from **Terminal** in the sidebar or from the task drawer. It runs a shell on the Wardmote host, an SSH session to a registered environment, or the host's own `ssh` client to a host from `~/.ssh/config`.
 
 ## Who can open what
 
@@ -8,7 +8,7 @@ Wardmote has a browser terminal: a full xterm session in the app, opened from **
 |---|---|
 | `local` (shell on this host) | `local_trusted` operators, and instance admins signed in through the browser |
 | `ssh` (registered environment) | active, non-viewer company members signed in through the browser |
-| SSH host (`~/.ssh/config` or saved) | same as `local`: it runs the host's `ssh` client with the Wardmote user's keys, agent and `known_hosts` |
+| SSH host (`~/.ssh/config` or saved), adding hosts and keys | same as `local`: it runs the host's `ssh` client with the Wardmote user's keys, agent and `known_hosts` |
 
 Agents, company-owner agents, board API keys, and MCP OAuth tokens are refused for both kinds. A non-admin member sees no local option; the server is the authority and returns 403 for any local action they attempt.
 
@@ -40,15 +40,60 @@ Behind a reverse proxy or tunnel, set `auth.publicBaseUrl` to the public URL and
 - Access is checked when the token is minted, again when the socket attaches, and every 60 seconds afterwards against the database: role, membership, and the login session that minted the token. Losing any of them closes the socket.
 - Opening, attaching, closing, uploading, and downloading are written to the activity log.
 
+## Opening a terminal
+
+With no session open, the terminal page offers two choices: **Local terminal** (instance admins only; other members see it disabled with the reason) and **SSH terminal**, which opens the host picker. The toolbar's **SSH** button opens the same picker.
+
+The picker searches by name and destination. Arrow keys move, Enter opens, Esc closes, and `/` jumps to the search box. Hosts you opened recently are listed first, and each host shows the result of its last connection test from this browser.
+
 ## SSH hosts
 
-The **SSH** menu lists three groups:
+The picker lists:
 
-- **~/.ssh/config**: every literal `Host` alias in the Wardmote user's `~/.ssh/config`, including files pulled in by `Include`. Wildcard patterns and `Match` blocks are not listed. Opening one runs `ssh -- <alias>`, so the alias's `HostName`, `User`, `Port`, `IdentityFile`, `ProxyJump` and other options apply.
-- **Saved**: destinations added with **Connect to host…** (name, `user@host` or a config alias, optional port), stored per company. Opening one runs `ssh [-p <port>] -- <destination>`. A raw `user@ip` destination does not pick up an alias's `IdentityFile`; enter the alias as the destination to reuse it.
-- **Environments**: SSH environments registered under **Instance settings → Environments** (**Manage SSH environments**), which connect with their own stored key.
+- **SSH hosts**: every literal `Host` alias in the Wardmote user's `~/.ssh/config`, including files pulled in by `Include`. Wildcard patterns and `Match` blocks are not listed. Opening one runs `ssh -- <alias>`, so the alias's `HostName`, `User`, `Port`, `IdentityFile`, `ProxyJump` and other options apply.
+- **Environments**: SSH environments registered under **Instance settings → Environments**, which connect with their own stored key.
+- **Saved in Wardmote only**: destinations saved by older versions in the `terminal_ssh_hosts` table. They still open, but agents cannot use them. **Move to ssh config** (or **Move all**) writes each one into `~/.ssh/config` and then deletes the saved entry. The group is hidden when there are none.
 
-SSH host routes and sessions require local terminal access. Saving and removing a host is written to the activity log; hosts from `~/.ssh/config` cannot be removed from the app.
+Members who are not instance admins see only environments.
+
+### Adding a host
+
+**Add host** writes a `Host` block to `~/.ssh/config` of the user that runs Wardmote, so the terminal and every agent that runs on this server as that user can use `ssh <name>`. The form asks for a name, host or IP, user and port, and a key:
+
+- **Key in ~/.ssh**: any private key file at the top of `~/.ssh`, shown with its type and SHA256 fingerprint. Keys with a passphrase are flagged: agents can use them only while `ssh-agent` on the server holds them unlocked.
+- **Create new key**: runs `ssh-keygen -t ed25519 -N ""` and shows the public key to copy into `~/.ssh/authorized_keys` on the server.
+- **Paste a key**: stores the pasted private key as `~/.ssh/<name>` (mode 600) and writes `<name>.pub` when the public half can be derived. The API never returns a private key, and the request body is kept out of HTTP logs.
+- **ssh defaults**: no `IdentityFile`; ssh tries its default keys and the agent.
+
+**More options** sets **Connect via** (`ProxyJump` through another host in the config) and keep-alive (`ServerAliveInterval`, `ServerAliveCountMax`).
+
+**Test connection** runs `ssh -o BatchMode=yes -o ConnectTimeout=15 <options> -- <name> true` from the server without writing anything, and explains the result: connected, key rejected, host name not found, host unreachable, timeout, key unusable, host key changed, or host not trusted yet. For a host whose key is not in `known_hosts`, the test reads the server's host key with authentication turned off and shows its fingerprint. **Trust this host** appends that key to `~/.ssh/known_hosts` only if the server still presents the fingerprint you saw, and refuses when `known_hosts` already holds a different key for the host. Wardmote never sets `StrictHostKeyChecking=no`.
+
+### What Wardmote writes
+
+Each block is fenced by marker comments:
+
+```
+# >>> wardmote host prod-web (added from the Wardmote Terminal; edit it there)
+Host prod-web
+    HostName 203.0.113.10
+    User deploy
+    IdentityFile ~/.ssh/wardmote_prod-web
+    IdentitiesOnly yes
+# <<< wardmote host prod-web
+```
+
+- Only `HostName`, `User`, `Port`, `IdentityFile`, `IdentitiesOnly`, `ProxyJump`, `ServerAliveInterval` and `ServerAliveCountMax` are ever written. `ProxyCommand`, `LocalCommand`, `Match`, `Include` and every other option are rejected, as are values with spaces, newlines or control characters, names with wildcards or a leading `-` or `!`, and names already used in the config (case-insensitive) or by a saved host.
+- New blocks go before the first `Host` or `Match` line, after any global options at the top, so they are not overridden by a later `Host *`.
+- Only marked blocks can be edited or removed from the app, and only while their content is still what Wardmote wrote; a marked block edited by hand becomes read-only. Everything outside the markers stays byte for byte.
+- Writes take a lock file (`config.wardmote.lock`), write a temp file in the same directory and rename it over the config, follow a symlinked config to its target, and leave the file at mode 600. `~/.ssh` is created with mode 700 when missing. Before the first change after each server start, the old file is copied to `config.wardmote-backup-<UTC time>`. A config changed on disk while saving is not overwritten; the save fails and can be retried.
+- Adding, editing, removing, moving a saved host, trusting a host key and creating a key are written to the activity log, without key contents.
+
+### Which agents can use these hosts
+
+Agents that run directly on this server as the Wardmote user (`omp_local` without a sandbox or SSH environment) read the same `~/.ssh/config`: OpenSSH takes `~` from the user's passwd entry, not from `$HOME`, so a per-run `HOME` does not change it. Such an agent can run `ssh -o BatchMode=yes <name> true` once the server accepts the key. Agents in a sandbox run inside a container, and agents on an SSH environment run on that machine; neither sees this file.
+
+All SSH host, key and connection-test routes need local terminal access (instance admin or `local_trusted`), the same as a local shell, because `ssh_config` can run commands as the Wardmote user.
 
 ## Terminal features
 

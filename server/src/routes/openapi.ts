@@ -22,9 +22,18 @@ import {
   terminalAttachTokenResponseSchema,
   terminalDownloadQuerySchema,
   terminalSessionResponseSchema,
+  createSshKeySchema,
+  sshConfigHostInputSchema,
+  sshConfigHostSettingsSchema,
+  sshConnectionTargetSchema,
+  sshConnectionTestResultSchema,
+  sshKeyInfoSchema,
+  sshKeyListSchema,
   terminalSshHostListSchema,
   terminalSshHostSchema,
   terminalUploadResultSchema,
+  trustSshHostKeyResultSchema,
+  trustSshHostKeySchema,
 } from "../services/terminal/schema.js";
 import {
   experimentalApiPaths,
@@ -1554,6 +1563,8 @@ const localBrowserOperations = [
 const terminalSessionsPath = "/api/companies/{companyId}/terminal/sessions";
 const terminalSessionPath = `${terminalSessionsPath}/{sessionId}`;
 const terminalSshHostsPath = "/api/companies/{companyId}/terminal/ssh-hosts";
+const terminalSshConfigPath = "/api/companies/{companyId}/terminal/ssh-config";
+const terminalSshKeysPath = "/api/companies/{companyId}/terminal/ssh-keys";
 
 const terminalOperations = [
   ["post", terminalSessionsPath],
@@ -1566,6 +1577,14 @@ const terminalOperations = [
   ["get", terminalSshHostsPath],
   ["post", terminalSshHostsPath],
   ["delete", `${terminalSshHostsPath}/{hostId}`],
+  ["post", `${terminalSshHostsPath}/{hostId}/move-to-config`],
+  ["post", `${terminalSshConfigPath}/hosts`],
+  ["put", `${terminalSshConfigPath}/hosts/{alias}`],
+  ["delete", `${terminalSshConfigPath}/hosts/{alias}`],
+  ["post", `${terminalSshConfigPath}/test`],
+  ["post", `${terminalSshConfigPath}/trust-host-key`],
+  ["get", terminalSshKeysPath],
+  ["post", terminalSshKeysPath],
 ] as const;
 
 const BOARD_ONLY_OPERATIONS = new Set([
@@ -2556,6 +2575,78 @@ registry.registerPath({
   summary: "Remove a saved ssh destination",
   request: { params: z.object({ companyId: z.string(), hostId: z.string() }) },
   responses: { 204: r.noContent, ...terminalErrorResponses },
+});
+
+registry.registerPath({
+  method: "post",
+  path: `${terminalSshHostsPath}/{hostId}/move-to-config`,
+  tags: ["Terminal"],
+  summary: "Write a saved ssh destination into the server's ~/.ssh/config as a Wardmote-managed host, then remove the saved entry",
+  request: { params: z.object({ companyId: z.string(), hostId: z.string() }), body: jsonBody(sshConfigHostInputSchema) },
+  responses: { 201: r.ok(sshConfigHostSettingsSchema), ...terminalErrorResponses, 409: r.conflict, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "post",
+  path: `${terminalSshConfigPath}/hosts`,
+  tags: ["Terminal"],
+  summary: "Add a Wardmote-managed Host block to the server's ~/.ssh/config (instance admins only)",
+  request: { params: z.object({ companyId: z.string() }), body: jsonBody(sshConfigHostInputSchema) },
+  responses: { 201: r.ok(sshConfigHostSettingsSchema), ...terminalErrorResponses, 409: r.conflict, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "put",
+  path: `${terminalSshConfigPath}/hosts/{alias}`,
+  tags: ["Terminal"],
+  summary: "Replace a Wardmote-managed Host block in the server's ~/.ssh/config",
+  request: { params: z.object({ companyId: z.string(), alias: z.string() }), body: jsonBody(sshConfigHostInputSchema) },
+  responses: { 200: r.ok(sshConfigHostSettingsSchema), ...terminalErrorResponses, 409: r.conflict, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: `${terminalSshConfigPath}/hosts/{alias}`,
+  tags: ["Terminal"],
+  summary: "Remove a Wardmote-managed Host block from the server's ~/.ssh/config",
+  request: { params: z.object({ companyId: z.string(), alias: z.string() }) },
+  responses: { 204: r.noContent, ...terminalErrorResponses, 409: r.conflict },
+});
+
+registry.registerPath({
+  method: "post",
+  path: `${terminalSshConfigPath}/test`,
+  tags: ["Terminal"],
+  summary: "Test an ssh connection from the server in batch mode without writing any file",
+  request: { params: z.object({ companyId: z.string() }), body: jsonBody(sshConnectionTargetSchema) },
+  responses: { 200: r.ok(sshConnectionTestResultSchema), ...terminalErrorResponses, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "post",
+  path: `${terminalSshConfigPath}/trust-host-key`,
+  tags: ["Terminal"],
+  summary: "Add a server's host key to ~/.ssh/known_hosts after the user confirmed its fingerprint",
+  request: { params: z.object({ companyId: z.string() }), body: jsonBody(trustSshHostKeySchema) },
+  responses: { 200: r.ok(trustSshHostKeyResultSchema), ...terminalErrorResponses, 409: r.conflict, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "get",
+  path: terminalSshKeysPath,
+  tags: ["Terminal"],
+  summary: "List private key files in the server's ~/.ssh with their public key and fingerprint",
+  request: { params: z.object({ companyId: z.string() }) },
+  responses: { 200: r.ok(sshKeyListSchema), ...terminalErrorResponses },
+});
+
+registry.registerPath({
+  method: "post",
+  path: terminalSshKeysPath,
+  tags: ["Terminal"],
+  summary: "Generate an ed25519 key or store a pasted private key in the server's ~/.ssh; the private key is never returned",
+  request: { params: z.object({ companyId: z.string() }), body: jsonBody(createSshKeySchema) },
+  responses: { 201: r.ok(sshKeyInfoSchema), ...terminalErrorResponses, 409: r.conflict, 422: r.unprocessable },
 });
 
 registry.registerPath({

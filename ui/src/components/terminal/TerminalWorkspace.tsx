@@ -1,27 +1,25 @@
 import { Fragment, useCallback, useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Columns2, Plus, Server, SquareTerminal, X } from "lucide-react";
-import type { CreateTerminalSessionRequest, TerminalSession, TerminalSshHost } from "@tickernelz/wardmote-shared";
-import { ApiError } from "@/api/client";
+import type {
+  CreateTerminalSessionRequest,
+  SshConfigHostSettings,
+  TerminalSession,
+  TerminalSshHost,
+} from "@tickernelz/wardmote-shared";
 import { accessApi } from "@/api/access";
 import { environmentsApi } from "@/api/environments";
 import { terminalApi, terminalQueryKeys } from "@/api/terminal";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable-panels";
 import { queryKeys } from "@/lib/queryKeys";
-import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
-import { SshHostDialog } from "./SshHostDialog";
+import { SshHostForm, settingsFromSavedHost, type SshHostFormMode } from "./SshHostForm";
+import { SshHostPicker, environmentTargetKey, hostTargetKey, type SshPickerEnvironment } from "./SshHostPicker";
+import { TerminalStartScreen } from "./TerminalStartScreen";
 import { TerminalView } from "./TerminalView";
+import { recentSshTargets, rememberSshTarget, rememberedTests } from "./ssh-host-memory";
 import { canOpenLocalTerminal, terminalAccessErrorMessage } from "./terminal-access";
 
 interface TerminalLayout {
@@ -87,7 +85,10 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
   const [titles, setTitles] = useState<Record<string, string>>(() => readTitles(companyId));
   const [renaming, setRenaming] = useState<{ id: string; value: string } | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [sshDialogOpen, setSshDialogOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [form, setForm] = useState<{ mode: SshHostFormMode; key: number } | null>(null);
+  const [recent, setRecent] = useState<string[]>(() => recentSshTargets(companyId));
+  const [tests, setTests] = useState(() => rememberedTests(companyId));
   const boardAccessQuery = useQuery({
     queryKey: queryKeys.access.currentBoardAccess,
     queryFn: () => accessApi.getCurrentBoardAccess(),
@@ -113,14 +114,9 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
     queryFn: () => terminalApi.listSshHosts(companyId),
     enabled: localAllowed,
   });
-  const sshConfigHosts = useMemo(
-    () => (sshHostsQuery.data?.hosts ?? []).filter((host) => host.source === "config"),
-    [sshHostsQuery.data],
-  );
-  const savedSshHosts = useMemo(
-    () => (sshHostsQuery.data?.hosts ?? []).filter((host) => host.source === "saved"),
-    [sshHostsQuery.data],
-  );
+  const sshHosts = useMemo(() => sshHostsQuery.data?.hosts ?? [], [sshHostsQuery.data]);
+  const sshConfigHosts = useMemo(() => sshHosts.filter((host) => host.source === "config"), [sshHosts]);
+  const savedSshHosts = useMemo(() => sshHosts.filter((host) => host.source === "saved"), [sshHosts]);
 
   useEffect(() => {
     if (!sessionsQuery.isSuccess) return;
@@ -184,10 +180,62 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
   });
 
   const createLocal = (pane?: number) => createMutation.mutate({ body: { kind: "local" }, pane });
-  const createSsh = (environmentId: string, name: string) =>
-    createMutation.mutate({ body: { kind: "ssh", environmentId, title: name } });
-  const createSshHost = (host: TerminalSshHost) =>
+  const remember = (targetKey: string) => setRecent(rememberSshTarget(companyId, targetKey));
+  const openEnvironment = (environment: SshPickerEnvironment) => {
+    setPickerOpen(false);
+    remember(environmentTargetKey(environment));
+    createMutation.mutate({ body: { kind: "ssh", environmentId: environment.id, title: environment.name } });
+  };
+  const openHost = (host: TerminalSshHost) => {
+    setPickerOpen(false);
+    if (host.source === "config") remember(hostTargetKey(host));
     createMutation.mutate({ body: { kind: "local", sshHostId: host.id, title: host.name } });
+  };
+  const openPicker = () => {
+    setTests(rememberedTests(companyId));
+    setPickerOpen(true);
+  };
+  const openForm = (mode: SshHostFormMode) => {
+    setPickerOpen(false);
+    setForm({ mode, key: Date.now() });
+  };
+  const closeForm = () => {
+    setForm(null);
+    setTests(rememberedTests(companyId));
+  };
+  const onHostSaved = (settings: SshConfigHostSettings, openTerminal: boolean) => {
+    closeForm();
+    if (!openTerminal) {
+      setPickerOpen(true);
+      return;
+    }
+    const host: TerminalSshHost = {
+      id: `config:${settings.alias}`,
+      source: "config",
+      name: settings.alias,
+      destination: settings.user ? `${settings.user}@${settings.hostName}` : settings.hostName,
+      port: settings.port,
+    };
+    openHost(host);
+  };
+
+  const moveAllMutation = useMutation({
+    mutationFn: async (hosts: TerminalSshHost[]) => {
+      const failures: string[] = [];
+      for (const host of hosts) {
+        try {
+          await terminalApi.moveSshHostToConfig(companyId, host.id, settingsFromSavedHost(host));
+        } catch (error) {
+          failures.push(`${host.name}: ${terminalAccessErrorMessage(error, "could not be moved")}`);
+        }
+      }
+      return failures;
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: terminalQueryKeys.sshHosts(companyId) }),
+    onSuccess: (failures) =>
+      setActionError(failures.length === 0 ? null : `Some saved hosts were not moved. Open them one by one to fix: ${failures.join("; ")}`),
+    onError: (error) => setActionError(terminalAccessErrorMessage(error, "Saved hosts could not be moved.")),
+  });
 
   const toggleSplit = () => {
     if (layout.panes.length >= MAX_PANES) {
@@ -308,81 +356,10 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
             Local
           </Button>
         ) : null}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button type="button" variant="ghost" size="xs" disabled={creating}>
-              <Server aria-hidden />
-              SSH
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-72">
-            {localAllowed ? (
-              <>
-                {sshHostsQuery.isLoading ? (
-                  <DropdownMenuItem disabled>Loading…</DropdownMenuItem>
-                ) : sshHostsQuery.isError ? (
-                  <DropdownMenuItem disabled className="text-bad">
-                    {terminalAccessErrorMessage(sshHostsQuery.error, "SSH hosts could not be loaded.")}
-                  </DropdownMenuItem>
-                ) : sshConfigHosts.length === 0 && savedSshHosts.length === 0 ? (
-                  <DropdownMenuItem disabled>No SSH hosts</DropdownMenuItem>
-                ) : (
-                  <>
-                    <DropdownMenuLabel>~/.ssh/config</DropdownMenuLabel>
-                    {sshConfigHosts.length === 0 ? (
-                      <DropdownMenuItem disabled>No hosts</DropdownMenuItem>
-                    ) : (
-                      sshConfigHosts.map((host) => (
-                        <DropdownMenuItem key={host.id} onSelect={() => createSshHost(host)}>
-                          <span className="truncate">{host.name}</span>
-                          <span className="ml-auto truncate pl-2 text-xs text-ink-3">
-                            {host.destination}
-                          </span>
-                        </DropdownMenuItem>
-                      ))
-                    )}
-                    <DropdownMenuLabel>Saved</DropdownMenuLabel>
-                    {savedSshHosts.length === 0 ? (
-                      <DropdownMenuItem disabled>No saved hosts</DropdownMenuItem>
-                    ) : (
-                      savedSshHosts.map((host) => (
-                        <DropdownMenuItem key={host.id} onSelect={() => createSshHost(host)}>
-                          <span className="truncate">{host.name}</span>
-                          <span className="ml-auto truncate pl-2 text-xs text-ink-3">
-                            {host.destination}
-                            {host.port === null ? "" : `:${host.port}`}
-                          </span>
-                        </DropdownMenuItem>
-                      ))
-                    )}
-                  </>
-                )}
-                {sshHostsQuery.data?.configError ? (
-                  <DropdownMenuItem disabled className="text-ink-3">
-                    {sshHostsQuery.data.configError}
-                  </DropdownMenuItem>
-                ) : null}
-              </>
-            ) : null}
-            <DropdownMenuLabel>Environments</DropdownMenuLabel>
-            {sshEnvironments.length === 0 ? (
-              <DropdownMenuItem disabled>
-                {environmentsQuery.isLoading ? "Loading…" : "No SSH environments"}
-              </DropdownMenuItem>
-            ) : sshEnvironments.map((environment) => (
-              <DropdownMenuItem key={environment.id} onSelect={() => createSsh(environment.id, environment.name)}>
-                {environment.name}
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            {localAllowed ? (
-              <DropdownMenuItem onSelect={() => setSshDialogOpen(true)}>Connect to host…</DropdownMenuItem>
-            ) : null}
-            <DropdownMenuItem asChild>
-              <Link to="/company/settings/instance/environments">Manage SSH environments</Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button type="button" variant="ghost" size="xs" onClick={openPicker} disabled={creating} aria-haspopup="dialog">
+          <Server aria-hidden />
+          SSH
+        </Button>
         <Button
           type="button"
           variant="ghost"
@@ -395,31 +372,60 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
           <Columns2 aria-hidden />
         </Button>
       </div>
-      <SshHostDialog
-        companyId={companyId}
-        open={sshDialogOpen}
-        savedHosts={savedSshHosts}
-        onOpenChange={setSshDialogOpen}
-        onConnect={createSshHost}
+      <SshHostPicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        localAllowed={localAllowed}
+        hosts={sshHosts}
+        hostsLoading={localAllowed && sshHostsQuery.isLoading}
+        hostsError={sshHostsQuery.isError ? terminalAccessErrorMessage(sshHostsQuery.error, "SSH hosts could not be loaded.") : null}
+        configError={sshHostsQuery.data?.configError ?? null}
+        environments={sshEnvironments}
+        environmentsLoading={environmentsQuery.isLoading}
+        recent={recent}
+        tests={tests}
+        busy={creating || moveAllMutation.isPending}
+        onOpenHost={openHost}
+        onOpenEnvironment={openEnvironment}
+        onAddHost={() => openForm({ kind: "add" })}
+        onEditHost={(host) => {
+          if (host.settings) openForm({ kind: "edit", settings: host.settings });
+        }}
+        onMoveSaved={(host) => openForm({ kind: "move", saved: host, settings: settingsFromSavedHost(host) })}
+        onMoveAllSaved={() => moveAllMutation.mutate(savedSshHosts)}
       />
+      {form ? (
+        <SshHostForm
+          key={form.key}
+          companyId={companyId}
+          open
+          onOpenChange={(open) => {
+            if (!open) closeForm();
+          }}
+          mode={form.mode}
+          configHosts={sshConfigHosts}
+          onSaved={onHostSaved}
+          onRemoved={() => {
+            closeForm();
+            setPickerOpen(true);
+          }}
+        />
+      ) : null}
       {actionError ? (
         <p className="shrink-0 border-b border-line px-3 py-1 text-xs text-bad" role="alert">{actionError}</p>
       ) : null}
       {layout.panes.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-          <SquareTerminal className="size-6 text-ink-3" aria-hidden />
-          <p className="text-sm text-ink-3">No terminal sessions yet.</p>
-          {localAllowed ? (
-            <Button type="button" variant="secondary" size="sm" onClick={() => createLocal()} disabled={creating}>
-              <Plus aria-hidden />
-              New local terminal
-            </Button>
-          ) : (
-            <p className="max-w-md text-xs text-ink-3">
-              A shell on this host needs instance admin access. Open an SSH terminal to a registered environment instead.
-            </p>
-          )}
-        </div>
+        <TerminalStartScreen
+          localAllowed={localAllowed}
+          creating={creating}
+          onLocal={() => createLocal()}
+          onSsh={openPicker}
+          recentHosts={recent
+            .map((key) => sshConfigHosts.find((host) => hostTargetKey(host) === key) ?? null)
+            .filter((host): host is TerminalSshHost => host !== null)
+            .slice(0, 3)}
+          onOpenHost={openHost}
+        />
       ) : (
         <ResizablePanelGroup className="min-h-0 flex-1">
           {layout.panes.map((sessionId, index) => (

@@ -63,6 +63,12 @@ describe("isPrivateWebhookHttpRequest", () => {
 });
 
 describe("isSecretSensitiveHttpRequest", () => {
+  it("keeps pasted ssh private keys out of request diagnostics", () => {
+    expect(isSecretSensitiveHttpRequest("POST", "/api/companies/c-1/terminal/ssh-keys")).toBe(true);
+    expect(isSecretSensitiveHttpRequest("GET", "/api/companies/c-1/terminal/ssh-keys")).toBe(false);
+    expect(isSecretSensitiveHttpRequest("POST", "/api/companies/c-1/terminal/ssh-hosts")).toBe(false);
+  });
+
   it("protects Slack registration, installation, recovery, and all callback methods", () => {
     for (const suffix of ["registration", "install", "resume"]) expect(isSecretSensitiveHttpRequest("POST", `/api/chat-endpoints/id/slack/${suffix}`)).toBe(true);
     for (const method of ["GET", "POST", "DELETE"]) for (const path of ["/api/chat-slack/oauth/callback?code=canary", "https://wardmote.test/API/CHAT-SLACK/OAUTH/callback?code=canary"])

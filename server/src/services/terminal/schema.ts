@@ -49,12 +49,25 @@ export const terminalSessionResponseSchema = z.object({
   sshHost: z.string().nullable(),
 });
 
+export const sshConfigHostSettingsSchema = z.object({
+  alias: z.string(),
+  hostName: z.string(),
+  user: z.string().nullable(),
+  port: z.number().int().nullable(),
+  identityFile: z.string().nullable(),
+  proxyJump: z.string().nullable(),
+  serverAliveInterval: z.number().int().nullable(),
+  serverAliveCountMax: z.number().int().nullable(),
+});
+
 export const terminalSshHostSchema = z.object({
   id: z.string(),
   source: z.enum(["config", "saved"]),
   name: z.string(),
   destination: z.string(),
   port: z.number().int().nullable(),
+  managed: z.boolean().optional(),
+  settings: sshConfigHostSettingsSchema.nullable().optional(),
 });
 
 export const terminalSshHostListSchema = z.object({
@@ -75,6 +88,129 @@ export const createTerminalSshHostSchema = z
     port: z.number().int().min(1).max(65535).optional(),
   })
   .strict();
+
+export const SSH_CONFIG_ALLOWED_OPTIONS = [
+  "HostName",
+  "User",
+  "Port",
+  "IdentityFile",
+  "IdentitiesOnly",
+  "ProxyJump",
+  "ServerAliveInterval",
+  "ServerAliveCountMax",
+] as const;
+
+export const SSH_ALIAS_PATTERN = /^[A-Za-z0-9_][A-Za-z0-9._-]{0,62}$/;
+const SSH_HOSTNAME_PATTERN = /^(?:[A-Za-z0-9_](?:[A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?)(?:\.[A-Za-z0-9_](?:[A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?)*$/;
+const SSH_IPV6_PATTERN = /^(?=.*:)[0-9A-Fa-f:.]{2,45}$/;
+const SSH_USER_PATTERN = /^[A-Za-z0-9_][A-Za-z0-9._-]{0,63}$/;
+export const SSH_KEY_NAME_PATTERN = /^[A-Za-z0-9_][A-Za-z0-9._-]{0,63}$/;
+export const SSH_IDENTITY_FILE_PATTERN = /^~\/\.ssh\/([A-Za-z0-9_][A-Za-z0-9._-]{0,63})$/;
+
+export const sshAliasSchema = z
+  .string()
+  .regex(SSH_ALIAS_PATTERN, "Use letters, digits, '.', '_' or '-', starting with a letter, digit or '_'");
+
+export const sshConfigHostInputSchema = z
+  .object({
+    alias: sshAliasSchema,
+    hostName: z
+      .string()
+      .max(253)
+      .refine((value) => SSH_HOSTNAME_PATTERN.test(value) || SSH_IPV6_PATTERN.test(value), "Enter a hostname or IP address"),
+    user: z.string().regex(SSH_USER_PATTERN, "Use letters, digits, '.', '_' or '-'").nullable(),
+    port: z.number().int().min(1).max(65535).nullable(),
+    identityFile: z.string().regex(SSH_IDENTITY_FILE_PATTERN, "Pick a key file inside ~/.ssh").nullable(),
+    proxyJump: sshAliasSchema.nullable(),
+    serverAliveInterval: z.number().int().min(0).max(86400).nullable(),
+    serverAliveCountMax: z.number().int().min(1).max(1000).nullable(),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.proxyJump !== null && value.proxyJump === value.alias) {
+      ctx.addIssue({ code: "custom", path: ["proxyJump"], message: "A host cannot connect via itself" });
+    }
+    if (value.identityFile !== null && value.identityFile.endsWith(".pub")) {
+      ctx.addIssue({ code: "custom", path: ["identityFile"], message: "Pick the private key, not the .pub file" });
+    }
+  });
+
+export const sshConnectionTargetSchema = z.union([
+  z.object({ alias: sshAliasSchema }).strict(),
+  z.object({ host: sshConfigHostInputSchema }).strict(),
+]);
+
+const SSH_PRIVATE_KEY_MAX_BYTES = 16 * 1024;
+
+const sshKeyNameSchema = z
+  .string()
+  .regex(SSH_KEY_NAME_PATTERN, "Use letters, digits, '.', '_' or '-'")
+  .refine((value) => !value.endsWith(".pub"), "Key names cannot end in .pub")
+  .refine(
+    (value) => !["config", "known_hosts", "known_hosts2", "known_hosts.old", "authorized_keys", "authorized_keys2", "environment", "rc"].includes(value),
+    "That name is reserved by ssh",
+  );
+
+export const createSshKeySchema = z.discriminatedUnion("mode", [
+  z
+    .object({
+      mode: z.literal("generate"),
+      name: sshKeyNameSchema,
+      comment: z.string().regex(/^[A-Za-z0-9 @._:+-]{0,100}$/, "Comments may use letters, digits, spaces and @._:+-").optional(),
+    })
+    .strict(),
+  z
+    .object({
+      mode: z.literal("import"),
+      name: sshKeyNameSchema,
+      privateKey: z.string().min(1).max(SSH_PRIVATE_KEY_MAX_BYTES),
+    })
+    .strict(),
+]);
+
+export const trustSshHostKeySchema = z
+  .object({
+    target: sshConnectionTargetSchema,
+    fingerprints: z.array(z.string().regex(/^SHA256:[A-Za-z0-9+/]{43}$/)).min(1).max(10),
+  })
+  .strict();
+
+export const sshKeyInfoSchema = z.object({
+  name: z.string(),
+  path: z.string(),
+  type: z.string().nullable(),
+  fingerprint: z.string().nullable(),
+  comment: z.string().nullable(),
+  encrypted: z.boolean().nullable(),
+  publicKey: z.string().nullable(),
+});
+
+export const sshKeyListSchema = z.object({ keys: z.array(sshKeyInfoSchema), sshDir: z.string() });
+
+const sshHostKeySchema = z.object({ type: z.string(), fingerprint: z.string() });
+
+export const sshConnectionTestResultSchema = z.object({
+  status: z.enum([
+    "ok",
+    "host_key_unknown",
+    "host_key_changed",
+    "auth_failed",
+    "dns_failed",
+    "unreachable",
+    "timeout",
+    "key_unusable",
+    "failed",
+  ]),
+  message: z.string(),
+  detail: z.string().nullable(),
+  hostKeys: z.array(sshHostKeySchema),
+  durationMs: z.number().int(),
+});
+
+export const trustSshHostKeyResultSchema = z.object({
+  added: z.array(sshHostKeySchema),
+  knownHostsPath: z.string(),
+});
 
 export const terminalAttachTokenResponseSchema = z.object({
   sessionId: z.string(),

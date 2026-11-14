@@ -8,7 +8,11 @@ import type { Db } from "@tickernelz/wardmote-db";
 import {
   TERMINAL_MAX_UPLOAD_BYTES,
   TERMINAL_WEBSOCKET_PATH,
+  type CreateSshKeyRequest,
   type CreateTerminalSshHostRequest,
+  type SshConfigHostSettings,
+  type SshConnectionTarget,
+  type TrustSshHostKeyRequest,
   type TerminalAttachToken,
   type TerminalSession,
   type TerminalSessionKind,
@@ -29,7 +33,18 @@ import {
   type TerminalOriginPolicy,
 } from "../services/terminal/origin.js";
 import { spawnLocalTerminal, type TerminalProcess } from "../services/terminal/process.js";
-import { createTerminalSessionSchema, createTerminalSshHostSchema } from "../services/terminal/schema.js";
+import {
+  SSH_ALIAS_PATTERN,
+  createSshKeySchema,
+  createTerminalSessionSchema,
+  createTerminalSshHostSchema,
+  sshConfigHostInputSchema,
+  sshConnectionTargetSchema,
+  trustSshHostKeySchema,
+} from "../services/terminal/schema.js";
+import { SshConfigWriteError, sshConfigWriter, type SshConfigWriter } from "../services/terminal/ssh-config-writer.js";
+import { SshKeyError, generateSshKey, importSshKey, listSshKeys } from "../services/terminal/ssh-keys.js";
+import { testSshConnection, trustSshHostKeys, type SshOptionResolver, type SshRunner } from "../services/terminal/ssh-probe.js";
 import { connectSshTerminal, type SshTerminalTarget } from "../services/terminal/ssh.js";
 import {
   SSH_CONFIG_HOST_ID_PREFIX,
@@ -56,6 +71,9 @@ export interface TerminalRouteOptions {
   startHostSsh?: (input: { host: TerminalSshHost; cols: number; rows: number }) => StartedTerminal | Promise<StartedTerminal>;
   sshHosts?: TerminalSshHostStore;
   sshConfigPath?: string;
+  sshConfigWriter?: SshConfigWriter;
+  sshRunner?: SshRunner;
+  sshOptionResolver?: SshOptionResolver;
   recordActivity?: (input: LogActivityInput) => Promise<unknown>;
   uploadTempDir?: string;
 }
@@ -69,6 +87,38 @@ function startFailure(err: unknown): HttpError {
   if (err instanceof HttpError) return err;
   const reason = err instanceof Error ? err.message : String(err);
   return unprocessable(`Terminal failed to start: ${reason}`, { code: "spawn_failed" });
+}
+
+function sshFailure(err: unknown): unknown {
+  if (err instanceof SshConfigWriteError) {
+    if (err.code === "not_found") return notFound(err.message, { code: err.code });
+    if (err.code === "invalid") return unprocessable(err.message, { code: err.code });
+    return conflict(err.message, { code: err.code });
+  }
+  if (err instanceof SshKeyError) {
+    if (err.code === "exists") return conflict(err.message, { code: "key_exists" });
+    return unprocessable(err.message, { code: err.code === "invalid" ? "key_invalid" : "keygen_failed" });
+  }
+  return err;
+}
+
+function auditedHost(settings: SshConfigHostSettings): Record<string, unknown> {
+  return {
+    alias: settings.alias,
+    hostName: settings.hostName,
+    user: settings.user,
+    port: settings.port,
+    identityFile: settings.identityFile,
+    proxyJump: settings.proxyJump,
+  };
+}
+
+function sameSshHostSettings(left: SshConfigHostSettings, right: SshConfigHostSettings): boolean {
+  return (Object.keys(left) as Array<keyof SshConfigHostSettings>).every((key) => left[key] === right[key]);
+}
+
+function targetAlias(target: SshConnectionTarget): string {
+  return "alias" in target ? target.alias : target.host.alias;
 }
 
 function readUploadFile(req: Request, res: Response, tempDir: string): Promise<Express.Multer.File | null> {
@@ -123,6 +173,23 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
   const startSsh = options.startSsh ?? connectSshTerminal;
   const startHostSsh = options.startHostSsh ?? startSystemSshTerminal;
   const sshHosts = options.sshHosts ?? databaseSshHostStore(db, { configPath: options.sshConfigPath });
+  const configWriter = options.sshConfigWriter ?? sshConfigWriter({ configPath: options.sshConfigPath });
+  const probeOptions = () => ({
+    run: options.sshRunner,
+    resolveOptions: options.sshOptionResolver,
+    knownHostsPath: path.join(configWriter.sshDir, "known_hosts"),
+  });
+
+  async function savedHostNames(companyId: string, exceptId?: string): Promise<string[]> {
+    const list = await sshHosts.list(companyId);
+    return list.hosts.filter((host) => host.source === "saved" && host.id !== exceptId).map((host) => host.name);
+  }
+
+  function aliasParam(req: Request): string {
+    const alias = req.params.alias as string;
+    if (!SSH_ALIAS_PATTERN.test(alias)) throw notFound("SSH host not found");
+    return alias;
+  }
   const recordActivity = options.recordActivity ?? ((input: LogActivityInput) => logActivity(db, input));
   const uploadTempDir = options.uploadTempDir ?? resolveAttachmentUploadTempDir();
 
@@ -275,8 +342,177 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
     const companyId = req.params.companyId as string;
     requireLocalAccess(req, companyId);
     res.setHeader("Cache-Control", "no-store");
-    res.json(await sshHosts.list(companyId));
+    const [list, managed] = await Promise.all([sshHosts.list(companyId), configWriter.readManaged().catch(() => [])]);
+    const blocks = new Map(managed.map((block) => [block.alias, block]));
+    res.json({
+      ...list,
+      hosts: list.hosts.map((host) => {
+        if (host.source !== "config") return host;
+        const block = blocks.get(host.name);
+        return { ...host, managed: Boolean(block), settings: block?.settings ?? null };
+      }),
+    });
   });
+
+  router.post(
+    "/companies/:companyId/terminal/ssh-config/hosts",
+    gate,
+    sameOrigin,
+    validate(sshConfigHostInputSchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      requireLocalAccess(req, companyId);
+      const settings = await configWriter
+        .add(req.body as SshConfigHostSettings, { reservedAliases: await savedHostNames(companyId) })
+        .catch((err: unknown) => {
+          throw sshFailure(err);
+        });
+      await audit(req, companyId, settings.alias, "terminal.ssh_config_host_added", auditedHost(settings), "terminal_ssh_config_host");
+      res.status(201).json(settings);
+    },
+  );
+
+  router.put(
+    "/companies/:companyId/terminal/ssh-config/hosts/:alias",
+    gate,
+    sameOrigin,
+    validate(sshConfigHostInputSchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      requireLocalAccess(req, companyId);
+      const alias = aliasParam(req);
+      const settings = await configWriter
+        .update(alias, req.body as SshConfigHostSettings, { reservedAliases: await savedHostNames(companyId) })
+        .catch((err: unknown) => {
+          throw sshFailure(err);
+        });
+      await audit(
+        req,
+        companyId,
+        settings.alias,
+        "terminal.ssh_config_host_updated",
+        { ...auditedHost(settings), previousAlias: alias },
+        "terminal_ssh_config_host",
+      );
+      res.json(settings);
+    },
+  );
+
+  router.delete("/companies/:companyId/terminal/ssh-config/hosts/:alias", gate, sameOrigin, async (req, res) => {
+    const companyId = req.params.companyId as string;
+    requireLocalAccess(req, companyId);
+    const alias = aliasParam(req);
+    const removed = await configWriter.remove(alias).catch((err: unknown) => {
+      throw sshFailure(err);
+    });
+    await audit(req, companyId, alias, "terminal.ssh_config_host_removed", auditedHost(removed), "terminal_ssh_config_host");
+    res.status(204).end();
+  });
+
+  router.post(
+    "/companies/:companyId/terminal/ssh-config/test",
+    gate,
+    sameOrigin,
+    validate(sshConnectionTargetSchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      requireLocalAccess(req, companyId);
+      try {
+        res.json(await testSshConnection(req.body as SshConnectionTarget, probeOptions()));
+      } catch (err) {
+        throw startFailure(err);
+      }
+    },
+  );
+
+  router.post(
+    "/companies/:companyId/terminal/ssh-config/trust-host-key",
+    gate,
+    sameOrigin,
+    validate(trustSshHostKeySchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      requireLocalAccess(req, companyId);
+      const body = req.body as TrustSshHostKeyRequest;
+      const result = await trustSshHostKeys(body.target, body.fingerprints, probeOptions()).catch((err: unknown) => {
+        throw sshFailure(err);
+      });
+      if (result.added.length > 0) {
+        await audit(
+          req,
+          companyId,
+          targetAlias(body.target),
+          "terminal.ssh_host_key_trusted",
+          { alias: targetAlias(body.target), fingerprints: result.added.map((key) => key.fingerprint) },
+          "terminal_ssh_config_host",
+        );
+      }
+      res.json(result);
+    },
+  );
+
+  router.get("/companies/:companyId/terminal/ssh-keys", gate, async (req, res) => {
+    const companyId = req.params.companyId as string;
+    requireLocalAccess(req, companyId);
+    res.setHeader("Cache-Control", "no-store");
+    res.json(await listSshKeys(configWriter.sshDir));
+  });
+
+  router.post("/companies/:companyId/terminal/ssh-keys", gate, sameOrigin, validate(createSshKeySchema), async (req, res) => {
+    const companyId = req.params.companyId as string;
+    requireLocalAccess(req, companyId);
+    const body = req.body as CreateSshKeyRequest;
+    const created = await (body.mode === "generate"
+      ? generateSshKey(configWriter.sshDir, body.name, body.comment || `${body.name}@wardmote`)
+      : importSshKey(configWriter.sshDir, body.name, body.privateKey)
+    ).catch((err: unknown) => {
+      throw sshFailure(err);
+    });
+    await audit(
+      req,
+      companyId,
+      created.name,
+      "terminal.ssh_key_created",
+      { name: created.name, mode: body.mode, type: created.type, fingerprint: created.fingerprint, encrypted: created.encrypted },
+      "terminal_ssh_key",
+    );
+    res.status(201).json(created);
+  });
+
+  router.post(
+    "/companies/:companyId/terminal/ssh-hosts/:hostId/move-to-config",
+    gate,
+    sameOrigin,
+    validate(sshConfigHostInputSchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      const hostId = req.params.hostId as string;
+      requireLocalAccess(req, companyId);
+      if (!parseSavedSshHostId(hostId)) throw notFound("Saved SSH host not found");
+      const saved = await sshHosts.resolve(companyId, hostId);
+      if (!saved) throw notFound("Saved SSH host not found");
+      const requested = req.body as SshConfigHostSettings;
+      const settings = await configWriter
+        .add(requested, { reservedAliases: await savedHostNames(companyId, hostId) })
+        .catch(async (err: unknown) => {
+          if (err instanceof SshConfigWriteError && err.code === "duplicate_alias") {
+            const existing = (await configWriter.readManaged()).find((block) => block.alias === requested.alias)?.settings;
+            if (existing && sameSshHostSettings(existing, requested)) return existing;
+          }
+          throw sshFailure(err);
+        });
+      await sshHosts.remove(companyId, hostId);
+      await audit(
+        req,
+        companyId,
+        settings.alias,
+        "terminal.ssh_host_moved_to_config",
+        { ...auditedHost(settings), savedHostId: hostId, savedName: saved.name },
+        "terminal_ssh_config_host",
+      );
+      res.status(201).json(settings);
+    },
+  );
 
   router.post(
     "/companies/:companyId/terminal/ssh-hosts",
