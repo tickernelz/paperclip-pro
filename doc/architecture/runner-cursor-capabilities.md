@@ -175,6 +175,19 @@ tree. Its patched closures are:
 | macOS x64 | `6f28c799c5afdc64fbdff8a2157f565f17ae7615efe014ac389d63bf70cf2be2` |
 | Linux x64 | `eadb8bb8ffb0450455b15b88c9b230307a9e149958a0c452d16dd157b4633d74` |
 
+The current `wardmote-cursor-usage-v5` patch (Cursor profile 17) keeps the same
+vendor archives and only renames the identifiers inside the patch. Its patched
+closures, materialized by `.github/workflows/cursor-closure.yml`, are:
+
+| Platform | Patched closure SHA-256 |
+| --- | --- |
+| macOS ARM64 | `48c1ded408190e7f36f9bb25478465547f2e46e38b616f1e4d0c417d6bcfe7d5` |
+| macOS x64 | `d4aac8a84e91c7fe65777ed775204bcd337f1cc8b9d4d822e299ca48cee98594` |
+| Linux x64 | `61057c1ca16887205eab17ebe33c53189dc6a088445e3796006233fa34ab9f6d` |
+
+`usage-v5-runtime-patch-offline-proof.json` records the isolation and
+instruction checks for v5.
+
 `usage-v4-runtime-patch-offline-proof.json` retains fresh isolation/instruction
 checks, and `native-usage-v4-offline-proof.json` records the usage checks. Earlier
 proof files remain historical. These are offline source proofs; native emission
