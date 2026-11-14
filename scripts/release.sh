@@ -364,7 +364,7 @@ export WARDMOTE_RELEASE_REUSE_UI_DIST=1
 
 release_info ""
 sign_local_browser_extensions() {
-  local creds="${AMO_SIGNING_ENV:-${HOME}/.config/paperclip-pro/amo-signing.env}"
+  local creds="${AMO_SIGNING_ENV:-${HOME}/.config/wardmote/amo-signing.env}"
   if [ -z "${WEB_EXT_API_KEY:-}" ] || [ -z "${WEB_EXT_API_SECRET:-}" ]; then
     if [ -f "$creds" ]; then
       set -a
