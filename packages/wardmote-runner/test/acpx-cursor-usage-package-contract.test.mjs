@@ -14,7 +14,7 @@ const { _: createConversation, y: recordSubmission, n: runPromptTurn,
   dt: serialize, ut: parse, tt: assertKeyPolicy, g: clone, E: apply } =
   await import(pathToFileURL(join(root, "dist/live-checkpoint-BSIrfgVo.js")));
 const envelope = () => ({
-  schema: "paperclip.cursor.native-usage.v1", source: "native_turn_ended",
+  schema: "wardmote.cursor.native-usage.v1", source: "native_turn_ended",
   promptId: "12345678-1234-1234-1234-123456789abc", completeness: "partial",
   reasons: ["native_counter_semantics_unverified"],
   observations: [{ invocationId: "invocation-1", role: "parent", nativeRun: 1, sequence: 1,
@@ -29,7 +29,7 @@ const record = conversation => ({
 async function prompt(conversation, metadata, options = {}) {
   const promptMessageId = options.promptMessageId ?? recordSubmission(conversation, "Fixture prompt");
   const result = await runPromptTurn({
-    client: { prompt: async () => ({ stopReason: options.stopReason ?? "end_turn", usage: options.usage, _meta: { paperclipCursorUsage: metadata } }) },
+    client: { prompt: async () => ({ stopReason: options.stopReason ?? "end_turn", usage: options.usage, _meta: { wardmoteCursorUsage: metadata } }) },
     sessionId: "session-1", prompt: "Fixture prompt", conversation, promptMessageId,
     requestId: options.requestId ?? "request-1",
   });
@@ -115,7 +115,7 @@ test("actual runtime manager threads request identity into persisted and reloade
       const m=JSON.parse(line);
       if(m.method==='initialize') send({id:m.id,result:{protocolVersion:1,agentCapabilities:{loadSession:true},authMethods:[]}});
       else if(m.method==='session/new'||m.method==='session/load') send({id:m.id,result:{sessionId:'session-1'}});
-      else if(m.method==='session/prompt') send({id:m.id,result:{stopReason:'end_turn',_meta:{paperclipCursorUsage:${JSON.stringify(envelope())}}}});
+      else if(m.method==='session/prompt') send({id:m.id,result:{stopReason:'end_turn',_meta:{wardmoteCursorUsage:${JSON.stringify(envelope())}}}});
     });
   `;
   const options = { cwd, sessionStore, agentRegistry: { resolve: () => "fixture", list: () => ["cursor"] }, permissionMode: "approve-all", timeoutMs: 3000,

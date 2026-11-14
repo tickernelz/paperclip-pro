@@ -102,7 +102,7 @@ describe("qualified ACPX runtime sidecar", () => {
     const before = { promptMessageIds: [], requestTokenUsage: {} };
     const after = { lastRequestId: "request-1", promptMessageIds: ["prompt-1"], requestTokenUsage: {}, cursorPromptUsage: {
       request_id: "request-1", prompt_message_id: "prompt-1", receipt: {
-        schema: "paperclip.cursor.native-usage.v1", source: "native_turn_ended", promptId: "12345678-1234-1234-1234-123456789abc", completeness: "partial",
+        schema: "wardmote.cursor.native-usage.v1", source: "native_turn_ended", promptId: "12345678-1234-1234-1234-123456789abc", completeness: "partial",
         reasons: ["native_counter_semantics_unverified"], observations: [], limits: { maxObservations: 64, maxInvocations: 64, maxBytes: 16384 }, truncated: false,
       },
     } };

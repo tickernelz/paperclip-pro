@@ -14,7 +14,7 @@ export function createCursorNativeUsage(promptId) {
   let closed = false, truncated = false, invocations = 0;
   let finished;
   const envelope = () => ({
-    schema: "paperclip.cursor.native-usage.v1", source: "native_turn_ended", promptId,
+    schema: "wardmote.cursor.native-usage.v1", source: "native_turn_ended", promptId,
     completeness: "partial", reasons: [...reasons], observations, limits, truncated,
   });
   const truncate = () => { truncated = true; reasons.add("observation_limit_reached"); };
