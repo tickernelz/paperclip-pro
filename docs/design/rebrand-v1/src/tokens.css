@@ -1,0 +1,97 @@
+@font-face{font-family:"Inter";src:url("../../../../ui/public/fonts/InterVariable.woff2") format("woff2");font-weight:100 900;font-display:block}
+@font-face{font-family:"Plex Mono";src:url("fonts/plex-mono-400.woff2") format("woff2");font-weight:400;font-display:block}
+@font-face{font-family:"Plex Mono";src:url("fonts/plex-mono-500.woff2") format("woff2");font-weight:500;font-display:block}
+@font-face{font-family:"Plex Sans";src:url("fonts/plex-sans-400.woff2") format("woff2");font-weight:400;font-display:block}
+@font-face{font-family:"Plex Sans";src:url("fonts/plex-sans-500.woff2") format("woff2");font-weight:500;font-display:block}
+@font-face{font-family:"Plex Sans";src:url("fonts/plex-sans-600.woff2") format("woff2");font-weight:600;font-display:block}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: oklch(0.975 0.003 265);
+  --bg-2: oklch(1 0 0);
+  --bg-3: oklch(0.948 0.005 265);
+  --line-soft: oklch(0.925 0.005 265);
+  --line: oklch(0.885 0.007 265);
+  --line-strong: oklch(0.58 0.012 265);
+  --ink: oklch(0.225 0.014 268);
+  --ink-2: oklch(0.395 0.014 268);
+  --ink-3: oklch(0.505 0.014 268);
+  --accent: oklch(0.505 0.2 277);
+  --accent-ink: oklch(0.99 0.004 277);
+  --accent-soft: oklch(0.505 0.2 277 / 0.1);
+  --ok: oklch(0.47 0.12 152);
+  --ok-soft: oklch(0.5 0.12 152 / 0.12);
+  --warn: oklch(0.49 0.11 70);
+  --warn-soft: oklch(0.62 0.13 75 / 0.14);
+  --bad: oklch(0.52 0.19 25);
+  --bad-soft: oklch(0.52 0.19 25 / 0.1);
+  --run: oklch(0.48 0.11 225);
+  --run-soft: oklch(0.51 0.11 225 / 0.12);
+  --focus: oklch(0.55 0.2 277);
+  --shadow-1: 0 1px 2px oklch(0.225 0.02 268 / 0.06), 0 0 0 1px oklch(0.225 0.02 268 / 0.05);
+  --shadow-2: 0 12px 32px -12px oklch(0.225 0.02 268 / 0.28), 0 2px 6px -2px oklch(0.225 0.02 268 / 0.12);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: oklch(0.165 0.006 268);
+  --bg-2: oklch(0.2 0.007 268);
+  --bg-3: oklch(0.24 0.008 268);
+  --line-soft: oklch(0.265 0.008 268);
+  --line: oklch(0.31 0.009 268);
+  --line-strong: oklch(0.56 0.012 268);
+  --ink: oklch(0.962 0.004 268);
+  --ink-2: oklch(0.835 0.008 268);
+  --ink-3: oklch(0.715 0.01 268);
+  --accent: oklch(0.73 0.145 277);
+  --accent-ink: oklch(0.17 0.02 277);
+  --accent-soft: oklch(0.73 0.145 277 / 0.16);
+  --ok: oklch(0.79 0.14 152);
+  --ok-soft: oklch(0.79 0.14 152 / 0.14);
+  --warn: oklch(0.83 0.125 80);
+  --warn-soft: oklch(0.83 0.125 80 / 0.14);
+  --bad: oklch(0.73 0.165 22);
+  --bad-soft: oklch(0.73 0.165 22 / 0.15);
+  --run: oklch(0.79 0.11 225);
+  --run-soft: oklch(0.79 0.11 225 / 0.14);
+  --focus: oklch(0.79 0.13 277);
+  --shadow-1: 0 0 0 1px oklch(1 0 0 / 0.04);
+  --shadow-2: 0 16px 36px -14px oklch(0 0 0 / 0.75), 0 2px 8px -2px oklch(0 0 0 / 0.5);
+}
+
+:root {
+  --f-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --f-mono: "Plex Mono", ui-monospace, monospace;
+  --t-12: 12px;
+  --t-13: 13px;
+  --t-14: 14px;
+  --t-16: 16px;
+  --t-20: 20px;
+  --t-24: 24px;
+  --t-32: 32px;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 20px;
+  --s6: 24px;
+  --s7: 32px;
+  --s8: 40px;
+  --s9: 56px;
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  --r-pill: 999px;
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --row-h: 36px;
+  --topbar-h: 48px;
+  --nav-w: 232px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-1: 0ms; --dur-2: 0ms; --dur-3: 0ms; }
+}

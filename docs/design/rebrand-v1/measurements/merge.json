@@ -1,0 +1,16 @@
+{
+ "base": "b681cebf8edd992aa46a220dedd25adc5e016974",
+ "upstream": "18b6b71d83eae823e5551184be2dfd5c967ad161",
+ "mergeBase": "e733bddc45e00efb1819fffa8677f7b0d07802c5",
+ "upstreamAhead": 1835,
+ "forkAhead": 806,
+ "rawNoRename": 741,
+ "currentMethod": 811,
+ "stage1RulesNotExtended": 3370,
+ "stage1RulesExtended": 850,
+ "stage1PlusDropAdapters": 1046,
+ "stage1PlusDropAdaptersInRemovedDirs": 219,
+ "upstreamSecurityCommits": 303,
+ "upstreamDays": 26,
+ "stage2PlusDropAdapters": 1257
+}
