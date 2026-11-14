@@ -42,6 +42,8 @@ export type {
   DeskDecision,
   DeskDecisionList,
   PendingDecision,
+  PendingDecisionChatOrigin,
+  PendingDecisionChatRoute,
   PendingDecisionList,
   PendingDecisionOption,
   PendingDecisionQuestion,
