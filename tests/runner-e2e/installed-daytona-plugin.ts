@@ -11,7 +11,7 @@ import type { MatrixExecution } from "./types.js";
 export const installedDaytonaPluginKeys = ["WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN", "WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY", "WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256"] as const;
 type PackagePin = { root: string; packageSha256: string; entry: string; entrySha256: string };
 export interface InstalledDaytonaPluginAuthority {
-  schema: "paperclip.e2e.installed-daytona-plugin/v1";
+  schema: "wardmote.e2e.installed-daytona-plugin/v1";
   graphRoot: string;
   plugin: PackagePin & { manifestSha256: string; workerSha256: string };
   sdk: PackagePin;
@@ -47,7 +47,7 @@ export async function verifyInstalledDaytonaPlugin(env: NodeJS.ProcessEnv, execu
   const authorityPath = env.WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY!;
   const authoritySha256 = env.WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256!;
   const a: InstalledDaytonaPluginAuthority = JSON.parse((await pinned(authorityPath, authoritySha256, 65536)).toString());
-  if (a.schema !== "paperclip.e2e.installed-daytona-plugin/v1" || a.plugin?.root !== env.WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN) throw new Error("Installed Daytona plugin authority differs");
+  if (a.schema !== "wardmote.e2e.installed-daytona-plugin/v1" || a.plugin?.root !== env.WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN) throw new Error("Installed Daytona plugin authority differs");
   await canonical(a.graphRoot);
   async function packageAt(pin: PackagePin, name: string) {
     await canonical(pin.root);

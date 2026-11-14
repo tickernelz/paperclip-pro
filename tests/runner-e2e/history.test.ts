@@ -46,7 +46,7 @@ afterEach(async () => {
 
 function result(execution: MatrixExecution, status: "passed" | "failed") {
   return {
-    schema: "paperclip.runner-e2e.result/v2",
+    schema: "wardmote.runner-e2e.result/v2",
     executionId: execution.id,
     suiteId: execution.suite.id,
     suiteDefinitionHash: execution.suiteDefinitionHash,
@@ -77,7 +77,7 @@ describe("runner E2E campaign history", () => {
       workflowRunUrl: "https://example.test/actions/runs/1",
     };
     const results = [
-      { ...result(runnerMatrix[0]!, "passed"), schema: "paperclip.runner-e2e.result/v1" },
+      { ...result(runnerMatrix[0]!, "passed"), schema: "wardmote.runner-e2e.result/v1" },
       { ...result(runnerMatrix[1]!, "passed"), source },
     ];
     await writeFile(path.join(root, "normalized-results.json"), JSON.stringify({
@@ -495,7 +495,7 @@ describe("historical publication security", () => {
       JSON.parse(
         await readFile(path.join(output, "normalized-results.json"), "utf8"),
       ).schema,
-    ).toBe("paperclip.runner-e2e.campaign/v2");
+    ).toBe("wardmote.runner-e2e.campaign/v2");
     await expect(
       regenerateRunnerDashboard({
         bundle: root,
@@ -761,31 +761,31 @@ describe("historical publication security", () => {
       validateHistoryDestination({
         bucket: "wardmote-runner-e2e-history",
         prefix: "/runner-e2e/",
-        publicBaseUrl: "https://history.paperclip.ai/",
+        publicBaseUrl: "https://history.wardmote.example/",
       }),
     ).toEqual({
       prefix: "runner-e2e",
-      publicBaseUrl: "https://history.paperclip.ai",
+      publicBaseUrl: "https://history.wardmote.example",
     });
     expect(() =>
       validateHistoryDestination({
         bucket: "wardmote-runner-e2e-history",
         prefix: "../unsafe",
-        publicBaseUrl: "https://history.paperclip.ai/",
+        publicBaseUrl: "https://history.wardmote.example/",
       }),
     ).toThrow("safe non-empty key prefix");
     expect(() =>
       validateHistoryDestination({
         bucket: "wardmote-runner-e2e-history",
         prefix: "runner-e2e?other",
-        publicBaseUrl: "https://history.paperclip.ai/",
+        publicBaseUrl: "https://history.wardmote.example/",
       }),
     ).toThrow("safe non-empty key prefix");
     expect(() =>
       validateHistoryDestination({
         bucket: "wardmote-runner-e2e-history",
         prefix: "runner-e2e",
-        publicBaseUrl: "http://history.paperclip.ai/",
+        publicBaseUrl: "http://history.wardmote.example/",
       }),
     ).toThrow("credential-free HTTPS");
   });

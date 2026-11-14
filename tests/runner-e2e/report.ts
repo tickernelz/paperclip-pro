@@ -182,8 +182,8 @@ async function main() {
       await readFile(resultFile, "utf8"),
     ) as RunnerE2EResult;
     if (
-      parsed.schema !== "paperclip.runner-e2e.result/v1" &&
-      parsed.schema !== "paperclip.runner-e2e.result/v2"
+      parsed.schema !== "wardmote.runner-e2e.result/v1" &&
+      parsed.schema !== "wardmote.runner-e2e.result/v2"
     )
       continue;
     const result = upgradeRunnerResult(parsed);
@@ -236,7 +236,7 @@ async function main() {
         (candidate) => candidate.id === executionId,
       )!;
       const missing: RunnerE2EResult = {
-        schema: "paperclip.runner-e2e.result/v2",
+        schema: "wardmote.runner-e2e.result/v2",
         executionId,
         suiteId: execution?.suite.id ?? "core-compatibility",
         suiteDefinitionHash: execution?.suiteDefinitionHash,

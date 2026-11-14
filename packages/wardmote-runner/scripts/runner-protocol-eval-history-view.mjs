@@ -27,7 +27,7 @@ function sourceLinks(run) {
   const url = run.source?.workflowRunUrl;
   const workflow = /^https:\/\/github\.com\/tickernelz\/wardmote\/actions\/runs\/[1-9][0-9]*$/.test(url ?? "")
     ? `<small><a href="${url}">GitHub Actions ↗</a></small>` : "";
-  return `${commit("tickernelz/wardmote", run.source?.paperclip?.sha, "Wardmote")}${commit("paperclipai/paperclip-evals", run.source?.evals?.sha, "Evals")}${workflow}<small>${escape(run.source?.paperclip?.ref ?? "")}</small>`;
+  return `${commit("tickernelz/wardmote", run.source?.wardmote?.sha, "Wardmote")}${commit("paperclipai/paperclip-evals", run.source?.evals?.sha, "Evals")}${workflow}<small>${escape(run.source?.wardmote?.ref ?? "")}</small>`;
 }
 
 function chart(runs, analytics, kind, id) {

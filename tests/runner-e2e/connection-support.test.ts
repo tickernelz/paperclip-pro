@@ -268,7 +268,7 @@ describe("independent qualification", () => {
   });
   it("keeps blocked authentication incomplete in the existing campaign/report", () => {
     const execution = cell("subscription");
-    const result: RunnerE2EResult = { schema: "paperclip.runner-e2e.result/v2", executionId: execution.id, suiteId: execution.suite.id, suiteDefinitionHash: execution.suiteDefinitionHash,
+    const result: RunnerE2EResult = { schema: "wardmote.runner-e2e.result/v2", executionId: execution.id, suiteId: execution.suite.id, suiteDefinitionHash: execution.suiteDefinitionHash,
       attempt: 1, status: "failed", failureClass: "permanent_infrastructure", error: "provider_login_deadline_reached", profileId: execution.profile.id, environmentId: "local", caseId: execution.task.id, provider: "codex", model: "model", runtimeMode: "native",
       startedAt: "2026-10-03T00:00:00Z", finishedAt: "2026-10-03T00:01:00Z", durationMs: 60_000, cleanup: "passed", providerConnection: { ...passingEvidence(), outcome: "awaiting_user", checkpoints: { target: true } } };
     const campaign = buildRunnerCampaign({ campaignId: "test", generatedAt: result.finishedAt, expected: [execution.id], results: [result] });
