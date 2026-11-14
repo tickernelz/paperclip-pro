@@ -31,13 +31,13 @@ describe("stock harness Product E2E", () => {
     ]));
     expect(new Set(cells.map(row => row.task.id))).toEqual(new Set([
       "ordered-comment-continuation", "assigned-skill-explicit-invocation", "continuity-restart",
-      "assigned-skill-paperclip-document",
+      "assigned-skill-wardmote-document",
     ]));
     expect(cells.every(row => row.suite.manualOnly && row.environment.id === "local")).toBe(true);
     expect(cells.every(row => row.task.automaticRetryPolicy === "single_attempt")).toBe(true);
     expect(cells[0]!.suite.definitionMetadata).toMatchObject({ automaticRetryPolicy: "single_attempt", maximumAttemptsPerCell: 1 });
     expect(cells.reduce((turns, row) => turns + row.task.expectedRunCount, 0)).toBe(50);
-    expect(cells.filter(row => row.task.id === "assigned-skill-paperclip-document").map(row => row.profile.id).sort()).toEqual(["legacy-claude", "legacy-opencode"]);
+    expect(cells.filter(row => row.task.id === "assigned-skill-wardmote-document").map(row => row.profile.id).sort()).toEqual(["legacy-claude", "legacy-opencode"]);
     expect(cells[0]!.suite.definitionMetadata?.sourceDigest).toMatch(/^[a-f0-9]{64}$/);
   });
 

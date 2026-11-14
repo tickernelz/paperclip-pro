@@ -48,7 +48,7 @@ export async function verifyInstalledCli(env: NodeJS.ProcessEnv, executions: rea
   const cliSha256 = digest(await readOwned(entry, 64 * 1024 * 1024));
   const serverSha256 = digest(await readOwned(serverEntry, 16 * 1024 * 1024));
   if (cliSha256 !== env.WARDMOTE_RUNNER_E2E_INSTALLED_CLI_SHA256 || serverSha256 !== env.WARDMOTE_RUNNER_E2E_INSTALLED_SERVER_SHA256) throw new Error("Installed CLI/server bytes differ from their reviewed pins");
-  return { schema: "paperclip.e2e.installed-cli-admission/v1", entry, cliRoot, cliSha256, serverRoot, serverEntry, serverSha256, version: cli.version, defaultRuntimeResolution: true, qualificationOverride: false };
+  return { schema: "wardmote.e2e.installed-cli-admission/v1", entry, cliRoot, cliSha256, serverRoot, serverEntry, serverSha256, version: cli.version, defaultRuntimeResolution: true, qualificationOverride: false };
 }
 
 /** This prep lane cannot create agents or read the normal local credential file. */

@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip-runner/harness-driver-conformance-fixture/v1",
+  "schema": "wardmote-runner/harness-driver-conformance-fixture/v1",
   "validConfig": {
     "schema": "wardmote-runner/deterministic-harness-driver-config/v1",
     "scenario": "semantic-tool-success"

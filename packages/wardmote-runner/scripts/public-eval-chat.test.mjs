@@ -216,7 +216,7 @@ test("publisher permits only the exact trusted shell/assets and valid local navi
     await writeFile(
       join(report, "campaign.json"),
       JSON.stringify({
-        schema: "paperclip.runner-protocol-eval.campaign/v1",
+        schema: "wardmote.runner-protocol-eval.campaign/v1",
         campaignId: "gha-42-1",
       }),
     );

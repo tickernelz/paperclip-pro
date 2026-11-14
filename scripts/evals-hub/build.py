@@ -11,8 +11,8 @@ from urllib.request import urlopen
 
 ORIGIN = "https://d1p6rlowie26tp.cloudfront.net"
 SYSTEMS = {
-    "runner": ("runner-protocol-evals", "paperclip.runner-protocol-eval.history/v1"),
-    "product": ("runner-e2e", "paperclip.runner-e2e.history/v1"),
+    "runner": ("runner-protocol-evals", "wardmote.runner-protocol-eval.history/v1"),
+    "product": ("runner-e2e", "wardmote.runner-e2e.history/v1"),
 }
 
 

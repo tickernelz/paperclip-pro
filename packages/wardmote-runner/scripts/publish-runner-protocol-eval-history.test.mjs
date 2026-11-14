@@ -44,11 +44,11 @@ test.afterEach(async () => {
 
 function campaign(overrides = {}) {
   return {
-    schema: "paperclip.runner-protocol-eval.campaign/v1",
+    schema: "wardmote.runner-protocol-eval.campaign/v1",
     campaignId: "gha-42-1",
     generatedAt: "2026-09-05T00:00:00.000Z",
     source: {
-      paperclip: { sha: "a".repeat(40), ref: "refs/heads/master" },
+      wardmote: { sha: "a".repeat(40), ref: "refs/heads/master" },
       evals: { repository: "paperclipai/paperclip-evals", sha: "b".repeat(40) },
     },
     complete: true,
@@ -104,12 +104,12 @@ test("accepts only credential-free HTTPS destinations and the dedicated prefix",
     validateProtocolEvalHistoryDestination({
       bucket: "wardmote-public-reports",
       prefix: "/runner-protocol-evals/",
-      publicBaseUrl: "https://reports.paperclip.ing/",
+      publicBaseUrl: "https://reports.wardmote.example/",
     }),
     {
       bucket: "wardmote-public-reports",
       prefix: "runner-protocol-evals",
-      publicBaseUrl: "https://reports.paperclip.ing",
+      publicBaseUrl: "https://reports.wardmote.example",
     },
   );
   assert.throws(
