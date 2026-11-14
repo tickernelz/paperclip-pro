@@ -116,6 +116,16 @@ describe("readSshConfigHosts", () => {
   it("defaults the config path to ~/.ssh/config", () => {
     expect(defaultSshConfigPath("/home/tester")).toBe(path.join("/home/tester", ".ssh", "config"));
   });
+
+  it("follows the passwd home like OpenSSH does, not $HOME", () => {
+    const previous = process.env.HOME;
+    process.env.HOME = dir;
+    try {
+      expect(defaultSshConfigPath()).toBe(path.join(os.userInfo().homedir, ".ssh", "config"));
+    } finally {
+      process.env.HOME = previous;
+    }
+  });
 });
 
 describe("saved ssh host ids", () => {

@@ -66,10 +66,12 @@ function HostRow({
   detail,
   badge,
   trailing,
+  mono = true,
 }: {
   icon: ReactNode;
   name: string;
   detail: string | null;
+  mono?: boolean;
   badge?: string | null;
   trailing?: ReactNode;
 }) {
@@ -81,7 +83,7 @@ function HostRow({
           <span className="truncate font-medium text-ink">{name}</span>
           {badge ? <span className="shrink-0 rounded-sm border border-line px-1 text-xs text-ink-3">{badge}</span> : null}
         </span>
-        {detail ? <span className="truncate font-mono text-xs text-ink-3">{detail}</span> : null}
+        {detail ? <span className={cn("truncate text-xs text-ink-3", mono && "font-mono")}>{detail}</span> : null}
       </span>
       {trailing}
     </>
@@ -173,7 +175,7 @@ export function SshHostPicker(props: SshHostPickerProps) {
       onSelect={() => props.onOpenEnvironment(environment)}
       className="min-h-12 gap-3"
     >
-      <HostRow icon={<Cloud aria-hidden />} name={environment.name} detail="SSH environment" />
+      <HostRow icon={<Cloud aria-hidden />} name={environment.name} detail="SSH environment" mono={false} />
     </CommandItem>
   );
 

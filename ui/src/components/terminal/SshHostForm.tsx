@@ -443,7 +443,7 @@ export function SshHostForm({ companyId, open, onOpenChange, mode, configHosts, 
               <KeyRound className="size-4 text-ink-3" aria-hidden />
               Key
             </legend>
-            <Segmented aria-label="How to sign in" className="flex w-full flex-wrap sm:w-fit">
+            <Segmented aria-label="How to sign in" className="grid w-full grid-cols-2 sm:flex sm:w-fit">
               {(
                 [
                   ["existing", "Key in ~/.ssh"],
@@ -452,7 +452,7 @@ export function SshHostForm({ companyId, open, onOpenChange, mode, configHosts, 
                   ["default", "ssh defaults"],
                 ] as const
               ).map(([value, label]) => (
-                <SegmentedItem key={value} selected={keyMode === value} onClick={() => setKeyMode(value)} className="flex-1 sm:flex-none">
+                <SegmentedItem key={value} selected={keyMode === value} onClick={() => setKeyMode(value)}>
                   {label}
                 </SegmentedItem>
               ))}

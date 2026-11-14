@@ -1,5 +1,5 @@
 import { promises as fs } from "node:fs";
-import { homedir } from "node:os";
+import { homedir, userInfo } from "node:os";
 import path from "node:path";
 import { and, asc, eq } from "drizzle-orm";
 import type { Db } from "@tickernelz/wardmote-db";
@@ -20,7 +20,15 @@ export interface SshConfigParseResult {
   configError: string | null;
 }
 
-export function defaultSshConfigPath(home: string = homedir()): string {
+export function sshUserHome(): string {
+  try {
+    return userInfo().homedir || homedir();
+  } catch {
+    return homedir();
+  }
+}
+
+export function defaultSshConfigPath(home: string = sshUserHome()): string {
   return path.join(home, ".ssh", "config");
 }
 
@@ -117,7 +125,7 @@ async function readConfigFile(file: string): Promise<string | null> {
 }
 
 function expandIncludePath(pattern: string, baseDir: string): string {
-  const trimmed = pattern.replace(/^~(?=\/|$)/, homedir());
+  const trimmed = pattern.replace(/^~(?=\/|$)/, sshUserHome());
   return path.isAbsolute(trimmed) ? trimmed : path.join(baseDir, trimmed);
 }
 

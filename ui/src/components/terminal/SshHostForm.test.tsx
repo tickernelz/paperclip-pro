@@ -4,7 +4,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { SshConfigHostSettings, SshConnectionTestResult, SshKeyInfo, TerminalSshHost } from "@tickernelz/wardmote-shared";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { SshHostForm, settingsFromSavedHost, type SshHostFormMode } from "./SshHostForm";
 
 const api = vi.hoisted(() => ({
@@ -78,8 +78,8 @@ async function click(label: string) {
 describe("SshHostForm", () => {
   let root: Root;
   let container: HTMLDivElement;
-  let onSaved: ReturnType<typeof vi.fn>;
-  let onRemoved: ReturnType<typeof vi.fn>;
+  let onSaved: Mock<(settings: SshConfigHostSettings, openTerminal: boolean) => void>;
+  let onRemoved: Mock<(alias: string) => void>;
 
   beforeEach(() => {
     for (const mock of Object.values(api)) mock.mockReset();
@@ -88,8 +88,8 @@ describe("SshHostForm", () => {
     api.updateConfigHost.mockImplementation(async (_companyId: string, _alias: string, body: SshConfigHostSettings) => body);
     api.moveSshHostToConfig.mockImplementation(async (_companyId: string, _id: string, body: SshConfigHostSettings) => body);
     api.removeConfigHost.mockResolvedValue(undefined);
-    onSaved = vi.fn();
-    onRemoved = vi.fn();
+    onSaved = vi.fn<(settings: SshConfigHostSettings, openTerminal: boolean) => void>();
+    onRemoved = vi.fn<(alias: string) => void>();
     window.localStorage.clear();
     container = document.createElement("div");
     document.body.appendChild(container);
