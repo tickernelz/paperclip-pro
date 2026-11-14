@@ -99,7 +99,7 @@ export function acpxUsageEstimateNotice(usage: Record<string, unknown>, itemId: 
 type CursorPromptUsage = {
   request_id: string; prompt_message_id: string;
   receipt: {
-    schema: "paperclip.cursor.native-usage.v1"; source: "native_turn_ended"; promptId: string;
+    schema: "wardmote.cursor.native-usage.v1"; source: "native_turn_ended"; promptId: string;
     completeness: "partial"; reasons: string[]; truncated: boolean;
     limits: { maxObservations: 64; maxInvocations: 64; maxBytes: 16384 };
     observations: Array<{ invocationId: string; role: "parent" | "child"; nativeRun: number; sequence: number; counters: Record<string, number> }>;
@@ -117,7 +117,7 @@ export function parseCursorPromptUsage(raw: unknown): CursorPromptUsage | null {
     if (!object(v) || !exact(v, ["request_id", "prompt_message_id", "receipt"]) || !id(v.request_id) || !id(v.prompt_message_id)) return null;
     const r = v.receipt;
     if (!object(r) || !exact(r, ["schema", "source", "promptId", "completeness", "reasons", "observations", "limits", "truncated"])) return null;
-    if (r.schema !== "paperclip.cursor.native-usage.v1" || r.source !== "native_turn_ended" || r.completeness !== "partial" || typeof r.promptId !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(r.promptId) || typeof r.truncated !== "boolean") return null;
+    if (r.schema !== "wardmote.cursor.native-usage.v1" || r.source !== "native_turn_ended" || r.completeness !== "partial" || typeof r.promptId !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(r.promptId) || typeof r.truncated !== "boolean") return null;
     const reasons = ["native_counter_semantics_unverified", "native_counters_missing", "invalid_native_counter", "multiple_terminal_observations", "native_terminal_not_observed", "observation_limit_reached", "child_run_attribution_unverified"];
     if (!Array.isArray(r.reasons) || r.reasons.length > reasons.length || !r.reasons.includes(reasons[0]!) || new Set(r.reasons).size !== r.reasons.length || !r.reasons.every(x => reasons.includes(x))) return null;
     if (!object(r.limits) || !exact(r.limits, ["maxObservations", "maxInvocations", "maxBytes"]) || r.limits.maxObservations !== 64 || r.limits.maxInvocations !== 64 || r.limits.maxBytes !== 16384 || !Array.isArray(r.observations) || r.observations.length > 64) return null;

@@ -14,7 +14,7 @@ it("matches build materializer pins for packaged and user-installed distribution
     expect(spec.expectedClosureSha256).toBe(manifest.platforms[`${platform}-${architecture}`].closureSha256);
     const packaged = new URL(`../../../provider-assets/cursor/${platform}-${architecture}`, import.meta.url).pathname;
     expect(spec.distributionRoot).toBe(existsSync(packaged) ? packaged : cursorRuntimeCachePath(spec.expectedClosureSha256, platform, architecture));
-    expect(spec.manifestPath).toBe(join(spec.distributionRoot, ".paperclip-cursor-closure.json"));
+    expect(spec.manifestPath).toBe(join(spec.distributionRoot, ".wardmote-cursor-closure.json"));
     expect(spec.executable).toBe("node");
     expect(spec.entrypoint).toBe("index.js");
     expect(spec.fixedArguments).toEqual(["--disable-project-configs", "--disable-auto-update", "acp"]);

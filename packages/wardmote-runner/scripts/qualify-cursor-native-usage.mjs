@@ -74,7 +74,7 @@ export async function qualifyCursorNativeUsage(vendorRoot) {
       await callbacks.sendUpdate({}, event(action));
     });
     const first = await successful.run({ execute: async ({ invoke }) => { await invoke({ inputTokens: 12n }); await invoke({ outputTokens: 3n }); } });
-    const envelope = first._meta.paperclipCursorUsage;
+    const envelope = first._meta.wardmoteCursorUsage;
     assert.equal(first.stopReason, "end_turn"); assert.equal(first.usage, undefined);
     assert.equal(envelope.completeness, "partial");
     assert.deepEqual(plain(envelope.observations.map(row => row.counters)), [{ inputTokens: 12 }, { outputTokens: 3 }]);
@@ -82,8 +82,8 @@ export async function qualifyCursorNativeUsage(vendorRoot) {
     checks.push("exact_parent_invocation_capture", "separate_followups", "no_standard_usage");
 
     const second = await successful.run({ execute: async ({ invoke }) => { await invoke({ outputTokens: 1 }); } });
-    assert.notEqual(second._meta.paperclipCursorUsage.promptId, envelope.promptId);
-    assert.equal(second._meta.paperclipCursorUsage.observations.length, 1);
+    assert.notEqual(second._meta.wardmoteCursorUsage.promptId, envelope.promptId);
+    assert.equal(second._meta.wardmoteCursorUsage.observations.length, 1);
     checks.push("warm_prompt_isolation");
 
     const childHost = createHost(async () => {});
@@ -102,7 +102,7 @@ export async function qualifyCursorNativeUsage(vendorRoot) {
       publisher.onInteractionUpdate("unknown-history-child", event({ inputTokens: 999n }));
       child.terminal = true; publisher.onInteractionUpdate("native-child", event({ inputTokens: 999n }));
     } });
-    const childEnvelope = childResult._meta.paperclipCursorUsage;
+    const childEnvelope = childResult._meta.wardmoteCursorUsage;
     assert.deepEqual(plain(childEnvelope.observations.map(row => [row.role, row.nativeRun, row.counters.inputTokens])), [["child", 1, 7]]);
     assert.ok(childEnvelope.reasons.includes("child_run_attribution_unverified"));
     childHost.publisher.children.get("native-child").terminal = false;
@@ -120,10 +120,10 @@ export async function qualifyCursorNativeUsage(vendorRoot) {
     const next = await overlapping.run({ execute: async ({ invoke }) => invoke("second") });
     release.resolve(); const cancelled = await pending;
     assert.equal(cancelled.stopReason, "cancelled");
-    assert.deepEqual(plain(cancelled._meta.paperclipCursorUsage.observations.map(row => row.counters.inputTokens)), [10]);
-    assert.deepEqual(plain(next._meta.paperclipCursorUsage.observations.map(row => row.counters.inputTokens)), [20]);
+    assert.deepEqual(plain(cancelled._meta.wardmoteCursorUsage.observations.map(row => row.counters.inputTokens)), [10]);
+    assert.deepEqual(plain(next._meta.wardmoteCursorUsage.observations.map(row => row.counters.inputTokens)), [20]);
     await oldCallback.sendUpdate({}, event({ inputTokens: 999 }));
-    assert.equal(cancelled._meta.paperclipCursorUsage.observations.length, 1);
+    assert.equal(cancelled._meta.wardmoteCursorUsage.observations.length, 1);
     assert.equal(overlapping.publisher.wardmoteUsageCollectors.size, 0);
     checks.push("overlapping_cancellation", "late_parent_callback_isolation");
 
@@ -133,7 +133,7 @@ export async function qualifyCursorNativeUsage(vendorRoot) {
     checks.push("exception_cleanup");
     platforms.push({ platform, vendorSha256: hash(original), candidateSha256: hash(source), checks });
   }
-  return { schema: "paperclip.cursor.native-usage-offline-proof.v1", providerCalls: 0, standardUsageEmitted: false,
+  return { schema: "wardmote.cursor.native-usage-offline-proof.v1", providerCalls: 0, standardUsageEmitted: false,
     boundary: "digest-pinned handlePrompt, native invocation, child creation/reuse and child update methods; surrounding session/transport doubled", platforms };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

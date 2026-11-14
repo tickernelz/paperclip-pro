@@ -22,12 +22,12 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
     "protocolVersion": 1,
     "acpxVersion": "0.13.1",
     "agent": "pi",
-    "agentProfileVersion": 29,
+    "agentProfileVersion": 30,
     "agentServerPackage": "pi-acp",
     "agentServerVersion": "0.0.33",
     "agentRuntimePackage": "@earendil-works/pi-coding-agent",
     "agentRuntimeVersion": "1.0.0",
-    "commandDigest": "sha256:5636781fd7ac18f218ea9d8d631c08fb2d6b5e4c7ec33abbeb70a40317ea4ed6",
+    "commandDigest": "sha256:5003035e6540386a3149e1d3bb328f26d2256590b242aa6622d551b4a3dac724",
     "permissionPolicy": "interactive"
   },
   "cursor": {
@@ -35,12 +35,12 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
     "protocolVersion": 1,
     "acpxVersion": "0.13.1",
     "agent": "cursor",
-    "agentProfileVersion": 16,
+    "agentProfileVersion": 17,
     "agentServerPackage": "cursor-agent",
     "agentServerVersion": "2026.09.26-dd393fe",
     "agentRuntimePackage": null,
     "agentRuntimeVersion": null,
-    "commandDigest": "sha256:ea302d27d2417eeb23f3df1a18c6c062bac161e730aff5e002ce2bcb3547baae",
+    "commandDigest": "sha256:f5b41139b70934ac89a4657095f62d07f10992eb2d4ac140d2b0e0500b57a93d",
     "permissionPolicy": "interactive"
   },
   "copilot": {
@@ -48,12 +48,12 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
     "protocolVersion": 1,
     "acpxVersion": "0.13.1",
     "agent": "copilot",
-    "agentProfileVersion": 28,
+    "agentProfileVersion": 29,
     "agentServerPackage": "@github/copilot",
     "agentServerVersion": "1.0.88",
     "agentRuntimePackage": null,
     "agentRuntimeVersion": null,
-    "commandDigest": "sha256:752ba1c86db35c5a82235a7ed2584a1515409dea471312c732992ebba956f3f6",
+    "commandDigest": "sha256:69ebdf3d220730b090b664ea278e0e93b06c28fef6c04c4d2c384737a52fefec",
     "qualificationStatus": "pending",
     "permissionPolicy": "interactive"
   },
@@ -87,17 +87,17 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
 
 export const CURSOR_DISTRIBUTION_PINS = {
   "darwin-arm64": {
-    "closureSha256": "257424bd48e35412091c6adfc61e4648e836757ec1d240d890bba81a24918c30",
+    "closureSha256": "48c1ded408190e7f36f9bb25478465547f2e46e38b616f1e4d0c417d6bcfe7d5",
     "executable": "node",
     "entrypoint": "index.js"
   },
   "darwin-x64": {
-    "closureSha256": "6f28c799c5afdc64fbdff8a2157f565f17ae7615efe014ac389d63bf70cf2be2",
+    "closureSha256": "d4aac8a84e91c7fe65777ed775204bcd337f1cc8b9d4d822e299ca48cee98594",
     "executable": "node",
     "entrypoint": "index.js"
   },
   "linux-x64": {
-    "closureSha256": "eadb8bb8ffb0450455b15b88c9b230307a9e149958a0c452d16dd157b4633d74",
+    "closureSha256": "61057c1ca16887205eab17ebe33c53189dc6a088445e3796006233fa34ab9f6d",
     "executable": "node",
     "entrypoint": "index.js"
   }

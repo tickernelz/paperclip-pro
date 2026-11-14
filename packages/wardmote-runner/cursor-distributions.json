@@ -1,11 +1,11 @@
 {
-  "schema": "paperclip.cursor_distribution.v1",
+  "schema": "wardmote.cursor_distribution.v1",
   "version": "2026.09.26-dd393fe",
   "platforms": {
     "darwin-arm64": {
       "url": "https://downloads.cursor.com/lab/2026.09.26-dd393fe/darwin/arm64/agent-cli-package.tar.gz",
       "archiveSha256": "538827d96a779bab854a865c8e42859e8e87db34b5f69770261b90fc8cfff191",
-      "closureSha256": "257424bd48e35412091c6adfc61e4648e836757ec1d240d890bba81a24918c30",
+      "closureSha256": "48c1ded408190e7f36f9bb25478465547f2e46e38b616f1e4d0c417d6bcfe7d5",
       "executable": "node",
       "entrypoint": "index.js",
       "vendorClosureSha256": "77394184a89b0e7384971181da19c3c82d83a399b04e7944b3f94fe3d7e62b25"
@@ -13,7 +13,7 @@
     "darwin-x64": {
       "url": "https://downloads.cursor.com/lab/2026.09.26-dd393fe/darwin/x64/agent-cli-package.tar.gz",
       "archiveSha256": "ed1771c44cbf0f8059c67cac0d939e6a60eb730bd066d7dc4cbb14de314cfb6e",
-      "closureSha256": "6f28c799c5afdc64fbdff8a2157f565f17ae7615efe014ac389d63bf70cf2be2",
+      "closureSha256": "d4aac8a84e91c7fe65777ed775204bcd337f1cc8b9d4d822e299ca48cee98594",
       "executable": "node",
       "entrypoint": "index.js",
       "vendorClosureSha256": "7c8775160af74e5fb8d25a30e8412c1a6476b0661529078a686e5118fd1c5e5f"
@@ -21,11 +21,11 @@
     "linux-x64": {
       "url": "https://downloads.cursor.com/lab/2026.09.26-dd393fe/linux/x64/agent-cli-package.tar.gz",
       "archiveSha256": "8085fd120f5c71f4eae7fea26a043718e5644e3071e4fab3220a0e58c51f9593",
-      "closureSha256": "eadb8bb8ffb0450455b15b88c9b230307a9e149958a0c452d16dd157b4633d74",
+      "closureSha256": "61057c1ca16887205eab17ebe33c53189dc6a088445e3796006233fa34ab9f6d",
       "executable": "node",
       "entrypoint": "index.js",
       "vendorClosureSha256": "bf04ef8ea6a63191067a6b3e15139aa2c793d8419daab246aa3f0a012e1bbcd9"
     }
   },
-  "patchVersion": "paperclip-cursor-usage-v4"
+  "patchVersion": "wardmote-cursor-usage-v5"
 }

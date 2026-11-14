@@ -1,0 +1,36 @@
+name: Cursor closure
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/cursor-closure.yml"
+      - "packages/wardmote-runner/cursor-distributions.json"
+      - "packages/wardmote-runner/scripts/cursor-runtime-patch.mjs"
+      - "packages/wardmote-runner/scripts/cursor-native-usage-source.json"
+      - "packages/wardmote-runner/scripts/materialize-cursor-distribution.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  materialize:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: darwin-arm64
+            os: macos-15
+          - target: darwin-x64
+            os: macos-15-intel
+          - target: linux-x64
+            os: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Materialize the pinned Cursor distribution
+        run: node packages/wardmote-runner/scripts/materialize-cursor-distribution.mjs "$RUNNER_TEMP/cursor"
