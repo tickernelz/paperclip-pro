@@ -5,7 +5,7 @@ const baseInput = {
   namespace: "wardmote-acme",
   sandboxName: "pc-01h00000000000000000000000",
   adapterType: "claude_local",
-  image: "ghcr.io/paperclipai/agent-runtime-claude:v1",
+  image: "ghcr.io/tickernelz/agent-runtime-claude:v1",
   envSecretName: "pc-01h00000000000000000000000-env",
   serviceAccountName: "wardmote-tenant-sa",
   labels: { "wardmote.dev/run-id": "r1" },
@@ -78,8 +78,8 @@ describe("buildSandboxCrManifest", () => {
       .map((m: { mountPath: string }) => m.mountPath)
       .sort();
     expect(mountPaths).toEqual([
-      "/home/paperclip",
-      "/home/paperclip/.cache",
+      "/home/wardmote",
+      "/home/wardmote/.cache",
       "/tmp",
       "/workspace",
     ]);

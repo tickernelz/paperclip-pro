@@ -1,9 +1,9 @@
 group "default" {
-  targets = ["base", "claude", "codex", "gemini", "opencode", "pi"]
+  targets = ["base", "claude", "codex", "cursor", "gemini", "opencode", "pi"]
 }
 
 variable "VERSION" { default = "dev" }
-variable "REGISTRY" { default = "ghcr.io/paperclip-pro" }
+variable "REGISTRY" { default = "ghcr.io/tickernelz" }
 
 target "base" {
   context = "."
@@ -30,6 +30,19 @@ target "codex" {
   dockerfile = "docker/agent-runtime/Dockerfile.codex"
   platforms = ["linux/amd64"]
   tags = ["${REGISTRY}/agent-runtime-codex:${VERSION}"]
+  args = {
+    BASE_TAG = "${VERSION}"
+  }
+  contexts = {
+    "wardmote/agent-runtime-base:${VERSION}" = "target:base"
+  }
+}
+
+target "cursor" {
+  context = "."
+  dockerfile = "docker/agent-runtime/Dockerfile.cursor"
+  platforms = ["linux/amd64"]
+  tags = ["${REGISTRY}/agent-runtime-cursor:${VERSION}"]
   args = {
     BASE_TAG = "${VERSION}"
   }
