@@ -1,0 +1,45 @@
+{
+ "v1": {
+  "tokens": 53,
+  "cssClasses": 145,
+  "buttonVariants": [
+   "danger",
+   "ghost",
+   "pri"
+  ],
+  "screens": 38,
+  "containerOverrides": [
+   ".brand b",
+   ".nav a",
+   ".nav .foot .who span",
+   ".crumb b",
+   ".tabs span",
+   ".seg span",
+   ".li .m span",
+   ".os span",
+   ".onode .m b",
+   ".onode .m span",
+   ".mtab span"
+  ],
+  "cssBytes": 21307,
+  "cssRules": 227
+ },
+ "v2": {
+  "tokens": 44,
+  "cssClasses": 171,
+  "buttonVariants": [
+   "danger",
+   "dpri",
+   "ghost",
+   "link",
+   "pri"
+  ],
+  "screens": 40,
+  "containerOverrides": [
+   ".seg > span",
+   ".tabs > span"
+  ],
+  "cssBytes": 28032,
+  "cssRules": 289
+ }
+}

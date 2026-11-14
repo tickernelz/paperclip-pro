@@ -1,0 +1,15 @@
+    458 server
+    293 ui
+     50 packages/adapters/codex-local
+     39 packages/paperclip-runner/src
+     36 packages/adapters/claude-local
+     28 .github
+     26 tests
+     25 packages/adapters/hermes
+     22 packages/db/src
+     21 scripts
+     18 packages/adapters/opencode-local
+     18 cli
+     17 packages/adapter-utils/src
+     17 packages/adapters/kimi-local
+     17 doc

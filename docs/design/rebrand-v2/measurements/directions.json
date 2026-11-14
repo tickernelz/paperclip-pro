@@ -1,0 +1,89 @@
+{
+ "a": {
+  "name": "Jati",
+  "accentSeparation": [
+   {
+    "theme": "light",
+    "nearest": "warn",
+    "distance": 0.057,
+    "hueAccent": 48.0
+   },
+   {
+    "theme": "dark",
+    "nearest": "bad",
+    "distance": 0.087,
+    "hueAccent": 55.0
+   }
+  ],
+  "minAccentSeparation": 0.057,
+  "contrastPass": "46/46",
+  "minTextRatio": 4.51,
+  "rowHeight": 44,
+  "rowsAt1440x900": 17,
+  "fontsAddedKB": 98.3,
+  "fontDeltaKB": -624.6,
+  "type": {
+   "sans": "IBM Plex Sans 400/500/600 (latin)",
+   "mono": "IBM Plex Mono 400/500",
+   "dropsInter": true
+  }
+ },
+ "b": {
+  "name": "Ledger",
+  "accentSeparation": [
+   {
+    "theme": "light",
+    "nearest": "run",
+    "distance": 0.16,
+    "hueAccent": 277.0
+   },
+   {
+    "theme": "dark",
+    "nearest": "run",
+    "distance": 0.131,
+    "hueAccent": 277.0
+   }
+  ],
+  "minAccentSeparation": 0.131,
+  "contrastPass": "46/46",
+  "minTextRatio": 4.82,
+  "rowHeight": 36,
+  "rowsAt1440x900": 20,
+  "fontsAddedKB": 28.9,
+  "fontDeltaKB": 28.9,
+  "type": {
+   "sans": "Inter variable (sudah dikirim)",
+   "mono": "IBM Plex Mono 400/500",
+   "dropsInter": false
+  }
+ },
+ "c": {
+  "name": "Signal",
+  "accentSeparation": [
+   {
+    "theme": "light",
+    "nearest": "ok",
+    "distance": 0.056,
+    "hueAccent": 136.0
+   },
+   {
+    "theme": "dark",
+    "nearest": "ok",
+    "distance": 0.109,
+    "hueAccent": 130.0
+   }
+  ],
+  "minAccentSeparation": 0.056,
+  "contrastPass": "46/46",
+  "minTextRatio": 4.83,
+  "rowHeight": 32,
+  "rowsAt1440x900": 23,
+  "fontsAddedKB": 0.0,
+  "fontDeltaKB": 0.0,
+  "type": {
+   "sans": "Inter variable (sudah dikirim)",
+   "mono": "ui-monospace (font sistem, beda per OS)",
+   "dropsInter": false
+  }
+ }
+}

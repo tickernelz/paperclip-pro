@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;font:12px system-ui;background:#888}
+.row{display:flex;align-items:center;gap:18px;padding:14px 18px}
+.l{background:#ffffff}.d{background:#15171c}
+img{display:block;image-rendering:auto}
+.t{width:90px;font:11px monospace;color:#666}
+</style></head><body>
+<script>
+const C=['moot','gate','bubble'];const S=[16,24,32,48,128];
+for(const c of C){for(const t of ['light','dark']){document.write(`<div class="row ${t[0]}"><span class="t">${c} ${t}</span>${S.map(s=>`<img src="${c}/mark-${t}.svg" width="${s}" height="${s}">`).join('')}<img src="${c}/lockup-h-${t}.svg" height="48"><img src="${c}/lockup-v-${t}.svg" height="110"></div>`)}
+document.write(`<div class="row l"><span class="t">${c} mono</span>${S.map(s=>`<img src="${c}/mark-mono.svg" width="${s}" height="${s}">`).join('')}</div>`)}
+</script></body></html>
