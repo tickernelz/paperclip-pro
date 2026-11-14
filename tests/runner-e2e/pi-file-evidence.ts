@@ -39,7 +39,7 @@ export function gradePiCopyback(run: Row, lease: Row, companyId: string, environ
   const context = rec(run.contextSnapshot), environment = rec(context.wardmoteEnvironment);
   const reference = rec(rec(run.runnerProfileJson).nativeWorkspaceSync);
   const binding = rec(rec(rec(run.runnerProfileJson).nativeExecutionInput).binding);
-  requireEvidence(run.companyId === companyId && reference.schema === "paperclip.native-workspace-sync/v2"
+  requireEvidence(run.companyId === companyId && reference.schema === "wardmote.native-workspace-sync/v2"
     && reference.state === "finalized" && [reference.baselineSha256, reference.descriptorSha256, reference.finalHostSha256]
       .every(value => typeof value === "string" && /^[a-f0-9]{64}$/u.test(value)), "finalized production copy-back hashes required");
   requireEvidence(typeof reference.workspaceId === "string" && reference.workspaceId.length > 0

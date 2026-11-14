@@ -33,9 +33,9 @@ const MAX_NATIVE_MANIFEST_BYTES = 4 * 1024 * 1024;
 const NATIVE_COPY_CONCURRENCY = 32;
 const NATIVE_DIRECTORY_CONCURRENCY = 32;
 const NATIVE_COPY_BUFFER_BYTES = 32 * 1024 * 1024;
-const BOOTSTRAP = ".paperclip-native-entry.cjs";
+const BOOTSTRAP = ".wardmote-native-entry.cjs";
 const GUARD = ".wardmote-native-module-guard.cjs";
-const COPILOT_ENTRY = ".paperclip-copilot-entry";
+const COPILOT_ENTRY = ".wardmote-copilot-entry";
 export const NATIVE_ACPX_BOOTSTRAP_NAME = BOOTSTRAP;
 const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 const validPath = (value: unknown): value is string => typeof value === "string" && value.length > 0 && value.length <= 4_096 && !isAbsolute(value) && !/[\u0000-\u001f\u007f\\]/.test(value) && value.split("/").every(part => part.length > 0 && part !== "." && part !== "..");
@@ -50,7 +50,7 @@ export function parseNativeAcpxDistributionEntries(value: unknown, expectedSha25
   const parsed = entries.map(raw => {
     if (raw === null || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Native ACPX closure entry is invalid");
     const entry = raw as Record<string, unknown>;
-    if (Object.keys(entry).some(key => !["path", "sha256", "size", "executable"].includes(key)) || !validPath(entry.path) || entry.path <= previous || entry.path === BOOTSTRAP || entry.path === GUARD || entry.path === "manifest.json" || entry.path.startsWith(".paperclip-")) throw new Error("Native ACPX closure paths must be safe, unique and sorted");
+    if (Object.keys(entry).some(key => !["path", "sha256", "size", "executable"].includes(key)) || !validPath(entry.path) || entry.path <= previous || entry.path === BOOTSTRAP || entry.path === GUARD || entry.path === "manifest.json" || entry.path.startsWith(".wardmote-")) throw new Error("Native ACPX closure paths must be safe, unique and sorted");
     if (typeof entry.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(entry.sha256) || !Number.isSafeInteger(entry.size) || Number(entry.size) < 0 || Number(entry.size) > MAX_NATIVE_FILE_BYTES || typeof entry.executable !== "boolean") throw new Error("Native ACPX closure file metadata is invalid");
     previous = entry.path;
     total += Number(entry.size);

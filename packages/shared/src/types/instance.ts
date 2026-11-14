@@ -44,8 +44,9 @@ export const SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS = 60;
 export const SPEECH_TO_TEXT_KEYTERMS_MAX = 100;
 export const SPEECH_TO_TEXT_KEYTERM_MAX_LENGTH = 50;
 export const SPEECH_TO_TEXT_MAX_SPEAKERS = 32;
+export const SPEECH_TO_TEXT_API_KEY_MAX_LENGTH = 16_384;
 
-/** Instance-wide speech-to-text; the API key is read from the named server environment variable at call time. */
+/** Instance-wide speech-to-text; the provider's saved API key wins, else the named server environment variable. */
 export interface SpeechToTextSettings {
   enabled: boolean;
   provider: SpeechToTextProvider;
@@ -103,6 +104,7 @@ export interface SpeechToTextModelList {
 export interface SpeechToTextCredentialState {
   envVar: string;
   set: boolean;
+  stored: boolean;
   projectId?: string | null;
   usable?: boolean;
 }

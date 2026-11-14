@@ -1,7 +1,7 @@
 # Copilot 1.0.88 rich ACP capability audit
 
-Current integration (2026-10-08): **Copilot profile v28 remains pending** with
-digest `sha256:752ba1c86db35c5a82235a7ed2584a1515409dea471312c732992ebba956f3f6`.
+Current integration (2026-10-08): **Copilot profile v30 remains pending** with
+digest `sha256:04d9a473012a87ad521e3b74695890caa164049e4e78e2bbbb5b7fae408b27cf`.
 It binds the runner sources renamed for Wardmote without changing the
 executable or supplying new paid qualification. Historical checkpoints below
 retain their original identities and outcomes.

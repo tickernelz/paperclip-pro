@@ -389,7 +389,7 @@ describeEmbeddedPostgres("native runner restart recovery with real processes", (
       processStartedAt: new Date("2020-01-01T00:00:00Z"),
       runnerProfileJson: {
         nativeWorkspaceSync: {
-          schema: "paperclip.native-workspace-sync/v1", state: "prepared",
+          schema: "wardmote.native-workspace-sync/v1", state: "prepared",
           descriptorSha256: "a".repeat(64), baselineSha256: "b".repeat(64),
           workspaceId: "workspace", leaseId: "lease", providerLeaseId: "sandbox",
           remoteCwd: "/workspace",

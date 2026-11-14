@@ -265,7 +265,7 @@ function resolveThemeColor(raw) {
 }
 
 function registerResolvedVarToken(varName, fallbackRaw, sourceNote) {
-  const bare = varName.replace(/^--paperclip-/, "").replace(/^--/, "");
+  const bare = varName.replace(/^--wardmote-/, "").replace(/^--/, "");
   const name = `${bare}-resolved`;
   const fallback = resolveThemeColor(fallbackRaw);
   const value = `var(${varName}, ${fallback})`;

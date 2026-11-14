@@ -169,13 +169,13 @@
     },
     {
       "path": "fixtures/evals/harness-driver-conformance.json",
-      "sha256": "d059aa7c0d215832589212b9d0fbdb2b9ecdc310a0b02fc7836eb1a3bc91b3a4",
+      "sha256": "e806bf155cc074c25de674c43abe96d9edd775c3fb4e1dc05bedca6d73565891",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
     {
       "path": "fixtures/evals/native-execution-seeded.json",
-      "sha256": "7176019d8beb886647a15a8c16a76e61808da8ae33e02c5872625d46c9fcda72",
+      "sha256": "27937a151bf1e4f83feea03c35af153b2c7f434ea384013fe2a679ed61f15f60",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },

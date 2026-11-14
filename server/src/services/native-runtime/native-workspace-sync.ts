@@ -30,10 +30,10 @@ import { resolveWardmoteInstanceRoot } from "../../home-paths.js";
 import { parseObject } from "../../adapters/utils.js";
 import type { NativeRestartRecoveryClaim } from "./native-restart-recovery.js";
 
-const LEGACY_DESCRIPTOR_SCHEMA = "paperclip.native-workspace-sync/v1";
-const DESCRIPTOR_SCHEMA = "paperclip.native-workspace-sync/v2";
+const LEGACY_DESCRIPTOR_SCHEMA = "wardmote.native-workspace-sync/v1";
+const DESCRIPTOR_SCHEMA = "wardmote.native-workspace-sync/v2";
 type DescriptorSchema = typeof DESCRIPTOR_SCHEMA | typeof LEGACY_DESCRIPTOR_SCHEMA;
-const STAMP_SCHEMA = "paperclip.native-workspace-stamp/v1";
+const STAMP_SCHEMA = "wardmote.native-workspace-stamp/v1";
 const STATE_ROOT_NAME = "native-workspace-sync";
 const DESCRIPTOR_NAME = "descriptor";
 const WORKSPACE_SEED_NAME = "workspace-seed.tar";

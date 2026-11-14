@@ -13,7 +13,7 @@ const MAX_FILE = 512 * 1024 ** 2;
 const MANIFEST = "companion.json";
 const AUTHORITY = ".import-authority.json";
 type Entry = { path: string; mode: number; kind: "directory" } | { path: string; mode: number; kind: "file"; size: number; sha256: string } | { path: string; mode: number; kind: "symlink"; target: string };
-export interface RemotePiCompanionManifest { schema: "paperclip.remote-pi-companion/v1"; sourceRevision: string; target: "linux-x64"; profileDigest: string; providerPackDigest: string; daemonSha256: string; entries: Entry[] }
+export interface RemotePiCompanionManifest { schema: "wardmote.remote-pi-companion/v1"; sourceRevision: string; target: "linux-x64"; profileDigest: string; providerPackDigest: string; daemonSha256: string; entries: Entry[] }
 function require(value: unknown, reason: string): asserts value { if (!value) throw new Error(`runner_remote_companion_invalid: ${reason}`); }
 const digest = (value: Buffer | string) => createHash("sha256").update(value).digest("hex");
 const safe = (path: string) => path.length > 0 && path.length < 4096 && !isAbsolute(path) && !/[\\\x00-\x1f\x7f]/u.test(path) && path.split("/").every(p => p !== "" && p !== "." && p !== "..");
@@ -81,7 +81,7 @@ async function installedIdentity(serverRoot: string, check: Checkpoint) {
   return { source, profileDigest: profile.commandDigest };
 }
 async function validate(root: string, manifest: RemotePiCompanionManifest, identity: Awaited<ReturnType<typeof installedIdentity>>, check: Checkpoint) {
-  require(manifest.schema === "paperclip.remote-pi-companion/v1" && manifest.target === "linux-x64" && manifest.sourceRevision === identity.source && manifest.profileDigest === identity.profileDigest, "source/profile/target mismatch");
+  require(manifest.schema === "wardmote.remote-pi-companion/v1" && manifest.target === "linux-x64" && manifest.sourceRevision === identity.source && manifest.profileDigest === identity.profileDigest, "source/profile/target mismatch");
   require(JSON.stringify(await inventoryRemoteCompanion(root, check)) === JSON.stringify(manifest.entries), "complete inventory mismatch");
   const daemon = manifest.entries.find(e => e.path === "bin/wardmote-runnerd");
   require(daemon?.kind === "file" && daemon.size > 64 && (daemon.mode & 0o111) !== 0 && daemon.sha256 === manifest.daemonSha256, "daemon identity");
@@ -97,7 +97,7 @@ export async function createRemotePiCompanionManifest(root: string, sourceRevisi
   const check = checkpoints();
   const profile = QUALIFIED_ACPX_PROFILES.pi; const pack = JSON.parse((await readOwned(join(root, "provider-pack/provider-pack.json"), 16 * 1024 ** 2, check)).toString()); const entries = await inventoryRemoteCompanion(root, check);
   const daemon = entries.find(e => e.path === "bin/wardmote-runnerd"); require(daemon?.kind === "file", "daemon missing");
-  const manifest: RemotePiCompanionManifest = { schema: "paperclip.remote-pi-companion/v1", sourceRevision, target: "linux-x64", profileDigest: profile.commandDigest, providerPackDigest: pack.digest, daemonSha256: daemon.sha256, entries };
+  const manifest: RemotePiCompanionManifest = { schema: "wardmote.remote-pi-companion/v1", sourceRevision, target: "linux-x64", profileDigest: profile.commandDigest, providerPackDigest: pack.digest, daemonSha256: daemon.sha256, entries };
   require(/^[a-f0-9]{40}$/u.test(sourceRevision), "release source"); await validate(root, manifest, { source: sourceRevision, profileDigest: profile.commandDigest }, check); return manifest;
 }
 function cacheParent(serverRoot: string) { return join(serverRoot, "remote-companions"); }

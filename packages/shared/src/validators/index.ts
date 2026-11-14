@@ -42,6 +42,7 @@ export {
   instanceGeneralSettingsSchema,
   speechToTextSettingsSchema,
   speechToTextModelListRequestSchema,
+  speechToTextApiKeyRequestSchema,
   attachmentMaxMegabytesSchema,
   attachmentRetentionSettingsSchema,
   localRunLimitsSettingsSchema,

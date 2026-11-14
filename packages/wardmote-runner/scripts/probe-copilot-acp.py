@@ -41,7 +41,7 @@ def stop_process(process):
    if stream:stream.close()
 
 with contextlib.ExitStack() as cleanup:
- root=pathlib.Path(tempfile.mkdtemp(prefix='paperclip-copilot-offline-'))
+ root=pathlib.Path(tempfile.mkdtemp(prefix='wardmote-copilot-offline-'))
  cleanup.callback(shutil.rmtree, root)
  calls=0
  total_model_calls=0
@@ -128,7 +128,7 @@ with contextlib.ExitStack() as cleanup:
   if n not in responses:raise TimeoutError(method)
   return responses[n]
  try:
-  initialize_params={'protocolVersion':1,'clientCapabilities':{'_meta':{'github.com/copilot':{'events':['session.idle','session.plan_changed','session.background_tasks_changed','session.completion_receipt','user_input.requested','exit_plan_mode.requested','assistant.usage']}}},'clientInfo':{'name':'paperclip-offline-fixture','version':'1'}}
+  initialize_params={'protocolVersion':1,'clientCapabilities':{'_meta':{'github.com/copilot':{'events':['session.idle','session.plan_changed','session.background_tasks_changed','session.completion_receipt','user_input.requested','exit_plan_mode.requested','assistant.usage']}}},'clientInfo':{'name':'wardmote-offline-fixture','version':'1'}}
   request('initialize',initialize_params)
   session=request('session/new',{'cwd':str(root),'mcpServers':[]})
   if 'result' in session:
@@ -168,7 +168,7 @@ with contextlib.ExitStack() as cleanup:
   failure=sys.exc_info()[1]
   try:
    marker_exists=(root/('settlement.txt' if args.scenario in ('attached-shell','detached-shell') else 'denied.txt')).exists()
-   report={'schema':'paperclip.copilot-acp-evidence/v1','harnessVersion':metadata['version'],'package':metadata['name'],'executableSha256':pins[metadata['name']],'modelSource':'deterministic loopback fixture, COPILOT_OFFLINE=true; not a live model qualification','scenario':args.scenario,'toolPolicyScope':'repository tool-update admission only' if args.tool_policy_node else None,'toolPolicyRejection':policy_rejection,'mode':args.mode,'resumed':args.resume or args.restart,'providerKilledAndReplaced':args.restart,'replayMutationCount':len((root/'replay-count.txt').read_text()) if (root/'replay-count.txt').exists() else None,'costUsd':0,'filesystemMarkerExistedAtPromptResult':marker_at_prompt_result,'filesystemMarkerExistedAfterPrompt':marker_exists,'modelCalls':total_model_calls,'modelToolNames':model_tool_names,'modelToolSchemas':model_tool_schemas,'modelToolResults':model_tool_results,'permissionResponses':permission_responses,'wire':wire}
+   report={'schema':'wardmote.copilot-acp-evidence/v1','harnessVersion':metadata['version'],'package':metadata['name'],'executableSha256':pins[metadata['name']],'modelSource':'deterministic loopback fixture, COPILOT_OFFLINE=true; not a live model qualification','scenario':args.scenario,'toolPolicyScope':'repository tool-update admission only' if args.tool_policy_node else None,'toolPolicyRejection':policy_rejection,'mode':args.mode,'resumed':args.resume or args.restart,'providerKilledAndReplaced':args.restart,'replayMutationCount':len((root/'replay-count.txt').read_text()) if (root/'replay-count.txt').exists() else None,'costUsd':0,'filesystemMarkerExistedAtPromptResult':marker_at_prompt_result,'filesystemMarkerExistedAfterPrompt':marker_exists,'modelCalls':total_model_calls,'modelToolNames':model_tool_names,'modelToolSchemas':model_tool_schemas,'modelToolResults':model_tool_results,'permissionResponses':permission_responses,'wire':wire}
    serialized=json.dumps(report,indent=2).replace(str(root),'/fixture/workspace').replace(str(root).lstrip('/'),'fixture/workspace').replace(binary,'/fixture/verified/copilot')
    print(serialized)
   except Exception:

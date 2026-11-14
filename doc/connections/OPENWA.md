@@ -789,7 +789,7 @@ ignored), so an agent on the same host opens the file without downloading it.
 
 Speech-to-text is instance-wide: **Speech-to-text** on the instance General
 settings page (`speechToText` in `GET`/`PATCH /api/instance/settings/general`).
-The form shows the toggle, **Provider**, the key status, **Model** and
+The form shows the toggle, **Provider**, the **API key**, **Model** and
 **Language** (searchable, **Automatic** first, codes from each provider's
 documentation); everything else sits in the closed **Advanced** part. Only an
 OpenAI-compatible endpoint asks for a typed base URL; any provider takes a typed
@@ -797,29 +797,43 @@ model only after choosing **Other model...**. Keyterms are chips added with
 Enter, Google alternative languages a multi-pick, and the numbers steppers with
 their unit and a **Default** button. Each field error names one fix.
 
-Each provider has a default key variable, filled in when the provider is
-chosen: `OPENAI_API_KEY`, `DEEPGRAM_API_KEY`, `ELEVENLABS_API_KEY`,
-`GOOGLE_APPLICATION_CREDENTIALS`. The form shows whether it is set from
-`GET /api/instance/settings/general/speech-to-text/credentials` (instance admin):
-only those four names are checked, values never leave the server, and for Google
-the response adds whether the key is a usable service account and its project id,
-which the form shows read-only. A different variable name is set in **Advanced**
-and is not checked; **Test speech-to-text** confirms it.
+The **API key** field next to **Provider** is write-only: **Save
+speech-to-text** stores the typed key (`PUT
+/api/instance/settings/general/speech-to-text/keys/{provider}`, instance admin),
+after which the form shows only **Saved** with **Replace** and **Remove**
+(`DELETE` on the same path). Each provider keeps its own key, so switching
+provider keeps the others. Google takes the service account JSON key itself.
+**Fetch** and **Test speech-to-text** use the typed key when one is typed, else
+the saved one. No restart is needed.
 
-Wardmote's company secrets (`company_secrets`, local vault or AWS Secrets
-Manager, doc/SECRETS-AWS-PROVIDER.md) are scoped to one company and resolved for
-agent runs and connections; speech-to-text is an instance setting used by every
-company's chat connectors, so its key stays in the server environment like the
-AWS provider's own bootstrap credentials. Moving it into the secret store needs
-an instance-level secret scope, which does not exist today.
+At transcription time the provider's saved key wins; without one Wardmote reads
+the server environment variable named in **Advanced** (`apiKeyEnvVar`, filled in
+with the provider default `OPENAI_API_KEY`, `DEEPGRAM_API_KEY`,
+`ELEVENLABS_API_KEY` or `GOOGLE_APPLICATION_CREDENTIALS`), so setups that keep
+the key in the environment work unchanged.
+`GET /api/instance/settings/general/speech-to-text/credentials` (instance admin)
+reports per provider `stored` and whether the default variable is set, and for
+Google whether the effective key is a usable service account and its project id;
+values never leave the server.
+
+Saved keys live in `instance_settings.speech_to_text_keys`, encrypted with the
+`local_encrypted` provider (AES-256-GCM under the instance secrets master key,
+the one company secrets use). Company secrets (`company_secrets`,
+doc/SECRETS-AWS-PROVIDER.md) are scoped to one company, while speech-to-text is
+one instance setting used by every company, so the key is stored next to that
+setting instead of in a company's vault. The key never appears in
+`GET /api/instance/settings/general`, the activity log (only the provider is
+recorded), API responses or server logs, and run views redact it when it has
+at least 16 characters; a shorter placeholder such as `none` for an endpoint
+without auth is not redacted, because it cannot be told apart from ordinary text.
 
 | Field | Key | Default | Bounds |
 | --- | --- | --- | --- |
-| Toggle | `enabled` | off | needs a model and env var; OpenAI-compatible also needs a base URL |
+| Toggle | `enabled` | off | needs a model; OpenAI-compatible also needs a base URL |
 | Provider | `provider` | `openai_compatible` | `openai_compatible`, `deepgram`, `elevenlabs`, `google` |
 | Base URL | `baseUrl` | empty | http(s) origin or ending at `/v1`; empty uses `https://api.deepgram.com`, `https://api.elevenlabs.io`, or for Google `https://{location}-speech.googleapis.com` (`https://speech.googleapis.com` for `global`) |
 | Model | `model` | empty | free text; **Fetch** lists provider models |
-| API key environment variable | `apiKeyEnvVar` | empty | a server environment variable name, never the key; for Google the variable holds a service account JSON key or the path of that file |
+| Fallback key variable | `apiKeyEnvVar` | empty | a server environment variable name read when no key is saved for the provider; for Google the variable holds a service account JSON key or the path of that file |
 | Language | `language` | empty (detect) | `en`, `id`, `pt-BR`, or `multi` (Deepgram Nova-3); Google: empty only for Chirp models (`auto`) |
 | Speaker diarization | `diarize` | off | Deepgram, ElevenLabs, Google (`diarizationConfig`; Chirp 3 only in the languages Google lists for it) |
 | Keyterms | `keyterms` | none | Deepgram, ElevenLabs and Google (inline phrase set); up to 100, 50 characters each |

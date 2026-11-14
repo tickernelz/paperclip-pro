@@ -1,23 +1,23 @@
 {
-  "schema": "paperclip.cursor.production-contract.v1",
-  "profileVersion": 16,
+  "schema": "wardmote.cursor.production-contract.v1",
+  "profileVersion": 17,
   "sourceSnapshot": "22c78242a4e0c2369fecf0c2dc4e7600fbad6706",
   "base": "dd868ed125cd709506dd9b29fca640a44d580501",
   "vendor": "2026.09.26-dd393fe",
-  "nativePatch": "paperclip-cursor-usage-v4",
-  "acpxPatchSha256": "87350d875e2d1c3b3e330edbb4658827e4d85232826058ef35f9bbb52b46900a",
-  "publicSetup": "paperclip-pro runtime setup cursor",
+  "nativePatch": "wardmote-cursor-usage-v5",
+  "acpxPatchSha256": "72a8bbcb5589ecef09e136785a8d0c298d63c6c74a22bd071838f9f34475385d",
+  "publicSetup": "wardmote runtime setup cursor",
   "assets": "public-server-and-provider-pack",
   "modes": [
     "agent",
     "plan",
     "ask"
   ],
-  "questions": "paperclip-semantic-native-defensive",
+  "questions": "wardmote-semantic-native-defensive",
   "accounting": "unknown-partial-diagnostics-only",
   "warmFiles": "mainline-owned-checkpoint-handoff",
   "planAcceptance": "successful-run-open-task-explicit-continuation",
   "otherProviders": "mainline-gated",
   "modelSelection": "explicit-provider-verified-startup-and-reconnect",
-  "commandDigest": "sha256:ea302d27d2417eeb23f3df1a18c6c062bac161e730aff5e002ce2bcb3547baae"
+  "commandDigest": "sha256:f5b41139b70934ac89a4657095f62d07f10992eb2d4ac140d2b0e0500b57a93d"
 }

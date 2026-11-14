@@ -12,6 +12,7 @@ import {
 import {
   formatSpeechToTextTranscript,
   listSpeechToTextModels,
+  speechToTextCredentialStatus,
   SpeechToTextError,
   transcribeAudio,
   type SpeechToTextErrorCode,
@@ -138,6 +139,27 @@ describe("transcribeAudio with an OpenAI-compatible endpoint", () => {
     expect([...form.keys()]).toEqual(["file", "model", "response_format"]);
     expect(form.get("model")).toBe("whisper-1");
     expect(form.get("response_format")).toBe("json");
+  });
+
+  it("uses the saved key before the environment variable and the variable when no key is saved", async () => {
+    const fake = fakeFetch(() => json({ text: "ok" }));
+    await transcribeAudio(audio, { settings: openAiSettings, apiKey: "saved-key", env, fetchImpl: fake.impl });
+    await transcribeAudio(audio, { settings: openAiSettings, apiKey: null, env, fetchImpl: fake.impl });
+    await transcribeAudio(audio, { settings: { ...openAiSettings, apiKeyEnvVar: "" }, apiKey: "saved-key", env: {}, fetchImpl: fake.impl });
+    expect(fake.calls.map((call) => (call.init.headers as Record<string, string>).Authorization)).toEqual([
+      "Bearer saved-key",
+      "Bearer secret-key",
+      "Bearer saved-key",
+    ]);
+    await expectCode(transcribeAudio(audio, { settings: { ...openAiSettings, apiKeyEnvVar: "" }, apiKey: null, env, fetchImpl: fake.impl }), "stt_missing_key");
+    expect(fake.calls).toHaveLength(3);
+  });
+
+  it("reports a saved key per provider without its value", async () => {
+    const status = await speechToTextCredentialStatus({ deepgram: "dg-saved-zha6141" }, { OPENAI_API_KEY: "env-value" });
+    expect(status.deepgram).toEqual({ envVar: "DEEPGRAM_API_KEY", set: false, stored: true });
+    expect(status.openai_compatible).toEqual({ envVar: "OPENAI_API_KEY", set: true, stored: false });
+    expect(JSON.stringify(status)).not.toMatch(/dg-saved-zha6141|env-value/);
   });
 
   it("adds the primary language subtag when a language is chosen", async () => {

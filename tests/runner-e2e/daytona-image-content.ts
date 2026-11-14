@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const repositoryRoot = path.resolve(import.meta.dirname, "../..");
 
 export const DAYTONA_IMAGE_CONTENT_SCHEMA =
-  "paperclip-daytona-runner-image-content/v5";
+  "wardmote-daytona-runner-image-content/v5";
 export const DAYTONA_IMAGE_PLATFORM = "linux/amd64";
 export const DAYTONA_IMAGE_DOCKERFILE_PATH = "docker/daytona-runner/Dockerfile";
 

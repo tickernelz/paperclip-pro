@@ -23,18 +23,6 @@ const IRREGULAR_LOWER = new Map(
 );
 
 const PINNED_RETIRED_SCHEMA_ID_SUFFIXES: ReadonlySet<string> = new Set([
-  "cursor.instructions-proof.v1",
-  "cursor.instructions.v1",
-  "cursor.native-mode-offline-proof.v1",
-  "cursor.native-usage-offline-proof.v1",
-  "cursor.native-usage.v1",
-  "cursor.patch-initialize-proof.v1",
-  "cursor.production-contract.v1",
-  "cursor.provider-error.v1",
-  "cursor.runtime-patch-proof.v1",
-  "cursor_closure.v1",
-  "cursor_distribution.v1",
-  "native_distribution_closure.v1",
   "pi-linux-native-admission-proof.v1",
   "pi-model-admission-proof.v1",
   "pi-native-controls-proof.v1",

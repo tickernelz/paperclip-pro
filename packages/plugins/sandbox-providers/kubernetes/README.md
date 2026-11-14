@@ -132,7 +132,7 @@ Every agent pod is:
 
 - non-root (`runAsUser: 1000`, `runAsGroup: 1000`, `runAsNonRoot: true`)
 - drops ALL Linux capabilities, `allowPrivilegeEscalation: false`
-- `readOnlyRootFilesystem: true` with explicit `emptyDir` mounts for `/workspace`, `/home/wardmote`, `/home/paperclip/.cache`, `/tmp`
+- `readOnlyRootFilesystem: true` with explicit `emptyDir` mounts for `/workspace`, `/home/wardmote`, `/home/wardmote/.cache`, `/tmp`
 - `seccompProfile: RuntimeDefault`
 - Tini as PID 1 (reaps zombies, forwards signals)
 - `fsGroupChangePolicy: OnRootMismatch` (fast PVC startup; openclaw-operator lesson)

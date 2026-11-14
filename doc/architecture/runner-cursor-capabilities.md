@@ -140,8 +140,8 @@ the readiness report linked above; native AskQuestion remains uncertified.
 
 ## Wire and isolation findings
 
-The observation-only usage candidate adds `_meta.paperclipCursorUsage` to a
-prompt response. Its `paperclip.cursor.native-usage.v1` envelope contains a fresh
+The observation-only usage candidate adds `_meta.wardmoteCursorUsage` to a
+prompt response. Its `wardmote.cursor.native-usage.v1` envelope contains a fresh
 opaque prompt ID and separate native invocation/run observations. It allows at
 most 64 observations, 64 invocation identities and 16 KiB of JSON. Only observed,
 safe nonnegative numeric input/output/cache-read/cache-write/reasoning counters
@@ -175,6 +175,19 @@ tree. Its patched closures are:
 | macOS x64 | `6f28c799c5afdc64fbdff8a2157f565f17ae7615efe014ac389d63bf70cf2be2` |
 | Linux x64 | `eadb8bb8ffb0450455b15b88c9b230307a9e149958a0c452d16dd157b4633d74` |
 
+The current `wardmote-cursor-usage-v5` patch (Cursor profile 17) keeps the same
+vendor archives and only renames the identifiers inside the patch. Its patched
+closures, materialized by `.github/workflows/cursor-closure.yml`, are:
+
+| Platform | Patched closure SHA-256 |
+| --- | --- |
+| macOS ARM64 | `48c1ded408190e7f36f9bb25478465547f2e46e38b616f1e4d0c417d6bcfe7d5` |
+| macOS x64 | `d4aac8a84e91c7fe65777ed775204bcd337f1cc8b9d4d822e299ca48cee98594` |
+| Linux x64 | `61057c1ca16887205eab17ebe33c53189dc6a088445e3796006233fa34ab9f6d` |
+
+`usage-v5-runtime-patch-offline-proof.json` records the isolation and
+instruction checks for v5.
+
 `usage-v4-runtime-patch-offline-proof.json` retains fresh isolation/instruction
 checks, and `native-usage-v4-offline-proof.json` records the usage checks. Earlier
 proof files remain historical. These are offline source proofs; native emission
@@ -198,7 +211,7 @@ Question and plan requests lack a session ID. The shared hook binds them to the 
 
 Fixed launch arguments are `--disable-project-configs --disable-auto-update acp`, using the verified bundled Node and absolute verified `index.js`. Private HOME/XDG roots are required together with CURSOR_CONFIG_DIR, CURSOR_DATA_DIR, disabled compilation caching, `AGENT_CLI_CREDENTIAL_STORE=memory`, and `NO_OPEN_BROWSER=1`. Only explicitly bound CURSOR_API_KEY or CURSOR_AUTH_TOKEN may enter. The controller creates a provider/session-scoped credential-name binding from the explicit task environment, ignoring inherited or caller-supplied markers. Rust forwards it through the closed sidecar environment boundary. Before host admission, the sidecar rejects missing, stale, wrong-provider or unbound credentials and removes the marker before provider launch. Tests cover this full boundary and preserve legacy credential behavior. Do not use `--force`, `--trust`, or `--approve-mcps` to paper over governance.
 
-`--disable-project-configs` only suppresses `.cursor/cli.json`. It does not suppress project MCP, Cursor/Claude hooks, or installed plugins. `assertCursorWorkspacePolicy` refuses ambient project execution config from the workspace through its nearest Git root, including symlinks and unreadable configuration. Ordinary Claude settings with neither hooks nor plugins remain admissible. Enterprise system hooks are checked too. The host repeats admission checks before native launch. The vendor admission check alone cannot prevent a concurrent file mutation. The current `paperclip-cursor-usage-v4` distribution patch removes local hook loading, asynchronous team hook synchronization, ambient MCP loader initialization, and ambient-client merging from the ACP source. The retained admission check remains defense in depth. This closes those discovery paths independently of filesystem polling; authenticated validation on the patched final runtime remains required.
+`--disable-project-configs` only suppresses `.cursor/cli.json`. It does not suppress project MCP, Cursor/Claude hooks, or installed plugins. `assertCursorWorkspacePolicy` refuses ambient project execution config from the workspace through its nearest Git root, including symlinks and unreadable configuration. Ordinary Claude settings with neither hooks nor plugins remain admissible. Enterprise system hooks are checked too. The host repeats admission checks before native launch. The vendor admission check alone cannot prevent a concurrent file mutation. The current `wardmote-cursor-usage-v5` distribution patch removes local hook loading, asynchronous team hook synchronization, ambient MCP loader initialization, and ambient-client merging from the ACP source. The retained admission check remains defense in depth. This closes those discovery paths independently of filesystem polling; authenticated validation on the patched final runtime remains required.
 
 Artifact paths are never automatically read or uploaded. References require a present regular file under the physical workspace, reject traversal and symbolic links, and retain `registered:false`. Private/outside paths are omitted and produce a visible warning. This is metadata validation, not durable file ownership or a replacement for artifact registration checks.
 
@@ -329,7 +342,7 @@ isolation, not an operating-system sandbox: explicitly allowed native shell
 commands still have their granted filesystem/network powers.
 
 Typed `ActionRequiredError` instances now produce a failed JSON-RPC response
-with data schema `paperclip.cursor.provider-error.v1`, kind `action_required`,
+with data schema `wardmote.cursor.provider-error.v1`, kind `action_required`,
 and the closed action enum `login`, `upgrade`, `payment`, `config`, or `unknown`.
 Login and native `ConnectError` with the Unauthenticated code use ACP error
 `-32000`; other action requirements use `-32603`. Provider-private error detail
@@ -411,7 +424,7 @@ The additional rule uses the native global-rule representation and retains
 native ordering: additional rules precede the ordinarily discovered project
 rules in `RequestContext.rules`. It is not prepended to the user's message and
 does not replace Cursor's built-in system prompt. The synthetic rule identifier
-is `paperclip://runtime/instructions`; no generated instruction file is exposed
+is `wardmote://runtime/instructions`; no generated instruction file is exposed
 to workspace discovery.
 
 A synchronous ACPX `protocolGuardFactory` checks each connection independently.

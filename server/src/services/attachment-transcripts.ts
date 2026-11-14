@@ -95,6 +95,7 @@ export async function transcribeStoredAudio(input: {
   storage: StorageService;
   file: StoredAudio;
   settings: SpeechToTextSettings;
+  apiKey: string | null;
   env?: Record<string, string | undefined>;
   fetchImpl?: typeof fetch;
 }): Promise<{ result: SpeechToTextResult; cached: boolean }> {
@@ -109,7 +110,7 @@ export async function transcribeStoredAudio(input: {
       const audio = localPath ? { blob: await openAsBlob(localPath) } : { stream: object!.stream };
       return await transcribeAudio(
         { ...audio, mime: file.contentType, filename: file.originalFilename || "audio" },
-        { settings, env: input.env, fetchImpl: input.fetchImpl },
+        { settings, apiKey: input.apiKey, env: input.env, fetchImpl: input.fetchImpl },
       );
     } finally {
       object?.stream.destroy();

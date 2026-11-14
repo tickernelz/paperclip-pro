@@ -47,7 +47,7 @@ async function readOptionalHistory(file: string) {
   return readFile(file, "utf8")
     .then((value) => JSON.parse(value) as RunnerE2EHistoryIndex)
     .then((value) =>
-      value.schema === "paperclip.runner-e2e.history/v1" ? value : undefined,
+      value.schema === "wardmote.runner-e2e.history/v1" ? value : undefined,
     )
     .catch(() => undefined);
 }

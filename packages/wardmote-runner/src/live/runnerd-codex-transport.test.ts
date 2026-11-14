@@ -1861,7 +1861,7 @@ it("passes only the Anthropic credential to Claude Managed runnerd", () => {
       environment: {
         PATH: "/bin",
         ANTHROPIC_API_KEY: "anthropic-canary",
-        WARDMOTE_NATIVE_MCP_NAME: "paperclip",
+        WARDMOTE_NATIVE_MCP_NAME: "wardmote",
         WARDMOTE_NATIVE_MCP_URL: "https://wardmote.example/mcp",
         WARDMOTE_NATIVE_MCP_TOKEN: "must-not-reach-provider",
         WARDMOTE_API_KEY: "must-not-reach-provider",

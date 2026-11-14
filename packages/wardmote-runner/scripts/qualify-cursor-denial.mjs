@@ -68,7 +68,7 @@ export async function runDenial(packInput, privateParent, token) {
   const started = performance.now();
   const elapsed = () => Math.round(performance.now() - started);
   const evidence = {
-    schema: "paperclip.cursor-native-denial-probe/v1", model: MODEL,
+    schema: "wardmote.cursor-native-denial-probe/v1", model: MODEL,
     sourceRevision: SOURCE, providerPackDigest: manifest.digest, providerVersion: "2026.09.26-dd393fe",
     startedAt: new Date().toISOString(), promptRequestsSent: 0, providerReportedUsage: null,
     providerReportedCostUsd: null, activeDeadlineSeconds: 120, outerDeadlineSeconds: 180,
@@ -182,7 +182,7 @@ export async function runDenial(packInput, privateParent, token) {
         if (entry) { clearTimeout(entry.timer); pending.delete(message.id); message.error ? entry.reject(new Error(`provider_rpc_error:${message.error.code}`)) : entry.resolve(message.result); }
       }
     });
-    const initialized = await request("initialize", { protocolVersion: 1, clientInfo: { name: "paperclip-cursor-denial-qualification", version: "1" }, clientCapabilities: {} });
+    const initialized = await request("initialize", { protocolVersion: 1, clientInfo: { name: "wardmote-cursor-denial-qualification", version: "1" }, clientCapabilities: {} });
     assert.equal(initialized.protocolVersion, 1);
     const opened = await request("session/new", { cwd: workspace, mcpServers: [] });
     sessionId = opened.sessionId; assert.ok(typeof sessionId === "string" && sessionId.length > 0);

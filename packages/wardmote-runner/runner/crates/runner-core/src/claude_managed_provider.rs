@@ -38,7 +38,7 @@ const MAX_MANAGED_SKILL_ATTACHMENTS: usize = 500;
 const MAX_SKILL_UPLOAD_FILES: usize = 10_000;
 const MAX_SKILL_UPLOAD_BYTES: usize = 32 * 1024 * 1024;
 const MAX_SKILL_RECONCILIATION_PAGES: usize = 100;
-const SESSION_OWNERSHIP_METADATA_KEY: &str = "paperclip_ownership";
+const SESSION_OWNERSHIP_METADATA_KEY: &str = "wardmote_ownership";
 
 #[derive(Clone, Debug)]
 pub struct ClaudeManagedProviderStartError {
@@ -194,7 +194,7 @@ impl NetworkWorker {
         let beta = beta.to_owned();
         let origin = origin.trim_end_matches('/').to_owned();
         let join = thread::Builder::new()
-            .name("paperclip-claude-managed-network".to_owned())
+            .name("wardmote-claude-managed-network".to_owned())
             .spawn(move || {
                 network_loop(
                     api_key,
@@ -668,7 +668,7 @@ fn upload_managed_skill(
     }
     files.sort_by(|left, right| left.0.cmp(&right.0));
     let mut content_identity = Sha256::new();
-    content_identity.update(b"paperclip-managed-skill-v1\0");
+    content_identity.update(b"wardmote-managed-skill-v1\0");
     content_identity.update(title.as_bytes());
     content_identity.update([0]);
     content_identity.update(top_level.as_bytes());
@@ -697,7 +697,7 @@ fn upload_managed_skill(
         return Ok(existing);
     }
     let upload_nonce = Uuid::new_v4().simple().to_string();
-    let boundary = format!("paperclip-{}-{upload_nonce}", &content_identity[..24]);
+    let boundary = format!("wardmote-{}-{upload_nonce}", &content_identity[..24]);
     let mut body = Vec::new();
     multipart_field(&mut body, &boundary, "display_name", &display_name);
     for (path, bytes) in files {
@@ -780,7 +780,7 @@ fn upload_managed_runtime_skills_at(
         "{:x}",
         Sha256::digest(format!("{instruction_digest}\0{entry_path}").as_bytes())
     );
-    let instruction_name = format!("paperclip-instructions-{}", &instruction_identity[..12]);
+    let instruction_name = format!("wardmote-instructions-{}", &instruction_identity[..12]);
     let companion = format!(
         "---\nname: {instruction_name}\ndescription: Wardmote agent instruction sibling bundle\n---\nRead `instructions/{entry_path}` and its sibling files when the system instructions require them. Treat all files as read-only.\n"
     );
@@ -931,7 +931,7 @@ fn managed_system_instructions(
         "{:x}",
         Sha256::digest(format!("{instruction_digest}\0{entry_path}").as_bytes())
     );
-    let instruction_name = format!("paperclip-instructions-{}", &instruction_identity[..12]);
+    let instruction_name = format!("wardmote-instructions-{}", &instruction_identity[..12]);
     let local_directive = format!("Read-only instruction sibling root: {instruction_root}");
     let replacement = format!(
         "Read-only instruction siblings are in the attached `{instruction_name}` skill under `instructions/`."
@@ -2363,7 +2363,7 @@ fn verify_remote_session(
 }
 
 fn session_ownership_marker(ownership_scope: &str) -> String {
-    format!("paperclip-{:x}", Sha256::digest(ownership_scope.as_bytes()))
+    format!("wardmote-{:x}", Sha256::digest(ownership_scope.as_bytes()))
 }
 
 fn session_matches_ownership(
@@ -2807,7 +2807,7 @@ mod tests {
                 || body
                     .pointer(&format!("/metadata/{SESSION_OWNERSHIP_METADATA_KEY}"))
                     .and_then(Value::as_str)
-                    .is_none_or(|marker| !marker.starts_with("paperclip-"))
+                    .is_none_or(|marker| !marker.starts_with("wardmote-"))
             {
                 return send_json_response(
                     socket,
@@ -3057,9 +3057,9 @@ mod tests {
     #[test]
     fn managed_system_replaces_the_local_instruction_path_with_the_companion_skill() {
         let mut config = config();
-        let local_root = "/paperclip/runtime/instructions";
+        let local_root = "/wardmote/runtime/instructions";
         config.instructions = format!(
-            "paperclip prompt\n\nAGENTS entry\n\nRead-only instruction sibling root: {local_root}"
+            "wardmote prompt\n\nAGENTS entry\n\nRead-only instruction sibling root: {local_root}"
         );
         config.runtime_context = Some(json!({
             "instructions": {
@@ -3070,8 +3070,8 @@ mod tests {
         }));
 
         let instructions = managed_system_instructions(&config).unwrap();
-        assert!(instructions.starts_with("paperclip prompt\n\nAGENTS entry\n\n"));
-        assert!(instructions.contains("attached `paperclip-instructions-"));
+        assert!(instructions.starts_with("wardmote prompt\n\nAGENTS entry\n\n"));
+        assert!(instructions.contains("attached `wardmote-instructions-"));
         assert!(instructions.ends_with("skill under `instructions/`."));
         assert!(!instructions.contains(local_root));
     }
@@ -4215,7 +4215,7 @@ mod tests {
     }
 
     #[test]
-    fn malformed_tool_arguments_fail_closed_before_paperclip_execution() {
+    fn malformed_tool_arguments_fail_closed_before_wardmote_execution() {
         let service = FakeAnthropicService::start(
             vec![json!({
                 "type": "agent.custom_tool_use",

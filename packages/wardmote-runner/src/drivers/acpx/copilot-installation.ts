@@ -26,7 +26,7 @@ export async function verifyCopilotInstallation(profile: AcpxReleaseProfile): Pr
   const distributionRoot = join(resolveRunnerProviderAssetsRoot(import.meta.url, "copilot"), platform);
   const native = await verifyNativeAcpxInstallation({
     distributionRoot,
-    manifestPath: join(distributionRoot, ".paperclip-copilot-closure.json"),
+    manifestPath: join(distributionRoot, ".wardmote-copilot-closure.json"),
     expectedClosureSha256: COPILOT_CLOSURE_SHA256[platform as keyof typeof COPILOT_CLOSURE_SHA256],
     executable: "copilot", fixedArguments: COPILOT_LAUNCH_ARGUMENTS,
     isolatedCacheEnvironmentName: "COPILOT_PKG_CACHE_HOME",

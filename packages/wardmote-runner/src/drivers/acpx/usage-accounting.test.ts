@@ -176,7 +176,7 @@ describe("Pi prompt accounting authority", () => {
 
 describe("partial native Cursor observations", () => {
   const receipt = () => ({ request_id: "request-1", prompt_message_id: "message-1", receipt: {
-    schema: "paperclip.cursor.native-usage.v1", source: "native_turn_ended", promptId: "12345678-1234-1234-1234-123456789abc",
+    schema: "wardmote.cursor.native-usage.v1", source: "native_turn_ended", promptId: "12345678-1234-1234-1234-123456789abc",
     completeness: "partial", reasons: ["native_counter_semantics_unverified", "child_run_attribution_unverified"],
     observations: [{ invocationId: "invocation-1", role: "parent", nativeRun: 1, sequence: 1, counters: { inputTokens: 12, outputTokens: 3 } }],
     limits: { maxObservations: 64, maxInvocations: 64, maxBytes: 16384 }, truncated: false,

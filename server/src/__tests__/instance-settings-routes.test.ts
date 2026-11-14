@@ -12,6 +12,10 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
   updateGeneral: vi.fn(),
   updateExperimental: vi.fn(),
   listCompanyIds: vi.fn(),
+  getSpeechToTextApiKeys: vi.fn(),
+  getSpeechToTextApiKey: vi.fn(),
+  setSpeechToTextApiKey: vi.fn(),
+  removeSpeechToTextApiKey: vi.fn(),
 }));
 const mockHeartbeatService = vi.hoisted(() => ({
   computeTaskDrain: vi.fn(),
@@ -98,6 +102,10 @@ describe("instance settings routes", () => {
     mockInstanceSettingsService.updateGeneral.mockReset();
     mockInstanceSettingsService.updateExperimental.mockReset();
     mockInstanceSettingsService.listCompanyIds.mockReset();
+    mockInstanceSettingsService.getSpeechToTextApiKeys.mockReset().mockResolvedValue({});
+    mockInstanceSettingsService.getSpeechToTextApiKey.mockReset().mockResolvedValue(null);
+    mockInstanceSettingsService.setSpeechToTextApiKey.mockReset().mockResolvedValue("settings-1");
+    mockInstanceSettingsService.removeSpeechToTextApiKey.mockReset().mockResolvedValue("settings-1");
     mockHeartbeatService.computeTaskDrain.mockReset();
     mockHeartbeatService.applyTaskDrain.mockReset();
     mockHeartbeatService.stopTaskDrain.mockReset();
@@ -1499,10 +1507,10 @@ describe("instance settings routes", () => {
       const res = await request(await createApp(adminActor)).get("/api/instance/settings/general/speech-to-text/credentials");
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
-        openai_compatible: { envVar: "OPENAI_API_KEY", set: false },
-        deepgram: { envVar: "DEEPGRAM_API_KEY", set: true },
-        elevenlabs: { envVar: "ELEVENLABS_API_KEY", set: false },
-        google: { envVar: "GOOGLE_APPLICATION_CREDENTIALS", set: true, usable: true, projectId: "proj-zha6055" },
+        openai_compatible: { envVar: "OPENAI_API_KEY", set: false, stored: false },
+        deepgram: { envVar: "DEEPGRAM_API_KEY", set: true, stored: false },
+        elevenlabs: { envVar: "ELEVENLABS_API_KEY", set: false, stored: false },
+        google: { envVar: "GOOGLE_APPLICATION_CREDENTIALS", set: true, stored: false, usable: true, projectId: "proj-zha6055" },
       });
       const raw = JSON.stringify(res.body);
       expect(raw).not.toContain("dg-value-secret");
@@ -1512,9 +1520,90 @@ describe("instance settings routes", () => {
 
       vi.stubEnv("GOOGLE_APPLICATION_CREDENTIALS", "/nonexistent/zha6055.json");
       const broken = await request(await createApp(adminActor)).get("/api/instance/settings/general/speech-to-text/credentials");
-      expect(broken.body.google).toEqual({ envVar: "GOOGLE_APPLICATION_CREDENTIALS", set: true, usable: false, projectId: null });
+      expect(broken.body.google).toEqual({ envVar: "GOOGLE_APPLICATION_CREDENTIALS", set: true, stored: false, usable: false, projectId: null });
       const { rm } = await import("node:fs/promises");
       await rm(dir, { recursive: true, force: true });
+    });
+
+    it("lists models with the unsaved key first, then the saved key, then the environment variable", async () => {
+      providerFetch.mockImplementation(async () => new Response(JSON.stringify({ stt: [{ canonical_name: "nova-3", batch: true }] }), { status: 200 }));
+      const body = { provider: "deepgram", baseUrl: "", apiKeyEnvVar: "ZHA6055_DG_KEY" };
+      const app = await createApp(adminActor);
+      const authorization = () => (providerFetch.mock.calls.at(-1)?.[1]?.headers as Record<string, string>).Authorization;
+
+      await request(app).post("/api/instance/settings/general/speech-to-text/models").send(body);
+      expect(authorization()).toBe("Token dg-secret");
+
+      mockInstanceSettingsService.getSpeechToTextApiKey.mockResolvedValue("dg-saved-zha6141");
+      await request(app).post("/api/instance/settings/general/speech-to-text/models").send(body);
+      expect(mockInstanceSettingsService.getSpeechToTextApiKey).toHaveBeenLastCalledWith("deepgram");
+      expect(authorization()).toBe("Token dg-saved-zha6141");
+
+      const res = await request(app).post("/api/instance/settings/general/speech-to-text/models").send({ ...body, apiKey: "dg-typed-zha6141" });
+      expect(res.status).toBe(200);
+      expect(authorization()).toBe("Token dg-typed-zha6141");
+      expect(JSON.stringify(res.body)).not.toContain("zha6141");
+    });
+
+    it("saves and removes one provider's key without echoing it into the response or the activity log", async () => {
+      const marker = "sk-zha6141-marker-" + Math.random().toString(36).slice(2);
+      mockInstanceSettingsService.getSpeechToTextApiKeys.mockResolvedValue({ deepgram: marker });
+      const app = await createApp(adminActor);
+
+      const denied = await request(await createApp(memberActor)).put("/api/instance/settings/general/speech-to-text/keys/deepgram").send({ apiKey: marker });
+      expect(denied.status).toBe(403);
+      expect(mockInstanceSettingsService.setSpeechToTextApiKey).not.toHaveBeenCalled();
+
+      const saved = await request(app).put("/api/instance/settings/general/speech-to-text/keys/deepgram").send({ apiKey: marker });
+      expect(saved.status).toBe(200);
+      expect(saved.body.deepgram).toMatchObject({ stored: true });
+      expect(saved.body.elevenlabs).toMatchObject({ stored: false });
+      expect(mockInstanceSettingsService.setSpeechToTextApiKey).toHaveBeenCalledWith("deepgram", marker);
+      expect(mockLogActivity).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ action: "instance.settings.speech_to_text_key_saved", entityId: "settings-1", details: { provider: "deepgram" } }),
+      );
+
+      mockInstanceSettingsService.getSpeechToTextApiKeys.mockResolvedValue({});
+      const removed = await request(app).delete("/api/instance/settings/general/speech-to-text/keys/deepgram");
+      expect(removed.status).toBe(200);
+      expect(removed.body.deepgram).toMatchObject({ stored: false });
+      expect(mockInstanceSettingsService.removeSpeechToTextApiKey).toHaveBeenCalledWith("deepgram");
+      expect(mockLogActivity).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ action: "instance.settings.speech_to_text_key_removed", details: { provider: "deepgram" } }),
+      );
+      expect(JSON.stringify([saved.body, removed.body, mockLogActivity.mock.calls])).not.toContain(marker);
+
+      const unknown = await request(app).put("/api/instance/settings/general/speech-to-text/keys/whisperx").send({ apiKey: marker });
+      expect(unknown.status).toBe(400);
+      const googlePath = await request(app).put("/api/instance/settings/general/speech-to-text/keys/google").send({ apiKey: "/etc/passwd" });
+      expect(googlePath.status).toBe(400);
+      const empty = await request(app).put("/api/instance/settings/general/speech-to-text/keys/deepgram").send({ apiKey: "  " });
+      expect(empty.status).toBe(400);
+      expect(mockInstanceSettingsService.setSpeechToTextApiKey).toHaveBeenCalledTimes(1);
+
+      process.env.WARDMOTE_HIDDEN_SETTINGS = "instance.general.speechToText";
+      const hidden = await request(await createApp(adminActor)).delete("/api/instance/settings/general/speech-to-text/keys/deepgram");
+      expect(hidden.status).toBe(403);
+    });
+
+    it("tests with the unsaved key when one is typed, else with the saved key", async () => {
+      providerFetch.mockImplementation(async () => new Response(JSON.stringify({ text: "halo", language_code: "ind", words: [] }), { status: 200 }));
+      mockInstanceSettingsService.getSpeechToTextApiKey.mockResolvedValue("el-saved-zha6141");
+      const app = await createApp(adminActor);
+      const send = (apiKey?: string) => {
+        const call = request(app).post("/api/instance/settings/general/speech-to-text/test").field("settings", JSON.stringify(elevenlabsDraft));
+        return (apiKey === undefined ? call : call.field("apiKey", apiKey)).attach("file", Buffer.from("voice"), { filename: "sample.ogg", contentType: "audio/ogg" });
+      };
+      const headers = () => providerFetch.mock.calls.at(-1)?.[1]?.headers;
+
+      expect((await send()).body).toMatchObject({ ok: true });
+      expect(headers()).toMatchObject({ "xi-api-key": "el-saved-zha6141" });
+      const typed = await send("el-typed-zha6141");
+      expect(typed.body).toMatchObject({ ok: true });
+      expect(headers()).toMatchObject({ "xi-api-key": "el-typed-zha6141" });
+      expect(JSON.stringify(typed.body)).not.toContain("zha6141");
     });
 
     it("answers 422 with the stt code when listing fails and rejects an inline key", async () => {

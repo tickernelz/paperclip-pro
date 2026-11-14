@@ -198,7 +198,7 @@ export function createCopilotToolEvidence(binding: {
           return;
         }
         semanticReceipts.set(parsed.callIdentitySha256, parsed);
-        notice("semantic_result", undefined, { ...parsed }, "paperclip/semantic_tool_result", parsed.schema === "wardmote.semantic_tool_receipt.v2" ? "wardmote_semantic_tool_receipt_v2" : "wardmote_semantic_tool_receipt_v1");
+        notice("semantic_result", undefined, { ...parsed }, "wardmote/semantic_tool_result", parsed.schema === "wardmote.semantic_tool_receipt.v2" ? "wardmote_semantic_tool_receipt_v2" : "wardmote_semantic_tool_receipt_v1");
       }); };
     },
     tool: (event: unknown) => { safely(() => projection.tool(event)); },

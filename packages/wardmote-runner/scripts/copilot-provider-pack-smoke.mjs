@@ -67,7 +67,7 @@ await withCopilotSmokeResources(installation, async ({ lease, root, fixture, fix
       });
       child.stderr.on("data", chunk => { stderr = (stderr + chunk.toString("utf8")).slice(-16_384); });
     });
-    child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: 0, method: "initialize", params: { protocolVersion: 1, clientInfo: { name: "paperclip-pack-offline-smoke", version: "1" }, clientCapabilities: COPILOT_ACP_CLIENT_CAPABILITIES } })}\n`);
+    child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: 0, method: "initialize", params: { protocolVersion: 1, clientInfo: { name: "wardmote-pack-offline-smoke", version: "1" }, clientCapabilities: COPILOT_ACP_CLIENT_CAPABILITIES } })}\n`);
     const result = await initialized;
     assert.equal(result.protocolVersion, 1);
     assert.equal(result.agentInfo?.version, "1.0.88");
@@ -82,7 +82,7 @@ await withCopilotSmokeResources(installation, async ({ lease, root, fixture, fix
       key === "command" && typeof value === "string" && value.endsWith("/distribution/copilot") ? "/fixture/verified/copilot" : value));
     const executable = await readFile(join(pack, candidate.path, "copilot"));
     process.stdout.write(`${JSON.stringify({
-      schema: "paperclip.copilot-provider-pack-smoke/v1", sourceRevision: manifest.payload.runnerSourceRevision,
+      schema: "wardmote.copilot-provider-pack-smoke/v1", sourceRevision: manifest.payload.runnerSourceRevision,
       providerPackDigest: manifest.digest, platform: process.platform, architecture: process.arch,
       candidate, executableSha256: `sha256:${createHash("sha256").update(executable).digest("hex")}`,
       registryLaunch: "verifyAcpxProfileInstallation/openCommand/spawn", initializeRequestId: 0,

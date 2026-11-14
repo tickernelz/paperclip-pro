@@ -40,14 +40,20 @@ export const instanceSettingsApi = {
     provider: SpeechToTextProvider;
     baseUrl: string;
     apiKeyEnvVar: string;
+    apiKey?: string;
     google?: { location: string; projectId: string };
   }) =>
     api.post<SpeechToTextModelList>("/instance/settings/general/speech-to-text/models", request),
   getSpeechToTextCredentials: () =>
     api.get<SpeechToTextCredentialStatus>("/instance/settings/general/speech-to-text/credentials", { cache: "no-store" }),
-  testSpeechToText: (settings: SpeechToTextSettings, file: File) => {
+  saveSpeechToTextKey: (provider: SpeechToTextProvider, apiKey: string) =>
+    api.put<SpeechToTextCredentialStatus>("/instance/settings/general/speech-to-text/keys/" + provider, { apiKey }),
+  removeSpeechToTextKey: (provider: SpeechToTextProvider) =>
+    api.delete<SpeechToTextCredentialStatus>("/instance/settings/general/speech-to-text/keys/" + provider),
+  testSpeechToText: (settings: SpeechToTextSettings, file: File, apiKey = "") => {
     const form = new FormData();
     form.append("settings", JSON.stringify(settings));
+    if (apiKey) form.append("apiKey", apiKey);
     form.append("file", file);
     return api.postForm<SpeechToTextTestResult>("/instance/settings/general/speech-to-text/test", form);
   },

@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 #
-# Kill all local Wardmote workspace runtime service processes.
+# Kill this checkout's Wardmote workspace runtime service processes.
 #
 # This targets managed workspace services such as preview/dev commands started
-# from project or execution workspaces. Use scripts/kill-dev.sh for Wardmote
-# server processes.
+# from project or execution workspaces of the instances owned by this checkout:
+# instances under .wardmote/, the worktree instance named in .wardmote/.env, and
+# the instance named by WARDMOTE_HOME plus WARDMOTE_INSTANCE_ID when both are
+# set. Other instances, such as ~/.wardmote/instances/*, are never touched.
+# Use scripts/kill-dev.sh for Wardmote server processes.
 #
 # Usage:
 #   scripts/kill-workspaces.sh        # kill workspace runtime services
@@ -21,7 +24,7 @@ for arg in "$@"; do
       DRY_RUN=true
       ;;
     --help|-h)
-      sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -34,7 +37,6 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_PARENT="$(dirname "$REPO_ROOT")"
 CURRENT_PID="$$"
 CURRENT_PGID="$(ps -o pgid= -p "$CURRENT_PID" 2>/dev/null | tr -d '[:space:]' || true)"
 
@@ -62,33 +64,32 @@ append_runtime_dir() {
   fi
 }
 
-wardmote_home="$(expand_home "${WARDMOTE_HOME:-}")"
-if [ -z "$wardmote_home" ]; then
-  wardmote_home="$HOME/.wardmote"
-fi
-wardmote_instance_id="${WARDMOTE_INSTANCE_ID:-default}"
-append_runtime_dir "$wardmote_home/instances/$wardmote_instance_id/runtime-services"
+env_file_value() {
+  local file="$1"
+  local key="$2"
+  [[ -f "$file" ]] || return 0
+  sed -n "s/^${key}=//p" "$file" | tail -n 1 | sed -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'$/\1/"
+}
 
-if [[ "${WARDMOTE_KILL_WORKSPACES_ONLY_CURRENT:-}" != "1" ]]; then
-  for dir in \
-    "$HOME"/.wardmote/instances/*/runtime-services \
-    "$HOME"/.wardmote-worktrees/instances/*/runtime-services \
-    "$REPO_ROOT"/.wardmote/instances/*/runtime-services \
-    "$REPO_ROOT"/.wardmote/runtime-services/instances/*/runtime-services
-  do
-    append_runtime_dir "$dir"
-  done
+append_instance_runtime_dir() {
+  local home_dir="$1"
+  local instance_id="$2"
+  [[ -n "$home_dir" && -n "$instance_id" ]] || return 0
+  append_runtime_dir "$(expand_home "$home_dir")/instances/$instance_id/runtime-services"
+}
 
-  for sibling_root in "$REPO_PARENT"/wardmote*; do
-    [[ -d "$sibling_root" ]] || continue
-    for dir in \
-      "$sibling_root"/.wardmote/instances/*/runtime-services \
-      "$sibling_root"/.wardmote/runtime-services/instances/*/runtime-services
-    do
-      append_runtime_dir "$dir"
-    done
-  done
-fi
+for dir in \
+  "$REPO_ROOT"/.wardmote/instances/*/runtime-services \
+  "$REPO_ROOT"/.wardmote/runtime-services/instances/*/runtime-services
+do
+  append_runtime_dir "$dir"
+done
+
+checkout_env="$REPO_ROOT/.wardmote/.env"
+append_instance_runtime_dir \
+  "$(env_file_value "$checkout_env" WARDMOTE_HOME)" \
+  "$(env_file_value "$checkout_env" WARDMOTE_INSTANCE_ID)"
+append_instance_runtime_dir "${WARDMOTE_HOME:-}" "${WARDMOTE_INSTANCE_ID:-}"
 
 record_lines=()
 if [[ ${#runtime_dirs[@]} -gt 0 ]]; then
