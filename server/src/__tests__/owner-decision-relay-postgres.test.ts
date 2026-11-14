@@ -11,6 +11,7 @@ import {
   authUsers,
   budgetIncidents,
   budgetPolicies,
+  chatActions,
   chatConversations,
   chatDeliveries,
   chatEndpointOwners,
@@ -416,6 +417,32 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
       relayable: true,
       relayBlockedReason: null,
     });
+  }, 60_000);
+
+  it("shows where a WhatsApp-routed card came from and which chat it went to, without phone numbers", async () => {
+    const seed = await seedCompany();
+    const routed = await seedPlanCard(seed, 1700);
+    const plain = await seedPlanCard(seed, 1701);
+    const route = {
+      route: "owner_report",
+      viaOwnerReport: true,
+      sentTo: { chat: "[BOT] HMX Wardmote", kind: "group" },
+      origin: { chat: "Tim HMX", kind: "group", conversation: seed.prefix + "-1", requester: "owner", requesterName: "Zhafron", requesterRole: "owner" },
+    };
+    await db.insert(chatActions).values({
+      companyId: seed.companyId, endpointId: seed.endpointId, conversationId: seed.conversationId, kind: "openwa_pending_card",
+      providerActionId: "openwa-pending-card:" + routed.interactionId, status: "processed",
+      payload: { version: 1, chatKey: GROUP, openwa: { event: "pending_card", pendingCardIds: [routed.interactionId], cardRoutes: { [routed.interactionId]: route } } },
+    });
+    const runId = await seedOpenwaRun(seed, { triggerClass: "owner", deliveryIds: [], principalId: seed.ownerPrincipalId });
+
+    const res = await request(wira(seed, runId)).get(`/api/companies/${seed.companyId}/pending-decisions`);
+
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    const byId = new Map(res.body.items.map((item: { id: string }) => [item.id, item]));
+    expect(byId.get(routed.interactionId)).toMatchObject({ chatRoute: route });
+    expect(byId.get(plain.interactionId)).toMatchObject({ chatRoute: null });
+    expect(JSON.stringify(res.body)).not.toContain(OWNER_DIGITS);
   }, 60_000);
 
   const DESK_KINDS = [

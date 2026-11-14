@@ -32,7 +32,7 @@ import { issueThreadInteractionService } from "../../services/issue-thread-inter
 import { secretService } from "../../services/secrets.js";
 import { resolveOpenwaRunContext } from "../../services/openwa/authority.js";
 import { buildOpenwaRunGuidance } from "../../services/openwa/guidance.js";
-import { OPENWA_PENDING_CARD_ACTION_KIND } from "../../services/openwa/pending-cards.js";
+import { OPENWA_PENDING_CARD_ACTION_KIND } from "../../services/openwa/card-routing.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const SESSION_ID = "52222222-3333-4444-8555-666666666666";

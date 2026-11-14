@@ -273,6 +273,22 @@ export interface PendingDecisionQuestion {
   options: PendingDecisionOption[];
 }
 
+export interface PendingDecisionChatOrigin {
+  chat: string;
+  kind: "group" | "dm";
+  conversation: string;
+  requester: "owner" | "non_owner" | null;
+  requesterName: string | null;
+  requesterRole: string | null;
+}
+
+export interface PendingDecisionChatRoute {
+  route: "owner_report" | "origin_dm" | "origin_group" | "owner_dm";
+  viaOwnerReport: boolean;
+  sentTo: { chat: string; kind: "group" | "dm" };
+  origin: PendingDecisionChatOrigin | null;
+}
+
 export interface PendingDecision {
   source: "interaction" | "approval" | "decision";
   id: string;
@@ -292,6 +308,7 @@ export interface PendingDecision {
   href: string | null;
   relayable: boolean;
   relayBlockedReason: string | null;
+  chatRoute: PendingDecisionChatRoute | null;
 }
 
 export interface PendingDecisionList {

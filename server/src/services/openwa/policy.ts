@@ -35,6 +35,7 @@ export type OpenwaTriggerRule =
   | "self_chat"
   | "keywords"
   | "all_messages"
+  | "owner_card_answer"
   | "control";
 
 export type OpenwaControlCommand = "new" | "close";
@@ -45,6 +46,7 @@ const ADDRESSING_RULES: ReadonlySet<OpenwaTriggerRule> = new Set([
   "reply_to_agent",
   "command_prefix",
   "self_chat",
+  "owner_card_answer",
   "control",
 ]);
 
@@ -121,6 +123,7 @@ export type OpenwaFilterReason = "denylisted" | "outside_allowlist" | "chat_inac
 
 export interface OpenwaClassifyFacts {
   quotedFromAgent?: boolean;
+  ownerCardAnswer?: boolean;
 }
 
 export interface OpenwaApprovalReplyCandidate {
@@ -354,8 +357,9 @@ function matchedRules(
   snapshot: OpenwaPolicySnapshot,
   event: OpenwaInboundEvent,
   triggers: OpenwaTriggerRules,
-  quotedFromAgent: boolean,
+  facts: OpenwaClassifyFacts,
 ): OpenwaTriggerRule[] {
+  const quotedFromAgent = facts.quotedFromAgent === true;
   const rules: OpenwaTriggerRule[] = [];
   const ownerNumber = snapshot.policy.numberMode === "owner_number";
   const isGroup = event.chatKind === "group";
@@ -369,6 +373,7 @@ function matchedRules(
   if (!isGroup && triggers.directMessage) rules.push("direct_message");
   if (!ownerNumber && triggers.agentMentioned && mentions(event, [snapshot.agentJid, ...snapshot.agentLids], snapshot.agentDigits)) rules.push("agent_mentioned");
   if (triggers.replyToAgent && quotedFromAgent) rules.push("reply_to_agent");
+  if (isGroup && facts.ownerCardAnswer === true) rules.push("owner_card_answer");
   if (!ownerNumber && triggers.commandPrefix.enabled && startsWithPrefix(event.body, triggers.commandPrefix.prefix)) rules.push("command_prefix");
   if (triggers.keywords.length && triggers.keywords.some((keyword) => wholeWord(event.body, keyword))) rules.push("keywords");
   if (triggers.allMessages) rules.push("all_messages");
@@ -377,7 +382,7 @@ function matchedRules(
 
 export function openwaTriggerCandidate(event: OpenwaInboundEvent, snapshot: OpenwaPolicySnapshot, facts: OpenwaClassifyFacts = {}): boolean {
   const triggers = openwaEffectiveTriggers(snapshot.policy.triggers, openwaChatSettings(snapshot, event.chatKey).triggers);
-  return matchedRules(snapshot, event, triggers, facts.quotedFromAgent === true).length > 0 || openwaControlCommand(event.body) !== null;
+  return matchedRules(snapshot, event, triggers, facts).length > 0 || openwaControlCommand(event.body) !== null;
 }
 
 export function openwaQuoteMayAddressAgent(event: OpenwaInboundEvent, snapshot: OpenwaPolicySnapshot): boolean {
@@ -401,7 +406,7 @@ export function classifyOpenwaEvent(
   const role = openwaSenderRole(snapshot, owner, event.senderPhone);
   const command = openwaControlCommand(event.body);
   const controlAllowed = command !== null && (role === "owner" || (!isGroup && role === "allowed"));
-  const rules = controlAllowed ? (["control"] as OpenwaTriggerRule[]) : matchedRules(snapshot, event, triggers, facts.quotedFromAgent === true);
+  const rules = controlAllowed ? (["control"] as OpenwaTriggerRule[]) : matchedRules(snapshot, event, triggers, facts);
   const addressed = rules.some((rule) => ADDRESSING_RULES.has(rule));
   if (!rules.length || !active) {
     if (addressed && !active) return { kind: "filtered", reason: "chat_inactive", chatKey, principalRole: role, rules };

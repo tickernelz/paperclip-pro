@@ -29,6 +29,7 @@ import { boardAuthService } from "./board-auth.js";
 import { executionBlockerPredicate, getExecutionBlocker } from "./execution-blocker.js";
 import { openwaOwnerPrincipalOfDeliveries } from "./openwa/approvals.js";
 import { readOpenwaRunContext } from "./openwa/authority.js";
+import { openwaCardRoutes } from "./openwa/card-routing.js";
 import { openwaChatKey } from "./openwa/outbound.js";
 import { openwaCurrentOwnerUserId } from "./openwa/owners.js";
 
@@ -571,6 +572,7 @@ export async function listPendingDecisions(
     (item) => !RELAY_SOURCE_KINDS.includes(item.sourceKind) && isOpenAttentionItem(item, now),
   ).length;
   const cardById = await loadRelayCards(db, input.companyId, items);
+  const chatRoutes = await openwaCardRoutes(db, input.companyId, [...cardById.keys()]);
   const requesterIds = [
     ...new Set(
       items.flatMap((item) => {
@@ -617,6 +619,7 @@ export async function listPendingDecisions(
         requestedByUserId: card.createdByUserId ?? null,
         relayable: blocked === null,
         relayBlockedReason: blocked,
+        chatRoute: chatRoutes.get(card.id) ?? null,
       }];
     }
     return [{
@@ -631,6 +634,7 @@ export async function listPendingDecisions(
       requestedByUserId: str(metadata.requestedByUserId),
       relayable: false,
       relayBlockedReason: item.sourceKind === "approval" ? GOVERNED_APPROVAL_REASON : AGENT_DECISION_REASON,
+      chatRoute: null,
     }];
   });
   return { items: decisions, omittedCount };

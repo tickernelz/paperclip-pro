@@ -11,6 +11,7 @@ import { openwaChatKey } from "./outbound.js";
 import { openwaCurrentOwners } from "./owners.js";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
+type DbOrTransaction = Db | DbTransaction;
 type EndpointRow = typeof chatEndpoints.$inferSelect;
 
 export const OPENWA_SESSION_HEALTH_WAKE_ACTION_KIND = "openwa_session_health_wakeup";
@@ -75,7 +76,17 @@ export async function openwaOwnerApprovalConversation(
             ]),
           ),
         ];
-  if (!chatKeys.length) return null;
+  return openwaAgentConversation(tx, endpoint, input.sessionId, chatKeys);
+}
+
+/** Newest active or waiting conversation of the endpoint agent in one of these chats, on an issue it still works. */
+export async function openwaAgentConversation(
+  tx: DbOrTransaction,
+  endpoint: EndpointRow,
+  sessionId: string,
+  chatKeys: string[],
+): Promise<{ conversationId: string; issueId: string; agentId: string; chatKey: string } | null> {
+  if (!endpoint.assignedAgentId || !chatKeys.length) return null;
   const [row] = await tx
     .select({ conversationId: chatConversations.id, issueId: issues.id, externalConversationId: chatConversations.externalConversationId })
     .from(chatConversations)
@@ -86,7 +97,7 @@ export async function openwaOwnerApprovalConversation(
         eq(chatConversations.endpointId, endpoint.id),
         inArray(
           chatConversations.externalConversationId,
-          chatKeys.map((chatKey) => "openwa:" + input.sessionId + ":" + chatKey),
+          chatKeys.map((chatKey) => "openwa:" + sessionId + ":" + chatKey),
         ),
         inArray(chatConversations.state, ["active", "waiting"]),
         eq(issues.assigneeAgentId, endpoint.assignedAgentId),
@@ -100,7 +111,7 @@ export async function openwaOwnerApprovalConversation(
     conversationId: row.conversationId,
     issueId: row.issueId,
     agentId: endpoint.assignedAgentId,
-    chatKey: row.externalConversationId.slice(("openwa:" + input.sessionId + ":").length),
+    chatKey: row.externalConversationId.slice(("openwa:" + sessionId + ":").length),
   };
 }
 
