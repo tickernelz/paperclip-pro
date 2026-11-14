@@ -1788,7 +1788,7 @@ const support = await getEmbeddedPostgresTestSupport();
     await db.insert(environmentLeases).values({ ...lease, status: "active", leasePolicy: "ephemeral" });
     const [run] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.sourceRunId));
     await db.update(heartbeatRuns).set({ runnerProfileJson: { ...run.runnerProfileJson,
-      nativeWorkspaceSync: { schema: "paperclip.native-workspace-sync/v1", state: "prepared",
+      nativeWorkspaceSync: { schema: "wardmote.native-workspace-sync/v1", state: "prepared",
         descriptorSha256: "a".repeat(64), baselineSha256: "b".repeat(64), finalHostSha256: null,
         workspaceId: randomUUID(), leaseId: lease.id, providerLeaseId: lease.providerLeaseId,
         remoteCwd: "/work", resourceDisposition: "destroy" },

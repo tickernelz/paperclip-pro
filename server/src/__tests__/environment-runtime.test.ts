@@ -960,7 +960,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
       },
     });
     const workspaceSyncStamp = {
-      schema: "paperclip.native-workspace-stamp/v1",
+      schema: "wardmote.native-workspace-stamp/v1",
       workspaceId: seeded.executionWorkspaceId,
       providerLeaseId: "sandbox-exact-resume",
       remoteCwd: "/workspace",

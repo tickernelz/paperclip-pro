@@ -21,7 +21,7 @@ Parameters:
     AllowedPattern: "^$|^arn:aws(-[^:]+)?:iam::[0-9]{12}:oidc-provider/token[.]actions[.]githubusercontent[.]com$"
   GitHubRepository:
     Type: String
-    Default: paperclipai/paperclip
+    Default: tickernelz/wardmote
     AllowedPattern: "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
   GitHubEnvironment:
     Type: String
@@ -52,7 +52,7 @@ Parameters:
     AllowedPattern: "^[a-zA-Z][a-zA-Z0-9_]{0,39}$"
   HarnessEndpointName:
     Type: String
-    Default: paperclip
+    Default: wardmote
     AllowedPattern: "^[a-zA-Z][a-zA-Z0-9_]{0,47}$"
   MemoryName:
     Type: String
@@ -60,7 +60,7 @@ Parameters:
     AllowedPattern: "^[a-zA-Z][a-zA-Z0-9_]{0,47}$"
   ContextPrefix:
     Type: String
-    Default: paperclip/agentcore/development
+    Default: wardmote/agentcore/development
     Description: Dedicated S3 key prefix for immutable AgentCore runtime-context assets.
     AllowedPattern: "^[a-z0-9][a-z0-9/_-]{1,127}$"
 
@@ -84,15 +84,15 @@ Resources:
             Action: kms:*
             Resource: "*"
       Tags:
-        - Key: paperclip:owned
+        - Key: wardmote:owned
           Value: "true"
-        - Key: paperclip:environment
+        - Key: wardmote:environment
           Value: !Ref EnvironmentName
 
   ContextEncryptionKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub alias/paperclip-agentcore-context-${EnvironmentName}-${AWS::Region}
+      AliasName: !Sub alias/wardmote-agentcore-context-${EnvironmentName}-${AWS::Region}
       TargetKeyId: !Ref ContextEncryptionKey
 
   ContextBucket:
@@ -112,11 +112,11 @@ Resources:
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
       Tags:
-        - Key: paperclip:owned
+        - Key: wardmote:owned
           Value: "true"
-        - Key: paperclip:environment
+        - Key: wardmote:environment
           Value: !Ref EnvironmentName
-        - Key: paperclip:cost-center
+        - Key: wardmote:cost-center
           Value: runner-lab
 
   ContextBucketPolicy:
@@ -160,14 +160,14 @@ Resources:
       Description: Short-term Wardmote Runner chat continuity; no long-term strategies.
       EventExpiryDuration: 90
       Tags:
-        paperclip:owned: "true"
-        paperclip:environment: !Ref EnvironmentName
-        paperclip:cost-center: runner-lab
+        wardmote:owned: "true"
+        wardmote:environment: !Ref EnvironmentName
+        wardmote:cost-center: runner-lab
 
   HarnessExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub paperclip-agentcore-harness-${EnvironmentName}-${AWS::Region}
+      RoleName: !Sub wardmote-agentcore-harness-${EnvironmentName}-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -254,9 +254,9 @@ Resources:
                 Action: bedrock-agentcore:InvokeAgentRuntimeCommand
                 Resource: "*"
       Tags:
-        - Key: paperclip:owned
+        - Key: wardmote:owned
           Value: "true"
-        - Key: paperclip:environment
+        - Key: wardmote:environment
           Value: !Ref EnvironmentName
 
   AgentHarness:
@@ -300,17 +300,17 @@ Resources:
                 Subnets: [!Ref PrivateSubnetA, !Ref PrivateSubnetB]
               - !Ref AWS::NoValue
       Tags:
-        - Key: paperclip:owned
+        - Key: wardmote:owned
           Value: "true"
-        - Key: paperclip:environment
+        - Key: wardmote:environment
           Value: !Ref EnvironmentName
-        - Key: paperclip:cost-center
+        - Key: wardmote:cost-center
           Value: runner-lab
 
   RunnerInvocationRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub paperclip-agentcore-runner-${EnvironmentName}-${AWS::Region}
+      RoleName: !Sub wardmote-agentcore-runner-${EnvironmentName}-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -398,9 +398,9 @@ Resources:
                 Action: bedrock-agentcore:InvokeAgentRuntimeCommand
                 Resource: "*"
       Tags:
-        - Key: paperclip:owned
+        - Key: wardmote:owned
           Value: "true"
-        - Key: paperclip:environment
+        - Key: wardmote:environment
           Value: !Ref EnvironmentName
 
   PrivateVpc:
@@ -412,8 +412,8 @@ Resources:
       EnableDnsSupport: true
       Tags:
         - Key: Name
-          Value: !Sub paperclip-agentcore-${EnvironmentName}
-        - Key: paperclip:owned
+          Value: !Sub wardmote-agentcore-${EnvironmentName}
+        - Key: wardmote:owned
           Value: "true"
 
   PrivateSubnetA:

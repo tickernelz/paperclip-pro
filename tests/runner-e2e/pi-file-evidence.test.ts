@@ -242,7 +242,7 @@ describe("Pi edit, validation and public artifact oracle", () => {
 
 function copyback() {
   const f = fixture();
-  const reference = { schema: "paperclip.native-workspace-sync/v2", state: "finalized", baselineSha256: "a".repeat(64),
+  const reference = { schema: "wardmote.native-workspace-sync/v2", state: "finalized", baselineSha256: "a".repeat(64),
     descriptorSha256: "b".repeat(64), finalHostSha256: "c".repeat(64), workspaceId: "workspace", leaseId: "lease",
     providerLeaseId: "sandbox", remoteCwd: "/workspace" };
   const run = { ...f.run, contextSnapshot: { executionWorkspaceId: "workspace", wardmoteEnvironment: { id: "environment", driver: "sandbox", leaseId: "lease" } },

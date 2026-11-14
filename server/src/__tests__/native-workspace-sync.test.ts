@@ -114,7 +114,7 @@ describe("native workspace sync durable metadata", () => {
 
   it("reads backward-compatible references and the resource disposition", () => {
     const base = {
-      schema: "paperclip.native-workspace-sync/v1",
+      schema: "wardmote.native-workspace-sync/v1",
       state: "prepared",
       descriptorSha256: digest,
       baselineSha256: digest,
@@ -172,7 +172,7 @@ describe("native workspace sync durable metadata", () => {
     const serialized = serializeDirectorySnapshot(baseline);
     if (serialized.version !== 2) throw new Error("Expected v2");
     const descriptor = {
-      schema: "paperclip.native-workspace-sync/v2" as const,
+      schema: "wardmote.native-workspace-sync/v2" as const,
       binding: { runId, companyId: "company", workspaceId: "workspace", leaseId: "lease", providerLeaseId: "sandbox", localCwd: workspace, remoteCwd: "/workspace" },
       state: "prepared" as const, baselineSha256: directorySnapshotSha256(baseline),
       baseline: serialized, gitSnapshot: null, seed: null,
@@ -218,7 +218,7 @@ describe("native workspace sync durable metadata", () => {
       ]),
     };
     const descriptor = {
-      schema: "paperclip.native-workspace-sync/v1" as const,
+      schema: "wardmote.native-workspace-sync/v1" as const,
       binding: {
         runId: "run-idempotent",
         companyId: "company-1",
@@ -287,7 +287,7 @@ describe("native workspace sync durable metadata", () => {
     };
     const finalHostSha256 = "b".repeat(64);
     const descriptor = {
-      schema: "paperclip.native-workspace-sync/v1" as const,
+      schema: "wardmote.native-workspace-sync/v1" as const,
       binding: {
         runId: "run-finalized-repair",
         companyId: "company-1",
@@ -365,7 +365,7 @@ describe("native workspace sync durable metadata", () => {
     expect(persistedLeaseMetadata).toMatchObject({
       retained: true,
       nativeWorkspaceSync: {
-        schema: "paperclip.native-workspace-stamp/v1",
+        schema: "wardmote.native-workspace-stamp/v1",
         workspaceId: descriptor.binding.workspaceId,
         providerLeaseId: descriptor.binding.providerLeaseId,
         remoteCwd: descriptor.binding.remoteCwd,

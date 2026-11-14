@@ -127,9 +127,9 @@ test("AgentCore wrapper is valid shell and writes only nonsecret profile metadat
   assert.match(source, /existing_status.*ROLLBACK_COMPLETE/s);
   assert.match(source, /--replace-failed-stack/);
   assert.match(provisionBlock, /existing_description.*STACK_DESCRIPTION/s);
-  assert.match(provisionBlock, /existing_owned.*paperclip:owned/s);
-  assert.match(provisionBlock, /existing_environment.*paperclip:environment/s);
-  assert.match(provisionBlock, /existing_cost_center.*paperclip:cost-center/s);
+  assert.match(provisionBlock, /existing_owned.*wardmote:owned/s);
+  assert.match(provisionBlock, /existing_environment.*wardmote:environment/s);
+  assert.match(provisionBlock, /existing_cost_center.*wardmote:cost-center/s);
   assert.ok(provisionBlock.indexOf("ownership tags or template provenance") < provisionBlock.indexOf("cloudformation delete-stack"));
   assert.ok(provisionBlock.indexOf("REPLACE_FAILED_STACK") < provisionBlock.indexOf("cloudformation delete-stack"));
   assert.match(provisionBlock, /Unable to verify whether stack .* exists and is owned by Wardmote/);
@@ -177,7 +177,7 @@ if [[ " $* " == *" --version "* || "$1" == "--version" ]]; then
 elif [[ " $* " == *" sts get-caller-identity "* ]]; then
   printf '{"Account":"123456789012","Arn":"arn:aws:iam::123456789012:role/wardmote-test"}\\n'
 elif [[ " $* " == *" cloudformation describe-stacks "* ]]; then
-  printf '{"Stacks":[{"StackStatus":"ROLLBACK_COMPLETE","Description":"%s","Tags":[{"Key":"paperclip:owned","Value":"%s"},{"Key":"paperclip:environment","Value":"development"},{"Key":"paperclip:cost-center","Value":"runner-lab"}]}]}\\n' "\${MOCK_STACK_DESCRIPTION}" "\${MOCK_STACK_OWNED}"
+  printf '{"Stacks":[{"StackStatus":"ROLLBACK_COMPLETE","Description":"%s","Tags":[{"Key":"wardmote:owned","Value":"%s"},{"Key":"wardmote:environment","Value":"development"},{"Key":"wardmote:cost-center","Value":"runner-lab"}]}]}\\n' "\${MOCK_STACK_DESCRIPTION}" "\${MOCK_STACK_OWNED}"
 elif [[ " $* " == *" cloudformation deploy "* ]]; then
   exit 42
 fi
