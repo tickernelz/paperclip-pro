@@ -1,0 +1,1 @@
+ALTER TABLE "instance_settings" ADD COLUMN "speech_to_text_keys" jsonb DEFAULT '{}'::jsonb NOT NULL;

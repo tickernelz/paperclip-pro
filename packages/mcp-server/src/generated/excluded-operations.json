@@ -7,6 +7,7 @@
   "DELETE /api/companies/{companyId}/terminal/sessions/{sessionId}": "reviewed:trust_boundary",
   "DELETE /api/companies/{companyId}/terminal/ssh-hosts/{hostId}": "reviewed:trust_boundary",
   "DELETE /api/companies/{companyId}/user-secret-definitions/{definitionId}": "credential_surface",
+  "DELETE /api/instance/settings/general/speech-to-text/keys/{provider}": "credential_surface",
   "DELETE /api/instance/updates/install": "instance_admin",
   "DELETE /api/issues/{id}/approvals/{approvalId}": "curated:wardmoteUnlinkIssueApproval",
   "DELETE /api/mcp/connections/{id}": "protocol",
@@ -247,6 +248,7 @@
   "POST /runtime-tools/github/credentials": "actor:runtime_tools",
   "PUT /api/admin/users/{userId}/company-access": "instance_admin",
   "PUT /api/companies/import/transfers/{transferId}/parts/{partIndex}": "non_json_request",
+  "PUT /api/instance/settings/general/speech-to-text/keys/{provider}": "credential_surface",
   "PUT /api/issues/{id}/documents/{key}": "curated:wardmoteUpsertIssueDocument",
   "PUT /api/onboarding/omp/custom-providers/{name}": "instance_admin"
 }

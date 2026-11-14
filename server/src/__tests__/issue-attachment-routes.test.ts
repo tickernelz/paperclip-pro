@@ -879,7 +879,7 @@ describe("issue attachment routes", () => {
     function mockSpeechSettings(speechToText: Record<string, unknown>) {
       vi.doMock("../services/instance-settings.js", async (importOriginal) => ({
         ...(await importOriginal<typeof import("../services/instance-settings.js")>()),
-        instanceSettingsService: () => ({ getGeneral: vi.fn(async () => ({ speechToText })) }),
+        instanceSettingsService: () => ({ getGeneral: vi.fn(async () => ({ speechToText })), getSpeechToTextApiKey: vi.fn(async () => null) }),
       }));
     }
 

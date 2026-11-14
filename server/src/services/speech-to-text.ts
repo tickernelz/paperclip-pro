@@ -67,6 +67,7 @@ export type SpeechToTextResult = SpeechToTextTranscript;
 export interface SpeechToTextOptions {
   settings: SpeechToTextSettings;
   spoolDir?: string;
+  apiKey?: string | null;
   env?: Record<string, string | undefined>;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
@@ -81,6 +82,7 @@ export interface SpeechToTextModelListRequest {
 }
 
 export interface SpeechToTextModelListOptions {
+  apiKey?: string | null;
   env?: Record<string, string | undefined>;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
@@ -248,9 +250,9 @@ async function requestJson(
   return { record, status: response.status };
 }
 
-function readApiKey(apiKeyEnvVar: string, env: Record<string, string | undefined> | undefined): string {
-  const apiKey = apiKeyEnvVar ? (env ?? process.env)[apiKeyEnvVar] : undefined;
-  if (!apiKey) throw new SpeechToTextError("stt_missing_key", "The speech-to-text API key environment variable is not set");
+function readApiKey(saved: string | null | undefined, apiKeyEnvVar: string, env: Record<string, string | undefined> | undefined): string {
+  const apiKey = saved || (apiKeyEnvVar ? (env ?? process.env)[apiKeyEnvVar] : undefined);
+  if (!apiKey) throw new SpeechToTextError("stt_missing_key", "No speech-to-text API key is saved for this provider");
   return apiKey;
 }
 
@@ -533,9 +535,9 @@ async function googlePieces(audio: Blob, measured: number | null): Promise<Blob[
 export async function transcribeAudio(input: SpeechToTextInput, options: SpeechToTextOptions): Promise<SpeechToTextResult> {
   const settings = options.settings;
   const provider = settings.provider ?? "openai_compatible";
-  if (!settings.enabled || !settings.model || !settings.apiKeyEnvVar || (provider === "openai_compatible" && !settings.baseUrl))
+  if (!settings.enabled || !settings.model || (provider === "openai_compatible" && !settings.baseUrl))
     throw new SpeechToTextError("stt_disabled", "Speech-to-text is not enabled for this instance");
-  const apiKey = readApiKey(settings.apiKeyEnvVar, options.env);
+  const apiKey = readApiKey(options.apiKey, settings.apiKeyEnvVar, options.env);
   const maxSeconds =
     provider === "google" && !isOggMime(input.mime) ? Math.min(settings.maxAudioSeconds, SPEECH_TO_TEXT_GOOGLE_SYNC_MAX_SECONDS) : settings.maxAudioSeconds;
   const limit = speechToTextByteLimit(settings, options.maxBytes, input.mime);
@@ -589,18 +591,21 @@ async function transcribeLoadedAudio(
 }
 
 export async function speechToTextCredentialStatus(
+  saved: Partial<Record<SpeechToTextProvider, string>>,
   env: Record<string, string | undefined> = process.env,
 ): Promise<SpeechToTextCredentialStatus> {
   const entries = await Promise.all(
     SPEECH_TO_TEXT_PROVIDERS.map(async (provider) => {
       const envVar = SPEECH_TO_TEXT_DEFAULT_KEY_ENV_VARS[provider];
-      const value = env[envVar];
-      if (provider !== "google" || !value) return [provider, { envVar, set: Boolean(value) }] as const;
+      const stored = Boolean(saved[provider]);
+      const set = Boolean(env[envVar]);
+      const value = saved[provider] || env[envVar];
+      if (provider !== "google" || !value) return [provider, { envVar, set, stored }] as const;
       try {
         const account = await loadGoogleServiceAccount(value);
-        return [provider, { envVar, set: true, usable: true, projectId: account.projectId || null }] as const;
+        return [provider, { envVar, set, stored, usable: true, projectId: account.projectId || null }] as const;
       } catch {
-        return [provider, { envVar, set: true, usable: false, projectId: null }] as const;
+        return [provider, { envVar, set, stored, usable: false, projectId: null }] as const;
       }
     }),
   );
@@ -622,7 +627,7 @@ export async function listSpeechToTextModels(
   if (request.provider === "elevenlabs") return curatedModels("elevenlabs");
   if (request.provider === "openai_compatible" && !request.baseUrl)
     throw new SpeechToTextError("stt_disabled", "An OpenAI-compatible endpoint needs a base URL before its models can be listed");
-  const apiKey = readApiKey(request.apiKeyEnvVar, options.env);
+  const apiKey = readApiKey(options.apiKey, request.apiKeyEnvVar, options.env);
   const signal = AbortSignal.timeout(options.timeoutMs ?? SPEECH_TO_TEXT_MODEL_LIST_TIMEOUT_MS);
   const fetchImpl = options.fetchImpl ?? fetch;
   let ids: string[];

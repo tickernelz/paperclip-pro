@@ -21721,7 +21721,8 @@ export function issueRoutes(
       return;
     }
     try {
-      const { result, cached } = await transcribeStoredAudio({ storage, file: attachment, settings });
+      const apiKey = await instanceSettings.getSpeechToTextApiKey(settings.provider);
+      const { result, cached } = await transcribeStoredAudio({ storage, file: attachment, settings, apiKey });
       res.json({ attachmentId, ...result, cached });
     } catch (error) {
       if (!(error instanceof SpeechToTextError)) throw error;

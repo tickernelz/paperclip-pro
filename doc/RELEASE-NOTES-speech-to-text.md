@@ -16,7 +16,7 @@
 ## Compatibility
 
 - A stored speech-to-text setting without `provider` reads as OpenAI-compatible and sends the same request as before; no migration or re-save is needed. OpenWA voice notes keep waiting at most `sttWaitSeconds`.
-- The API key stays a server environment variable name (`apiKeyEnvVar`); its value, and for Google the service account key, is never stored, logged or returned.
+- The API key is typed into **API key** next to **Provider** and saved encrypted per provider (`local_encrypted`); it is never returned, logged or written to the activity log. Without a saved key the server environment variable named in `apiKeyEnvVar` is read as before, so existing setups need no change.
 - New error code `stt_invalid_credentials` (HTTP 503 on the transcript route) for a Google key that cannot be read or used.
 - `GET`/`PATCH /api/instance/settings/general` returns and accepts the new `speechToText` keys: `provider`, `language`, `diarize`, `keyterms`, `deepgram.smartFormat`, `elevenlabs.tagAudioEvents`, `elevenlabs.numSpeakers`.
 - **Max audio (seconds)** is enforced for Ogg Opus voice notes and for a caller's duration hint. An agent transcribing an mp3, m4a, wav or mp4 attachment is limited by bytes only (the instance attachment limit, or 7.5 MB for Google), so each call is billed by the provider for the full recording.

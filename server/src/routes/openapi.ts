@@ -1,4 +1,9 @@
-import { speechToTextModelListRequestSchema, updateFastResponseSchema } from "@tickernelz/wardmote-shared";
+import {
+  SPEECH_TO_TEXT_PROVIDERS,
+  speechToTextApiKeyRequestSchema,
+  speechToTextModelListRequestSchema,
+  updateFastResponseSchema,
+} from "@tickernelz/wardmote-shared";
 import {
   ompCustomProviderInputSchema,
   ompCustomProviderProbeSchema,
@@ -7985,7 +7990,7 @@ registry.registerPath({
   tags: ["instance"],
   summary: "List speech-to-text models for a draft provider configuration",
   description:
-    "Instance admin only. Lists transcription models from Deepgram (GET /v1/models) or an OpenAI-compatible endpoint (GET /models) using the API key in the named server environment variable; ElevenLabs returns Wardmote's curated list because it publishes none. The key value is never returned.",
+    "Instance admin only. Lists transcription models from Deepgram (GET /v1/models), Google or an OpenAI-compatible endpoint (GET /models); ElevenLabs returns Wardmote's curated list because it publishes none. The key is the optional unsaved `apiKey`, else the provider's saved key, else the named server environment variable. The key value is never returned.",
   request: { body: jsonBody(speechToTextModelListRequestSchema) },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable },
 });
@@ -7994,10 +7999,32 @@ registry.registerPath({
   method: "get",
   path: "/api/instance/settings/general/speech-to-text/credentials",
   tags: ["instance"],
-  summary: "Show whether each speech-to-text provider's default key variable is set",
+  summary: "Show whether each speech-to-text provider has a saved key or a set default key variable",
   description:
-    "Instance admin only. For each provider returns its default server environment variable name (OPENAI_API_KEY, DEEPGRAM_API_KEY, ELEVENLABS_API_KEY, GOOGLE_APPLICATION_CREDENTIALS) and whether it is set; for Google also whether the service account key is usable and its project id. Only these fixed names are checked and values are never returned.",
+    "Instance admin only. For each provider returns `stored` (a key is saved in Wardmote), its default server environment variable name (OPENAI_API_KEY, DEEPGRAM_API_KEY, ELEVENLABS_API_KEY, GOOGLE_APPLICATION_CREDENTIALS) and whether it is set; for Google also whether the effective service account key is usable and its project id. Key values are never returned.",
   responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/api/instance/settings/general/speech-to-text/keys/{provider}",
+  tags: ["instance"],
+  summary: "Save the API key of one speech-to-text provider",
+  description:
+    "Instance admin only. Stores the key encrypted with the instance secrets master key (local_encrypted), one key per provider; it wins over the server environment variable. Google takes the service account JSON key itself. Answers with the credential status; the key value is never returned.",
+  request: { params: z.object({ provider: z.enum(SPEECH_TO_TEXT_PROVIDERS) }), body: jsonBody(speechToTextApiKeyRequestSchema) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/instance/settings/general/speech-to-text/keys/{provider}",
+  tags: ["instance"],
+  summary: "Remove the saved API key of one speech-to-text provider",
+  description:
+    "Instance admin only. Transcription falls back to the provider's server environment variable. Answers with the credential status.",
+  request: { params: z.object({ provider: z.enum(SPEECH_TO_TEXT_PROVIDERS) }) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden },
 });
 
 registry.registerPath({
@@ -8006,7 +8033,7 @@ registry.registerPath({
   tags: ["instance"],
   summary: "Transcribe a sample audio file with draft speech-to-text settings",
   description:
-    "Instance admin only. Multipart `file` (audio or video) plus `settings` (JSON speech-to-text settings, saved or not). Answers 200 with `{ ok: true, text, language?, segments?, durationMs }` or `{ ok: false, code, message, status }` where code is an stt_* error.",
+    "Instance admin only. Multipart `file` (audio or video), `settings` (JSON speech-to-text settings, saved or not) and optional `apiKey` (an unsaved key; without it the provider's saved key, then the server environment variable, is used). Answers 200 with `{ ok: true, text, language?, segments?, durationMs }` or `{ ok: false, code, message, status }` where code is an stt_* error.",
   requestBody: {
     content: {
       "multipart/form-data": {
@@ -8015,6 +8042,7 @@ registry.registerPath({
           properties: {
             file: { type: "string", format: "binary", description: "Sample audio or video file." },
             settings: { type: "string", description: "JSON-encoded speech-to-text settings to test." },
+            apiKey: { type: "string", description: "Unsaved API key to test with." },
           },
           required: ["file", "settings"],
         },

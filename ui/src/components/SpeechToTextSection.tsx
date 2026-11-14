@@ -1,5 +1,5 @@
 import { useMemo, useState, type KeyboardEvent } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   SPEECH_TO_TEXT_CURATED_MODELS,
   SPEECH_TO_TEXT_DEFAULT_BASE_URLS,
@@ -37,8 +37,8 @@ const OTHER_MODEL = "__other__";
 
 const ERROR_TEXT: Record<string, string> = {
   stt_disabled: "Speech-to-text is not configured. Choose a provider and a model.",
-  stt_missing_key: "The API key variable is not set on the server. Set it in the server environment and restart Wardmote.",
-  stt_invalid_credentials: "The Google service account key cannot be read. Point the variable at a service account JSON key file.",
+  stt_missing_key: "No API key is saved for this provider. Enter it next to Provider and save.",
+  stt_invalid_credentials: "The Google service account key cannot be read. Paste the service account JSON key next to Provider.",
   stt_too_long: "The audio is longer than the limit. Use a shorter file or raise Max audio in Advanced.",
   stt_too_large: "The file is larger than the provider accepts. Use a smaller file.",
   stt_empty: "The file is empty. Choose another audio file.",
@@ -75,16 +75,25 @@ export function speechToTextErrorText(code: string): string {
 
 type FieldErrors = Partial<Record<"model" | "language" | "baseUrl" | "key" | "alternativeLanguages", string>>;
 
-export function speechToTextFieldErrors(draft: SpeechToTextSettings, credentials: SpeechToTextCredentialStatus | undefined): FieldErrors {
+export function speechToTextFieldErrors(
+  draft: SpeechToTextSettings,
+  credentials: SpeechToTextCredentialStatus | undefined,
+  keyDraft = "",
+): FieldErrors {
   const errors: FieldErrors = {};
   if (draft.provider === "openai_compatible" && draft.baseUrl.trim() === "") errors.baseUrl = "Enter the endpoint base URL, for example https://api.openai.com/v1.";
   if (draft.model.trim() === "") errors.model = "Choose a model.";
   const state = credentials?.[draft.provider];
-  if (draft.apiKeyEnvVar.trim() === "") errors.key = "Choose the key variable in Advanced.";
-  else if (state && draft.apiKeyEnvVar === state.envVar && !state.set)
-    errors.key = "Set " + state.envVar + " in the server environment, then restart Wardmote.";
-  else if (state && draft.provider === "google" && draft.apiKeyEnvVar === state.envVar && state.usable === false)
-    errors.key = state.envVar + " must hold a service account JSON key or the path of that file.";
+  const typed = keyDraft.trim();
+  if (typed !== "") {
+    if (draft.provider === "google" && !typed.startsWith("{")) errors.key = "Paste the service account JSON key itself.";
+  } else if (state?.stored) {
+    if (draft.provider === "google" && state.usable === false) errors.key = "The saved key is not a usable service account JSON key. Replace it.";
+  } else if (draft.apiKeyEnvVar.trim() === "" || (state && draft.apiKeyEnvVar === state.envVar && !state.set)) {
+    errors.key = "Enter the API key.";
+  } else if (state && draft.provider === "google" && draft.apiKeyEnvVar === state.envVar && state.usable === false) {
+    errors.key = "Enter the service account JSON key: the fallback " + state.envVar + " is not a usable key.";
+  }
   if (draft.provider === "google") {
     const chirp = draft.model.startsWith("chirp");
     if (!chirp && draft.model !== "" && draft.language === "") errors.language = "Choose a language: only Chirp models detect it automatically.";
@@ -267,6 +276,9 @@ export function SpeechToTextSection({
   );
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [testFile, setTestFile] = useState<File | null>(null);
+  const [keyDraft, setKeyDraft] = useState("");
+  const [replacingKey, setReplacingKey] = useState(false);
+  const queryClient = useQueryClient();
   const provider = draft.provider;
   const update = (patch: Partial<SpeechToTextSettings>) => setDraft((current) => ({ ...current, ...patch }));
 
@@ -279,9 +291,13 @@ export function SpeechToTextSection({
   const credential = credentials?.[provider];
   const defaultEnvVar = SPEECH_TO_TEXT_DEFAULT_KEY_ENV_VARS[provider];
   const customKey = draft.apiKeyEnvVar !== defaultEnvVar;
-  const errors = speechToTextFieldErrors(draft, credentials);
+  const errors = speechToTextFieldErrors(draft, credentials, keyDraft);
   const blocking = Object.keys(errors).length > 0;
-  const dirty = JSON.stringify(draft) !== JSON.stringify(value);
+  const typedKey = keyDraft.trim();
+  const settingsDirty = JSON.stringify(draft) !== JSON.stringify(value);
+  const dirty = settingsDirty || typedKey !== "";
+  const keyStored = credential?.stored === true;
+  const showKeyInput = !keyStored || replacingKey;
 
   const models = useMemo(() => {
     const list = fetched?.provider === provider ? fetched.models : [...SPEECH_TO_TEXT_CURATED_MODELS[provider]];
@@ -308,17 +324,34 @@ export function SpeechToTextSection({
         provider,
         baseUrl: draft.baseUrl.trim(),
         apiKeyEnvVar: draft.apiKeyEnvVar.trim(),
+        ...(typedKey ? { apiKey: typedKey } : {}),
         ...(provider === "google" ? { google: { location: draft.google.location, projectId: draft.google.projectId } } : {}),
       }),
     onSuccess: (list) => setFetched({ provider, models: list.models.map((model) => model.id), locations: list.locations ?? [], source: list.source }),
   });
   const testMutation = useMutation({
-    mutationFn: (file: File) => instanceSettingsApi.testSpeechToText(draft, file),
+    mutationFn: (file: File) => instanceSettingsApi.testSpeechToText(draft, file, typedKey),
   });
+  const keyMutation = useMutation({
+    mutationFn: (apiKey: string | null) =>
+      apiKey === null ? instanceSettingsApi.removeSpeechToTextKey(provider) : instanceSettingsApi.saveSpeechToTextKey(provider, apiKey),
+    onSuccess: (status) => {
+      queryClient.setQueryData(queryKeys.instance.speechToTextCredentials, status);
+      setKeyDraft("");
+      setReplacingKey(false);
+    },
+  });
+  const save = async () => {
+    if (typedKey) await keyMutation.mutateAsync(typedKey);
+    if (settingsDirty) onSave(draft);
+  };
 
   const changeProvider = (next: SpeechToTextProvider) => {
     fetchModels.reset();
     testMutation.reset();
+    keyMutation.reset();
+    setKeyDraft("");
+    setReplacingKey(false);
     setOtherModel(false);
     update({
       provider: next,
@@ -332,12 +365,11 @@ export function SpeechToTextSection({
   };
 
   const keyStatus = (() => {
-    if (customKey) return { tone: "text-ink-3", text: "Custom variable " + draft.apiKeyEnvVar + ": not checked here. Run Test to confirm it works." };
-    if (credentialsQuery.isLoading) return { tone: "text-ink-3", text: "Checking " + defaultEnvVar + "..." };
-    if (!credential) return { tone: "text-ink-3", text: "Uses " + defaultEnvVar + ". Its status could not be read." };
-    if (!credential.set) return { tone: "text-bad", text: defaultEnvVar + " is not set on the server." };
-    if (provider === "google" && credential.usable === false) return { tone: "text-bad", text: defaultEnvVar + " is set but is not a usable service account key." };
-    return { tone: "text-ok", text: defaultEnvVar + " is set on the server." };
+    if (credentialsQuery.isLoading) return { tone: "text-ink-3", text: "Checking..." };
+    if (keyStored) return { tone: "text-ok", text: "Saved" };
+    if (customKey && draft.apiKeyEnvVar) return { tone: "text-ink-3", text: "Not set here. Falls back to " + draft.apiKeyEnvVar + "; run Test to confirm it works." };
+    if (credential?.set && draft.apiKeyEnvVar) return { tone: "text-ink-3", text: "Not set here. Using " + defaultEnvVar + " from the server environment." };
+    return { tone: "text-ink-3", text: "Not set" };
   })();
   const googleProject = draft.google.projectId || credential?.projectId || "";
 
@@ -348,8 +380,8 @@ export function SpeechToTextSection({
           <div className="space-y-1.5">
             <h2 className="text-sm font-semibold">Speech-to-text</h2>
             <p className="max-w-2xl text-sm text-ink-3">
-              Transcribe WhatsApp voice notes and any audio or video attachment agents read. API keys stay in the server
-              environment and are never stored by Wardmote. Off by default.
+              Transcribe WhatsApp voice notes and any audio or video attachment agents read. API keys are stored
+              encrypted and never shown again. Off by default.
             </p>
           </div>
           <ToggleSwitch
@@ -381,6 +413,45 @@ export function SpeechToTextSection({
             <p className={"text-sm " + keyStatus.tone} data-testid="stt-key-status">
               {keyStatus.text}
             </p>
+            {showKeyInput ? (
+              <div className="flex gap-2">
+                <Input
+                  type="password"
+                  aria-label="Speech-to-text API key"
+                  value={keyDraft}
+                  autoComplete="new-password"
+                  spellCheck={false}
+                  placeholder={provider === "google" ? "Paste the service account JSON key" : "Paste the API key"}
+                  disabled={disabled || keyMutation.isPending}
+                  onChange={(event) => setKeyDraft(event.target.value)}
+                />
+                {replacingKey ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={keyMutation.isPending}
+                    onClick={() => {
+                      setReplacingKey(false);
+                      setKeyDraft("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                ) : null}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                <Button variant="secondary" size="sm" disabled={disabled || keyMutation.isPending} onClick={() => setReplacingKey(true)}>
+                  Replace
+                </Button>
+                <Button variant="ghost" size="sm" disabled={disabled || keyMutation.isPending} onClick={() => keyMutation.mutate(null)}>
+                  Remove
+                </Button>
+              </div>
+            )}
+            {keyMutation.isError ? (
+              <p className="text-xs text-bad">{keyMutation.error instanceof Error ? keyMutation.error.message : "The key could not be saved."}</p>
+            ) : null}
             {provider === "google" && googleProject ? (
               <p className="text-xs text-ink-3">
                 Project {googleProject}
@@ -599,9 +670,9 @@ export function SpeechToTextSection({
               </p>
 
               <label className="space-y-1.5">
-                <span className="text-xs font-medium text-ink-3">Key variable name</span>
+                <span className="text-xs font-medium text-ink-3">Fallback key variable (server environment)</span>
                 <Input
-                  aria-label="Key variable name"
+                  aria-label="Fallback key variable"
                   value={draft.apiKeyEnvVar}
                   autoComplete="off"
                   spellCheck={false}
@@ -678,8 +749,8 @@ export function SpeechToTextSection({
         </div>
 
         <div className="flex gap-2">
-          <Button size="sm" disabled={disabled || !dirty} onClick={() => onSave(draft)}>
-            Save speech-to-text
+          <Button size="sm" disabled={disabled || !dirty || keyMutation.isPending || (typedKey !== "" && Boolean(errors.key))} onClick={() => void save().catch(() => undefined)}>
+            {keyMutation.isPending ? "Saving..." : "Save speech-to-text"}
           </Button>
           <Button
             variant="secondary"
@@ -687,6 +758,8 @@ export function SpeechToTextSection({
             disabled={disabled || !dirty}
             onClick={() => {
               setDraft(initial);
+              setKeyDraft("");
+              setReplacingKey(false);
               setOtherModel(value.model !== "" && !SPEECH_TO_TEXT_CURATED_MODELS[value.provider].includes(value.model));
             }}
           >

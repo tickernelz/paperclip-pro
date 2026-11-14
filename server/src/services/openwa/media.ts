@@ -94,6 +94,7 @@ export type OpenwaTranscriptListener = (ready: OpenwaTranscriptReady) => void | 
 export interface OpenwaMediaServiceOptions {
   storage?: StorageService;
   speechToTextSettings?: () => Promise<SpeechToTextSettings>;
+  speechToTextApiKey?: (settings: SpeechToTextSettings) => Promise<string | null>;
   env?: Record<string, string | undefined>;
   fetchImpl?: typeof fetch;
   mediaTimeoutMs?: number;
@@ -372,6 +373,8 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
   const mediaTimeoutMs = options.mediaTimeoutMs ?? OPENWA_MEDIA_FETCH_TIMEOUT_MS;
   const settingsSource =
     options.speechToTextSettings ?? (async () => (await instanceSettingsService(db).getGeneral()).speechToText);
+  const apiKeySource =
+    options.speechToTextApiKey ?? ((settings: SpeechToTextSettings) => instanceSettingsService(db).getSpeechToTextApiKey(settings.provider));
   const listeners = new Set<OpenwaTranscriptListener>();
   const background = new Set<Promise<void>>();
   const controllers = new Set<AbortController>();
@@ -676,10 +679,10 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
       try {
         const { result } = await withTranscriptCache(
           { storage: options.storage, companyId: scope.companyId, sha256: audio.sha256, settings },
-          () =>
+          async () =>
             transcribeAudio(
               { buffer: audio.body, mime: audio.contentType, filename: audio.filename, signal: controller.signal },
-              { settings, env: options.env, fetchImpl: options.fetchImpl, maxBytes: maxBytes() },
+              { settings, apiKey: await apiKeySource(settings), env: options.env, fetchImpl: options.fetchImpl, maxBytes: maxBytes() },
             ),
         );
         const text = formatSpeechToTextTranscript(result);

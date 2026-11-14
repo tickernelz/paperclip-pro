@@ -21040,7 +21040,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:209",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:222",
     "authorityCapability": null,
     "parameters": []
   },
@@ -21066,7 +21066,7 @@
       "assertCanManageInstanceSettings"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:362",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:429",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30493,7 +30493,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:378",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:445",
     "authorityCapability": null,
     "parameters": []
   },
@@ -30543,7 +30543,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:309",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:376",
     "authorityCapability": null,
     "parameters": []
   },
@@ -30568,7 +30568,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:145",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:158",
     "authorityCapability": null,
     "parameters": []
   },
@@ -33249,6 +33249,7 @@
     },
     "guards": [
       "assertCanManageInstanceSettings",
+      "assertSpeechToTextKeyShape",
       "assertSpeechToTextSettingsVisible"
     ],
     "permissions": [],
@@ -33262,6 +33263,9 @@
       "schema": {
         "type": "object",
         "properties": {
+          "apiKey": {
+            "type": "string"
+          },
           "apiKeyEnvVar": {
             "type": "string"
           },

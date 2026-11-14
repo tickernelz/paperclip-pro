@@ -7,10 +7,13 @@ import {
   patchInstanceSettingsSchema,
   patchInstanceExperimentalSettingsSchema,
   patchInstanceGeneralSettingsSchema,
+  SPEECH_TO_TEXT_PROVIDERS,
+  speechToTextApiKeyRequestSchema,
   speechToTextModelListRequestSchema,
   speechToTextSettingsSchema,
   startTaskDrainRequestSchema,
   type SpeechToTextModelList,
+  type SpeechToTextProvider,
   type SpeechToTextTestResult,
 } from "@tickernelz/wardmote-shared";
 import { badRequest, conflict, forbidden } from "../errors.js";
@@ -93,6 +96,16 @@ function assertSpeechToTextSettingsVisible() {
   if (getHiddenSettings().has("instance.general.speechToText")) {
     throw forbidden("speechToText is managed by the hosting operator on this instance", { code: "settings_operator_managed" });
   }
+}
+
+function speechToTextKeyProvider(value: unknown): SpeechToTextProvider {
+  if (typeof value === "string" && (SPEECH_TO_TEXT_PROVIDERS as readonly string[]).includes(value)) return value as SpeechToTextProvider;
+  throw badRequest("Unknown speech-to-text provider");
+}
+
+function assertSpeechToTextKeyShape(provider: SpeechToTextProvider, apiKey: string) {
+  if (provider === "google" && !apiKey.trim().startsWith("{"))
+    throw badRequest("Paste the Google service account JSON key itself, not a file path");
 }
 
 function speechToTextFailure(error: unknown): SpeechToTextTestResult {
@@ -253,8 +266,11 @@ export function instanceSettingsRoutes(db: Db, pluginWorkers?: PluginWorkerManag
     async (req, res) => {
       assertCanManageInstanceSettings(req);
       assertSpeechToTextSettingsVisible();
+      const { apiKey: draftKey, ...request } = req.body as typeof req.body & { apiKey?: string };
+      if (draftKey) assertSpeechToTextKeyShape(request.provider, draftKey);
       try {
-        const list: SpeechToTextModelList = await listSpeechToTextModels(req.body);
+        const apiKey = draftKey || (await svc.getSpeechToTextApiKey(request.provider));
+        const list: SpeechToTextModelList = await listSpeechToTextModels(request, { apiKey });
         res.json(list);
       } catch (error) {
         if (!(error instanceof SpeechToTextError)) throw error;
@@ -266,7 +282,52 @@ export function instanceSettingsRoutes(db: Db, pluginWorkers?: PluginWorkerManag
   router.get("/instance/settings/general/speech-to-text/credentials", async (req, res) => {
     assertCanManageInstanceSettings(req);
     assertSpeechToTextSettingsVisible();
-    res.json(await speechToTextCredentialStatus());
+    res.json(await speechToTextCredentialStatus(await svc.getSpeechToTextApiKeys()));
+  });
+
+  async function logSpeechToTextKeyChange(req: Request, action: string, provider: SpeechToTextProvider, settingsId: string) {
+    const actor = getActorInfo(req);
+    const companyIds = await svc.listCompanyIds();
+    await Promise.all(
+      companyIds.map((companyId) =>
+        logActivity(db, {
+          companyId,
+          actorType: actor.actorType,
+          actorId: actor.actorId,
+          agentId: actor.agentId,
+          runId: actor.runId,
+          agentApiKeyId: actor.agentApiKeyId,
+          action,
+          entityType: "instance_settings",
+          entityId: settingsId,
+          details: { provider },
+        }),
+      ),
+    );
+  }
+
+  router.put(
+    "/instance/settings/general/speech-to-text/keys/:provider",
+    validate(speechToTextApiKeyRequestSchema),
+    async (req, res) => {
+      assertCanManageInstanceSettings(req);
+      assertSpeechToTextSettingsVisible();
+      const provider = speechToTextKeyProvider(req.params.provider);
+      const { apiKey } = req.body as { apiKey: string };
+      assertSpeechToTextKeyShape(provider, apiKey);
+      const settingsId = await svc.setSpeechToTextApiKey(provider, apiKey);
+      await logSpeechToTextKeyChange(req, "instance.settings.speech_to_text_key_saved", provider, settingsId);
+      res.json(await speechToTextCredentialStatus(await svc.getSpeechToTextApiKeys()));
+    },
+  );
+
+  router.delete("/instance/settings/general/speech-to-text/keys/:provider", async (req, res) => {
+    assertCanManageInstanceSettings(req);
+    assertSpeechToTextSettingsVisible();
+    const provider = speechToTextKeyProvider(req.params.provider);
+    const settingsId = await svc.removeSpeechToTextApiKey(provider);
+    await logSpeechToTextKeyChange(req, "instance.settings.speech_to_text_key_removed", provider, settingsId);
+    res.json(await speechToTextCredentialStatus(await svc.getSpeechToTextApiKeys()));
   });
 
   router.post("/instance/settings/general/speech-to-text/test", async (req, res) => {
@@ -281,6 +342,10 @@ export function instanceSettingsRoutes(db: Db, pluginWorkers?: PluginWorkerManag
       if (!file.mimetype.startsWith("audio/") && !file.mimetype.startsWith("video/"))
         throw badRequest("The speech-to-text test needs an audio or video file");
       const rawSettings = (req.body as Record<string, unknown> | undefined)?.settings;
+      const rawKey = (req.body as Record<string, unknown> | undefined)?.apiKey;
+      const parsedKey = rawKey === undefined || rawKey === "" ? null : speechToTextApiKeyRequestSchema.safeParse({ apiKey: rawKey });
+      if (parsedKey && !parsedKey.success) throw badRequest("Invalid speech-to-text API key");
+      const draftKey = parsedKey?.data?.apiKey ?? "";
       let candidate: unknown;
       try {
         candidate = typeof rawSettings === "string" ? JSON.parse(rawSettings) : undefined;
@@ -289,11 +354,13 @@ export function instanceSettingsRoutes(db: Db, pluginWorkers?: PluginWorkerManag
       }
       const parsed = speechToTextSettingsSchema.safeParse({ ...(candidate as object | undefined), enabled: false });
       if (!parsed.success) throw badRequest("Invalid speech-to-text settings", parsed.error.issues);
+      if (draftKey) assertSpeechToTextKeyShape(parsed.data.provider, draftKey);
+      const apiKey = draftKey || (await svc.getSpeechToTextApiKey(parsed.data.provider));
       const started = Date.now();
       try {
         const transcript = await transcribeAudio(
           { blob: await openAsBlob(file.path), mime: file.mimetype, filename: file.originalname || "sample" },
-          { settings: { ...parsed.data, enabled: true } },
+          { settings: { ...parsed.data, enabled: true }, apiKey },
         );
         result = { ok: true, durationMs: Date.now() - started, ...transcript };
       } catch (error) {

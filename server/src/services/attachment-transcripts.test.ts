@@ -70,6 +70,7 @@ describe("transcribeStoredAudio", () => {
         storage,
         file: { companyId: "company-1", objectKey: "company-1/a.mp3", sha256: SHA, byteSize: 7_500_001, contentType: "audio/mpeg", originalFilename: "a.mp3" },
         settings: { ...settings, provider: "google", model: "chirp_3" },
+        apiKey: null,
       }),
     ).rejects.toMatchObject({ code: "stt_too_large" });
     expect(storage.headObject).not.toHaveBeenCalled();

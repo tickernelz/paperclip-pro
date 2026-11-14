@@ -89,9 +89,29 @@ describe("registered run secret redaction", () => {
 
 const { resolveVersion } = vi.hoisted(() => ({ resolveVersion: vi.fn(async ({ material }) => material.value as string) }));
 vi.mock("../secrets/provider-registry.js", () => ({ getSecretProvider: () => ({ resolveVersion }) }));
+const { savedSpeechToTextKeys } = vi.hoisted(() => ({ savedSpeechToTextKeys: { current: {} as Record<string, string> } }));
+vi.mock("../services/speech-to-text-keys.js", () => ({ readSpeechToTextApiKeys: async () => savedSpeechToTextKeys.current }));
 
 describe("batched run secret redaction", () => {
-  beforeEach(() => { resolveVersion.mockClear(); });
+  beforeEach(() => {
+    resolveVersion.mockClear();
+    savedSpeechToTextKeys.current = {};
+  });
+
+  it("redacts the saved speech-to-text keys from every run, issue and single-run projection", async () => {
+    savedSpeechToTextKeys.current = { deepgram: "dg-saved-zha6141", elevenlabs: "el-saved-zha6141" };
+    const rows = [{ id: "a", contextSnapshot: { wardmoteSecretRedactions: [{ fingerprintSha256: "one", material: { value: secret } }] } }];
+    const { registry } = fixture(rows);
+    expect(await registry.redactForRuns("company", [
+      { id: "a", text: secret + " dg-saved-zha6141" },
+      { id: "b", text: "pasted el-saved-zha6141" },
+    ])).toEqual([
+      { id: "a", text: REDACTED_EVENT_VALUE + " " + REDACTED_EVENT_VALUE },
+      { id: "b", text: "pasted " + REDACTED_EVENT_VALUE },
+    ]);
+    expect(await registry.redactForRun("company", "a", { log: "dg-saved-zha6141" })).toEqual({ log: REDACTED_EVENT_VALUE });
+    expect(await registry.redactForIssue("company", "issue-1", "el-saved-zha6141")).toBe(REDACTED_EVENT_VALUE);
+  });
 
   function fixture(rows: unknown[]) {
     const where = vi.fn(async (_predicate: import("drizzle-orm").SQL | undefined) => rows);

@@ -10,6 +10,7 @@ export const instanceSettings = pgTable(
     general: jsonb("general").$type<Record<string, unknown>>().notNull().default({}),
     experimental: jsonb("experimental").$type<Record<string, unknown>>().notNull().default({}),
     attachmentRetentionLastRun: jsonb("attachment_retention_last_run").$type<Record<string, unknown>>(),
+    speechToTextKeys: jsonb("speech_to_text_keys").$type<Record<string, unknown>>().notNull().default({}),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
