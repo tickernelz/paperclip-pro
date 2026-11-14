@@ -225,6 +225,7 @@ describe("runner E2E report aggregation", () => {
           GITHUB_SERVER_URL: "https://github.com",
           GITHUB_REPOSITORY: "tickernelz/wardmote",
           GITHUB_RUN_ID: "123456",
+          GITHUB_RUN_ATTEMPT: "1",
           WARDMOTE_RUNNER_E2E_HISTORY_PUBLIC_BASE_URL:
             "https://reports.example.test/",
           WARDMOTE_RUNNER_E2E_HISTORY_PREFIX: "/runner-e2e/",
