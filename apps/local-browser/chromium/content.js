@@ -511,7 +511,6 @@
     var cursorState = LB.cursor.parseCursor(args.cursor);
     var honoured = cursorState.provided && cursorState.valid && !urlChanged;
     if (!honoured) refs.reset();
-    else refs.prune();
     var built = LB.snapshot.buildSnapshot(adapter, {
       selector: args.selector,
       maxNodes: args.maxNodes,

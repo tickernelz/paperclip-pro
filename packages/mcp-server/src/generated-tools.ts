@@ -88,12 +88,6 @@ export interface PreparedGeneratedTool {
 
 const preparedVariants = new Map<string, PreparedGeneratedTool[]>();
 
-export function resetGeneratedToolCaches(): void {
-  cachedSpecs = undefined;
-  cachedNotes = undefined;
-  preparedVariants.clear();
-}
-
 export function prepareGeneratedTools(
   toolsets: ReadonlyArray<ToolsetName>,
   management: boolean,
@@ -102,8 +96,6 @@ export function prepareGeneratedTools(
   const key = `${[...selected].sort().join(",")}|${management ? "management" : "agent"}`;
   const cached = preparedVariants.get(key);
   if (cached) return cached;
-  // Bounded: at most 2^|toolsets| * 2 variants; cap defensively for custom callers.
-  if (preparedVariants.size > 64) preparedVariants.clear();
   const prepared = generatedToolSpecs()
     .filter((spec) => selected.includes(spec.toolset) && (management || spec.authority === "agent"))
     .map((spec) => ({ spec, schema: inputSchema(spec) }));
