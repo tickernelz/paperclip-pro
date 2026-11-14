@@ -61,6 +61,8 @@ export function redactRegisteredSecretValues<T>(input: T, values: string[], cred
   ) as T;
 }
 
+export const INSTANCE_REDACTION_MIN_LENGTH = 16;
+
 function longestFirst(values: string[]) {
   return values.sort((left, right) => right.length - left.length);
 }
@@ -69,40 +71,43 @@ export function createRunSecretRedactionRegistry(db: Db) {
   const provider = getSecretProvider("local_encrypted");
 
   async function instanceValues() {
-    return Object.values(await readSpeechToTextApiKeys(db));
+    return Object.values(await readSpeechToTextApiKeys(db)).filter((value) => value.length >= INSTANCE_REDACTION_MIN_LENGTH);
   }
 
-  async function valuesForRuns(rows: Array<{ contextSnapshot: unknown }>) {
+  async function valuesForRuns(rows: Array<{ contextSnapshot: unknown }>, instance: string[]) {
     const entries = rows.flatMap((row) => registryEntries(row.contextSnapshot));
     const unique = new Map(entries.map((entry) => [entry.fingerprintSha256, entry]));
-    const [values, instance] = await Promise.all([
-      Promise.all(
-        [...unique.values()].map((entry) => provider.resolveVersion({
-          material: entry.material,
-          externalRef: null,
-        })),
-      ),
-      instanceValues(),
-    ]);
+    const values = await Promise.all(
+      [...unique.values()].map((entry) => provider.resolveVersion({
+        material: entry.material,
+        externalRef: null,
+      })),
+    );
     return longestFirst([...values, ...instance]);
   }
 
   async function valuesForRun(companyId: string, runId: string, viewerUserId: string | null) {
-    const rows = await db.select({ contextSnapshot: registrySnapshot, credentialConnectionName: credentialAccessConnectionNameSql(viewerUserId) })
-      .from(heartbeatRuns)
-      .where(and(eq(heartbeatRuns.companyId, companyId), eq(heartbeatRuns.id, runId)));
-    return { values: await valuesForRuns(rows), credentialConnectionName: rows[0]?.credentialConnectionName ?? null };
+    const [rows, instance] = await Promise.all([
+      db.select({ contextSnapshot: registrySnapshot, credentialConnectionName: credentialAccessConnectionNameSql(viewerUserId) })
+        .from(heartbeatRuns)
+        .where(and(eq(heartbeatRuns.companyId, companyId), eq(heartbeatRuns.id, runId))),
+      instanceValues(),
+    ]);
+    return { values: await valuesForRuns(rows, instance), credentialConnectionName: rows[0]?.credentialConnectionName ?? null };
   }
 
   async function valuesForIssue(companyId: string, issueId: string) {
-    const rows = await db.select({ contextSnapshot: registrySnapshot })
-      .from(heartbeatRuns)
-      .where(and(
-        eq(heartbeatRuns.companyId, companyId),
-        sql`${heartbeatRuns.contextSnapshot} ->> 'issueId' = ${issueId}`,
-        hasRegistry,
-      ));
-    return valuesForRuns(rows);
+    const [rows, instance] = await Promise.all([
+      db.select({ contextSnapshot: registrySnapshot })
+        .from(heartbeatRuns)
+        .where(and(
+          eq(heartbeatRuns.companyId, companyId),
+          sql`${heartbeatRuns.contextSnapshot} ->> 'issueId' = ${issueId}`,
+          hasRegistry,
+        )),
+      instanceValues(),
+    ]);
+    return valuesForRuns(rows, instance);
   }
 
   return {
@@ -134,10 +139,12 @@ export function createRunSecretRedactionRegistry(db: Db) {
     },
     redactForRuns: async <T extends { id: string }>(companyId: string, runs: T[], viewerUserId: string | null = null): Promise<T[]> => {
       if (runs.length === 0) return [];
-      const rows = await db.select({ id: heartbeatRuns.id, contextSnapshot: registrySnapshot, credentialConnectionName: credentialAccessConnectionNameSql(viewerUserId) })
-        .from(heartbeatRuns)
-        .where(and(eq(heartbeatRuns.companyId, companyId), inArray(heartbeatRuns.id, runs.map((run) => run.id)), hasRegistry));
-      const instance = await instanceValues();
+      const [rows, instance] = await Promise.all([
+        db.select({ id: heartbeatRuns.id, contextSnapshot: registrySnapshot, credentialConnectionName: credentialAccessConnectionNameSql(viewerUserId) })
+          .from(heartbeatRuns)
+          .where(and(eq(heartbeatRuns.companyId, companyId), inArray(heartbeatRuns.id, runs.map((run) => run.id)), hasRegistry)),
+        instanceValues(),
+      ]);
       // Resolve each encrypted value once per request, but apply only each run's
       // own registry. Do not retain plaintext secrets across requests.
       const resolved = new Map<string, Promise<string>>();

@@ -823,7 +823,9 @@ doc/SECRETS-AWS-PROVIDER.md) are scoped to one company, while speech-to-text is
 one instance setting used by every company, so the key is stored next to that
 setting instead of in a company's vault. The key never appears in
 `GET /api/instance/settings/general`, the activity log (only the provider is
-recorded), API responses or server logs, and run views redact it.
+recorded), API responses or server logs, and run views redact it when it has
+at least 16 characters; a shorter placeholder such as `none` for an endpoint
+without auth is not redacted, because it cannot be told apart from ordinary text.
 
 | Field | Key | Default | Bounds |
 | --- | --- | --- | --- |

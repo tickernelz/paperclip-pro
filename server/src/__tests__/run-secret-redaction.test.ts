@@ -99,18 +99,27 @@ describe("batched run secret redaction", () => {
   });
 
   it("redacts the saved speech-to-text keys from every run, issue and single-run projection", async () => {
-    savedSpeechToTextKeys.current = { deepgram: "dg-saved-zha6141", elevenlabs: "el-saved-zha6141" };
+    savedSpeechToTextKeys.current = { deepgram: "dg-saved-zha6141-key", elevenlabs: "el-saved-zha6141-key" };
     const rows = [{ id: "a", contextSnapshot: { wardmoteSecretRedactions: [{ fingerprintSha256: "one", material: { value: secret } }] } }];
     const { registry } = fixture(rows);
     expect(await registry.redactForRuns("company", [
-      { id: "a", text: secret + " dg-saved-zha6141" },
-      { id: "b", text: "pasted el-saved-zha6141" },
+      { id: "a", text: secret + " dg-saved-zha6141-key" },
+      { id: "b", text: "pasted el-saved-zha6141-key" },
     ])).toEqual([
       { id: "a", text: REDACTED_EVENT_VALUE + " " + REDACTED_EVENT_VALUE },
       { id: "b", text: "pasted " + REDACTED_EVENT_VALUE },
     ]);
-    expect(await registry.redactForRun("company", "a", { log: "dg-saved-zha6141" })).toEqual({ log: REDACTED_EVENT_VALUE });
-    expect(await registry.redactForIssue("company", "issue-1", "el-saved-zha6141")).toBe(REDACTED_EVENT_VALUE);
+    expect(await registry.redactForRun("company", "a", { log: "dg-saved-zha6141-key" })).toEqual({ log: REDACTED_EVENT_VALUE });
+    expect(await registry.redactForIssue("company", "issue-1", "el-saved-zha6141-key")).toBe(REDACTED_EVENT_VALUE);
+  });
+
+  it("leaves ordinary text alone when a saved speech-to-text key is a short placeholder", async () => {
+    const body = "Transcription is none yet; the endpoint needs no key, so none was set.";
+    savedSpeechToTextKeys.current = { openai_compatible: "none", deepgram: "x".repeat(15), elevenlabs: "el-saved-zha6141-key" };
+    const { registry } = fixture([{ id: "a", contextSnapshot: {} }]);
+    expect(await registry.redactForRuns("company", [{ id: "a", body: body + " " + "x".repeat(15) }])).toEqual([{ id: "a", body: body + " " + "x".repeat(15) }]);
+    expect(await registry.redactForRun("company", "a", { body })).toEqual({ body });
+    expect(await registry.redactForIssue("company", "issue-1", body + " el-saved-zha6141-key")).toBe(body + " " + REDACTED_EVENT_VALUE);
   });
 
   function fixture(rows: unknown[]) {
