@@ -207,6 +207,7 @@ describe("terminal routes", () => {
         sshHosts: sshHostStore(),
         sshConfigWriter: sshConfigWriter({ configPath: path.join(tempDir, "ssh", "config") }),
         sshRunner,
+        sshOptionResolver: async () => "",
         recordActivity: async (input) => {
           if (failNextActivity) {
             failNextActivity = false;
@@ -817,6 +818,24 @@ describe("terminal routes", () => {
       expect(readFileSync(configFile(), "utf8")).toContain("Host prod\n    HostName prod.test\n    User root\n    Port 2200\n");
       expect(activity.at(-1)).toMatchObject({ action: "terminal.ssh_host_moved_to_config", details: { savedHostId: savedId, savedName: "prod" } });
       expect((await request(app).post(`${sshHostsPath()}/${savedId}/move-to-config`).send(box)).status).toBe(404);
+    });
+
+    it("finishes a move whose config write landed but whose saved entry was not removed", async () => {
+      const app = createApp();
+      await request(app).post(sshHostsPath()).send({ name: "prod", destination: "root@prod.test", port: 2200 });
+      const savedId = savedSshHostId(SAVED_HOST_ID);
+      const target = { ...box, alias: "prod", hostName: "prod.test", user: "root", port: 2200 };
+      await sshConfigWriter({ configPath: configFile() }).add(target);
+      const retried = await request(app).post(`${sshHostsPath()}/${savedId}/move-to-config`).send(target);
+      expect(retried.status).toBe(201);
+      expect(savedHosts).toEqual([]);
+      expect(readFileSync(configFile(), "utf8").match(/^Host prod$/gm)).toHaveLength(1);
+      await request(app).post(sshHostsPath()).send({ name: "prod", destination: "root@prod.test", port: 2200 });
+      const conflicting = await request(app)
+        .post(`${sshHostsPath()}/${savedSshHostId("77777777-7777-4777-8777-000000000001")}/move-to-config`)
+        .send({ ...target, port: 2201 });
+      expect(conflicting.status).toBe(409);
+      expect(savedHosts.map((host) => host.name)).toEqual(["prod"]);
     });
   });
 });

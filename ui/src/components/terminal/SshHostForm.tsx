@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Check, CheckCircle2, ChevronDown, Copy, KeyRound, Loader2, ShieldQuestion, XCircle } from "lucide-react";
 import type {
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useCopyAction } from "@/lib/use-copy-action";
 import { cn } from "@/lib/utils";
 import { forgetTest, rememberTest } from "./ssh-host-memory";
 import { terminalAccessErrorMessage } from "./terminal-access";
@@ -62,26 +63,11 @@ function wholeNumber(value: string, min: number, max: number): number | null | u
 }
 
 function CopyButton({ text, label }: { text: string; label: string }) {
-  const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
-  useEffect(() => {
-    if (copied === "idle") return;
-    const timer = window.setTimeout(() => setCopied("idle"), 2000);
-    return () => window.clearTimeout(timer);
-  }, [copied]);
+  const { status, copy } = useCopyAction(2000);
   return (
-    <Button
-      type="button"
-      variant="secondary"
-      size="xs"
-      onClick={() => {
-        navigator.clipboard.writeText(text).then(
-          () => setCopied("done"),
-          () => setCopied("failed"),
-        );
-      }}
-    >
-      {copied === "done" ? <Check aria-hidden /> : <Copy aria-hidden />}
-      <span aria-live="polite">{copied === "done" ? "Copied" : copied === "failed" ? "Copy failed" : label}</span>
+    <Button type="button" variant="secondary" size="xs" onClick={() => void copy(text)}>
+      {status === "copied" ? <Check aria-hidden /> : <Copy aria-hidden />}
+      <span aria-live="polite">{status === "copied" ? "Copied" : status === "failed" ? "Copy failed" : label}</span>
     </Button>
   );
 }
@@ -223,6 +209,11 @@ export function SshHostForm({ companyId, open, onOpenChange, mode, configHosts, 
   const [result, setResult] = useState<SshConnectionTestResult | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (result) resultRef.current?.scrollIntoView({ block: "nearest" });
+  }, [result]);
 
   const keysQuery = useQuery({
     queryKey: terminalQueryKeys.sshKeys(companyId),
@@ -633,7 +624,7 @@ export function SshHostForm({ companyId, open, onOpenChange, mode, configHosts, 
               </Button>
               <p className="text-xs text-ink-3">Runs ssh from the server in batch mode. Nothing is saved.</p>
             </div>
-            <div aria-live="polite">
+            <div aria-live="polite" ref={resultRef} className="scroll-mb-4">
               {result ? (
                 <TestResult result={result} trusting={trustMutation.isPending || testMutation.isPending} onTrust={() => trustMutation.mutate(settings())} />
               ) : null}

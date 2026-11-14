@@ -44,7 +44,7 @@ import {
 } from "../services/terminal/schema.js";
 import { SshConfigWriteError, sshConfigWriter, type SshConfigWriter } from "../services/terminal/ssh-config-writer.js";
 import { SshKeyError, generateSshKey, importSshKey, listSshKeys } from "../services/terminal/ssh-keys.js";
-import { testSshConnection, trustSshHostKeys, type SshRunner } from "../services/terminal/ssh-probe.js";
+import { testSshConnection, trustSshHostKeys, type SshOptionResolver, type SshRunner } from "../services/terminal/ssh-probe.js";
 import { connectSshTerminal, type SshTerminalTarget } from "../services/terminal/ssh.js";
 import {
   SSH_CONFIG_HOST_ID_PREFIX,
@@ -73,6 +73,7 @@ export interface TerminalRouteOptions {
   sshConfigPath?: string;
   sshConfigWriter?: SshConfigWriter;
   sshRunner?: SshRunner;
+  sshOptionResolver?: SshOptionResolver;
   recordActivity?: (input: LogActivityInput) => Promise<unknown>;
   uploadTempDir?: string;
 }
@@ -110,6 +111,10 @@ function auditedHost(settings: SshConfigHostSettings): Record<string, unknown> {
     identityFile: settings.identityFile,
     proxyJump: settings.proxyJump,
   };
+}
+
+function sameSshHostSettings(left: SshConfigHostSettings, right: SshConfigHostSettings): boolean {
+  return (Object.keys(left) as Array<keyof SshConfigHostSettings>).every((key) => left[key] === right[key]);
 }
 
 function targetAlias(target: SshConnectionTarget): string {
@@ -169,7 +174,11 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
   const startHostSsh = options.startHostSsh ?? startSystemSshTerminal;
   const sshHosts = options.sshHosts ?? databaseSshHostStore(db, { configPath: options.sshConfigPath });
   const configWriter = options.sshConfigWriter ?? sshConfigWriter({ configPath: options.sshConfigPath });
-  const probeOptions = () => ({ run: options.sshRunner, knownHostsPath: path.join(configWriter.sshDir, "known_hosts") });
+  const probeOptions = () => ({
+    run: options.sshRunner,
+    resolveOptions: options.sshOptionResolver,
+    knownHostsPath: path.join(configWriter.sshDir, "known_hosts"),
+  });
 
   async function savedHostNames(companyId: string, exceptId?: string): Promise<string[]> {
     const list = await sshHosts.list(companyId);
@@ -482,9 +491,14 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
       if (!parseSavedSshHostId(hostId)) throw notFound("Saved SSH host not found");
       const saved = await sshHosts.resolve(companyId, hostId);
       if (!saved) throw notFound("Saved SSH host not found");
+      const requested = req.body as SshConfigHostSettings;
       const settings = await configWriter
-        .add(req.body as SshConfigHostSettings, { reservedAliases: await savedHostNames(companyId, hostId) })
-        .catch((err: unknown) => {
+        .add(requested, { reservedAliases: await savedHostNames(companyId, hostId) })
+        .catch(async (err: unknown) => {
+          if (err instanceof SshConfigWriteError && err.code === "duplicate_alias") {
+            const existing = (await configWriter.readManaged()).find((block) => block.alias === requested.alias)?.settings;
+            if (existing && sameSshHostSettings(existing, requested)) return existing;
+          }
           throw sshFailure(err);
         });
       await sshHosts.remove(companyId, hostId);

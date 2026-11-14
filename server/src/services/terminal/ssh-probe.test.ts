@@ -6,7 +6,14 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { SshConnectionTarget } from "@tickernelz/wardmote-shared";
 import { SshConfigWriteError } from "./ssh-config-writer.js";
-import { classifySshFailure, sshFingerprint, testSshConnection, trustSshHostKeys, type SshRunner } from "./ssh-probe.js";
+import {
+  classifySshFailure,
+  knownHostsFileFromSshG,
+  sshFingerprint,
+  testSshConnection,
+  trustSshHostKeys,
+  type SshRunner,
+} from "./ssh-probe.js";
 
 const BLOB = "AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl";
 const UNKNOWN = "No ED25519 host key is known for [203.0.113.10]:2222 and you have requested strict checking.\nHost key verification failed.\n";
@@ -24,6 +31,8 @@ const target: SshConnectionTarget = {
     serverAliveCountMax: null,
   },
 };
+
+const noOptions = async () => "";
 
 function fakeSsh(script: (args: string[]) => { code: number | null; stderr: string; hostKeyLine?: string }) {
   const calls: string[][] = [];
@@ -79,7 +88,7 @@ describe("ssh connection probe", () => {
         ? { code: 255, stderr: "Permission denied (none).", hostKeyLine: `[203.0.113.10]:2222 ssh-ed25519 ${BLOB}` }
         : { code: 255, stderr: UNKNOWN },
     );
-    const result = await testSshConnection(target, { run: ssh.run, knownHostsPath });
+    const result = await testSshConnection(target, { run: ssh.run, resolveOptions: noOptions, knownHostsPath });
     expect(result).toMatchObject({ status: "host_key_unknown", hostKeys: [{ type: "ssh-ed25519", fingerprint: sshFingerprint(BLOB) }] });
     expect(ssh.calls[0]).toEqual([
       "-o", "BatchMode=yes", "-o", "ConnectTimeout=15",
@@ -99,7 +108,7 @@ describe("ssh connection probe", () => {
         ? { code: 255, stderr: "", hostKeyLine: `[203.0.113.10]:2222 ssh-ed25519 ${BLOB}` }
         : { code: 255, stderr: UNKNOWN },
     );
-    const result = await trustSshHostKeys(target, [sshFingerprint(BLOB)], { run: ssh.run, knownHostsPath });
+    const result = await trustSshHostKeys(target, [sshFingerprint(BLOB)], { run: ssh.run, resolveOptions: noOptions, knownHostsPath });
     expect(result.added).toEqual([{ type: "ssh-ed25519", fingerprint: sshFingerprint(BLOB) }]);
     expect(await fs.readFile(knownHostsPath, "utf8")).toBe(`github.com ssh-ed25519 AAAA\n[203.0.113.10]:2222 ssh-ed25519 ${BLOB}\n`);
   });
@@ -111,16 +120,46 @@ describe("ssh connection probe", () => {
         : { code: 255, stderr: UNKNOWN },
     );
     const other = `SHA256:${"A".repeat(43)}`;
-    await expect(trustSshHostKeys(target, [other], { run: mismatch.run, knownHostsPath })).rejects.toBeInstanceOf(SshConfigWriteError);
+    await expect(trustSshHostKeys(target, [other], { run: mismatch.run, resolveOptions: noOptions, knownHostsPath })).rejects.toBeInstanceOf(SshConfigWriteError);
     const changed = fakeSsh(() => ({ code: 255, stderr: CHANGED }));
-    await expect(trustSshHostKeys(target, [sshFingerprint(BLOB)], { run: changed.run, knownHostsPath })).rejects.toThrow(/changed/);
+    await expect(trustSshHostKeys(target, [sshFingerprint(BLOB)], { run: changed.run, resolveOptions: noOptions, knownHostsPath })).rejects.toThrow(/changed/);
     expect(changed.calls).toHaveLength(1);
     await expect(fs.stat(knownHostsPath)).rejects.toThrow();
   });
 
+  it("adds the key to the known_hosts file the host's ssh options name", async () => {
+    const custom = path.join(dir, "team_known_hosts");
+    const ssh = fakeSsh((args) =>
+      args.includes("StrictHostKeyChecking=accept-new")
+        ? { code: 255, stderr: "", hostKeyLine: `[203.0.113.10]:2222 ssh-ed25519 ${BLOB}` }
+        : { code: 255, stderr: UNKNOWN },
+    );
+    const seen: string[][] = [];
+    const result = await trustSshHostKeys({ alias: "box" }, [sshFingerprint(BLOB)], {
+      run: ssh.run,
+      resolveOptions: async (args) => {
+        seen.push(args);
+        return `hostname 203.0.113.10\nuserknownhostsfile ${custom} ~/.ssh/known_hosts2\n`;
+      },
+      knownHostsPath,
+    });
+    expect(seen).toEqual([["--", "box"]]);
+    expect(result.knownHostsPath).toBe(custom);
+    expect(await fs.readFile(custom, "utf8")).toContain(BLOB);
+    await expect(fs.stat(knownHostsPath)).rejects.toThrow();
+  });
+
+  it("reads the first user known_hosts file from ssh -G output", () => {
+    expect(knownHostsFileFromSshG("userknownhostsfile ~/.ssh/known_hosts ~/.ssh/known_hosts2\n", "/fb", "/home/u")).toBe("/home/u/.ssh/known_hosts");
+    expect(knownHostsFileFromSshG("userknownhostsfile %d/.ssh/team\n", "/fb", "/home/u")).toBe("/home/u/.ssh/team");
+    expect(knownHostsFileFromSshG("userknownhostsfile /dev/null\n", "/fb", "/home/u")).toBe("/fb");
+    expect(knownHostsFileFromSshG("userknownhostsfile ~/.ssh/known_hosts_%h\n", "/fb", "/home/u")).toBe("/fb");
+    expect(knownHostsFileFromSshG("", "/fb", "/home/u")).toBe("/fb");
+  });
+
   it("writes nothing when the host key is already trusted", async () => {
     const known = fakeSsh(() => ({ code: 255, stderr: "Permission denied (publickey)." }));
-    const result = await trustSshHostKeys({ alias: "box" }, [sshFingerprint(BLOB)], { run: known.run, knownHostsPath });
+    const result = await trustSshHostKeys({ alias: "box" }, [sshFingerprint(BLOB)], { run: known.run, resolveOptions: noOptions, knownHostsPath });
     expect(result.added).toEqual([]);
     await expect(fs.stat(knownHostsPath)).rejects.toThrow();
   });

@@ -147,7 +147,7 @@ const sshKeyNameSchema = z
   .regex(SSH_KEY_NAME_PATTERN, "Use letters, digits, '.', '_' or '-'")
   .refine((value) => !value.endsWith(".pub"), "Key names cannot end in .pub")
   .refine(
-    (value) => !["config", "known_hosts", "known_hosts.old", "authorized_keys", "authorized_keys2", "environment", "rc"].includes(value),
+    (value) => !["config", "known_hosts", "known_hosts2", "known_hosts.old", "authorized_keys", "authorized_keys2", "environment", "rc"].includes(value),
     "That name is reserved by ssh",
   );
 

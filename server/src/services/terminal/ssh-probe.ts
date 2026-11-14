@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import os from "node:os";
@@ -11,7 +11,9 @@ import type {
   SshHostKey,
   TrustSshHostKeyResult,
 } from "@tickernelz/wardmote-shared";
+import { promisify } from "node:util";
 import { SshConfigWriteError, resolveConfigWriteTarget, withSshFileLock, writeFileAtomically } from "./ssh-config-writer.js";
+import { sshUserHome } from "./ssh-hosts.js";
 import { SSH_CONNECT_TIMEOUT_SECONDS, resolveSshBinary, sshEnv } from "./system-ssh.js";
 
 export const SSH_PROBE_TIMEOUT_MS = (SSH_CONNECT_TIMEOUT_SECONDS + 10) * 1000;
@@ -24,9 +26,31 @@ export interface SshRunResult {
 
 export type SshRunner = (args: string[], timeoutMs: number) => Promise<SshRunResult>;
 
+export type SshOptionResolver = (args: string[]) => Promise<string>;
+
 export interface SshProbeOptions {
   run?: SshRunner;
+  resolveOptions?: SshOptionResolver;
   knownHostsPath: string;
+}
+
+const execFileAsync = promisify(execFile);
+
+export const defaultSshOptionResolver: SshOptionResolver = async (args) => {
+  const { stdout } = await execFileAsync(resolveSshBinary(), ["-G", ...args], {
+    env: sshEnv(),
+    timeout: 10_000,
+    maxBuffer: 256 * 1024,
+  });
+  return stdout;
+};
+
+export function knownHostsFileFromSshG(output: string, fallback: string, home: string = sshUserHome()): string {
+  const line = output.split(/\r?\n/).find((entry) => entry.toLowerCase().startsWith("userknownhostsfile "));
+  const first = line?.slice("userknownhostsfile ".length).trim().split(/\s+/)[0];
+  if (!first || first === "none" || first === "/dev/null") return fallback;
+  const expanded = first.replace(/^~(?=\/)/, home).replace(/%d(?=\/)/g, home);
+  return path.isAbsolute(expanded) && !/%/.test(expanded) ? expanded : fallback;
 }
 
 interface CapturedHostKey extends SshHostKey {
@@ -207,7 +231,9 @@ export async function trustSshHostKeys(
   if (selected.length === 0 || selected.length !== wanted.size) {
     throw new SshConfigWriteError("conflict", "The server's host key no longer matches the fingerprint you checked. Test the connection again.");
   }
-  const knownHostsPath = await resolveConfigWriteTarget(options.knownHostsPath);
+  const resolve = options.resolveOptions ?? defaultSshOptionResolver;
+  const configured = knownHostsFileFromSshG(await resolve(sshTargetArgs(target)).catch(() => ""), options.knownHostsPath);
+  const knownHostsPath = await resolveConfigWriteTarget(configured);
   await withSshFileLock(knownHostsPath, async () => {
     const original = await fs.readFile(knownHostsPath, "utf8").catch((err: NodeJS.ErrnoException) => {
       if (err.code === "ENOENT") return null;
@@ -217,5 +243,5 @@ export async function trustSshHostKeys(
     const separator = base === "" || base.endsWith("\n") ? "" : "\n";
     await writeFileAtomically(knownHostsPath, original, `${base}${separator}${selected.map((key) => key.line).join("\n")}\n`);
   });
-  return { added: selected.map(({ type, fingerprint }) => ({ type, fingerprint })), knownHostsPath: options.knownHostsPath };
+  return { added: selected.map(({ type, fingerprint }) => ({ type, fingerprint })), knownHostsPath: configured };
 }
