@@ -87,12 +87,12 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
 
 export const CURSOR_DISTRIBUTION_PINS = {
   "darwin-arm64": {
-    "closureSha256": "257424bd48e35412091c6adfc61e4648e836757ec1d240d890bba81a24918c30",
+    "closureSha256": "48c1ded408190e7f36f9bb25478465547f2e46e38b616f1e4d0c417d6bcfe7d5",
     "executable": "node",
     "entrypoint": "index.js"
   },
   "darwin-x64": {
-    "closureSha256": "6f28c799c5afdc64fbdff8a2157f565f17ae7615efe014ac389d63bf70cf2be2",
+    "closureSha256": "d4aac8a84e91c7fe65777ed775204bcd337f1cc8b9d4d822e299ca48cee98594",
     "executable": "node",
     "entrypoint": "index.js"
   },
