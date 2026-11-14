@@ -872,6 +872,30 @@ describe("startServer feedback export wiring", () => {
     }
   });
 
+  it("clears every interval it started when shut down without exiting", async () => {
+    const directory = mkdtempSync(path.join(tmpdir(), "startup-interval-teardown-"));
+    loadConfigMock.mockReturnValue(buildTestConfig({ databaseBackupEnabled: true, databaseBackupDir: directory }));
+    const started: Array<ReturnType<typeof setInterval>> = [];
+    const setIntervalSpy = vi.spyOn(globalThis, "setInterval").mockImplementation((() => {
+      const handle = { ref: vi.fn(), unref: vi.fn(), hasRef: vi.fn(() => false) } as unknown as ReturnType<typeof setInterval>;
+      const caller = new Error().stack?.split("\n").slice(2).find((line) => !line.includes("node_modules") && !line.includes("__tests__"));
+      if (caller?.includes("/server/src/index.ts")) started.push(handle);
+      return handle;
+    }) as typeof setInterval);
+    const clearIntervalSpy = vi.spyOn(globalThis, "clearInterval").mockImplementation(() => undefined);
+    try {
+      const server = await startServer();
+      expect(started.length).toBeGreaterThanOrEqual(5);
+      await server.shutdown("SIGTERM");
+      const cleared = new Set(clearIntervalSpy.mock.calls.map(([handle]) => handle));
+      expect(started.filter((handle) => !cleared.has(handle))).toEqual([]);
+    } finally {
+      setIntervalSpy.mockRestore();
+      clearIntervalSpy.mockRestore();
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   it("does not replay hot-restart adoption when the orphan reaper retries", async () => {
     loadConfigMock.mockReturnValue(buildTestConfig({
       heartbeatSchedulerEnabled: true,
